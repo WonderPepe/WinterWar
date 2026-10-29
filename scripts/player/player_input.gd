@@ -35,6 +35,7 @@ func _ready() -> void:
 	look_yaw = get_parent().rotation.y
 	var mine: bool = is_multiplayer_authority()
 	set_process(mine)
+	set_process_input(mine)
 	set_process_unhandled_input(mine)
 	if mine:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -66,12 +67,17 @@ func _process(_delta: float) -> void:
 		request_switch.rpc_id(1, 1)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## Mouse look uses _input (not _unhandled_input): while the mouse is captured, no on-screen
+## element (crosshair, HUD) may "catch" the movement before it reaches us.
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
 		var sens: float = mouse_sensitivity * look_sensitivity_scale
 		add_look(-motion.screen_relative.y * sens, -motion.screen_relative.x * sens)
-	elif event.is_action_pressed("release_mouse"):
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("release_mouse"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.is_pressed() and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		# Click the game to grab the mouse again (browsers require a click for this).
