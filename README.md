@@ -1,0 +1,35 @@
+# Winter War: Summa (prototype)
+
+First-person shooter prototype set in the Winter War 1939–40, Battle of Summa.
+Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
+
+## Controls
+| Action | Key |
+|---|---|
+| Move | W A S D |
+| Look | Mouse |
+| Sprint | Shift (uses stamina) |
+| Crouch | C (or Ctrl – but avoid Ctrl in the browser, Ctrl+W closes the tab) |
+| Jump | Space |
+| Release mouse | Esc (click the game to capture it again) |
+
+## Folders
+- `autoload/` – scripts that are always loaded (NetworkManager)
+- `scenes/` – game.tscn (a match), player.tscn
+- `levels/` – test_level.tscn (terrain, forest, trench, bunker)
+- `scripts/` – all game code, grouped by topic
+- `resources/` – materials (later: weapon data)
+- `ui/`, `assets/` – menus/HUD and art (later)
+
+## Multiplayer-ready design
+- Single player = host with no clients (OfflineMultiplayerPeer, our peer id is 1).
+- Player nodes are named after their peer id. `PlayerInput` reads the keyboard/mouse;
+  `Player` only reads `PlayerInput`, and only the host moves players.
+- `MultiplayerSpawner` creates players; `MultiplayerSynchronizer` nodes sync input and state.
+
+## Milestones
+- [x] M1: project setup, input map, test level, player movement
+- [ ] M2: weapons and shooting
+- [ ] M3: enemy AI and wave spawner
+- [ ] M4: HUD, death/respawn, main menu
+- [ ] M5: web export test and performance check

@@ -1,0 +1,323 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/terrain_generator.gd" id="1_ly3hx"]
+[ext_resource type="Material" path="res://resources/materials/snow_ground.tres" id="2_4n8tn"]
+[ext_resource type="Script" path="res://scripts/world/forest_scatter.gd" id="3_wkb0e"]
+[ext_resource type="Material" path="res://resources/materials/tree_trunk.tres" id="4_paa45"]
+[ext_resource type="Material" path="res://resources/materials/tree_foliage.tres" id="5_axl34"]
+[ext_resource type="Material" path="res://resources/materials/trench_wall_logs.tres" id="6_8hjdj"]
+[ext_resource type="Material" path="res://resources/materials/bunker_logs.tres" id="7_0vv12"]
+[ext_resource type="Material" path="res://resources/materials/snow_drift.tres" id="8_o5yuq"]
+[ext_resource type="Script" path="res://scripts/world/deep_snow_zone.gd" id="9_wjuib"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_xag4j"]
+sky_top_color = Color(0.42, 0.47, 0.55, 1)
+sky_horizon_color = Color(0.68, 0.71, 0.76, 1)
+ground_bottom_color = Color(0.6, 0.63, 0.68, 1)
+ground_horizon_color = Color(0.68, 0.71, 0.76, 1)
+sun_angle_max = 20.0
+sun_curve = 0.3
+
+[sub_resource type="Sky" id="Sky_pgbyh"]
+sky_material = SubResource("ProceduralSkyMaterial_xag4j")
+
+[sub_resource type="Environment" id="Environment_68kkm"]
+background_mode = 2
+sky = SubResource("Sky_pgbyh")
+ambient_light_source = 3
+ambient_light_color = Color(0.62, 0.7, 0.85, 1)
+ambient_light_sky_contribution = 0.5
+ambient_light_energy = 0.6
+tonemap_mode = 2
+tonemap_exposure = 0.85
+fog_enabled = true
+fog_light_color = Color(0.66, 0.7, 0.77, 1)
+fog_density = 0.007
+fog_sky_affect = 0.5
+fog_height = 1.0
+fog_height_density = 0.04
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_n4g7x"]
+seed = 1939
+frequency = 0.012
+fractal_octaves = 3
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_atrxo"]
+size = Vector3(304, 40, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vr6yy"]
+size = Vector3(304, 40, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ra35m"]
+size = Vector3(2, 40, 304)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x7oem"]
+size = Vector3(2, 40, 304)
+
+[node name="TestLevel" type="Node3D" unique_id=290689326]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1302228113]
+environment = SubResource("Environment_68kkm")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1062291920]
+transform = Transform3D(-0.8660254, 0.120960966, -0.48514792, 0, 0.9702957, 0.2419219, 0.50000006, 0.2095105, -0.84030074, 0, 0, 0)
+light_color = Color(0.9, 0.92, 0.98, 1)
+light_energy = 0.85
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 70.0
+
+[node name="Terrain" type="StaticBody3D" parent="." unique_id=2142032430 groups=["terrain"]]
+script = ExtResource("1_ly3hx")
+noise = SubResource("FastNoiseLite_n4g7x")
+snow_material = ExtResource("2_4n8tn")
+
+[node name="MapBounds" type="StaticBody3D" parent="." unique_id=883828977]
+
+[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=245143458]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -151)
+shape = SubResource("BoxShape3D_atrxo")
+
+[node name="@CollisionShape3D@2" type="CollisionShape3D" parent="MapBounds" unique_id=1002298106]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 151)
+shape = SubResource("BoxShape3D_vr6yy")
+
+[node name="@CollisionShape3D@3" type="CollisionShape3D" parent="MapBounds" unique_id=1353282972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -151, 10, 0)
+shape = SubResource("BoxShape3D_ra35m")
+
+[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="MapBounds" unique_id=512918015]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 151, 10, 0)
+shape = SubResource("BoxShape3D_x7oem")
+
+[node name="Forest" type="Node3D" parent="." unique_id=1108306052]
+script = ExtResource("3_wkb0e")
+trunk_material = ExtResource("4_paa45")
+foliage_material = ExtResource("5_axl34")
+
+[node name="Trench" type="CSGCombiner3D" parent="." unique_id=1884717123]
+use_collision = true
+
+[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=484552807]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 61)
+size = Vector3(210, 2.5, 18)
+material = ExtResource("2_4n8tn")
+
+[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=457622754]
+transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -90, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=1221540378]
+transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -70, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=614241694]
+transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -50, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=535477550]
+transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -30, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=641753927]
+transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -10, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=438229301]
+transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 10, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=568948694]
+transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 30, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=1246452443]
+transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 50, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=1503785924]
+transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 70, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=581564071]
+transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 90, -0.8, 61)
+operation = 2
+size = Vector3(22.880613, 3.6, 2)
+material = ExtResource("6_8hjdj")
+
+[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=1468608480]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.8, 67.5)
+operation = 2
+size = Vector3(1.6, 3.6, 7)
+material = ExtResource("6_8hjdj")
+
+[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=1090807518]
+transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -80, -0.9605425, 67.34201)
+size = Vector3(1.6, 0.6, 4.827843)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=1535598308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.15, 70.4)
+size = Vector3(1.6, 0.4, 2)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=541679183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.8, 67.5)
+operation = 2
+size = Vector3(1.6, 3.6, 7)
+material = ExtResource("6_8hjdj")
+
+[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=1983608714]
+transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -40, -0.9605425, 67.34201)
+size = Vector3(1.6, 0.6, 4.827843)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=237000956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.15, 70.4)
+size = Vector3(1.6, 0.4, 2)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=2073707440]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.8, 67.5)
+operation = 2
+size = Vector3(1.6, 3.6, 7)
+material = ExtResource("6_8hjdj")
+
+[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=1062307711]
+transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 40, -0.9605425, 67.34201)
+size = Vector3(1.6, 0.6, 4.827843)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=2013588771]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 70.4)
+size = Vector3(1.6, 0.4, 2)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=1877740903]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.8, 67.5)
+operation = 2
+size = Vector3(1.6, 3.6, 7)
+material = ExtResource("6_8hjdj")
+
+[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=870549816]
+transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 80, -0.9605425, 67.34201)
+size = Vector3(1.6, 0.6, 4.827843)
+material = ExtResource("2_4n8tn")
+
+[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=285680753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.15, 70.4)
+size = Vector3(1.6, 0.4, 2)
+material = ExtResource("2_4n8tn")
+
+[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=1490051256]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.29, 66.95)
+operation = 2
+size = Vector3(5, 2.62, 4.1)
+material = ExtResource("7_0vv12")
+
+[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=712564501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 67.75)
+use_collision = true
+
+[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=1513875643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+size = Vector3(6, 1, 5.5)
+material = ExtResource("7_0vv12")
+
+[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=616877455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+operation = 2
+size = Vector3(5, 1.2, 4.5)
+material = ExtResource("7_0vv12")
+
+[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=469588180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2.5)
+operation = 2
+size = Vector3(3, 0.35, 1)
+material = ExtResource("7_0vv12")
+
+[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=915519440]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+size = Vector3(6.8, 0.5, 6.3)
+material = ExtResource("7_0vv12")
+
+[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=517413739]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+size = Vector3(6.6, 0.25, 6.1)
+material = ExtResource("8_o5yuq")
+
+[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=352453020]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.12, -3.2)
+radius = 0.17
+height = 7.0
+material = ExtResource("7_0vv12")
+
+[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=622934303]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.44, -3.2)
+radius = 0.17
+height = 7.0
+material = ExtResource("7_0vv12")
+
+[node name="DeepSnowZones" type="Node3D" parent="." unique_id=1058860601]
+
+[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=544326657]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, -20)
+script = ExtResource("9_wjuib")
+size = Vector3(26, 4, 14)
+drift_material = ExtResource("8_o5yuq")
+
+[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=2069010522]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -55)
+script = ExtResource("9_wjuib")
+size = Vector3(30, 4, 16)
+drift_material = ExtResource("8_o5yuq")
+
+[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=1092191470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, -85)
+script = ExtResource("9_wjuib")
+size = Vector3(24, 4, 18)
+drift_material = ExtResource("8_o5yuq")
+
+[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=1386071179]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 5)
+script = ExtResource("9_wjuib")
+size = Vector3(22, 4, 12)
+drift_material = ExtResource("8_o5yuq")
+
+[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=35747588]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
+script = ExtResource("9_wjuib")
+size = Vector3(40, 4, 8)
+drift_material = ExtResource("8_o5yuq")
+
+[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=508736443]
+
+[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=815433113 groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -1.3, 61)
+
+[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1233579894 groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -1.3, 61)
+
+[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=86369840 groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -1.3, 61)
+
+[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=623574965 groups=["player_spawn"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.3, 61)

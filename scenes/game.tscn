@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_lnu2h"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_lbhrr"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="3_iywne"]
+
+[node name="Game" type="Node3D" unique_id=1497174119 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_lnu2h")
+players_root = NodePath("Players")
+
+[node name="Level" type="Node3D" parent="." unique_id=290689326 instance=ExtResource("2_lbhrr")]
+
+[node name="Players" type="Node3D" parent="." unique_id=149830103]
+
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1735163659]
+_spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
+spawn_path = NodePath("../Players")
+
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1641956360]
+
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=226947818]
+offset_left = 12.0
+offset_top = 10.0
+offset_right = 12.0
+offset_bottom = 10.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+script = ExtResource("3_iywne")

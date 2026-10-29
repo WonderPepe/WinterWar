@@ -1,0 +1,6 @@
+# Keep line endings consistent between Windows and Linux
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.wav binary
+*.ogg binary
