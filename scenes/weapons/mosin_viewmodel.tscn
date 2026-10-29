@@ -78,98 +78,98 @@ material = ExtResource("4_bx4r5")
 radius = 0.013
 height = 0.026
 
-[node name="MosinViewModel" type="Node3D" unique_id=348114619 node_paths=PackedStringArray("bolt")]
+[node name="MosinViewModel" type="Node3D" unique_id=1506232058 node_paths=PackedStringArray("bolt")]
 script = ExtResource("1_pmwkc")
 bolt = NodePath("Model/Bolt")
 ads_eye_distance = 0.36
 
-[node name="Model" type="Node3D" parent="." unique_id=1970224494]
+[node name="Model" type="Node3D" parent="." unique_id=112216088]
 
-[node name="AimPoint" type="Marker3D" parent="Model" unique_id=1617043168]
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=2046175772]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.066, -0.16)
 
-[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1009021840]
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=2112951899]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -1)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1778577564]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=184500320]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_l1wwb")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=193843985]
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=1220597233]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_7owfp")
 
-[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=15979914]
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=2036725278]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 2.5
 omni_range = 6.0
 
-[node name="Stock" type="MeshInstance3D" parent="Model" unique_id=349864758]
+[node name="Stock" type="MeshInstance3D" parent="Model" unique_id=1704431771]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.035, 0.12)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_ndxwy")
 
-[node name="Wrist" type="MeshInstance3D" parent="Model" unique_id=2005018330]
+[node name="Wrist" type="MeshInstance3D" parent="Model" unique_id=1351764572]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.005, -0.12)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_2fgys")
 
-[node name="Forend" type="MeshInstance3D" parent="Model" unique_id=1253552905]
+[node name="Forend" type="MeshInstance3D" parent="Model" unique_id=1260579622]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, -0.45)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_4jd8m")
 
-[node name="Receiver" type="MeshInstance3D" parent="Model" unique_id=1794659483]
+[node name="Receiver" type="MeshInstance3D" parent="Model" unique_id=1176104648]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.04)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_a4xdk")
 
-[node name="RearSightBase" type="MeshInstance3D" parent="Model" unique_id=1468844342]
+[node name="RearSightBase" type="MeshInstance3D" parent="Model" unique_id=1893384888]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.048, -0.16)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_pesuj")
 
-[node name="Barrel" type="MeshInstance3D" parent="Model" unique_id=498058703]
+[node name="Barrel" type="MeshInstance3D" parent="Model" unique_id=474515045]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.035, -0.6)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_ghwmk")
 
-[node name="RearSightL" type="MeshInstance3D" parent="Model" unique_id=781272680]
+[node name="RearSightL" type="MeshInstance3D" parent="Model" unique_id=679163216]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012, 0.064, -0.16)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_ufkpx")
 
-[node name="RearSightR" type="MeshInstance3D" parent="Model" unique_id=336356668]
+[node name="RearSightR" type="MeshInstance3D" parent="Model" unique_id=1271223792]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.012, 0.064, -0.16)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_yo5th")
 
-[node name="FrontSightHood" type="MeshInstance3D" parent="Model" unique_id=685372998]
+[node name="FrontSightHood" type="MeshInstance3D" parent="Model" unique_id=1742548674]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.055, -0.98)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_1jfys")
 
-[node name="FrontSightPost" type="MeshInstance3D" parent="Model" unique_id=650366865]
+[node name="FrontSightPost" type="MeshInstance3D" parent="Model" unique_id=1003378477]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.064, -0.975)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_054ej")
 
-[node name="Bolt" type="Node3D" parent="Model" unique_id=1372633717]
+[node name="Bolt" type="Node3D" parent="Model" unique_id=1639623907]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0.02)
 
-[node name="BoltBody" type="MeshInstance3D" parent="Model/Bolt" unique_id=1509822216]
+[node name="BoltBody" type="MeshInstance3D" parent="Model/Bolt" unique_id=1971757931]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_obpx6")
 
-[node name="Handle" type="MeshInstance3D" parent="Model/Bolt" unique_id=1868878917]
+[node name="Handle" type="MeshInstance3D" parent="Model/Bolt" unique_id=1640365552]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0.035, -0.015, 0.06)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_pbayp")
 
-[node name="Knob" type="MeshInstance3D" parent="Model/Bolt" unique_id=971687588]
+[node name="Knob" type="MeshInstance3D" parent="Model/Bolt" unique_id=724346906]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, -0.02, 0.06)
 cast_shadow = 0
 mesh = SubResource("SphereMesh_1tpug")

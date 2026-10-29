@@ -94,9 +94,7 @@ func _add_chunk(key: Vector2i, transforms: Array, mesh: ArrayMesh, trunk_shape: 
 	mmi.set_meta("generated", true)
 	add_child(mmi)
 
-	# Trunk collision (only in the running game, not needed in the editor).
-	if Engine.is_editor_hint():
-		return
+	# Trunk collision (also created in the editor so "Bake NavigationMesh" sees the trees).
 	var body := StaticBody3D.new()
 	body.name = "Trunks_%d_%d" % [key.x, key.y]
 	body.set_meta("surface", "wood") # bullets hitting trunks show wood splinters

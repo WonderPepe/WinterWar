@@ -65,6 +65,8 @@ func _process(_delta: float) -> void:
 		request_switch.rpc_id(1, 0)
 	if Input.is_action_just_pressed("weapon_2"):
 		request_switch.rpc_id(1, 1)
+	if Input.is_action_just_pressed("debug_god_mode"):
+		request_god_mode.rpc_id(1)
 
 
 ## Mouse look uses _input (not _unhandled_input): while the mouse is captured, no on-screen
@@ -107,6 +109,13 @@ func request_reload() -> void:
 @rpc("authority", "call_local", "reliable")
 func request_switch(slot: int) -> void:
 	_switch_requested = slot
+
+
+## Debug: toggle god mode (no damage). Runs on the host, which owns the player's health.
+@rpc("authority", "call_local", "reliable")
+func request_god_mode() -> void:
+	var player := get_parent() as Player
+	player.god_mode = not player.god_mode
 
 
 ## Called by the WeaponController on the host: returns true once per reload request.

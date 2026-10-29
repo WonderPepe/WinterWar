@@ -34,47 +34,47 @@ properties/0/path = NodePath(".:is_down")
 properties/0/spawn = true
 properties/0/replication_mode = 2
 
-[node name="TargetDummy" type="Node3D" unique_id=364411196]
+[node name="TargetDummy" type="Node3D" unique_id=1504164247]
 script = ExtResource("1_jvvrx")
 
-[node name="Foot" type="MeshInstance3D" parent="." unique_id=725014025]
+[node name="Foot" type="MeshInstance3D" parent="." unique_id=1810536934]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_02t5f")
 
-[node name="Body" type="AnimatableBody3D" parent="." unique_id=311005513]
+[node name="Body" type="AnimatableBody3D" parent="." unique_id=1749851115]
 sync_to_physics = false
 metadata/surface = "wood"
 metadata/attach_holes = true
 
-[node name="Post" type="MeshInstance3D" parent="Body" unique_id=1563490455]
+[node name="Post" type="MeshInstance3D" parent="Body" unique_id=2097895649]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_l3em5")
 
-[node name="Torso" type="MeshInstance3D" parent="Body" unique_id=782104567]
+[node name="Torso" type="MeshInstance3D" parent="Body" unique_id=371594612]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_1lvrl")
 
-[node name="Head" type="MeshInstance3D" parent="Body" unique_id=1214405505]
+[node name="Head" type="MeshInstance3D" parent="Body" unique_id=1971137864]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_xf4v3")
 
-[node name="Shape" type="CollisionShape3D" parent="Body" unique_id=585996406]
+[node name="Shape" type="CollisionShape3D" parent="Body" unique_id=1663787538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("BoxShape3D_7v3re")
 
-[node name="@CollisionShape3D@3" type="CollisionShape3D" parent="Body" unique_id=1879032567]
+[node name="@CollisionShape3D@3" type="CollisionShape3D" parent="Body" unique_id=763918292]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 shape = SubResource("BoxShape3D_m6fdg")
 
-[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="Body" unique_id=1681576272]
+[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="Body" unique_id=1004522267]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73, 0)
 shape = SubResource("BoxShape3D_p5i3i")
 
-[node name="DistanceLabel" type="Label3D" parent="." unique_id=697818244]
+[node name="DistanceLabel" type="Label3D" parent="." unique_id=1799065530]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
 pixel_size = 0.01
 billboard = 1
@@ -83,5 +83,5 @@ text = "? m"
 font_size = 64
 outline_size = 0
 
-[node name="DummySync" type="MultiplayerSynchronizer" parent="." unique_id=586583237]
+[node name="DummySync" type="MultiplayerSynchronizer" parent="." unique_id=600189625]
 replication_config = SubResource("SceneReplicationConfig_j7bsw")

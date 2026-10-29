@@ -15,13 +15,15 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Reload | R |
 | Mosin-Nagant / Suomi | 1 / 2 |
 | Release mouse | Esc (click the game to capture it again) |
+| Debug: god mode / enemy state labels | F1 / F2 |
 
 ## Folders
 - `autoload/` – scripts that are always loaded (NetworkManager)
 - `scenes/` – game.tscn (a match), player.tscn
 - `levels/` – test_level.tscn (terrain, forest, trench, bunker)
 - `scripts/` – all game code, grouped by topic
-- `resources/` – materials and weapon data (`resources/weapons/*.tres` – tune weapons here)
+- `resources/` – materials, weapon data (`resources/weapons/*.tres`) and enemy data
+  (`resources/enemies/*.tres`) – tune weapons and enemies here
 - `ui/`, `assets/` – menus/HUD and art (later)
 
 ## Multiplayer-ready design
@@ -33,9 +35,14 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   then calls `server_fire` on the host, which checks ammo/fire rate, raycasts and applies
   damage through `take_damage()`.
 
+## Enemy navigation
+Enemies walk on a pre-baked navigation mesh (`levels/test_level_navmesh.res`).
+If you change the level (terrain, trench, trees), open `levels/test_level.tscn`,
+select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
+
 ## Milestones
 - [x] M1: project setup, input map, test level, player movement
 - [x] M2: weapons and shooting
-- [ ] M3: enemy AI and wave spawner
+- [x] M3: enemy AI and wave spawner
 - [ ] M4: HUD, death/respawn, main menu
 - [ ] M5: web export test and performance check

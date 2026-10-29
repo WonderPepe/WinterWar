@@ -69,78 +69,78 @@ size = Vector3(0.01, 0.016, 0.012)
 material = ExtResource("4_em3ed")
 size = Vector3(0.004, 0.05, 0.006)
 
-[node name="SuomiViewModel" type="Node3D" unique_id=102991593]
+[node name="SuomiViewModel" type="Node3D" unique_id=999569250]
 script = ExtResource("1_e2pjt")
 
-[node name="Model" type="Node3D" parent="." unique_id=481093360]
+[node name="Model" type="Node3D" parent="." unique_id=1943391081]
 
-[node name="AimPoint" type="Marker3D" parent="Model" unique_id=1214086071]
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=1202076712]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.076, -0.05)
 
-[node name="Muzzle" type="Marker3D" parent="Model" unique_id=638561984]
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=2067150938]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.66)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1357241779]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1409475998]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_nrbbn")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=96466971]
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=257160220]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_di6jn")
 
-[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=888123010]
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=142445275]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 2.5
 omni_range = 6.0
 
-[node name="Stock" type="MeshInstance3D" parent="Model" unique_id=1696533250]
+[node name="Stock" type="MeshInstance3D" parent="Model" unique_id=430387325]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.045, 0.2)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_vpmo0")
 
-[node name="Fore" type="MeshInstance3D" parent="Model" unique_id=856875221]
+[node name="Fore" type="MeshInstance3D" parent="Model" unique_id=1648020495]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.14)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_42x8g")
 
-[node name="Receiver" type="MeshInstance3D" parent="Model" unique_id=1407884872]
+[node name="Receiver" type="MeshInstance3D" parent="Model" unique_id=2052835022]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.08)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_vo4os")
 
-[node name="BarrelJacket" type="MeshInstance3D" parent="Model" unique_id=7625970]
+[node name="BarrelJacket" type="MeshInstance3D" parent="Model" unique_id=1047408084]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.42)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_xifn0")
 
-[node name="@MeshInstance3D@2" type="MeshInstance3D" parent="Model" unique_id=545844255]
+[node name="@MeshInstance3D@2" type="MeshInstance3D" parent="Model" unique_id=1163662442]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.62)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_5lma7")
 
-[node name="Drum" type="MeshInstance3D" parent="Model" unique_id=1154414430]
+[node name="Drum" type="MeshInstance3D" parent="Model" unique_id=1021009361]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, -0.1, -0.1)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_ic1um")
 
-[node name="RearSightBase" type="MeshInstance3D" parent="Model" unique_id=111398609]
+[node name="RearSightBase" type="MeshInstance3D" parent="Model" unique_id=1949636718]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.05)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_cdt7p")
 
-[node name="RearSightL" type="MeshInstance3D" parent="Model" unique_id=1934497081]
+[node name="RearSightL" type="MeshInstance3D" parent="Model" unique_id=1436965326]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0.068, -0.05)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_fo0t5")
 
-[node name="RearSightR" type="MeshInstance3D" parent="Model" unique_id=302664830]
+[node name="RearSightR" type="MeshInstance3D" parent="Model" unique_id=1105733253]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0.068, -0.05)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_53ae1")
 
-[node name="FrontSight" type="MeshInstance3D" parent="Model" unique_id=738803414]
+[node name="FrontSight" type="MeshInstance3D" parent="Model" unique_id=881714047]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051, -0.6)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_qbh4x")

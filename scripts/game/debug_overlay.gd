@@ -30,18 +30,30 @@ func _process(_delta: float) -> void:
 		"   [aiming]" if player.weapons.is_aiming else "",
 	]
 	var now: float = Time.get_ticks_msec() / 1000.0
-	text = "Speed: %.1f m/s   Stamina: %d   Health: %d\nState: %s   Deep snow: %s\n%s\n%s\nFPS: %d   Mouse: %s" % [
-		player.get_speed(), int(player.stamina), player.health,
+	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
+	var wave_line: String = ""
+	if waves:
+		wave_line = "Wave %d   Enemies alive: %d" % [waves.wave_number, waves.alive_count]
+		if waves.get_time_to_next_wave() > 0.0:
+			wave_line += "   Next wave in %d s" % ceili(waves.get_time_to_next_wave())
+	text = "Speed: %.1f m/s   Stamina: %d   Health: %d%s\nState: %s   Deep snow: %s\n%s\n%s\n%s\nFPS: %d   Mouse: %s   [F1 god mode, F2 enemy labels]" % [
+		player.get_speed(), int(player.stamina), player.health, "  (GOD MODE)" if player.god_mode else "",
 		state, "YES" if player.is_in_deep_snow() else "no",
 		weapon_line,
+		wave_line,
 		_hit_text if now < _hit_text_until else "",
 		Engine.get_frames_per_second(),
 		"captured (Esc to release)" if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else "free (click to capture)",
 	]
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_enemy_labels"):
+		Enemy.show_debug_labels = not Enemy.show_debug_labels
+
+
 func _on_hit_confirmed(killed: bool) -> void:
-	_hit_text = ">>> HIT - TARGET DOWN <<<" if killed else ">>> HIT <<<"
+	_hit_text = ">>> HIT - KILLED <<<" if killed else ">>> HIT <<<"
 	_hit_text_until = Time.get_ticks_msec() / 1000.0 + 0.4
 
 

@@ -18,6 +18,7 @@ enum FireMode { BOLT_ACTION, SEMI_AUTO, FULL_AUTO }
 @export var falloff_start_m: float = 100.0 ## Damage starts to drop after this distance...
 @export var falloff_end_m: float = 300.0   ## ...and reaches its minimum here.
 @export_range(0.0, 1.0) var min_damage_multiplier: float = 0.5
+@export var noise_radius_m: float = 120.0 ## Enemies within this distance hear the shot.
 
 @export_group("Ammo")
 @export var magazine_size: int = 10

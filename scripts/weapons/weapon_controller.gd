@@ -242,8 +242,10 @@ func server_fire(origin: Vector3, direction: Vector3) -> void:
 			var killed: bool = target.take_damage(w.damage_at(origin.distance_to(hit.position)), shooter, hit.position, hit.normal)
 			confirm_hit.rpc_id(shooter, killed)
 		var attach: NodePath = collider.get_path() if collider.has_meta("attach_holes") else NodePath()
-		show_impact.rpc(hit.position, hit.normal, _surface_of(collider, hit.normal), attach)
+		show_impact.rpc(hit.position, hit.normal, ImpactEffects.surface_of(collider, hit.normal), attach)
 
+	# Enemies within earshot hear the shot and look towards it.
+	get_tree().call_group("enemies", "hear_noise", origin, origin, w.noise_radius_m)
 	# Let other computers see/hear this player's shot.
 	if not player.is_local_player():
 		_play_remote_fire_effects()
@@ -317,20 +319,6 @@ func _find_damageable(node: Node) -> Node:
 			return n
 		n = n.get_parent()
 	return null
-
-
-## Surface type from the "surface" metadata of the hit object (or its parents).
-func _surface_of(node: Node, normal: Vector3) -> String:
-	var surface: String = "snow"
-	var n: Node = node
-	for i in 3:
-		if n and n.has_meta("surface"):
-			surface = n.get_meta("surface")
-			break
-		n = n.get_parent() if n else null
-	if surface == "earthwork": # trench: snow on top, log walls on the sides
-		surface = "snow" if normal.y > 0.7 else "wood"
-	return surface
 
 
 func _play(audio: Node, stream: AudioStream) -> void:

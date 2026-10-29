@@ -9,13 +9,14 @@ extends Node3D
 
 @export var max_holes: int = 64
 @export var max_puffs: int = 10
-@export var max_flashes: int = 4
+@export var max_flashes: int = 12
 @export var hole_size: float = 0.07
 @export var flash_duration: float = 0.05
 
 const SURFACE_COLORS: Dictionary = {
 	"snow": [Color(0.32, 0.36, 0.44), Color(0.95, 0.97, 1.0)], # [hole colour, puff colour]
 	"wood": [Color(0.09, 0.06, 0.04), Color(0.42, 0.3, 0.18)],
+	"cloth": [Color(0, 0, 0), Color(0.3, 0.28, 0.22)], # soldiers: puff only, no hole
 }
 
 var _holes: Array[MeshInstance3D] = []
@@ -69,6 +70,9 @@ func spawn_impact(pos: Vector3, normal: Vector3, surface: String, attach_to: Nod
 	if not SURFACE_COLORS.has(surface):
 		surface = "snow"
 	var up: Vector3 = Vector3.RIGHT if absf(normal.y) > 0.99 else Vector3.UP
+	_spawn_puff(pos, normal, up, SURFACE_COLORS[surface][1])
+	if surface == "cloth":
+		return # no bullet holes on moving soldiers
 	var facing := Basis.looking_at(-normal, up) # quad's front (+Z) points along the normal
 
 	var hole := _holes[_next_hole]
@@ -81,11 +85,27 @@ func spawn_impact(pos: Vector3, normal: Vector3, surface: String, attach_to: Nod
 	hole.material_override = _hole_materials[surface]
 	hole.visible = true
 
+
+func _spawn_puff(pos: Vector3, normal: Vector3, up: Vector3, color: Color) -> void:
 	var puff := _puffs[_next_puff]
 	_next_puff = (_next_puff + 1) % _puffs.size()
 	puff.global_transform = Transform3D(Basis.looking_at(-normal, up) * Basis(Vector3.RIGHT, PI / 2.0), pos)
-	puff.color = SURFACE_COLORS[surface][1]
+	puff.color = color
 	puff.restart()
+
+
+## Surface type from the "surface" metadata of the hit object (or its parents).
+static func surface_of(node: Node, normal: Vector3) -> String:
+	var surface: String = "snow"
+	var n: Node = node
+	for i in 3:
+		if n and n.has_meta("surface"):
+			surface = n.get_meta("surface")
+			break
+		n = n.get_parent() if n else null
+	if surface == "earthwork": # trench: snow on top, log walls on the sides
+		surface = "snow" if normal.y > 0.7 else "wood"
+	return surface
 
 
 ## A short flash at another player's muzzle.

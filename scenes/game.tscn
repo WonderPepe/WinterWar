@@ -1,28 +1,52 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_lbhrr"]
-[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_iywne"]
-[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="3_p57ef"]
-[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="4_u5sy4"]
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_p57ef"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_u5sy4"]
+[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="3_gee14"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="4_0tnpc"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="5_vtaks"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="6_kvpfn"]
 
-[node name="Game" type="Node3D" unique_id=1136766228 node_paths=PackedStringArray("players_root")]
-script = ExtResource("1_lbhrr")
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_dinhu"]
+properties/0/path = NodePath(".:wave_number")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:alive_count")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+
+[node name="Game" type="Node3D" unique_id=718470922 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_p57ef")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=894964568 instance=ExtResource("2_iywne")]
+[node name="Level" type="Node3D" parent="." unique_id=730372371 instance=ExtResource("2_u5sy4")]
 
-[node name="Players" type="Node3D" parent="." unique_id=1451865565]
+[node name="Players" type="Node3D" parent="." unique_id=794507745]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=703716227]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=258653485]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=1560464937]
-script = ExtResource("3_p57ef")
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=1520542082]
+script = ExtResource("3_gee14")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=995887489]
+[node name="Enemies" type="Node3D" parent="." unique_id=1484398576]
 
-[node name="CenterDot" type="ColorRect" parent="DebugUI" unique_id=1910626852]
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=808452489]
+_spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn")
+spawn_path = NodePath("../Enemies")
+
+[node name="WaveSpawner" type="Node" parent="." unique_id=1229381034 node_paths=PackedStringArray("enemies_root")]
+script = ExtResource("4_0tnpc")
+enemy_scene = ExtResource("5_vtaks")
+enemies_root = NodePath("../Enemies")
+
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=153560122]
+replication_config = SubResource("SceneReplicationConfig_dinhu")
+
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=136561363]
+
+[node name="CenterDot" type="ColorRect" parent="DebugUI" unique_id=1752184800]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -35,7 +59,7 @@ offset_bottom = 2.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.8)
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=635940170]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=1851210636]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0
@@ -43,4 +67,4 @@ offset_bottom = 10.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-script = ExtResource("4_u5sy4")
+script = ExtResource("6_kvpfn")

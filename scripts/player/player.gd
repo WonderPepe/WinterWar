@@ -47,6 +47,7 @@ var stamina: float = 100.0:
 		stamina_changed.emit(stamina)
 var is_crouching: bool = false
 var is_sprinting: bool = false
+var god_mode: bool = false ## Debug (F1): take no damage.
 
 var _deep_snow_count: int = 0 # how many deep-snow zones we are standing in
 var _regen_timer: float = 0.0
@@ -180,7 +181,7 @@ func _update_crouch_shape(delta: float) -> void:
 ## Called on the host when this player is hit. Returns true if the hit was fatal.
 ## (Death and respawn come in Milestone 4.)
 func take_damage(amount: float, _attacker_id: int, _hit_position: Vector3, _hit_normal: Vector3) -> bool:
-	if not multiplayer.is_server() or health <= 0:
+	if not multiplayer.is_server() or health <= 0 or god_mode:
 		return false
 	health = maxi(health - roundi(amount), 0)
 	return health == 0

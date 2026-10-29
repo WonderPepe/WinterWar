@@ -18,6 +18,7 @@ max_range_m = 800.0
 falloff_start_m = 400.0
 falloff_end_m = 800.0
 min_damage_multiplier = 0.7
+noise_radius_m = 150.0
 magazine_size = 5
 reload_time = 3.0
 hip_spread_deg = 2.5
