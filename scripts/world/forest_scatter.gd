@@ -99,6 +99,7 @@ func _add_chunk(key: Vector2i, transforms: Array, mesh: ArrayMesh, trunk_shape: 
 		return
 	var body := StaticBody3D.new()
 	body.name = "Trunks_%d_%d" % [key.x, key.y]
+	body.set_meta("surface", "wood") # bullets hitting trunks show wood splinters
 	body.set_meta("generated", true)
 	for t: Transform3D in transforms:
 		var cs := CollisionShape3D.new()

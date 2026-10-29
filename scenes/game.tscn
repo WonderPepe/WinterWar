@@ -1,24 +1,40 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_lnu2h"]
-[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_lbhrr"]
-[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="3_iywne"]
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_lbhrr"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_iywne"]
+[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="3_p57ef"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="4_u5sy4"]
 
-[node name="Game" type="Node3D" unique_id=1497174119 node_paths=PackedStringArray("players_root")]
-script = ExtResource("1_lnu2h")
+[node name="Game" type="Node3D" unique_id=91247045 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_lbhrr")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=290689326 instance=ExtResource("2_lbhrr")]
+[node name="Level" type="Node3D" parent="." unique_id=1349083571 instance=ExtResource("2_iywne")]
 
-[node name="Players" type="Node3D" parent="." unique_id=149830103]
+[node name="Players" type="Node3D" parent="." unique_id=803252082]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1735163659]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1225480145]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1641956360]
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=455810915]
+script = ExtResource("3_p57ef")
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=226947818]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1663275724]
+
+[node name="CenterDot" type="ColorRect" parent="DebugUI" unique_id=456766765]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = 2.0
+color = Color(1, 1, 1, 0.8)
+
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=1237364733]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0
@@ -26,4 +42,4 @@ offset_bottom = 10.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-script = ExtResource("3_iywne")
+script = ExtResource("4_u5sy4")

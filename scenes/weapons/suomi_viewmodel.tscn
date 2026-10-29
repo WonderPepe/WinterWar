@@ -1,0 +1,146 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/view_model.gd" id="1_e2pjt"]
+[ext_resource type="Material" path="res://resources/materials/muzzle_flash.tres" id="2_comnv"]
+[ext_resource type="Material" path="res://resources/materials/gun_wood.tres" id="3_38q6o"]
+[ext_resource type="Material" path="res://resources/materials/gun_metal.tres" id="4_em3ed"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_nrbbn"]
+material = ExtResource("2_comnv")
+size = Vector2(0.24, 0.24)
+
+[sub_resource type="QuadMesh" id="QuadMesh_di6jn"]
+material = ExtResource("2_comnv")
+size = Vector2(0.06, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vpmo0"]
+material = ExtResource("3_38q6o")
+size = Vector3(0.05, 0.09, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_42x8g"]
+material = ExtResource("3_38q6o")
+size = Vector3(0.05, 0.05, 0.18)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vo4os"]
+material = ExtResource("4_em3ed")
+top_radius = 0.024
+bottom_radius = 0.024
+height = 0.34
+radial_segments = 10
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_xifn0"]
+material = ExtResource("4_em3ed")
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.36
+radial_segments = 10
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5lma7"]
+material = ExtResource("4_em3ed")
+top_radius = 0.012
+bottom_radius = 0.012
+height = 0.04
+radial_segments = 10
+rings = 0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ic1um"]
+material = ExtResource("4_em3ed")
+top_radius = 0.095
+bottom_radius = 0.095
+height = 0.065
+radial_segments = 16
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_cdt7p"]
+material = ExtResource("4_em3ed")
+size = Vector3(0.03, 0.02, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fo0t5"]
+material = ExtResource("4_em3ed")
+size = Vector3(0.01, 0.016, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_53ae1"]
+material = ExtResource("4_em3ed")
+size = Vector3(0.01, 0.016, 0.012)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qbh4x"]
+material = ExtResource("4_em3ed")
+size = Vector3(0.004, 0.05, 0.006)
+
+[node name="SuomiViewModel" type="Node3D" unique_id=102991593]
+script = ExtResource("1_e2pjt")
+
+[node name="Model" type="Node3D" parent="." unique_id=481093360]
+
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=1214086071]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.076, -0.05)
+
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=638561984]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.66)
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1357241779]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_nrbbn")
+
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=96466971]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_di6jn")
+
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=888123010]
+light_color = Color(1, 0.75, 0.45, 1)
+light_energy = 2.5
+omni_range = 6.0
+
+[node name="Stock" type="MeshInstance3D" parent="Model" unique_id=1696533250]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.045, 0.2)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_vpmo0")
+
+[node name="Fore" type="MeshInstance3D" parent="Model" unique_id=856875221]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.14)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_42x8g")
+
+[node name="Receiver" type="MeshInstance3D" parent="Model" unique_id=1407884872]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.08)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_vo4os")
+
+[node name="BarrelJacket" type="MeshInstance3D" parent="Model" unique_id=7625970]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.42)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_xifn0")
+
+[node name="@MeshInstance3D@2" type="MeshInstance3D" parent="Model" unique_id=545844255]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.02, -0.62)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_5lma7")
+
+[node name="Drum" type="MeshInstance3D" parent="Model" unique_id=1154414430]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, -0.1, -0.1)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_ic1um")
+
+[node name="RearSightBase" type="MeshInstance3D" parent="Model" unique_id=111398609]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.05)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_cdt7p")
+
+[node name="RearSightL" type="MeshInstance3D" parent="Model" unique_id=1934497081]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0.068, -0.05)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_fo0t5")
+
+[node name="RearSightR" type="MeshInstance3D" parent="Model" unique_id=302664830]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0.068, -0.05)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_53ae1")
+
+[node name="FrontSight" type="MeshInstance3D" parent="Model" unique_id=738803414]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051, -0.6)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_qbh4x")

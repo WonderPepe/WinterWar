@@ -11,6 +11,9 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Sprint | Shift (uses stamina) |
 | Crouch | C (or Ctrl – but avoid Ctrl in the browser, Ctrl+W closes the tab) |
 | Jump | Space |
+| Fire / aim down sights | Left mouse / right mouse |
+| Reload | R |
+| Mosin-Nagant / Suomi | 1 / 2 |
 | Release mouse | Esc (click the game to capture it again) |
 
 ## Folders
@@ -18,7 +21,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - `scenes/` – game.tscn (a match), player.tscn
 - `levels/` – test_level.tscn (terrain, forest, trench, bunker)
 - `scripts/` – all game code, grouped by topic
-- `resources/` – materials (later: weapon data)
+- `resources/` – materials and weapon data (`resources/weapons/*.tres` – tune weapons here)
 - `ui/`, `assets/` – menus/HUD and art (later)
 
 ## Multiplayer-ready design
@@ -26,10 +29,13 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - Player nodes are named after their peer id. `PlayerInput` reads the keyboard/mouse;
   `Player` only reads `PlayerInput`, and only the host moves players.
 - `MultiplayerSpawner` creates players; `MultiplayerSynchronizer` nodes sync input and state.
+- Shooting: the owner's WeaponController decides when the trigger fires and plays effects,
+  then calls `server_fire` on the host, which checks ammo/fire rate, raycasts and applies
+  damage through `take_damage()`.
 
 ## Milestones
 - [x] M1: project setup, input map, test level, player movement
-- [ ] M2: weapons and shooting
+- [x] M2: weapons and shooting
 - [ ] M3: enemy AI and wave spawner
 - [ ] M4: HUD, death/respawn, main menu
 - [ ] M5: web export test and performance check

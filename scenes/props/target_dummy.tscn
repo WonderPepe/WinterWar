@@ -1,0 +1,87 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/target_dummy.gd" id="1_jvvrx"]
+[ext_resource type="Material" path="res://resources/materials/target_wood.tres" id="2_bx10v"]
+[ext_resource type="Material" path="res://resources/materials/target_soviet_cloth.tres" id="3_pl6vy"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_02t5f"]
+material = ExtResource("2_bx10v")
+size = Vector3(0.9, 0.12, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_l3em5"]
+material = ExtResource("2_bx10v")
+size = Vector3(0.1, 1, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1lvrl"]
+material = ExtResource("3_pl6vy")
+size = Vector3(0.5, 0.65, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xf4v3"]
+material = ExtResource("3_pl6vy")
+size = Vector3(0.24, 0.26, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7v3re"]
+size = Vector3(0.1, 1, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m6fdg"]
+size = Vector3(0.5, 0.65, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_p5i3i"]
+size = Vector3(0.24, 0.26, 0.1)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_j7bsw"]
+properties/0/path = NodePath(".:is_down")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
+[node name="TargetDummy" type="Node3D" unique_id=364411196]
+script = ExtResource("1_jvvrx")
+
+[node name="Foot" type="MeshInstance3D" parent="." unique_id=725014025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_02t5f")
+
+[node name="Body" type="AnimatableBody3D" parent="." unique_id=311005513]
+sync_to_physics = false
+metadata/surface = "wood"
+metadata/attach_holes = true
+
+[node name="Post" type="MeshInstance3D" parent="Body" unique_id=1563490455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_l3em5")
+
+[node name="Torso" type="MeshInstance3D" parent="Body" unique_id=782104567]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_1lvrl")
+
+[node name="Head" type="MeshInstance3D" parent="Body" unique_id=1214405505]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73, 0)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_xf4v3")
+
+[node name="Shape" type="CollisionShape3D" parent="Body" unique_id=585996406]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_7v3re")
+
+[node name="@CollisionShape3D@3" type="CollisionShape3D" parent="Body" unique_id=1879032567]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+shape = SubResource("BoxShape3D_m6fdg")
+
+[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="Body" unique_id=1681576272]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73, 0)
+shape = SubResource("BoxShape3D_p5i3i")
+
+[node name="DistanceLabel" type="Label3D" parent="." unique_id=697818244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+pixel_size = 0.01
+billboard = 1
+modulate = Color(0.15, 0.15, 0.15, 1)
+text = "? m"
+font_size = 64
+outline_size = 0
+
+[node name="DummySync" type="MultiplayerSynchronizer" parent="." unique_id=586583237]
+replication_config = SubResource("SceneReplicationConfig_j7bsw")

@@ -59,6 +59,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 @onready var ceiling_check: ShapeCast3D = $CeilingCheck
 @onready var snow_particles: CPUParticles3D = $SnowParticles
+@onready var weapons: WeaponController = $WeaponController
 
 
 func _enter_tree() -> void:
@@ -131,7 +132,8 @@ func _apply_gravity_and_jump(delta: float) -> void:
 func _update_sprint_and_stamina(delta: float) -> void:
 	var moving_forward: bool = input.move_dir.y < -0.1
 	var can_start: bool = is_sprinting or stamina >= min_stamina_to_sprint
-	is_sprinting = input.sprint_held and moving_forward and not is_crouching and stamina > 0.0 and can_start
+	is_sprinting = input.sprint_held and moving_forward and not is_crouching and not input.aim_held \
+			and stamina > 0.0 and can_start
 
 	if is_sprinting:
 		stamina = maxf(stamina - stamina_drain * delta, 0.0)
@@ -150,6 +152,7 @@ func _apply_movement(delta: float) -> void:
 		speed = sprint_speed
 	if is_in_deep_snow():
 		speed *= deep_snow_multiplier
+	speed *= weapons.get_move_multiplier() # slower while aiming down the sights
 
 	# Turn the 2D input (x = right, y = back) into a world direction using our facing.
 	var direction: Vector3 = transform.basis * Vector3(input.move_dir.x, 0.0, input.move_dir.y)
@@ -172,6 +175,15 @@ func _update_crouch_shape(delta: float) -> void:
 	body_mesh.position.y = capsule.height / 2.0
 	var target_eye: float = crouch_eye_height if is_crouching else stand_eye_height
 	head.position.y = move_toward(head.position.y, target_eye, crouch_change_speed * delta)
+
+
+## Called on the host when this player is hit. Returns true if the hit was fatal.
+## (Death and respawn come in Milestone 4.)
+func take_damage(amount: float, _attacker_id: int, _hit_position: Vector3, _hit_normal: Vector3) -> bool:
+	if not multiplayer.is_server() or health <= 0:
+		return false
+	health = maxi(health - roundi(amount), 0)
+	return health == 0
 
 
 # --- Called by DeepSnowZone areas ---
