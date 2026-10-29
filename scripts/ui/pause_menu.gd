@@ -12,12 +12,22 @@ var _ignore_until: float = 0.0
 @onready var root: Control = $Root
 @onready var resume_button: Button = $Root/Panel/VBox/ResumeButton
 @onready var menu_button: Button = $Root/Panel/VBox/MainMenuButton
+@onready var settings_button: Button = $Root/Panel/VBox/SettingsButton
+@onready var panel: Control = $Root/Panel
+@onready var settings_menu: SettingsMenu = $Root/SettingsMenu
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # keeps working while the game is paused
 	resume_button.pressed.connect(resume)
 	menu_button.pressed.connect(NetworkManager.leave_game)
+	settings_button.pressed.connect(func() -> void:
+		panel.visible = false
+		settings_menu.open())
+	settings_menu.closed.connect(func() -> void:
+		panel.visible = true
+		settings_button.grab_focus())
+	settings_menu.visible = false
 	_ignore_until = _now() + RECAPTURE_GRACE
 	_close()
 
@@ -29,7 +39,7 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
+	if event.is_action_pressed("pause") and not settings_menu.visible:
 		if is_open:
 			resume()
 		else:
@@ -55,6 +65,8 @@ func resume() -> void:
 func _close() -> void:
 	is_open = false
 	root.visible = false
+	settings_menu.visible = false
+	panel.visible = true
 	get_tree().paused = false
 
 

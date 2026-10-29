@@ -1,12 +1,21 @@
+class_name MainMenu
 extends Control
 ## The first screen: start single player, or (later) host / join co-op.
 
 const GAME_SCENE: String = "res://scenes/game.tscn"
+const BENCHMARK_SCENE: String = "res://scenes/benchmark.tscn"
+
+## Time the last "start" button was pressed (used by the benchmark to measure load time).
+static var start_pressed_msec: int = 0
 
 @onready var single_button: Button = $Center/VBox/SinglePlayerButton
 @onready var host_button: Button = $Center/VBox/HostCoopButton
 @onready var join_button: Button = $Center/VBox/JoinCoopButton
 @onready var quit_button: Button = $Center/VBox/QuitButton
+@onready var settings_button: Button = $Center/VBox/SettingsButton
+@onready var benchmark_button: Button = $Center/VBox/BenchmarkButton
+@onready var menu_box: Control = $Center
+@onready var settings_menu: SettingsMenu = $SettingsMenu
 
 
 func _ready() -> void:
@@ -14,6 +23,14 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	quit_button.visible = not OS.has_feature("web") # a browser tab can't be "quit"
 	single_button.pressed.connect(_on_single_player)
+	benchmark_button.pressed.connect(_on_benchmark)
+	settings_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		settings_menu.open())
+	settings_menu.closed.connect(func() -> void:
+		menu_box.visible = true
+		settings_button.grab_focus())
+	settings_menu.visible = false
 	quit_button.pressed.connect(get_tree().quit)
 	host_button.disabled = true # co-op comes later
 	join_button.disabled = true
@@ -21,5 +38,12 @@ func _ready() -> void:
 
 
 func _on_single_player() -> void:
+	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	get_tree().change_scene_to_file(GAME_SCENE)
+
+
+func _on_benchmark() -> void:
+	start_pressed_msec = Time.get_ticks_msec()
+	NetworkManager.start_single_player()
+	get_tree().change_scene_to_file(BENCHMARK_SCENE)

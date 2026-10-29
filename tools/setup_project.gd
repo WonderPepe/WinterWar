@@ -32,6 +32,7 @@ func _init() -> void:
 	# Window
 	s.set_setting("display/window/size/viewport_width", 1280)
 	s.set_setting("display/window/size/viewport_height", 720)
+	s.set_setting("display/window/stretch/mode", "canvas_items") # menus/HUD scale with the window (browser!)
 	s.set_setting("display/window/stretch/aspect", "expand")
 
 	# Physics
@@ -44,6 +45,14 @@ func _init() -> void:
 
 	# Autoloads ("*" = also make it a global name you can use from any script)
 	s.set_setting("autoload/NetworkManager", "*res://autoload/network_manager.gd")
+	s.set_setting("autoload/Settings", "*res://autoload/settings.gd")
+
+	# Loading screen: winter colours instead of the Godot logo (also used by the web loader)
+	s.set_setting("application/boot_splash/bg_color", Color(0.13, 0.16, 0.21))
+	s.set_setting("application/boot_splash/show_image", false)
+	s.set_setting("rendering/environment/defaults/default_clear_color", Color(0.13, 0.16, 0.21))
+	# Smaller shadow map: plenty for one sun with a short shadow distance, cheaper on the web
+	s.set_setting("rendering/lights_and_shadows/directional_shadow/size", 2048)
 
 	# Input map. Physical keys = same key POSITION on any keyboard layout (Finnish, US...)
 	action("move_forward", [key(KEY_W)])

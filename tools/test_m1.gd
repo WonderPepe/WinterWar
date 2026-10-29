@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 ## Automated movement test for Milestone 1 (not part of the game).
 
 var game: Node
@@ -12,7 +12,7 @@ func check(cond: bool, msg: String) -> void:
 
 func frames(n: int) -> void:
 	for i in n:
-		await physics_frame
+		await get_tree().physics_frame
 
 func set_input(dir: Vector2, sprint := false, crouch := false) -> void:
 	p.input.move_dir = dir
@@ -24,15 +24,16 @@ func teleport(pos: Vector3, yaw := 0.0) -> void:
 	p.velocity = Vector3.ZERO
 	p.input.look_yaw = yaw
 
-func _initialize() -> void:
+func _ready() -> void:
+	await get_tree().process_frame # the root can't take new children while it is adding us
 	game = load("res://scenes/game.tscn").instantiate()
-	root.add_child(game)
+	get_tree().root.add_child(game)
 	game.get_node("PauseMenu").free() # tests drive the game directly
 	run()
 
 func run() -> void:
 	await frames(5)
-	var players := get_nodes_in_group("players")
+	var players := get_tree().get_nodes_in_group("players")
 	check(players.size() == 1, "exactly one player spawned (got %d)" % players.size())
 	p = players[0]
 	p.input.set_process(false) # headless: drive input from the test
@@ -42,7 +43,7 @@ func run() -> void:
 	check(p.is_on_floor(), "player standing on trench floor")
 	check(absf(p.global_position.y + 1.4) < 0.15, "spawn y on trench floor (y=%.2f)" % p.global_position.y)
 
-	var terrain: TerrainGenerator = get_first_node_in_group("terrain")
+	var terrain: TerrainGenerator = get_tree().get_first_node_in_group("terrain")
 	var lo := 999.0
 	var hi := -999.0
 	for x in range(-150, 151, 5):
@@ -133,6 +134,6 @@ func run() -> void:
 	await frames(120)
 	check(p.global_position.z > 58.0 and p.global_position.y < -1.0, "front trench wall blocks (z=%.2f)" % p.global_position.z)
 
-	print("TREES: ", get_first_node_in_group("terrain").get_parent().get_node("Forest").get_child_count(), " forest nodes")
+	print("TREES: ", get_tree().get_first_node_in_group("terrain").get_parent().get_node("Forest").get_child_count(), " forest nodes")
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
-	quit()
+	get_tree().quit()

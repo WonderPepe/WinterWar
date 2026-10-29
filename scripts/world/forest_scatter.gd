@@ -28,7 +28,16 @@ extends Node3D
 
 
 func _ready() -> void:
+	add_to_group("forest")
 	build()
+
+
+## Changes how far away trees are still drawn (used by the quality setting).
+func set_visibility_end(distance: float) -> void:
+	visibility_end = distance
+	for child in get_children():
+		if child is MultiMeshInstance3D:
+			(child as MultiMeshInstance3D).visibility_range_end = distance
 
 
 func build() -> void:

@@ -1,0 +1,63 @@
+class_name SettingsMenu
+extends Control
+## Settings panel used by the main menu and the pause menu.
+## Changes are applied and saved immediately (see the Settings autoload).
+
+signal closed
+
+@onready var quality: OptionButton = $Panel/VBox/Grid/Quality
+@onready var sensitivity: HSlider = $Panel/VBox/Grid/Sensitivity
+@onready var sensitivity_value: Label = $Panel/VBox/Grid/SensitivityValue
+@onready var volume: HSlider = $Panel/VBox/Grid/Volume
+@onready var volume_value: Label = $Panel/VBox/Grid/VolumeValue
+@onready var fullscreen: CheckButton = $Panel/VBox/Grid/Fullscreen
+@onready var back: Button = $Panel/VBox/BackButton
+
+
+func _ready() -> void:
+	quality.clear()
+	for label in ["Low", "Medium", "High"]:
+		quality.add_item(label)
+	quality.item_selected.connect(func(i: int) -> void: Settings.set_quality(i as Settings.Quality))
+	sensitivity.value_changed.connect(func(v: float) -> void:
+		Settings.set_mouse_sensitivity(v)
+		_refresh_labels())
+	volume.value_changed.connect(func(v: float) -> void:
+		Settings.set_volume(v / 100.0)
+		_refresh_labels())
+	fullscreen.toggled.connect(Settings.set_fullscreen)
+	back.pressed.connect(close)
+	visibility_changed.connect(_on_visibility_changed)
+	_on_visibility_changed()
+
+
+func open() -> void:
+	visible = true
+	back.grab_focus()
+
+
+func close() -> void:
+	visible = false
+	closed.emit()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("pause"):
+		close()
+		get_viewport().set_input_as_handled()
+
+
+func _on_visibility_changed() -> void:
+	if not visible:
+		return
+	# Show the current values (without triggering a save).
+	quality.select(Settings.quality)
+	sensitivity.set_value_no_signal(Settings.mouse_sensitivity)
+	volume.set_value_no_signal(Settings.volume * 100.0)
+	fullscreen.set_pressed_no_signal(Settings.fullscreen)
+	_refresh_labels()
+
+
+func _refresh_labels() -> void:
+	sensitivity_value.text = "%.2f×" % sensitivity.value
+	volume_value.text = "%d %%" % int(volume.value)

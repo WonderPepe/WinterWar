@@ -1,20 +1,21 @@
-extends SceneTree
+extends Node
 ## Screenshots of the weapons for a visual check (not part of the game).
 
 var p: Player
 
-func _initialize() -> void:
-	root.add_child(load("res://scenes/game.tscn").instantiate())
-	root.get_node("Game/PauseMenu").free() # tests drive the game directly
+func _ready() -> void:
+	await get_tree().process_frame # the root can't take new children while it is adding us
+	get_tree().root.add_child(load("res://scenes/game.tscn").instantiate())
+	get_tree().root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 
 func wait(n: int) -> void:
 	for i in n:
-		await process_frame
+		await get_tree().process_frame
 
 func snap(file: String) -> void:
 	await RenderingServer.frame_post_draw
-	root.get_viewport().get_texture().get_image().save_png("res://tools/shots/" + file)
+	get_tree().root.get_viewport().get_texture().get_image().save_png("res://tools/shots/" + file)
 	print("saved ", file)
 
 func aim_at(point: Vector3) -> void:
@@ -24,11 +25,11 @@ func aim_at(point: Vector3) -> void:
 
 func run() -> void:
 	await wait(10)
-	p = get_nodes_in_group("players")[0]
+	p = get_tree().get_nodes_in_group("players")[0]
 	p.input.set_process(false)
 	for vm in p.weapons._view_models:
 		vm.flash_duration = 5.0 # keep the flash visible for the slow software renderer
-	var t25: Node3D = root.get_node("Game/Level/ShootingRange/Target_25m")
+	var t25: Node3D = get_tree().root.get_node("Game/Level/ShootingRange/Target_25m")
 	var torso: Vector3 = t25.get_node("Body/Torso").global_position
 	p.global_position = Vector3(28, -1.4, 59.5)
 	await wait(40)
@@ -70,4 +71,4 @@ func run() -> void:
 	p.input.look_yaw = 0.0
 	await wait(5)
 	await snap("m2_6_wall_holes.png")
-	quit()
+	get_tree().quit()

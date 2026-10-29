@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 ## Automated weapon test for Milestone 2 (not part of the game).
 
 var p: Player
@@ -14,10 +14,10 @@ func check(cond: bool, msg: String) -> void:
 
 func frames(n: int) -> void:
 	for i in n:
-		await process_frame
+		await get_tree().process_frame
 
 func seconds(s: float) -> void:
-	await create_timer(s).timeout
+	await get_tree().create_timer(s).timeout
 
 func aim_at(point: Vector3) -> void:
 	var d: Vector3 = point - p.camera.global_position
@@ -25,19 +25,20 @@ func aim_at(point: Vector3) -> void:
 	p.input.look_pitch = atan2(d.y, Vector2(d.x, d.z).length())
 
 func target(n: String) -> TargetDummy:
-	return root.get_node("Game/Level/ShootingRange/" + n)
+	return get_tree().root.get_node("Game/Level/ShootingRange/" + n)
 
 func torso(t: TargetDummy) -> Vector3:
 	return t.get_node("Body/Torso").global_position
 
-func _initialize() -> void:
-	root.add_child(load("res://scenes/game.tscn").instantiate())
-	root.get_node("Game/PauseMenu").free() # tests drive the game directly
+func _ready() -> void:
+	await get_tree().process_frame # the root can't take new children while it is adding us
+	get_tree().root.add_child(load("res://scenes/game.tscn").instantiate())
+	get_tree().root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 
 func run() -> void:
 	await frames(5)
-	p = get_nodes_in_group("players")[0]
+	p = get_tree().get_nodes_in_group("players")[0]
 	p.input.set_process(false)
 	wc = p.weapons
 	wc.hit_confirmed.connect(func(killed: bool) -> void:
@@ -115,7 +116,7 @@ func run() -> void:
 	var t0 := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t0 < 1500:
 		aim_at(torso(t50)) # a steady player correcting for recoil
-		await process_frame
+		await get_tree().process_frame
 	p.input.fire_held = false
 	var fired := start_ammo - wc.get_mag_ammo()
 	print("  Suomi fired %d rounds in 1.5 s, hits %d, kills %d" % [fired, hits, kills])
@@ -152,7 +153,7 @@ func run() -> void:
 	p.input.aim_held = false
 
 	# Impact surfaces: shoot the ground (snow)
-	var fx: ImpactEffects = get_first_node_in_group("impact_effects")
+	var fx: ImpactEffects = get_tree().get_first_node_in_group("impact_effects")
 	p.input.look_pitch = deg_to_rad(-60)
 	await seconds(0.3)
 	p.input.fire_held = true
@@ -165,4 +166,4 @@ func run() -> void:
 	check(snow_holes >= 1, "snow bullet holes on the ground (%d)" % snow_holes)
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
-	quit()
+	get_tree().quit()

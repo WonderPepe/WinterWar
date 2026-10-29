@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 ## Automated enemy AI / wave test for Milestone 3 (not part of the game).
 
 var p: Player
@@ -11,35 +11,45 @@ func check(cond: bool, msg: String) -> void:
 		fails += 1
 
 func seconds(s: float) -> void:
-	await create_timer(s).timeout
+	await get_tree().create_timer(s).timeout
 
 func enemies() -> Array[Enemy]:
 	var out: Array[Enemy] = []
-	for n in get_nodes_in_group("enemies"):
+	for n in get_tree().get_nodes_in_group("enemies"):
 		out.append(n as Enemy)
 	return out
 
 func living() -> Array[Enemy]:
 	return enemies().filter(func(e: Enemy) -> bool: return e.state != Enemy.State.DEAD)
 
-func _initialize() -> void:
-	root.add_child(load("res://scenes/game.tscn").instantiate())
-	root.get_node("Game/PauseMenu").free() # tests drive the game directly
+func _ready() -> void:
+	await get_tree().process_frame # the root can't take new children while it is adding us
+	get_tree().root.add_child(load("res://scenes/game.tscn").instantiate())
+	get_tree().root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 
 func run() -> void:
 	await seconds(0.3)
-	p = get_nodes_in_group("players")[0]
+	p = get_tree().get_nodes_in_group("players")[0]
 	p.input.set_process(false)
-	waves = get_first_node_in_group("wave_spawner")
-	var terrain: TerrainGenerator = get_first_node_in_group("terrain")
+	waves = get_tree().get_first_node_in_group("wave_spawner")
+	var terrain: TerrainGenerator = get_tree().get_first_node_in_group("terrain")
 
 	# Navigation path from a spawn point to an attack point
 	var map: RID = p.get_world_3d().navigation_map
-	await physics_frame
+	for i in 120: # wait until the navigation map has been built (it syncs on a physics frame)
+		if NavigationServer3D.map_get_iteration_id(map) > 0:
+			break
+		await get_tree().physics_frame
+	await get_tree().physics_frame
 	var from := Vector3(-60, terrain.get_height(-60, -118), -118)
 	var to := Vector3(-12, terrain.get_height(-12, 38), 38)
 	var path := NavigationServer3D.map_get_path(map, from, to, true)
+	for i in 120: # the level's navigation region may join the map a few frames later
+		if path.size() > 1:
+			break
+		await get_tree().physics_frame
+		path = NavigationServer3D.map_get_path(map, from, to, true)
 	check(path.size() > 1 and path[path.size() - 1].distance_to(to) < 1.5, "navigation path spawn -> attack point (%d points)" % path.size())
 	var into_trench := NavigationServer3D.map_get_closest_point(map, Vector3(-30, -1.4, 61))
 	print("  closest navmesh point to trench floor: ", into_trench)
@@ -66,8 +76,8 @@ func run() -> void:
 	var near: Enemy = living()[0]
 	p.global_position = near.global_position + Vector3(30, 0.5, 0)
 	await seconds(0.5)
-	get_root().get_tree().call_group("enemies", "hear_noise", p.global_position, p.global_position, 150.0)
-	await physics_frame
+	get_tree().call_group("enemies", "hear_noise", p.global_position, p.global_position, 150.0)
+	await get_tree().physics_frame
 	check(near.state == Enemy.State.ALERT or near.state == Enemy.State.ATTACK, "shot alerts nearby soldier (%s)" % Enemy.State.keys()[near.state])
 
 	# Line of sight: standing in the trench visible, crouching hidden
@@ -129,4 +139,4 @@ func run() -> void:
 	check(waves.alive_count == 8, "wave 2 has 8 soldiers (alive %d)" % waves.alive_count)
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
-	quit()
+	get_tree().quit()

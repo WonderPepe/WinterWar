@@ -83,6 +83,7 @@ func _ready() -> void:
 	camera.current = local
 	body_mesh.visible = not local          # don't see your own body from inside
 	snow_particles.emitting = local        # each player only simulates their own snowfall
+	snow_particles.amount = Settings.preset().snow_amount
 
 
 ## Peer id of the person controlling this player.

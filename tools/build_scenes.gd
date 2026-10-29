@@ -17,13 +17,16 @@ func _initialize() -> void:
 	_make_enemy_data()
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
+	_save(_build_trench_source(mats), TRENCH_SOURCE)
 	_save(_build_level(mats), "res://levels/test_level.tscn")
 	DirAccess.make_dir_recursive_absolute("res://ui")
 	var theme := _make_theme()
 	_save(_build_hud(), "res://ui/hud.tscn")
+	_save(_build_settings_menu(theme), "res://ui/settings_menu.tscn")
 	_save(_build_pause_menu(theme), "res://ui/pause_menu.tscn")
 	_save(_build_main_menu(theme), "res://ui/main_menu.tscn")
 	_save(_build_game(), "res://scenes/game.tscn")
+	_save(_build_benchmark(), "res://scenes/benchmark.tscn")
 	print("ALL SCENES BUILT")
 	quit()
 
@@ -286,8 +289,10 @@ func _build_level(mats: Dictionary) -> Node:
 	env.ambient_light_color = Color(0.62, 0.7, 0.85)
 	env.ambient_light_sky_contribution = 0.5
 	env.ambient_light_energy = 0.6
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 0.85
+	# Linear tonemapping: in the Compatibility renderer "Filmic" looks different when the
+	# render scale is below 100 %, which would make the quality presets change the colours.
+	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	env.tonemap_exposure = 0.95
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.66, 0.7, 0.77)
 	env.fog_light_energy = 1.0
@@ -296,6 +301,7 @@ func _build_level(mats: Dictionary) -> Node:
 	env.fog_height = 1.0
 	env.fog_height_density = 0.04
 	we.environment = env
+	we.add_to_group("world_environment", true)
 
 	var sun: DirectionalLight3D = _add(root, DirectionalLight3D.new(), "Sun")
 	sun.rotation = Vector3(deg_to_rad(-14.0), deg_to_rad(-150.0), 0.0)
@@ -304,6 +310,10 @@ func _build_level(mats: Dictionary) -> Node:
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_max_distance = 70.0
+	sun.add_to_group("sun", true)
+	# The low winter sun hits the snow at a grazing angle: extra bias avoids striped "shadow acne".
+	sun.shadow_bias = 0.2
+	sun.shadow_normal_bias = 2.5
 
 	# --- Ground ---
 	var terrain: StaticBody3D = _add(root, StaticBody3D.new(), "Terrain")
@@ -336,62 +346,14 @@ func _build_level(mats: Dictionary) -> Node:
 	forest.set("trunk_material", mats.trunk)
 	forest.set("foliage_material", mats.foliage)
 
-	# --- Trench: a CSG earth slab with the zigzag trench cut out of it ---
-	var trench: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Trench")
-	trench.use_collision = true
-	trench.collision_layer = 0b1
-	trench.set_meta("surface", "earthwork")
-	trench.add_to_group("navigation_source", true)
-	_csg_box(trench, "EarthSlab", Vector3(210, 2.5, 18), Vector3(0, -1.25, 61), mats.snow)
-	var SUB := CSGShape3D.OPERATION_SUBTRACTION
-	for i in ZIG_X.size() - 1:
-		var a := _zig_point(i)
-		var b := _zig_point(i + 1)
-		var d := b - a
-		var length := d.length() + TRENCH_WIDTH  # overlap at the corners
-		var mid := (a + b) / 2.0
-		_csg_box(trench, "TrenchCut%d" % (i + 1), Vector3(length, 3.6, TRENCH_WIDTH),
-			Vector3(mid.x, -0.8, mid.y), mats.trench_wall, SUB, Vector3(0, atan2(-d.y, d.x), 0))
-
-	# Exits: short cuts going back (+z) with a ramp up to ground level.
-	# The ramp rises from the trench floor (z = 65) to just above ground level (z = 69.5),
-	# then a flat landing continues past the end of the slab.
-	var rise := DEPTH + 0.05
-	var run := 4.5
-	var slope := atan(rise / run)
-	for x in [-80, -40, 40, 80]:
-		_csg_box(trench, "ExitCut_x%d" % x, Vector3(1.6, 3.6, 7.0), Vector3(x, -0.8, 67.5),
-			mats.trench_wall, SUB)
-		var normal := Vector3(0, cos(slope), -sin(slope))
-		var top_center := Vector3(x, -DEPTH + rise / 2.0, 65.0 + run / 2.0)
-		_csg_box(trench, "ExitRamp_x%d" % x, Vector3(1.6, 0.6, sqrt(run * run + rise * rise) + 0.1),
-			top_center - normal * 0.3, mats.snow, CSGShape3D.OPERATION_UNION, Vector3(-slope, 0, 0))
-		_csg_box(trench, "ExitLanding_x%d" % x, Vector3(1.6, 0.4, 2.0), Vector3(x, -0.15, 70.4),
-			mats.snow)
-
-	# Bunker room dug into the slab behind the trench at x = 0.
-	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.1), Vector3(0, -1.29, 66.95), mats.bunker_log, SUB)
-
-	# --- Log bunker (above-ground part) ---
-	var bunker: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Bunker")
-	bunker.use_collision = true
-	bunker.collision_layer = 0b1
-	bunker.set_meta("surface", "wood")
-	bunker.add_to_group("navigation_source", true)
-	bunker.position = Vector3(0, 0, 67.75)
-	_csg_box(bunker, "Walls", Vector3(6, 1.0, 5.5), Vector3(0, 0.5, 0), mats.bunker_log)
-	_csg_box(bunker, "Inside", Vector3(5, 1.2, 4.5), Vector3(0, 0.5, 0), mats.bunker_log, SUB)
-	_csg_box(bunker, "FiringSlit", Vector3(3.0, 0.35, 1.0), Vector3(0, 0.3, -2.5), mats.bunker_log, SUB)
-	_csg_box(bunker, "Roof", Vector3(6.8, 0.5, 6.3), Vector3(0, 1.25, 0), mats.bunker_log)
-	_csg_box(bunker, "RoofSnow", Vector3(6.6, 0.25, 6.1), Vector3(0, 1.62, 0), mats.drift)
-	for i in 2: # two big logs along the front edge of the roof
-		var log_node: CSGCylinder3D = _add(bunker, CSGCylinder3D.new(), "FrontLog%d" % (i + 1))
-		log_node.radius = 0.17
-		log_node.height = 7.0
-		log_node.sides = 8
-		log_node.rotation = Vector3(0, 0, deg_to_rad(90))
-		log_node.position = Vector3(0, 1.12 + i * 0.32, -3.2)
-		log_node.material = mats.bunker_log
+	# --- Trench and bunker ---
+	# Edited as CSG in levels/source/trench_csg.tscn; tools/bake_csg.gd turns them into plain
+	# meshes (much faster to load, especially in a browser). Until baked, the CSG is used.
+	if ResourceLoader.exists(BAKED_DIR + "trench_mesh.res"):
+		_baked_body(root, "Trench", Vector3.ZERO, "earthwork")
+		_baked_body(root, "Bunker", Vector3(0, 0, 67.75), "wood")
+	else:
+		_add(root, load(TRENCH_SOURCE).instantiate(), "TrenchCSG")
 
 	# --- Deep snow ---
 	var zones: Node3D = _add(root, Node3D.new(), "DeepSnowZones")
@@ -470,6 +432,8 @@ func _build_game() -> Node:
 	spawner.add_spawnable_scene("res://scenes/player.tscn")
 	g.set("players_root", players)
 
+	var qa: Node = _add(g, Node.new(), "QualityApplier")
+	qa.set_script(load("res://scripts/game/quality_applier.gd"))
 	var fx: Node3D = _add(g, Node3D.new(), "ImpactEffects")
 	fx.set_script(load("res://scripts/weapons/impact_effects.gd"))
 
@@ -1000,10 +964,12 @@ func _build_pause_menu(theme: Theme) -> Node:
 	vb.add_theme_constant_override("separation", 12)
 	_label(vb, "Title", "PAUSED", 34, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(vb, "Hint", "Click Resume to play  (Esc opens this menu)", 15, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
-	for b in [["ResumeButton", "Resume"], ["MainMenuButton", "Main Menu"]]:
+	for b in [["ResumeButton", "Resume"], ["SettingsButton", "Settings"], ["MainMenuButton", "Main Menu"]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
 		btn.text = b[1]
 		btn.custom_minimum_size = Vector2(300, 46)
+	var sm: Control = _add(root, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
+	sm.visible = false
 	return pm
 
 
@@ -1077,7 +1043,8 @@ func _build_main_menu(theme: Theme) -> Node:
 	var spacer: Control = _add(vb, Control.new(), "Spacer")
 	spacer.custom_minimum_size = Vector2(0, 24)
 	for b in [["SinglePlayerButton", "Single Player", ""], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
-			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["QuitButton", "Quit", ""]]:
+			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
+			["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["QuitButton", "Quit", ""]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
 		btn.text = b[1]
 		btn.tooltip_text = b[2]
@@ -1086,7 +1053,9 @@ func _build_main_menu(theme: Theme) -> Node:
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
 
-	var ver := _label(mm, "Version", "Prototype · M4", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+	var sm: Control = _add(mm, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
+	sm.visible = false
+	var ver := _label(mm, "Version", "Prototype · M5", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
 	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.offset_left = -300
 	ver.offset_top = -34
@@ -1094,3 +1063,147 @@ func _build_main_menu(theme: Theme) -> Node:
 	ver.offset_bottom = -10
 	ver.remove_theme_constant_override("outline_size")
 	return mm
+
+
+# ---------------------------------------------------------------- trench source (CSG) and baked version
+const TRENCH_SOURCE := "res://levels/source/trench_csg.tscn"
+const BAKED_DIR := "res://levels/baked/"
+
+
+func _build_trench_source(mats: Dictionary) -> Node:
+	DirAccess.make_dir_recursive_absolute("res://levels/source")
+	var root := Node3D.new()
+	root.name = "TrenchCSG"
+	# --- Trench: a CSG earth slab with the zigzag trench cut out of it ---
+	var trench: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Trench")
+	trench.use_collision = true
+	trench.collision_layer = 0b1
+	trench.set_meta("surface", "earthwork")
+	trench.add_to_group("navigation_source", true)
+	_csg_box(trench, "EarthSlab", Vector3(210, 2.5, 18), Vector3(0, -1.25, 61), mats.snow)
+	var SUB := CSGShape3D.OPERATION_SUBTRACTION
+	for i in ZIG_X.size() - 1:
+		var a := _zig_point(i)
+		var b := _zig_point(i + 1)
+		var d := b - a
+		var length := d.length() + TRENCH_WIDTH  # overlap at the corners
+		var mid := (a + b) / 2.0
+		_csg_box(trench, "TrenchCut%d" % (i + 1), Vector3(length, 3.6, TRENCH_WIDTH),
+			Vector3(mid.x, -0.8, mid.y), mats.trench_wall, SUB, Vector3(0, atan2(-d.y, d.x), 0))
+
+	# Exits: short cuts going back (+z) with a ramp up to ground level.
+	# The ramp rises from the trench floor (z = 65) to just above ground level (z = 69.5),
+	# then a flat landing continues past the end of the slab.
+	var rise := DEPTH + 0.05
+	var run := 4.5
+	var slope := atan(rise / run)
+	for x in [-80, -40, 40, 80]:
+		_csg_box(trench, "ExitCut_x%d" % x, Vector3(1.6, 3.6, 7.0), Vector3(x, -0.8, 67.5),
+			mats.trench_wall, SUB)
+		var normal := Vector3(0, cos(slope), -sin(slope))
+		var top_center := Vector3(x, -DEPTH + rise / 2.0, 65.0 + run / 2.0)
+		_csg_box(trench, "ExitRamp_x%d" % x, Vector3(1.6, 0.6, sqrt(run * run + rise * rise) + 0.1),
+			top_center - normal * 0.3, mats.snow, CSGShape3D.OPERATION_UNION, Vector3(-slope, 0, 0))
+		_csg_box(trench, "ExitLanding_x%d" % x, Vector3(1.6, 0.4, 2.0), Vector3(x, -0.15, 70.4),
+			mats.snow)
+
+	# Bunker room dug into the slab behind the trench at x = 0.
+	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.1), Vector3(0, -1.29, 66.95), mats.bunker_log, SUB)
+
+	# --- Log bunker (above-ground part) ---
+	var bunker: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Bunker")
+	bunker.use_collision = true
+	bunker.collision_layer = 0b1
+	bunker.set_meta("surface", "wood")
+	bunker.add_to_group("navigation_source", true)
+	bunker.position = Vector3(0, 0, 67.75)
+	_csg_box(bunker, "Walls", Vector3(6, 1.0, 5.5), Vector3(0, 0.5, 0), mats.bunker_log)
+	_csg_box(bunker, "Inside", Vector3(5, 1.2, 4.5), Vector3(0, 0.5, 0), mats.bunker_log, SUB)
+	_csg_box(bunker, "FiringSlit", Vector3(3.0, 0.35, 1.0), Vector3(0, 0.3, -2.5), mats.bunker_log, SUB)
+	_csg_box(bunker, "Roof", Vector3(6.8, 0.5, 6.3), Vector3(0, 1.25, 0), mats.bunker_log)
+	_csg_box(bunker, "RoofSnow", Vector3(6.6, 0.25, 6.1), Vector3(0, 1.62, 0), mats.drift)
+	for i in 2: # two big logs along the front edge of the roof
+		var log_node: CSGCylinder3D = _add(bunker, CSGCylinder3D.new(), "FrontLog%d" % (i + 1))
+		log_node.radius = 0.17
+		log_node.height = 7.0
+		log_node.sides = 8
+		log_node.rotation = Vector3(0, 0, deg_to_rad(90))
+		log_node.position = Vector3(0, 1.12 + i * 0.32, -3.2)
+		log_node.material = mats.bunker_log
+
+	return root
+
+
+## A StaticBody3D using the mesh and collision shape baked from the CSG combiner `n`.
+func _baked_body(parent: Node, n: String, pos: Vector3, surface: String) -> void:
+	var body: StaticBody3D = _add(parent, StaticBody3D.new(), n)
+	body.position = pos
+	body.collision_layer = 0b1
+	body.set_meta("surface", surface)
+	body.add_to_group("navigation_source", true)
+	var mi: MeshInstance3D = _add(body, MeshInstance3D.new(), "Mesh")
+	mi.mesh = load(BAKED_DIR + n.to_lower() + "_mesh.res")
+	var cs: CollisionShape3D = _add(body, CollisionShape3D.new(), "Collision")
+	cs.shape = load(BAKED_DIR + n.to_lower() + "_shape.res")
+
+
+func _build_settings_menu(theme: Theme) -> Node:
+	var sm := Control.new()
+	sm.name = "SettingsMenu"
+	sm.set_script(load("res://scripts/ui/settings_menu.gd"))
+	sm.theme = theme
+	_full_rect(sm)
+	var panel: PanelContainer = _add(sm, PanelContainer.new(), "Panel")
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var vb: VBoxContainer = _add(panel, VBoxContainer.new(), "VBox")
+	vb.add_theme_constant_override("separation", 14)
+	_label(vb, "Title", "SETTINGS", 30, HORIZONTAL_ALIGNMENT_CENTER)
+	var grid: GridContainer = _add(vb, GridContainer.new(), "Grid")
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 16)
+	grid.add_theme_constant_override("v_separation", 12)
+
+	_label(grid, "QualityLabel", "Graphics quality", 18)
+	var q: OptionButton = _add(grid, OptionButton.new(), "Quality")
+	q.custom_minimum_size = Vector2(240, 40)
+	_label(grid, "QualityHint", "", 14)
+
+	_label(grid, "SensitivityLabel", "Mouse sensitivity", 18)
+	var sens: HSlider = _add(grid, HSlider.new(), "Sensitivity")
+	sens.min_value = 0.25
+	sens.max_value = 3.0
+	sens.step = 0.05
+	sens.value = 1.0
+	sens.custom_minimum_size = Vector2(240, 32)
+	_label(grid, "SensitivityValue", "1.00×", 16)
+
+	_label(grid, "VolumeLabel", "Volume", 18)
+	var vol: HSlider = _add(grid, HSlider.new(), "Volume")
+	vol.min_value = 0
+	vol.max_value = 100
+	vol.step = 1
+	vol.value = 80
+	vol.custom_minimum_size = Vector2(240, 32)
+	_label(grid, "VolumeValue", "80 %", 16)
+
+	_label(grid, "FullscreenLabel", "Fullscreen", 18)
+	var fs: CheckButton = _add(grid, CheckButton.new(), "Fullscreen")
+	fs.text = ""
+	_label(grid, "FullscreenHint", "", 14)
+
+	_label(vb, "Note", "Low: no shadows, shorter view, less snow - best for older laptops and browsers.", 14, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
+	var back: Button = _add(vb, Button.new(), "BackButton")
+	back.text = "Back"
+	back.custom_minimum_size = Vector2(240, 44)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	return sm
+
+
+func _build_benchmark() -> Node:
+	var b := Node.new()
+	b.name = "Benchmark"
+	b.set_script(load("res://scripts/game/benchmark.gd"))
+	_add(b, load("res://scenes/game.tscn").instantiate(), "Game")
+	return b

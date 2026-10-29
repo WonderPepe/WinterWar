@@ -1,19 +1,21 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/world/terrain_generator.gd" id="1_paa45"]
-[ext_resource type="Material" path="res://resources/materials/snow_ground.tres" id="2_axl34"]
-[ext_resource type="Script" path="res://scripts/world/forest_scatter.gd" id="3_8hjdj"]
-[ext_resource type="Material" path="res://resources/materials/tree_trunk.tres" id="4_0vv12"]
-[ext_resource type="Material" path="res://resources/materials/tree_foliage.tres" id="5_o5yuq"]
-[ext_resource type="Material" path="res://resources/materials/trench_wall_logs.tres" id="6_wjuib"]
-[ext_resource type="Material" path="res://resources/materials/bunker_logs.tres" id="7_xag4j"]
-[ext_resource type="Material" path="res://resources/materials/snow_drift.tres" id="8_pgbyh"]
-[ext_resource type="Script" path="res://scripts/world/deep_snow_zone.gd" id="9_68kkm"]
-[ext_resource type="PackedScene" path="res://scenes/props/target_dummy.tscn" id="10_n4g7x"]
-[ext_resource type="Script" path="res://scripts/world/target_dummy.gd" id="11_atrxo"]
-[ext_resource type="NavigationMesh" path="res://levels/test_level_navmesh.res" id="12_vr6yy"]
+[ext_resource type="Script" path="res://scripts/world/terrain_generator.gd" id="1_8hjdj"]
+[ext_resource type="Material" path="res://resources/materials/snow_ground.tres" id="2_0vv12"]
+[ext_resource type="Script" path="res://scripts/world/forest_scatter.gd" id="3_o5yuq"]
+[ext_resource type="Material" path="res://resources/materials/tree_trunk.tres" id="4_wjuib"]
+[ext_resource type="Material" path="res://resources/materials/tree_foliage.tres" id="5_xag4j"]
+[ext_resource type="ArrayMesh" path="res://levels/baked/trench_mesh.res" id="6_pgbyh"]
+[ext_resource type="Shape3D" path="res://levels/baked/trench_shape.res" id="7_68kkm"]
+[ext_resource type="ArrayMesh" path="res://levels/baked/bunker_mesh.res" id="8_n4g7x"]
+[ext_resource type="Shape3D" path="res://levels/baked/bunker_shape.res" id="9_atrxo"]
+[ext_resource type="Script" path="res://scripts/world/deep_snow_zone.gd" id="10_vr6yy"]
+[ext_resource type="Material" path="res://resources/materials/snow_drift.tres" id="11_ra35m"]
+[ext_resource type="PackedScene" path="res://scenes/props/target_dummy.tscn" id="12_x7oem"]
+[ext_resource type="Script" path="res://scripts/world/target_dummy.gd" id="13_ec2iw"]
+[ext_resource type="NavigationMesh" path="res://levels/test_level_navmesh.res" id="14_ulql8"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ra35m"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3i7yh"]
 sky_top_color = Color(0.42, 0.47, 0.55, 1)
 sky_horizon_color = Color(0.68, 0.71, 0.76, 1)
 ground_bottom_color = Color(0.6, 0.63, 0.68, 1)
@@ -21,18 +23,17 @@ ground_horizon_color = Color(0.68, 0.71, 0.76, 1)
 sun_angle_max = 20.0
 sun_curve = 0.3
 
-[sub_resource type="Sky" id="Sky_x7oem"]
-sky_material = SubResource("ProceduralSkyMaterial_ra35m")
+[sub_resource type="Sky" id="Sky_5y2bn"]
+sky_material = SubResource("ProceduralSkyMaterial_3i7yh")
 
-[sub_resource type="Environment" id="Environment_ec2iw"]
+[sub_resource type="Environment" id="Environment_kbjoq"]
 background_mode = 2
-sky = SubResource("Sky_x7oem")
+sky = SubResource("Sky_5y2bn")
 ambient_light_source = 3
 ambient_light_color = Color(0.62, 0.7, 0.85, 1)
 ambient_light_sky_contribution = 0.5
 ambient_light_energy = 0.6
-tonemap_mode = 2
-tonemap_exposure = 0.85
+tonemap_exposure = 0.95
 fog_enabled = true
 fog_light_color = Color(0.66, 0.7, 0.77, 1)
 fog_density = 0.007
@@ -40,360 +41,198 @@ fog_sky_affect = 0.5
 fog_height = 1.0
 fog_height_density = 0.04
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_ulql8"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_m2xr1"]
 seed = 1939
 frequency = 0.012
 fractal_octaves = 3
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_3i7yh"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_hj2pq"]
 size = Vector3(304, 40, 2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_5y2bn"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_04rbu"]
 size = Vector3(304, 40, 2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_kbjoq"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_ndqk6"]
 size = Vector3(2, 40, 304)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_m2xr1"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_c5dyf"]
 size = Vector3(2, 40, 304)
 
-[node name="TestLevel" type="Node3D" unique_id=354241473]
+[node name="TestLevel" type="Node3D" unique_id=932699850]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=269220663]
-environment = SubResource("Environment_ec2iw")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=979940845 groups=["world_environment"]]
+environment = SubResource("Environment_kbjoq")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1101438037]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=343013740 groups=["sun"]]
 transform = Transform3D(-0.8660254, 0.120960966, -0.48514792, 0, 0.9702957, 0.2419219, 0.50000006, 0.2095105, -0.84030074, 0, 0, 0)
 light_color = Color(0.9, 0.92, 0.98, 1)
 light_energy = 0.85
 shadow_enabled = true
+shadow_bias = 0.2
+shadow_normal_bias = 2.5
 directional_shadow_mode = 1
 directional_shadow_max_distance = 70.0
 
-[node name="Terrain" type="StaticBody3D" parent="." unique_id=1167621835 groups=["navigation_source", "terrain"]]
-script = ExtResource("1_paa45")
-noise = SubResource("FastNoiseLite_ulql8")
-snow_material = ExtResource("2_axl34")
+[node name="Terrain" type="StaticBody3D" parent="." unique_id=1392713801 groups=["navigation_source", "terrain"]]
+script = ExtResource("1_8hjdj")
+noise = SubResource("FastNoiseLite_m2xr1")
+snow_material = ExtResource("2_0vv12")
 
-[node name="MapBounds" type="StaticBody3D" parent="." unique_id=2053906100 groups=["navigation_source"]]
+[node name="MapBounds" type="StaticBody3D" parent="." unique_id=194027948 groups=["navigation_source"]]
 
-[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=1590152867]
+[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=1394004922]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -151)
-shape = SubResource("BoxShape3D_3i7yh")
+shape = SubResource("BoxShape3D_hj2pq")
 
-[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=1543908832]
+[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=1618902484]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 151)
-shape = SubResource("BoxShape3D_5y2bn")
+shape = SubResource("BoxShape3D_04rbu")
 
-[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=1490921938]
+[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=1559077263]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -151, 10, 0)
-shape = SubResource("BoxShape3D_kbjoq")
+shape = SubResource("BoxShape3D_ndqk6")
 
-[node name="@CollisionShape3D@7" type="CollisionShape3D" parent="MapBounds" unique_id=1678070175]
+[node name="@CollisionShape3D@7" type="CollisionShape3D" parent="MapBounds" unique_id=627616456]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 151, 10, 0)
-shape = SubResource("BoxShape3D_m2xr1")
+shape = SubResource("BoxShape3D_c5dyf")
 
-[node name="Forest" type="Node3D" parent="." unique_id=144609216 groups=["navigation_source"]]
-script = ExtResource("3_8hjdj")
-trunk_material = ExtResource("4_0vv12")
-foliage_material = ExtResource("5_o5yuq")
+[node name="Forest" type="Node3D" parent="." unique_id=1863966793 groups=["navigation_source"]]
+script = ExtResource("3_o5yuq")
+trunk_material = ExtResource("4_wjuib")
+foliage_material = ExtResource("5_xag4j")
 
-[node name="Trench" type="CSGCombiner3D" parent="." unique_id=98102412 groups=["navigation_source"]]
-use_collision = true
+[node name="Trench" type="StaticBody3D" parent="." unique_id=846565849 groups=["navigation_source"]]
 metadata/surface = "earthwork"
 
-[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=2098888719]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 61)
-size = Vector3(210, 2.5, 18)
-material = ExtResource("2_axl34")
+[node name="Mesh" type="MeshInstance3D" parent="Trench" unique_id=935531079]
+mesh = ExtResource("6_pgbyh")
 
-[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=1467206692]
-transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -90, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
+[node name="Collision" type="CollisionShape3D" parent="Trench" unique_id=903873407]
+shape = ExtResource("7_68kkm")
 
-[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=441004526]
-transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -70, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=1204436071]
-transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -50, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=1236958667]
-transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -30, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=2104578097]
-transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -10, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=2048832234]
-transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 10, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=1250249946]
-transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 30, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=1056691852]
-transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 50, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=2097710472]
-transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 70, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=502545229]
-transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 90, -0.8, 61)
-operation = 2
-size = Vector3(22.880613, 3.6, 2)
-material = ExtResource("6_wjuib")
-
-[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=746602749]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.8, 67.5)
-operation = 2
-size = Vector3(1.6, 3.6, 7)
-material = ExtResource("6_wjuib")
-
-[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=409019365]
-transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -80, -0.9605425, 67.34201)
-size = Vector3(1.6, 0.6, 4.827843)
-material = ExtResource("2_axl34")
-
-[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=1793914397]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.15, 70.4)
-size = Vector3(1.6, 0.4, 2)
-material = ExtResource("2_axl34")
-
-[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=421861325]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.8, 67.5)
-operation = 2
-size = Vector3(1.6, 3.6, 7)
-material = ExtResource("6_wjuib")
-
-[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=1926955280]
-transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -40, -0.9605425, 67.34201)
-size = Vector3(1.6, 0.6, 4.827843)
-material = ExtResource("2_axl34")
-
-[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=288277477]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.15, 70.4)
-size = Vector3(1.6, 0.4, 2)
-material = ExtResource("2_axl34")
-
-[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=1497716298]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.8, 67.5)
-operation = 2
-size = Vector3(1.6, 3.6, 7)
-material = ExtResource("6_wjuib")
-
-[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=1741196191]
-transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 40, -0.9605425, 67.34201)
-size = Vector3(1.6, 0.6, 4.827843)
-material = ExtResource("2_axl34")
-
-[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=1387812717]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 70.4)
-size = Vector3(1.6, 0.4, 2)
-material = ExtResource("2_axl34")
-
-[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=554160635]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.8, 67.5)
-operation = 2
-size = Vector3(1.6, 3.6, 7)
-material = ExtResource("6_wjuib")
-
-[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=1514717789]
-transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 80, -0.9605425, 67.34201)
-size = Vector3(1.6, 0.6, 4.827843)
-material = ExtResource("2_axl34")
-
-[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=2005148338]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.15, 70.4)
-size = Vector3(1.6, 0.4, 2)
-material = ExtResource("2_axl34")
-
-[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=923094097]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.29, 66.95)
-operation = 2
-size = Vector3(5, 2.62, 4.1)
-material = ExtResource("7_xag4j")
-
-[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=765494458 groups=["navigation_source"]]
+[node name="Bunker" type="StaticBody3D" parent="." unique_id=768302692 groups=["navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 67.75)
-use_collision = true
 metadata/surface = "wood"
 
-[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=55209619]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-size = Vector3(6, 1, 5.5)
-material = ExtResource("7_xag4j")
+[node name="Mesh" type="MeshInstance3D" parent="Bunker" unique_id=518475183]
+mesh = ExtResource("8_n4g7x")
 
-[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=997508275]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-operation = 2
-size = Vector3(5, 1.2, 4.5)
-material = ExtResource("7_xag4j")
+[node name="Collision" type="CollisionShape3D" parent="Bunker" unique_id=561747996]
+shape = ExtResource("9_atrxo")
 
-[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=893598023]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2.5)
-operation = 2
-size = Vector3(3, 0.35, 1)
-material = ExtResource("7_xag4j")
+[node name="DeepSnowZones" type="Node3D" parent="." unique_id=408887870]
 
-[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=935747487]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-size = Vector3(6.8, 0.5, 6.3)
-material = ExtResource("7_xag4j")
-
-[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=1685713081]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
-size = Vector3(6.6, 0.25, 6.1)
-material = ExtResource("8_pgbyh")
-
-[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=2067882171]
-transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.12, -3.2)
-radius = 0.17
-height = 7.0
-material = ExtResource("7_xag4j")
-
-[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=2108497233]
-transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.44, -3.2)
-radius = 0.17
-height = 7.0
-material = ExtResource("7_xag4j")
-
-[node name="DeepSnowZones" type="Node3D" parent="." unique_id=1811241257]
-
-[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1808402836]
+[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1474358007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, -20)
-script = ExtResource("9_68kkm")
+script = ExtResource("10_vr6yy")
 size = Vector3(26, 4, 14)
-drift_material = ExtResource("8_pgbyh")
+drift_material = ExtResource("11_ra35m")
 
-[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=1163348154]
+[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=890344581]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -55)
-script = ExtResource("9_68kkm")
+script = ExtResource("10_vr6yy")
 size = Vector3(30, 4, 16)
-drift_material = ExtResource("8_pgbyh")
+drift_material = ExtResource("11_ra35m")
 
-[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=2006217030]
+[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=525378644]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, -85)
-script = ExtResource("9_68kkm")
+script = ExtResource("10_vr6yy")
 size = Vector3(24, 4, 18)
-drift_material = ExtResource("8_pgbyh")
+drift_material = ExtResource("11_ra35m")
 
-[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=1503038004]
+[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=437785861]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 5)
-script = ExtResource("9_68kkm")
+script = ExtResource("10_vr6yy")
 size = Vector3(22, 4, 12)
-drift_material = ExtResource("8_pgbyh")
+drift_material = ExtResource("11_ra35m")
 
-[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=2067394825]
+[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=577731187]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
-script = ExtResource("9_68kkm")
+script = ExtResource("10_vr6yy")
 size = Vector3(40, 4, 8)
-drift_material = ExtResource("8_pgbyh")
+drift_material = ExtResource("11_ra35m")
 
-[node name="ShootingRange" type="Node3D" parent="." unique_id=1264332791 groups=["navigation_source"]]
+[node name="ShootingRange" type="Node3D" parent="." unique_id=507170031 groups=["navigation_source"]]
 
-[node name="Target_25m" type="Node3D" parent="ShootingRange" unique_id=1492008310 instance=ExtResource("10_n4g7x")]
+[node name="Target_25m" type="Node3D" parent="ShootingRange" unique_id=2043003880 instance=ExtResource("12_x7oem")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 36)
-script = ExtResource("11_atrxo")
+script = ExtResource("13_ec2iw")
 label_text = "25 m"
 
-[node name="Target_50m" type="Node3D" parent="ShootingRange" unique_id=602804505 instance=ExtResource("10_n4g7x")]
+[node name="Target_50m" type="Node3D" parent="ShootingRange" unique_id=1191252515 instance=ExtResource("12_x7oem")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 11)
-script = ExtResource("11_atrxo")
+script = ExtResource("13_ec2iw")
 label_text = "50 m"
 
-[node name="Target_100m" type="Node3D" parent="ShootingRange" unique_id=1970769522 instance=ExtResource("10_n4g7x")]
+[node name="Target_100m" type="Node3D" parent="ShootingRange" unique_id=1688647397 instance=ExtResource("12_x7oem")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -39)
-script = ExtResource("11_atrxo")
+script = ExtResource("13_ec2iw")
 label_text = "100 m"
 
-[node name="Target_150m" type="Node3D" parent="ShootingRange" unique_id=1382921090 instance=ExtResource("10_n4g7x")]
+[node name="Target_150m" type="Node3D" parent="ShootingRange" unique_id=1216129228 instance=ExtResource("12_x7oem")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -89)
-script = ExtResource("11_atrxo")
+script = ExtResource("13_ec2iw")
 label_text = "150 m"
 
-[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=911000946]
-navigation_mesh = ExtResource("12_vr6yy")
+[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=1524842792]
+navigation_mesh = ExtResource("14_ulql8")
 
-[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=1261789585]
+[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=1628186979]
 
-[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=676770481 groups=["enemy_spawn"]]
+[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=962553214 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -118)
 
-[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=1601670469 groups=["enemy_spawn"]]
+[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=434143444 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, -118)
 
-[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=196381685 groups=["enemy_spawn"]]
+[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=502330761 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -118)
 
-[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=123876860 groups=["enemy_spawn"]]
+[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=290417768 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -118)
 
-[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=476004401 groups=["enemy_spawn"]]
+[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=1386345548 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, -118)
 
-[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=944837057 groups=["enemy_spawn"]]
+[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=1298279404 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -118)
 
-[node name="AttackPoints" type="Node3D" parent="." unique_id=2096424121]
+[node name="AttackPoints" type="Node3D" parent="." unique_id=494391676]
 
-[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=1036014884 groups=["attack_point"]]
+[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=958945896 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0, 38)
 
-[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=1575292299 groups=["attack_point"]]
+[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=908763470 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, 42)
 
-[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=1936019846 groups=["attack_point"]]
+[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=2026725332 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0, 38)
 
-[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=276657030 groups=["attack_point"]]
+[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=1479243524 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 42)
 
-[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=1874512392 groups=["attack_point"]]
+[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=1331329744 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 38)
 
-[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=1920444799 groups=["attack_point"]]
+[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=1897754064 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 42)
 
-[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=63701210 groups=["attack_point"]]
+[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=582725977 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 38)
 
-[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=1321007460 groups=["attack_point"]]
+[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=473550703 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84, 0, 42)
 
-[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=486442967]
+[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=490335090]
 
-[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=372833969 groups=["player_spawn"]]
+[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1233137921 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -1.3, 61)
 
-[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1265049915 groups=["player_spawn"]]
+[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1796947087 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -1.3, 61)
 
-[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=194215752 groups=["player_spawn"]]
+[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1960724019 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -1.3, 61)
 
-[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1171275467 groups=["player_spawn"]]
+[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1850683829 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.3, 61)

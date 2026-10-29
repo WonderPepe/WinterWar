@@ -23,7 +23,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] M2 weapons and shooting
 - [x] M3 enemy AI (state machine) and wave spawner
 - [x] M4 HUD, death/respawn (5 s), main menu (Single Player; greyed-out Host/Join Co-op), pause menu
-- [ ] M5 web export test and performance check
+- [x] M5 web export test and performance check (Settings menu, benchmark, baked CSG)
+- Next ideas: polish (lighting, textures, sound, models), real Summa terrain, co-op (WebRTC).
 
 ## Multiplayer-ready architecture (mandatory)
 - Single player = host with no clients (OfflineMultiplayerPeer, peer id 1). Code everything
@@ -37,7 +38,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   calls `take_damage()`, broadcasts `show_impact`, sends `confirm_hit` to the shooter.
 - Spawning via `MultiplayerSpawner` (players → `Players`, enemies → `Enemies`); synced state via
   `MultiplayerSynchronizer` (InputSync, StateSync, WeaponSync, WaveSync, DummySync).
-- No "the player" singleton: use the `players` group. Only autoload: `NetworkManager`.
+- No "the player" singleton: use the `players` group. Autoloads: `NetworkManager` (connection)
+  and `Settings` (user preferences + quality presets; signal `changed`). Neither holds game state.
 - Death: host sets `Player.is_dead` (synced), emits `died`; `Game` respawns after `respawn_time`
   via `Player.respawn()`, which tells the owner's PlayerInput the new view with `set_look` RPC.
 - UI only reads state: `HUD` finds the local player and listens to signals. Pause menu (Esc)
@@ -71,15 +73,33 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - CSG trench/bunker should be converted to static meshes before the web export (M5).
 - Max 16 enemies alive; enemy senses run ~5×/s; no RVO avoidance.
 
+## Graphics settings & web build
+- Quality presets live in `autoload/settings.gd` (`PRESETS`); `scripts/game/quality_applier.gd`
+  applies them (groups `sun`, `forest`, `world_environment`, players' snow).
+- Tonemapper is **Linear** on purpose: in Compatibility, Filmic looks different when
+  `scaling_3d_scale` < 1, so presets would change the colours.
+- `display/window/stretch/mode = canvas_items` so UI scales with the browser window.
+- Terrain mesh does not cast shadows (it doubled the triangle count for nothing).
+- Web export preset "Web" (no threads) → `export/web/` (git-ignored). Export from the command
+  line: `godot --headless --path . --export-release "Web" export/web/index.html` (needs the
+  4.7.2 export templates). `python3 tools/web_smoke_test.py` checks it in headless Chromium.
+- Measured budget (High): ~180 draw calls, ~250k triangles/frame, CPU scripts 1–2 ms + physics
+  2.5–4 ms with 16 enemies (native). Keep new art within the README's budget table.
+
 ## Gotchas learned
 - UI Controls catch mouse events by default: HUD elements must use `mouse_filter = IGNORE`.
   Mouse look is read in `PlayerInput._input()` for that reason.
 - CSG subtraction faces take the material of the subtracting shape (trench walls = log material).
 - Additive-blend effects are invisible against bright snow; use normal alpha blending.
 - Terrain and forest are generated at runtime by `@tool` scripts (not saved in the scene).
-- `--script` tool files compile before autoloads exist: use `_initialize()` (not `_init()`) and
-  `root.get_node("NetworkManager")` instead of the autoload name.
+- `--script` files compile before autoloads exist, so any script that (indirectly) uses an
+  autoload name can't be referenced from them. Tests are therefore plain Nodes started by the
+  launcher: `godot --headless --path . --script tools/run.gd -- tools/test_m1.gd`.
+  The builder uses `_initialize()` and only `load()`s game scripts at runtime.
 - Headless tests must free `Game/PauseMenu` (the mouse can't be captured, so it would pause).
+- The navigation map needs a few physics frames after loading before paths are returned.
+- The desktop app may create a `Claude outputs/` folder in the project: it is git-ignored and
+  has a `.gdignore`.
 - After changing the level geometry, re-bake: select `Navigation` in `levels/test_level.tscn`
   → Bake NavigationMesh (saves `levels/test_level_navmesh.res`).
 
@@ -89,7 +109,9 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
 - `setup_project.gd` writes project settings + input map. `build_scenes.gd` generated the
   scenes/materials/weapon & enemy data. **It overwrites scenes** – once the owner edits scenes in the
   editor, edit the .tscn files (or the editor) instead of regenerating, unless he agrees.
-- `bake_nav.gd` bakes the navmesh; `make_sounds.py` synthesizes the placeholder sounds.
-- `test_m1.gd` … `test_m4.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
+- `bake_csg.gd` bakes `levels/source/trench_csg.tscn` into `levels/baked/*.res`; then rebuild the
+  level (`build_scenes.gd`) and run `bake_nav.gd`. `make_sounds.py` synthesizes placeholder sounds.
+- Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
+  `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

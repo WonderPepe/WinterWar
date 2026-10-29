@@ -174,6 +174,9 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 	var mi := MeshInstance3D.new()
 	mi.name = "GroundMesh"
 	mi.mesh = mesh
+	# The gentle ground hardly casts visible shadows, but drawing its 180 000 triangles
+	# again into the shadow map is expensive - so it only receives shadows.
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.set_meta("generated", true)
 	add_child(mi)
 

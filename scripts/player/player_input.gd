@@ -78,7 +78,7 @@ func _process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
-		var sens: float = mouse_sensitivity * look_sensitivity_scale
+		var sens: float = mouse_sensitivity * look_sensitivity_scale * Settings.mouse_sensitivity
 		add_look(-motion.screen_relative.y * sens, -motion.screen_relative.x * sens)
 
 

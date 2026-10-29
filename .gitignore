@@ -7,3 +7,6 @@
 
 # Screenshots made by the helper tools
 /tools/shots/
+
+# Files the Claude desktop app saves into the project
+/Claude outputs/
