@@ -1,0 +1,67 @@
+extends SceneTree
+## One-off helper (not part of the game): writes project settings and the input map
+## so project.godot is generated in Godot's own exact format.
+
+func key(physical: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.device = -1  # -1 = any device
+	e.physical_keycode = physical
+	return e
+
+func mouse(button: MouseButton) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.device = -1
+	e.button_index = button
+	return e
+
+func action(name: String, events: Array) -> void:
+	ProjectSettings.set_setting("input/" + name, {"deadzone": 0.2, "events": events})
+
+func _init() -> void:
+	var s := ProjectSettings
+	s.set_setting("application/config/description", "Winter War 1939-40 FPS prototype - Battle of Summa")
+	s.set_setting("application/run/main_scene", "res://scenes/game.tscn")
+	s.set_setting("application/config/features", PackedStringArray(["4.7", "GL Compatibility"]))
+
+	# Renderer: Compatibility (OpenGL / WebGL 2) everywhere, required for web export
+	s.set_setting("rendering/renderer/rendering_method", "gl_compatibility")
+	s.set_setting("rendering/renderer/rendering_method.mobile", "gl_compatibility")
+	s.set_setting("rendering/anti_aliasing/quality/msaa_3d", 0)
+	s.set_setting("rendering/textures/vram_compression/import_etc2_astc", true)
+
+	# Window
+	s.set_setting("display/window/size/viewport_width", 1280)
+	s.set_setting("display/window/size/viewport_height", 720)
+	s.set_setting("display/window/stretch/aspect", "expand")
+
+	# Physics
+	s.set_setting("physics/3d/physics_engine", "Jolt Physics")
+	s.set_setting("physics/common/physics_ticks_per_second", 60)
+	s.set_setting("layer_names/3d_physics/layer_1", "world")
+	s.set_setting("layer_names/3d_physics/layer_2", "players")
+	s.set_setting("layer_names/3d_physics/layer_3", "enemies")
+	s.set_setting("layer_names/3d_physics/layer_4", "triggers")
+
+	# Autoloads ("*" = also make it a global name you can use from any script)
+	s.set_setting("autoload/NetworkManager", "*res://autoload/network_manager.gd")
+
+	# Input map. Physical keys = same key POSITION on any keyboard layout (Finnish, US...)
+	action("move_forward", [key(KEY_W)])
+	action("move_back", [key(KEY_S)])
+	action("move_left", [key(KEY_A)])
+	action("move_right", [key(KEY_D)])
+	action("jump", [key(KEY_SPACE)])
+	action("sprint", [key(KEY_SHIFT)])
+	action("crouch", [key(KEY_C), key(KEY_CTRL)])
+	action("fire", [mouse(MOUSE_BUTTON_LEFT)])
+	action("aim", [mouse(MOUSE_BUTTON_RIGHT)])
+	action("reload", [key(KEY_R)])
+	action("weapon_1", [key(KEY_1)])
+	action("weapon_2", [key(KEY_2)])
+	action("release_mouse", [key(KEY_ESCAPE)])
+	action("debug_god_mode", [key(KEY_F1)])
+	action("debug_enemy_labels", [key(KEY_F2)])
+
+	var err := s.save()
+	print("project.godot saved: ", error_string(err))
+	quit()

@@ -4,3 +4,6 @@
 # Web/desktop export output
 /export/
 *.tmp
+
+# Screenshots made by the helper tools
+/tools/shots/
