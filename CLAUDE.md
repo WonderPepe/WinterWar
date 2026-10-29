@@ -98,6 +98,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   The builder uses `_initialize()` and only `load()`s game scripts at runtime.
 - Headless tests must free `Game/PauseMenu` (the mouse can't be captured, so it would pause).
 - The navigation map needs a few physics frames after loading before paths are returned.
+- After delivering files that change `project.godot` (new autoloads, settings, input actions) or
+  add `class_name`s, tell the owner to use **Project → Reload Current Project**: an editor that was
+  open keeps the old project settings and shows "Parse error" for scripts using the new names.
 - The desktop app may create a `Claude outputs/` folder in the project: it is git-ignored and
   has a `.gdignore`.
 - After changing the level geometry, re-bake: select `Navigation` in `levels/test_level.tscn`
