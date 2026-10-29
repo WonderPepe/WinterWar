@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_ejwgg"]
+[ext_resource type="Theme" path="res://ui/winter_theme.tres" id="2_fob5h"]
+
+[node name="PauseMenu" type="CanvasLayer" unique_id=1808581530]
+layer = 20
+script = ExtResource("1_ejwgg")
+
+[node name="Root" type="Control" parent="." unique_id=1817871094]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("2_fob5h")
+
+[node name="Dim" type="ColorRect" parent="Root" unique_id=2036486574]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.03, 0.05, 0.55)
+
+[node name="Panel" type="PanelContainer" parent="Root" unique_id=1396558574]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel" unique_id=1687344835]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Panel/VBox" unique_id=439863171]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 6
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Root/Panel/VBox" unique_id=732825409]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+text = "Click Resume to play  (Esc opens this menu)"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Root/Panel/VBox" unique_id=168863170]
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+text = "Resume"
+
+[node name="MainMenuButton" type="Button" parent="Root/Panel/VBox" unique_id=937812019]
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+text = "Main Menu"

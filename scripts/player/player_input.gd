@@ -28,6 +28,7 @@ var _jump_requested: bool = false
 var _reload_requested: bool = false
 var _switch_requested: int = -1
 var _block_fire_until_release: bool = false # the click that grabs the mouse must not shoot
+var _was_captured: bool = false
 
 
 func _ready() -> void:
@@ -36,13 +37,16 @@ func _ready() -> void:
 	var mine: bool = is_multiplayer_authority()
 	set_process(mine)
 	set_process_input(mine)
-	set_process_unhandled_input(mine)
 	if mine:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _process(_delta: float) -> void:
-	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+	if captured and not _was_captured:
+		_block_fire_until_release = true # the click that grabbed the mouse must not shoot
+	_was_captured = captured
+	if not captured:
 		# Mouse released (Esc): stand still instead of running off.
 		move_dir = Vector2.ZERO
 		sprint_held = false
@@ -78,20 +82,20 @@ func _input(event: InputEvent) -> void:
 		add_look(-motion.screen_relative.y * sens, -motion.screen_relative.x * sens)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("release_mouse"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	elif event is InputEventMouseButton and event.is_pressed() and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-		# Click the game to grab the mouse again (browsers require a click for this).
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		_block_fire_until_release = true
-
-
 ## One-time actions are sent as RPCs ("remote procedure calls") instead of synced variables,
 ## so a quick key tap can never be missed. "authority" = only this player's owner may call it.
 @rpc("authority", "call_local", "reliable")
 func request_jump() -> void:
 	_jump_requested = true
+
+
+## The host sets our view direction (after a respawn). Only the host (peer 1) may call this.
+@rpc("any_peer", "call_local", "reliable")
+func set_look(yaw: float, pitch: float) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	look_yaw = yaw
+	look_pitch = pitch
 
 
 ## Turns the view. Used by the mouse and by weapon recoil.

@@ -20,7 +20,7 @@ func action(name: String, events: Array) -> void:
 func _init() -> void:
 	var s := ProjectSettings
 	s.set_setting("application/config/description", "Winter War 1939-40 FPS prototype - Battle of Summa")
-	s.set_setting("application/run/main_scene", "res://scenes/game.tscn")
+	s.set_setting("application/run/main_scene", "res://ui/main_menu.tscn")
 	s.set_setting("application/config/features", PackedStringArray(["4.7", "GL Compatibility"]))
 
 	# Renderer: Compatibility (OpenGL / WebGL 2) everywhere, required for web export
@@ -58,9 +58,11 @@ func _init() -> void:
 	action("reload", [key(KEY_R)])
 	action("weapon_1", [key(KEY_1)])
 	action("weapon_2", [key(KEY_2)])
-	action("release_mouse", [key(KEY_ESCAPE)])
+	action("pause", [key(KEY_ESCAPE)])
 	action("debug_god_mode", [key(KEY_F1)])
 	action("debug_enemy_labels", [key(KEY_F2)])
+	action("debug_overlay", [key(KEY_F3)])
+	s.set_setting("input/release_mouse", null) # replaced by "pause" in M4
 
 	var err := s.save()
 	print("project.godot saved: ", error_string(err))

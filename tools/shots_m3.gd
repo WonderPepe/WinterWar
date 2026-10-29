@@ -4,6 +4,7 @@ var p: Player
 
 func _initialize() -> void:
 	root.add_child(load("res://scenes/game.tscn").instantiate())
+	root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 
 func wait(n: int) -> void:

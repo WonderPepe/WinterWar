@@ -10,6 +10,7 @@ signal connection_changed
 
 const DEFAULT_PORT: int = 7777
 const MAX_PLAYERS: int = 4
+const MAIN_MENU_SCENE: String = "res://ui/main_menu.tscn"
 
 
 ## Start a local game with no network (used by "Single Player").
@@ -28,6 +29,19 @@ func host_coop() -> Error:
 func join_coop(_address: String) -> Error:
 	push_warning("Co-op joining is not implemented yet.")
 	return ERR_UNAVAILABLE
+
+
+## Back to the main menu: close any connection and unpause.
+func leave_game() -> void:
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+
+
+## True when playing alone (no network) - only then may the game pause.
+func is_single_player() -> bool:
+	return multiplayer.multiplayer_peer is OfflineMultiplayerPeer
 
 
 ## True when this computer decides the game state (host or single player).

@@ -5,7 +5,7 @@ extends SceneTree
 const MAT_DIR := "res://resources/materials/"
 
 
-func _init() -> void:
+func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(MAT_DIR)
 	var mats := _make_materials()
 	DirAccess.make_dir_recursive_absolute("res://scenes/weapons")
@@ -18,6 +18,11 @@ func _init() -> void:
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
 	_save(_build_level(mats), "res://levels/test_level.tscn")
+	DirAccess.make_dir_recursive_absolute("res://ui")
+	var theme := _make_theme()
+	_save(_build_hud(), "res://ui/hud.tscn")
+	_save(_build_pause_menu(theme), "res://ui/pause_menu.tscn")
+	_save(_build_main_menu(theme), "res://ui/main_menu.tscn")
 	_save(_build_game(), "res://scenes/game.tscn")
 	print("ALL SCENES BUILT")
 	quit()
@@ -483,21 +488,16 @@ func _build_game() -> Node:
 		[".:alive_count", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
+	_add(g, load("res://ui/hud.tscn").instantiate(), "HUD")
+	_add(g, load("res://ui/pause_menu.tscn").instantiate(), "PauseMenu")
 	var ui: CanvasLayer = _add(g, CanvasLayer.new(), "DebugUI")
-	var dot: ColorRect = _add(ui, ColorRect.new(), "CenterDot") # temporary crosshair (real one in M4)
-	dot.color = Color(1, 1, 1, 0.8)
-	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE # must not swallow mouse movement
-	dot.set_anchors_preset(Control.PRESET_CENTER)
-	dot.offset_left = -2
-	dot.offset_top = -2
-	dot.offset_right = 2
-	dot.offset_bottom = 2
 	var label: Label = _add(ui, Label.new(), "DebugLabel")
 	label.set_script(load("res://scripts/game/debug_overlay.gd"))
 	label.position = Vector2(12, 10)
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 4)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return g
 
 
@@ -798,3 +798,299 @@ func _build_enemy(mats: Dictionary) -> Node:
 		[".:health", true, ON_CHANGE],
 	])
 	return e
+
+
+# ---------------------------------------------------------------- UI
+func _flat(bg: Color, border := Color(0, 0, 0, 0), border_w := 0, radius := 3) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = border
+	sb.set_border_width_all(border_w)
+	sb.set_corner_radius_all(radius)
+	sb.content_margin_left = 18
+	sb.content_margin_right = 18
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	return sb
+
+
+## A simple shared look for menus: dark translucent buttons with a thin frosty border.
+func _make_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 20
+	t.set_stylebox("normal", "Button", _flat(Color(0.07, 0.09, 0.12, 0.78), Color(0.8, 0.86, 0.92, 0.45), 1))
+	t.set_stylebox("hover", "Button", _flat(Color(0.16, 0.2, 0.26, 0.92), Color(1, 1, 1, 0.9), 1))
+	t.set_stylebox("pressed", "Button", _flat(Color(0.25, 0.3, 0.37, 0.95), Color(1, 1, 1), 1))
+	t.set_stylebox("disabled", "Button", _flat(Color(0.07, 0.09, 0.12, 0.4), Color(0.6, 0.65, 0.7, 0.25), 1))
+	var focus := _flat(Color(0, 0, 0, 0), Color(1, 1, 1, 0.9), 2)
+	focus.draw_center = false
+	t.set_stylebox("focus", "Button", focus)
+	t.set_color("font_color", "Button", Color(0.93, 0.95, 0.98))
+	t.set_color("font_disabled_color", "Button", Color(0.55, 0.58, 0.62))
+	t.set_color("font_outline_color", "Label", Color(0, 0, 0, 0.8))
+	t.set_constant("outline_size", "Label", 4)
+	t.set_stylebox("panel", "PanelContainer", _flat(Color(0.05, 0.07, 0.1, 0.88), Color(0.8, 0.86, 0.92, 0.35), 1, 4))
+	ResourceSaver.save(t, "res://ui/winter_theme.tres")
+	return load("res://ui/winter_theme.tres")
+
+
+func _label(parent: Node, n: String, text: String, size: int, align := HORIZONTAL_ALIGNMENT_LEFT, color := Color(0.95, 0.97, 1.0)) -> Label:
+	var l: Label = _add(parent, Label.new(), n)
+	l.text = text
+	l.horizontal_alignment = align
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	l.add_theme_constant_override("outline_size", maxi(size / 5, 3))
+	return l
+
+
+func _full_rect(c: Control) -> void:
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+func _ignore_mouse(n: Node) -> void:
+	if n is Control:
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for c in n.get_children():
+		_ignore_mouse(c)
+
+
+func _bar(parent: Node, n: String, fill: Color, min_size: Vector2) -> ProgressBar:
+	var b: ProgressBar = _add(parent, ProgressBar.new(), n)
+	b.custom_minimum_size = min_size
+	b.show_percentage = false
+	b.max_value = 100
+	b.value = 100
+	var bg := _flat(Color(0, 0, 0, 0.45), Color(1, 1, 1, 0.25), 1, 2)
+	bg.content_margin_left = 0
+	bg.content_margin_right = 0
+	bg.content_margin_top = 0
+	bg.content_margin_bottom = 0
+	var fg := _flat(fill, Color(0, 0, 0, 0), 0, 2)
+	fg.content_margin_left = 0
+	fg.content_margin_right = 0
+	fg.content_margin_top = 0
+	fg.content_margin_bottom = 0
+	b.add_theme_stylebox_override("background", bg)
+	b.add_theme_stylebox_override("fill", fg)
+	return b
+
+
+func _build_hud() -> Node:
+	var hud := CanvasLayer.new()
+	hud.name = "HUD"
+	hud.set_script(load("res://scripts/ui/hud.gd"))
+
+	var cross: Control = _add(hud, Control.new(), "Crosshair")
+	cross.set_script(load("res://scripts/ui/crosshair.gd"))
+	_full_rect(cross)
+	var marker: Control = _add(hud, Control.new(), "HitMarker")
+	marker.set_script(load("res://scripts/ui/hit_marker.gd"))
+	_full_rect(marker)
+
+	# Red edges when hurt: a radial gradient, transparent in the middle.
+	var flash: TextureRect = _add(hud, TextureRect.new(), "DamageFlash")
+	_full_rect(flash)
+	var g := Gradient.new()
+	g.set_color(0, Color(0.6, 0.0, 0.0, 0.0))
+	g.set_color(1, Color(0.6, 0.0, 0.0, 0.8))
+	g.add_point(0.55, Color(0.6, 0.0, 0.0, 0.0))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.5)
+	gt.fill_to = Vector2(1.0, 1.0)
+	gt.width = 128
+	gt.height = 128
+	flash.texture = gt
+	flash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	flash.stretch_mode = TextureRect.STRETCH_SCALE
+
+	# Bottom left: health and stamina.
+	var vitals: VBoxContainer = _add(hud, VBoxContainer.new(), "Vitals")
+	vitals.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	vitals.offset_left = 24
+	vitals.offset_top = -78
+	vitals.offset_right = 304
+	vitals.offset_bottom = -24
+	vitals.add_theme_constant_override("separation", 6)
+	_label(vitals, "HealthTitle", "HEALTH", 13, HORIZONTAL_ALIGNMENT_LEFT, Color(0.85, 0.88, 0.92))
+	var hb := _bar(vitals, "HealthBar", Color(0.7, 0.13, 0.1, 0.95), Vector2(280, 24))
+	var hv := _label(hb, "Value", "100", 16, HORIZONTAL_ALIGNMENT_CENTER)
+	_full_rect(hv)
+	hv.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_bar(vitals, "StaminaBar", Color(0.78, 0.87, 0.96, 0.9), Vector2(280, 7))
+
+	# Bottom right: weapon and ammo.
+	var wp: VBoxContainer = _add(hud, VBoxContainer.new(), "WeaponPanel")
+	wp.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	wp.offset_left = -344
+	wp.offset_top = -110
+	wp.offset_right = -24
+	wp.offset_bottom = -24
+	wp.alignment = BoxContainer.ALIGNMENT_END
+	wp.add_theme_constant_override("separation", 0)
+	_label(wp, "Reloading", "RELOADING", 16, HORIZONTAL_ALIGNMENT_RIGHT, Color(1.0, 0.8, 0.35))
+	_label(wp, "WeaponName", "Weapon", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.88, 0.91, 0.95))
+	_label(wp, "Ammo", "0 / 0", 36, HORIZONTAL_ALIGNMENT_RIGHT)
+
+	# Top centre: wave information and score.
+	var wv: VBoxContainer = _add(hud, VBoxContainer.new(), "WavePanel")
+	wv.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	wv.offset_left = -220
+	wv.offset_right = 220
+	wv.offset_top = 14
+	wv.offset_bottom = 120
+	wv.add_theme_constant_override("separation", 0)
+	_label(wv, "Wave", "Get ready", 24, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(wv, "Enemies", "Enemies: 0", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
+	_label(wv, "NextWave", "", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.85, 0.5))
+	_label(wv, "Score", "Kills 0   Deaths 0", 14, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
+
+	var banner := _label(hud, "WaveBanner", "WAVE 1", 60, HORIZONTAL_ALIGNMENT_CENTER)
+	banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	banner.offset_left = -300
+	banner.offset_right = 300
+	banner.offset_top = -170
+	banner.offset_bottom = -90
+
+	# Death screen.
+	var ds: Control = _add(hud, Control.new(), "DeathScreen")
+	_full_rect(ds)
+	var dim: ColorRect = _add(ds, ColorRect.new(), "Dim")
+	dim.color = Color(0.08, 0.0, 0.0, 0.55)
+	_full_rect(dim)
+	var died := _label(ds, "YouDied", "YOU DIED", 64, HORIZONTAL_ALIGNMENT_CENTER, Color(0.95, 0.85, 0.82))
+	died.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	died.offset_left = -300
+	died.offset_right = 300
+	died.offset_top = -70
+	died.offset_bottom = 10
+	var rl := _label(ds, "Respawn", "Respawning in 5...", 24, HORIZONTAL_ALIGNMENT_CENTER)
+	rl.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	rl.offset_left = -300
+	rl.offset_right = 300
+	rl.offset_top = 16
+	rl.offset_bottom = 56
+
+	var tick: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HitSound")
+	tick.stream = load("res://assets/audio/hit_tick.wav")
+	tick.volume_db = -8.0
+	_ignore_mouse(hud) # the HUD must never catch the mouse (see the M2 mouse-look bug)
+	return hud
+
+
+func _build_pause_menu(theme: Theme) -> Node:
+	var pm := CanvasLayer.new()
+	pm.name = "PauseMenu"
+	pm.layer = 20
+	pm.set_script(load("res://scripts/ui/pause_menu.gd"))
+	var root: Control = _add(pm, Control.new(), "Root")
+	_full_rect(root)
+	root.theme = theme
+	var dim: ColorRect = _add(root, ColorRect.new(), "Dim")
+	dim.color = Color(0.02, 0.03, 0.05, 0.55)
+	_full_rect(dim)
+	var panel: PanelContainer = _add(root, PanelContainer.new(), "Panel")
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var vb: VBoxContainer = _add(panel, VBoxContainer.new(), "VBox")
+	vb.add_theme_constant_override("separation", 12)
+	_label(vb, "Title", "PAUSED", 34, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(vb, "Hint", "Click Resume to play  (Esc opens this menu)", 15, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
+	for b in [["ResumeButton", "Resume"], ["MainMenuButton", "Main Menu"]]:
+		var btn: Button = _add(vb, Button.new(), b[0])
+		btn.text = b[1]
+		btn.custom_minimum_size = Vector2(300, 46)
+	return pm
+
+
+func _build_main_menu(theme: Theme) -> Node:
+	var mm := Control.new()
+	mm.name = "MainMenu"
+	mm.set_script(load("res://scripts/ui/main_menu.gd"))
+	mm.theme = theme
+	_full_rect(mm)
+
+	var bg: TextureRect = _add(mm, TextureRect.new(), "Background")
+	_full_rect(bg)
+	var g := Gradient.new()
+	g.set_color(0, Color(0.13, 0.16, 0.21))
+	g.set_color(1, Color(0.6, 0.65, 0.72))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill_from = Vector2(0, 0)
+	gt.fill_to = Vector2(0, 1)
+	gt.width = 4
+	gt.height = 128
+	bg.texture = gt
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+
+	# A dark forest edge on the horizon and snowy ground (simple 2D shapes).
+	var ground: ColorRect = _add(mm, ColorRect.new(), "Ground")
+	ground.color = Color(0.82, 0.86, 0.91)
+	ground.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	ground.offset_top = -150
+	var trees: Control = _add(mm, Control.new(), "TreeLine")
+	trees.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	trees.offset_top = -150
+	trees.offset_bottom = -150
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1939
+	var x := -20.0
+	while x < 2000.0:
+		var h := rng.randf_range(50, 130)
+		var w := h * rng.randf_range(0.32, 0.42)
+		var tree := Polygon2D.new()
+		tree.color = Color(0.1, 0.13, 0.16).lerp(Color(0.3, 0.35, 0.42), rng.randf() * 0.5)
+		tree.polygon = PackedVector2Array([Vector2(x - w, 4), Vector2(x, -h), Vector2(x + w, 4)])
+		_add(trees, tree, "Tree")
+		x += rng.randf_range(14, 40)
+
+	var snow: CPUParticles2D = _add(mm, CPUParticles2D.new(), "SnowFall")
+	snow.position = Vector2(960, -20)
+	snow.amount = 260
+	snow.lifetime = 14.0
+	snow.preprocess = 14.0
+	snow.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	snow.emission_rect_extents = Vector2(1100, 10)
+	snow.direction = Vector2(0.15, 1)
+	snow.spread = 12.0
+	snow.gravity = Vector2(4, 18)
+	snow.initial_velocity_min = 20.0
+	snow.initial_velocity_max = 45.0
+	snow.scale_amount_min = 1.5
+	snow.scale_amount_max = 3.5
+	snow.color = Color(1, 1, 1, 0.85)
+
+	var center: CenterContainer = _add(mm, CenterContainer.new(), "Center")
+	_full_rect(center)
+	center.offset_bottom = -120 # centre the menu in the sky, above the snowy ground
+	var vb: VBoxContainer = _add(center, VBoxContainer.new(), "VBox")
+	vb.add_theme_constant_override("separation", 12)
+	_label(vb, "Kicker", "TALVISOTA", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.85, 0.9, 0.97))
+	_label(vb, "Title", "WINTER WAR: SUMMA", 64, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(vb, "Subtitle", "Battle of Summa  ·  Mannerheim Line  ·  1939–40", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
+	var spacer: Control = _add(vb, Control.new(), "Spacer")
+	spacer.custom_minimum_size = Vector2(0, 24)
+	for b in [["SinglePlayerButton", "Single Player", ""], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
+			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["QuitButton", "Quit", ""]]:
+		var btn: Button = _add(vb, Button.new(), b[0])
+		btn.text = b[1]
+		btn.tooltip_text = b[2]
+		btn.custom_minimum_size = Vector2(340, 50)
+		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vb.get_node("HostCoopButton").disabled = true
+	vb.get_node("JoinCoopButton").disabled = true
+
+	var ver := _label(mm, "Version", "Prototype · M4", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	ver.offset_left = -300
+	ver.offset_top = -34
+	ver.offset_right = -16
+	ver.offset_bottom = -10
+	ver.remove_theme_constant_override("outline_size")
+	return mm

@@ -2,6 +2,7 @@ extends SceneTree
 ## Lets a wave play out against a god-mode player standing in the trench, and reports.
 func _initialize() -> void:
 	root.add_child(load("res://scenes/game.tscn").instantiate())
+	root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 func run() -> void:
 	await create_timer(0.3).timeout

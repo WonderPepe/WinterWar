@@ -57,12 +57,12 @@ size = Vector3(2, 40, 304)
 [sub_resource type="BoxShape3D" id="BoxShape3D_m2xr1"]
 size = Vector3(2, 40, 304)
 
-[node name="TestLevel" type="Node3D" unique_id=730372371]
+[node name="TestLevel" type="Node3D" unique_id=354241473]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1303944259]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=269220663]
 environment = SubResource("Environment_ec2iw")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=867404450]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1101438037]
 transform = Transform3D(-0.8660254, 0.120960966, -0.48514792, 0, 0.9702957, 0.2419219, 0.50000006, 0.2095105, -0.84030074, 0, 0, 0)
 light_color = Color(0.9, 0.92, 0.98, 1)
 light_energy = 0.85
@@ -70,330 +70,330 @@ shadow_enabled = true
 directional_shadow_mode = 1
 directional_shadow_max_distance = 70.0
 
-[node name="Terrain" type="StaticBody3D" parent="." unique_id=3956543 groups=["navigation_source", "terrain"]]
+[node name="Terrain" type="StaticBody3D" parent="." unique_id=1167621835 groups=["navigation_source", "terrain"]]
 script = ExtResource("1_paa45")
 noise = SubResource("FastNoiseLite_ulql8")
 snow_material = ExtResource("2_axl34")
 
-[node name="MapBounds" type="StaticBody3D" parent="." unique_id=1338087768 groups=["navigation_source"]]
+[node name="MapBounds" type="StaticBody3D" parent="." unique_id=2053906100 groups=["navigation_source"]]
 
-[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=1487335702]
+[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=1590152867]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -151)
 shape = SubResource("BoxShape3D_3i7yh")
 
-[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=1696182892]
+[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=1543908832]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 151)
 shape = SubResource("BoxShape3D_5y2bn")
 
-[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=576806446]
+[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=1490921938]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -151, 10, 0)
 shape = SubResource("BoxShape3D_kbjoq")
 
-[node name="@CollisionShape3D@7" type="CollisionShape3D" parent="MapBounds" unique_id=321977493]
+[node name="@CollisionShape3D@7" type="CollisionShape3D" parent="MapBounds" unique_id=1678070175]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 151, 10, 0)
 shape = SubResource("BoxShape3D_m2xr1")
 
-[node name="Forest" type="Node3D" parent="." unique_id=383798226 groups=["navigation_source"]]
+[node name="Forest" type="Node3D" parent="." unique_id=144609216 groups=["navigation_source"]]
 script = ExtResource("3_8hjdj")
 trunk_material = ExtResource("4_0vv12")
 foliage_material = ExtResource("5_o5yuq")
 
-[node name="Trench" type="CSGCombiner3D" parent="." unique_id=557583491 groups=["navigation_source"]]
+[node name="Trench" type="CSGCombiner3D" parent="." unique_id=98102412 groups=["navigation_source"]]
 use_collision = true
 metadata/surface = "earthwork"
 
-[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=2107872985]
+[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=2098888719]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 61)
 size = Vector3(210, 2.5, 18)
 material = ExtResource("2_axl34")
 
-[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=690292650]
+[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=1467206692]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -90, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=1544793039]
+[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=441004526]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -70, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=737268069]
+[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=1204436071]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -50, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=1295493916]
+[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=1236958667]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -30, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=1605618685]
+[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=2104578097]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -10, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=1813358045]
+[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=2048832234]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 10, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=1150760131]
+[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=1250249946]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 30, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=802220367]
+[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=1056691852]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 50, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=100641557]
+[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=2097710472]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 70, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=2046034172]
+[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=502545229]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 90, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("6_wjuib")
 
-[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=1455010657]
+[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=746602749]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("6_wjuib")
 
-[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=2052807044]
+[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=409019365]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -80, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("2_axl34")
 
-[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=1094317301]
+[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=1793914397]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("2_axl34")
 
-[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=1575698377]
+[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=421861325]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("6_wjuib")
 
-[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=1873920367]
+[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=1926955280]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -40, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("2_axl34")
 
-[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=1121593953]
+[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=288277477]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("2_axl34")
 
-[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=1229676169]
+[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=1497716298]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("6_wjuib")
 
-[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=1418468478]
+[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=1741196191]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 40, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("2_axl34")
 
-[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=1208984062]
+[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=1387812717]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("2_axl34")
 
-[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=271816552]
+[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=554160635]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("6_wjuib")
 
-[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=576338304]
+[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=1514717789]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 80, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("2_axl34")
 
-[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=333185460]
+[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=2005148338]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("2_axl34")
 
-[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=323573217]
+[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=923094097]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.29, 66.95)
 operation = 2
 size = Vector3(5, 2.62, 4.1)
 material = ExtResource("7_xag4j")
 
-[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=1417633546 groups=["navigation_source"]]
+[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=765494458 groups=["navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 67.75)
 use_collision = true
 metadata/surface = "wood"
 
-[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=186381246]
+[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=55209619]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 size = Vector3(6, 1, 5.5)
 material = ExtResource("7_xag4j")
 
-[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=1640741858]
+[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=997508275]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 operation = 2
 size = Vector3(5, 1.2, 4.5)
 material = ExtResource("7_xag4j")
 
-[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=402984380]
+[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=893598023]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2.5)
 operation = 2
 size = Vector3(3, 0.35, 1)
 material = ExtResource("7_xag4j")
 
-[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=1921352636]
+[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=935747487]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 size = Vector3(6.8, 0.5, 6.3)
 material = ExtResource("7_xag4j")
 
-[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=1196234418]
+[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=1685713081]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
 size = Vector3(6.6, 0.25, 6.1)
 material = ExtResource("8_pgbyh")
 
-[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=1062443123]
+[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=2067882171]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.12, -3.2)
 radius = 0.17
 height = 7.0
 material = ExtResource("7_xag4j")
 
-[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=454557775]
+[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=2108497233]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.44, -3.2)
 radius = 0.17
 height = 7.0
 material = ExtResource("7_xag4j")
 
-[node name="DeepSnowZones" type="Node3D" parent="." unique_id=572117611]
+[node name="DeepSnowZones" type="Node3D" parent="." unique_id=1811241257]
 
-[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1825656662]
+[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1808402836]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, -20)
 script = ExtResource("9_68kkm")
 size = Vector3(26, 4, 14)
 drift_material = ExtResource("8_pgbyh")
 
-[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=92472710]
+[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=1163348154]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -55)
 script = ExtResource("9_68kkm")
 size = Vector3(30, 4, 16)
 drift_material = ExtResource("8_pgbyh")
 
-[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=1684233082]
+[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=2006217030]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, -85)
 script = ExtResource("9_68kkm")
 size = Vector3(24, 4, 18)
 drift_material = ExtResource("8_pgbyh")
 
-[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=534755882]
+[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=1503038004]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 5)
 script = ExtResource("9_68kkm")
 size = Vector3(22, 4, 12)
 drift_material = ExtResource("8_pgbyh")
 
-[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=574194615]
+[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=2067394825]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
 script = ExtResource("9_68kkm")
 size = Vector3(40, 4, 8)
 drift_material = ExtResource("8_pgbyh")
 
-[node name="ShootingRange" type="Node3D" parent="." unique_id=711957818 groups=["navigation_source"]]
+[node name="ShootingRange" type="Node3D" parent="." unique_id=1264332791 groups=["navigation_source"]]
 
-[node name="Target_25m" type="Node3D" parent="ShootingRange" unique_id=1504164247 instance=ExtResource("10_n4g7x")]
+[node name="Target_25m" type="Node3D" parent="ShootingRange" unique_id=1492008310 instance=ExtResource("10_n4g7x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 36)
 script = ExtResource("11_atrxo")
 label_text = "25 m"
 
-[node name="Target_50m" type="Node3D" parent="ShootingRange" unique_id=677153713 instance=ExtResource("10_n4g7x")]
+[node name="Target_50m" type="Node3D" parent="ShootingRange" unique_id=602804505 instance=ExtResource("10_n4g7x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 11)
 script = ExtResource("11_atrxo")
 label_text = "50 m"
 
-[node name="Target_100m" type="Node3D" parent="ShootingRange" unique_id=1721280302 instance=ExtResource("10_n4g7x")]
+[node name="Target_100m" type="Node3D" parent="ShootingRange" unique_id=1970769522 instance=ExtResource("10_n4g7x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -39)
 script = ExtResource("11_atrxo")
 label_text = "100 m"
 
-[node name="Target_150m" type="Node3D" parent="ShootingRange" unique_id=1054251452 instance=ExtResource("10_n4g7x")]
+[node name="Target_150m" type="Node3D" parent="ShootingRange" unique_id=1382921090 instance=ExtResource("10_n4g7x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -89)
 script = ExtResource("11_atrxo")
 label_text = "150 m"
 
-[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=756203167]
+[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=911000946]
 navigation_mesh = ExtResource("12_vr6yy")
 
-[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=1458988783]
+[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=1261789585]
 
-[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=562404287 groups=["enemy_spawn"]]
+[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=676770481 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -118)
 
-[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=1265451403 groups=["enemy_spawn"]]
+[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=1601670469 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, -118)
 
-[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=599216766 groups=["enemy_spawn"]]
+[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=196381685 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -118)
 
-[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=37671161 groups=["enemy_spawn"]]
+[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=123876860 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -118)
 
-[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=716185010 groups=["enemy_spawn"]]
+[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=476004401 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, -118)
 
-[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=1404481997 groups=["enemy_spawn"]]
+[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=944837057 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -118)
 
-[node name="AttackPoints" type="Node3D" parent="." unique_id=708744230]
+[node name="AttackPoints" type="Node3D" parent="." unique_id=2096424121]
 
-[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=366020375 groups=["attack_point"]]
+[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=1036014884 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0, 38)
 
-[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=31505428 groups=["attack_point"]]
+[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=1575292299 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, 42)
 
-[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=1921468166 groups=["attack_point"]]
+[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=1936019846 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0, 38)
 
-[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=133691395 groups=["attack_point"]]
+[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=276657030 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 42)
 
-[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=224745990 groups=["attack_point"]]
+[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=1874512392 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 38)
 
-[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=1382273205 groups=["attack_point"]]
+[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=1920444799 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 42)
 
-[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=1776839329 groups=["attack_point"]]
+[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=63701210 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 38)
 
-[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=562130688 groups=["attack_point"]]
+[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=1321007460 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84, 0, 42)
 
-[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=525893947]
+[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=486442967]
 
-[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1617728790 groups=["player_spawn"]]
+[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=372833969 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -1.3, 61)
 
-[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1466459253 groups=["player_spawn"]]
+[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1265049915 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -1.3, 61)
 
-[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1792283628 groups=["player_spawn"]]
+[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=194215752 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -1.3, 61)
 
-[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=17712970 groups=["player_spawn"]]
+[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1171275467 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.3, 61)

@@ -22,7 +22,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] M1 project setup, input map, test level, player movement
 - [x] M2 weapons and shooting
 - [x] M3 enemy AI (state machine) and wave spawner
-- [ ] M4 HUD, death/respawn (5 s), main menu (Single Player; greyed-out Host/Join Co-op)
+- [x] M4 HUD, death/respawn (5 s), main menu (Single Player; greyed-out Host/Join Co-op), pause menu
 - [ ] M5 web export test and performance check
 
 ## Multiplayer-ready architecture (mandatory)
@@ -38,6 +38,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Spawning via `MultiplayerSpawner` (players → `Players`, enemies → `Enemies`); synced state via
   `MultiplayerSynchronizer` (InputSync, StateSync, WeaponSync, WaveSync, DummySync).
 - No "the player" singleton: use the `players` group. Only autoload: `NetworkManager`.
+- Death: host sets `Player.is_dead` (synced), emits `died`; `Game` respawns after `respawn_time`
+  via `Player.respawn()`, which tells the owner's PlayerInput the new view with `set_look` RPC.
+- UI only reads state: `HUD` finds the local player and listens to signals. Pause menu (Esc)
+  pauses only in single player (`NetworkManager.is_single_player()`), and opens itself whenever
+  the mouse is not captured (browser pointer lock needs a click).
 
 ## Conventions
 - Folders: `scenes/`, `scripts/` (player, weapons, enemies, world, game), `resources/`
@@ -48,7 +53,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Data-driven: `WeaponData` (`resources/weapons/*.tres`), `EnemyData` (`resources/enemies/*.tres`).
 - Damage interface: `take_damage(amount: float, attacker_id: int, hit_position: Vector3,
   hit_normal: Vector3) -> bool` (returns true if the hit killed). Enemies use attacker_id -1.
-- Groups: `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
+- Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
   `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`.
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers.
 - Surface metadata `surface` = `snow` (default) / `wood` / `earthwork` / `cloth`; meta
@@ -72,6 +77,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - CSG subtraction faces take the material of the subtracting shape (trench walls = log material).
 - Additive-blend effects are invisible against bright snow; use normal alpha blending.
 - Terrain and forest are generated at runtime by `@tool` scripts (not saved in the scene).
+- `--script` tool files compile before autoloads exist: use `_initialize()` (not `_init()`) and
+  `root.get_node("NetworkManager")` instead of the autoload name.
+- Headless tests must free `Game/PauseMenu` (the mouse can't be captured, so it would pause).
 - After changing the level geometry, re-bake: select `Navigation` in `levels/test_level.tscn`
   → Bake NavigationMesh (saves `levels/test_level_navmesh.res`).
 
@@ -82,6 +90,6 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   scenes/materials/weapon & enemy data. **It overwrites scenes** – once the owner edits scenes in the
   editor, edit the .tscn files (or the editor) instead of regenerating, unless he agrees.
 - `bake_nav.gd` bakes the navmesh; `make_sounds.py` synthesizes the placeholder sounds.
-- `test_m1.gd`, `test_m2.gd`, `test_m3.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
+- `test_m1.gd` … `test_m4.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

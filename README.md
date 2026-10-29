@@ -14,8 +14,12 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Fire / aim down sights | Left mouse / right mouse |
 | Reload | R |
 | Mosin-Nagant / Suomi | 1 / 2 |
-| Release mouse | Esc (click the game to capture it again) |
-| Debug: god mode / enemy state labels | F1 / F2 |
+| Pause menu | Esc |
+| Debug: god mode / enemy state labels / debug text | F1 / F2 / F3 |
+
+## Running
+- **F5** starts from the main menu. To jump straight into a match while testing, open
+  `scenes/game.tscn` and press **F6** (Run Current Scene).
 
 ## Folders
 - `autoload/` – scripts that are always loaded (NetworkManager)
@@ -24,7 +28,8 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - `scripts/` – all game code, grouped by topic
 - `resources/` – materials, weapon data (`resources/weapons/*.tres`) and enemy data
   (`resources/enemies/*.tres`) – tune weapons and enemies here
-- `ui/`, `assets/` – menus/HUD and art (later)
+- `ui/` – main menu, HUD, pause menu, theme (`ui/winter_theme.tres`)
+- `assets/` – sounds (placeholders), art later
 
 ## Multiplayer-ready design
 - Single player = host with no clients (OfflineMultiplayerPeer, our peer id is 1).
@@ -44,5 +49,5 @@ select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 - [x] M1: project setup, input map, test level, player movement
 - [x] M2: weapons and shooting
 - [x] M3: enemy AI and wave spawner
-- [ ] M4: HUD, death/respawn, main menu
+- [x] M4: HUD, death/respawn, main menu
 - [ ] M5: web export test and performance check

@@ -46,4 +46,7 @@ n = int(1.2 * SR)
 save("reload.wav", click(n, 0.05, 1500, 0.06) + click(n, 0.3, 1100, 0.08, 0.8) + click(n, 0.75, 1900, 0.05) + click(n, 0.95, 2500, 0.03, 0.9))
 n = int(0.15 * SR)
 save("empty_click.wav", click(n, 0.0, 3000, 0.02))
+n = int(0.08 * SR)
+t = np.arange(n) / SR
+save("hit_tick.wav", np.sin(2*np.pi*1800*t) * np.exp(-t / 0.015) + click(n, 0.0, 3200, 0.01, 0.3))
 print("sounds written")

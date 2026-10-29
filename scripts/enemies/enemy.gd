@@ -138,7 +138,7 @@ func _find_visible_player() -> Player:
 	var half_angle: float = deg_to_rad(data.vision_angle_deg / 2.0)
 	for node in get_tree().get_nodes_in_group("players"):
 		var p := node as Player
-		if p == null or p.health <= 0:
+		if p == null or p.is_dead:
 			continue
 		var to_player: Vector3 = p.head.global_position - eyes.global_position
 		var distance: float = to_player.length()
@@ -188,7 +188,7 @@ func _start_attack(target: Player) -> void:
 
 
 func _attack(delta: float) -> void:
-	if _target == null or not is_instance_valid(_target) or _target.health <= 0:
+	if _target == null or not is_instance_valid(_target) or _target.is_dead:
 		_target = null
 		state = State.PATROL
 		return

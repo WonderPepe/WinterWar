@@ -63,7 +63,7 @@ properties/4/path = NodePath(".:health")
 properties/4/spawn = true
 properties/4/replication_mode = 2
 
-[node name="SovietRifleman" type="CharacterBody3D" unique_id=1097034799]
+[node name="SovietRifleman" type="CharacterBody3D" unique_id=300258522]
 collision_layer = 4
 collision_mask = 3
 floor_max_angle = 0.80285144
@@ -72,56 +72,56 @@ script = ExtResource("1_1i86x")
 data = ExtResource("2_kvoyh")
 metadata/surface = "cloth"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=814958792]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1306015205]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_exyxr")
 
-[node name="Visual" type="Node3D" parent="." unique_id=1337437241]
+[node name="Visual" type="Node3D" parent="." unique_id=1815661410]
 
-[node name="Greatcoat" type="MeshInstance3D" parent="Visual" unique_id=1499416438]
+[node name="Greatcoat" type="MeshInstance3D" parent="Visual" unique_id=98908860]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
 mesh = SubResource("CapsuleMesh_qc5fo")
 
-[node name="Head" type="MeshInstance3D" parent="Visual" unique_id=811110593]
+[node name="Head" type="MeshInstance3D" parent="Visual" unique_id=255705742]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.02)
 cast_shadow = 0
 mesh = SubResource("SphereMesh_vt6eu")
 
-[node name="Budenovka" type="MeshInstance3D" parent="Visual" unique_id=336242486]
+[node name="Budenovka" type="MeshInstance3D" parent="Visual" unique_id=850919228]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -0.02)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_araca")
 
-[node name="Rifle" type="Node3D" parent="Visual" unique_id=3321880]
+[node name="Rifle" type="Node3D" parent="Visual" unique_id=449893556]
 transform = Transform3D(0.90630776, -0.42261827, 0, 0.24240388, 0.5198368, -0.81915206, 0.34618863, 0.74240386, 0.57357645, 0.18, 1.15, -0.22)
 
-[node name="Stock" type="MeshInstance3D" parent="Visual/Rifle" unique_id=624138823]
+[node name="Stock" type="MeshInstance3D" parent="Visual/Rifle" unique_id=1520946025]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_7ty6n")
 
-[node name="Barrel" type="MeshInstance3D" parent="Visual/Rifle" unique_id=209993731]
+[node name="Barrel" type="MeshInstance3D" parent="Visual/Rifle" unique_id=1013408220]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.03, -0.55)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_1uiom")
 
-[node name="Muzzle" type="Marker3D" parent="Visual/Rifle" unique_id=1892775169]
+[node name="Muzzle" type="Marker3D" parent="Visual/Rifle" unique_id=1006973233]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -0.8)
 
-[node name="Eyes" type="Marker3D" parent="." unique_id=275346795]
+[node name="Eyes" type="Marker3D" parent="." unique_id=414700316]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.1)
 
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1422066119]
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1157798095]
 target_desired_distance = 1.5
 height = 2.0
 
-[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=95616156]
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=316945851]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 stream = ExtResource("8_36h6i")
 volume_db = -2.0
 unit_size = 30.0
 
-[node name="DebugLabel" type="Label3D" parent="." unique_id=550691964]
+[node name="DebugLabel" type="Label3D" parent="." unique_id=1201876719]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
 visible = false
 pixel_size = 0.0012
@@ -130,5 +130,5 @@ no_depth_test = true
 fixed_size = true
 outline_size = 8
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=1948831663]
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=1262313774]
 replication_config = SubResource("SceneReplicationConfig_a3uxn")

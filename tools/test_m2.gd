@@ -32,6 +32,7 @@ func torso(t: TargetDummy) -> Vector3:
 
 func _initialize() -> void:
 	root.add_child(load("res://scenes/game.tscn").instantiate())
+	root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 
 func run() -> void:

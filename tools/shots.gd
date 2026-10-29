@@ -4,6 +4,7 @@ extends SceneTree
 func _initialize() -> void:
 	var game: Node = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
+	game.get_node("PauseMenu").free() # tests drive the game directly
 	run()
 
 func shot(p: Player, pos: Vector3, yaw_deg: float, pitch_deg: float, file: String) -> void:

@@ -1,5 +1,5 @@
 extends Label
-## Temporary debug text for testing (the real HUD comes in M4).
+## Debug text for testing (F3 shows/hides it). The real HUD is ui/hud.tscn.
 ## Shows information about the player controlled on this computer.
 
 var _hit_text_until: float = 0.0
@@ -36,18 +36,24 @@ func _process(_delta: float) -> void:
 		wave_line = "Wave %d   Enemies alive: %d" % [waves.wave_number, waves.alive_count]
 		if waves.get_time_to_next_wave() > 0.0:
 			wave_line += "   Next wave in %d s" % ceili(waves.get_time_to_next_wave())
-	text = "Speed: %.1f m/s   Stamina: %d   Health: %d%s\nState: %s   Deep snow: %s\n%s\n%s\n%s\nFPS: %d   Mouse: %s   [F1 god mode, F2 enemy labels]" % [
+	text = "Speed: %.1f m/s   Stamina: %d   Health: %d%s\nState: %s   Deep snow: %s\n%s\n%s\n%s\nFPS: %d   Mouse: %s   [F1 god mode, F2 enemy labels, F3 hide]" % [
 		player.get_speed(), int(player.stamina), player.health, "  (GOD MODE)" if player.god_mode else "",
 		state, "YES" if player.is_in_deep_snow() else "no",
 		weapon_line,
 		wave_line,
 		_hit_text if now < _hit_text_until else "",
 		Engine.get_frames_per_second(),
-		"captured (Esc to release)" if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else "free (click to capture)",
+		"captured" if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else "free",
 	]
 
 
+func _ready() -> void:
+	visible = false # F3 shows it
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_overlay"):
+		visible = not visible
 	if event.is_action_pressed("debug_enemy_labels"):
 		Enemy.show_debug_labels = not Enemy.show_debug_labels
 

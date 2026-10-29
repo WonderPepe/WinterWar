@@ -54,13 +54,7 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.randomize()
 	if multiplayer.is_server():
-		var mags := PackedInt32Array()
-		var reserves := PackedInt32Array()
-		for w in loadout:
-			mags.append(w.magazine_size)
-			reserves.append(w.starting_reserve)
-		mag_ammo = mags
-		reserve_ammo = reserves
+		refill_ammo()
 	for w in loadout:
 		var vm: ViewModel = w.view_model.instantiate()
 		holder.add_child(vm)
@@ -95,6 +89,7 @@ func _process(delta: float) -> void:
 		_host_process(delta, w)
 	is_aiming = input.aim_held and not is_reloading and not player.is_sprinting
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
+	holder.visible = player.is_local_player() and not player.is_dead
 	if player.is_local_player():
 		_owner_process(delta, w)
 
@@ -119,7 +114,7 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 
 
 func _can_fire_now() -> bool:
-	return _now() >= _next_fire_time and not is_reloading and not player.is_sprinting
+	return _now() >= _next_fire_time and not is_reloading and not player.is_sprinting and not player.is_dead
 
 
 func _fire(w: WeaponData) -> void:
@@ -153,11 +148,19 @@ func _dry_fire(w: WeaponData) -> void:
 		input.request_reload.rpc_id(1) # empty: reload automatically
 
 
-## Random direction inside a cone around the view direction.
-func _spread_direction(w: WeaponData) -> Vector3:
+## Current maximum spread in degrees (also used by the HUD crosshair).
+func get_current_spread_deg() -> float:
+	var w := get_current_weapon()
+	if w == null:
+		return 0.0
 	var spread: float = lerpf(w.hip_spread_deg, w.ads_spread_deg, _aim_t)
 	spread += w.move_spread_deg * clampf(player.get_speed() / player.walk_speed, 0.0, 1.5)
-	spread += _bloom_deg
+	return spread + _bloom_deg
+
+
+## Random direction inside a cone around the view direction.
+func _spread_direction(_w: WeaponData) -> Vector3:
+	var spread: float = get_current_spread_deg()
 	# randf() without sqrt() puts more shots near the centre than near the edge.
 	var angle: float = deg_to_rad(spread) * _rng.randf()
 	var around: float = _rng.randf() * TAU
@@ -201,6 +204,18 @@ func _host_process(delta: float, w: WeaponData) -> void:
 			_finish_reload(get_current_weapon())
 
 
+## Host only: full magazines and starting spare ammo (used when respawning).
+func refill_ammo() -> void:
+	var mags := PackedInt32Array()
+	var reserves := PackedInt32Array()
+	for w in loadout:
+		mags.append(w.magazine_size)
+		reserves.append(w.starting_reserve)
+	mag_ammo = mags
+	reserve_ammo = reserves
+	is_reloading = false
+
+
 func _start_reload(w: WeaponData) -> void:
 	if is_reloading or get_mag_ammo() >= w.magazine_size or get_reserve_ammo() <= 0:
 		return
@@ -225,7 +240,7 @@ func server_fire(origin: Vector3, direction: Vector3) -> void:
 		return # someone tried to fire another player's gun
 	var w := get_current_weapon()
 	var now: float = _now()
-	if w == null or is_reloading or get_mag_ammo() <= 0 or now < _server_next_fire:
+	if w == null or is_reloading or player.is_dead or get_mag_ammo() <= 0 or now < _server_next_fire:
 		return
 	_server_next_fire = now + w.get_shot_interval() * 0.8 # small tolerance for network jitter
 	if origin.distance_to(camera.global_position) > 2.0:
@@ -240,6 +255,8 @@ func server_fire(origin: Vector3, direction: Vector3) -> void:
 		var target := _find_damageable(collider)
 		if target and (friendly_fire or not target is Player):
 			var killed: bool = target.take_damage(w.damage_at(origin.distance_to(hit.position)), shooter, hit.position, hit.normal)
+			if killed and target is Enemy:
+				player.kills += 1
 			confirm_hit.rpc_id(shooter, killed)
 		var attach: NodePath = collider.get_path() if collider.has_meta("attach_holes") else NodePath()
 		show_impact.rpc(hit.position, hit.normal, ImpactEffects.surface_of(collider, hit.normal), attach)
@@ -288,7 +305,6 @@ func _set_current_slot(value: int) -> void:
 func _apply_slot() -> void:
 	for i in _view_models.size():
 		_view_models[i].visible = (i == current_slot)
-	holder.visible = player.is_local_player()
 	_next_fire_time = _now() + switch_time
 	_bloom_deg = 0.0
 	if current_slot < _view_models.size():

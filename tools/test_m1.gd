@@ -27,6 +27,7 @@ func teleport(pos: Vector3, yaw := 0.0) -> void:
 func _initialize() -> void:
 	game = load("res://scenes/game.tscn").instantiate()
 	root.add_child(game)
+	game.get_node("PauseMenu").free() # tests drive the game directly
 	run()
 
 func run() -> void:

@@ -2,6 +2,7 @@ extends SceneTree
 ## Checks that mouse motion turns the view (real window under a virtual display).
 func _initialize() -> void:
 	root.add_child(load("res://scenes/game.tscn").instantiate())
+	root.get_node("Game/PauseMenu").free() # tests drive the game directly
 	run()
 func run() -> void:
 	for i in 20: await process_frame
