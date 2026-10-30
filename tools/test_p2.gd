@@ -71,7 +71,7 @@ func run() -> void:
 		heard_step = heard_step or pfx.footsteps.playing
 	check(FootstepSounds.has_any() or not heard_step, "no footstep recordings yet: silent")
 	# With a recording for snow (any sound will do for the test) the steps play.
-	pfx._streams["snow"] = [load("res://assets/audio/hurt_thump.wav")] as Array[AudioStream]
+	pfx._streams["snow"] = [load("res://assets/audio/empty_click.wav")] as Array[AudioStream]
 	heard_step = false
 	for i in 40:
 		p.global_position += Vector3(0.1, 0, 0)

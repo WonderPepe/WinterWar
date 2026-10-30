@@ -57,8 +57,16 @@ enum FireMode { BOLT_ACTION, SEMI_AUTO, FULL_AUTO }
 @export_group("Sounds")
 @export var fire_sound: AudioStream
 @export var cycle_sound: AudioStream ## Bolt being worked (bolt-action only).
-@export var reload_sound: AudioStream
+@export var reload_sound: AudioStream ## Empty = a real recording "reload_<recording_name>…" (see RecordedSounds), or silence.
+@export var recording_name: String = "" ## e.g. "mosin": uses assets/audio/recorded/reload_mosin….
 @export var empty_sound: AudioStream
+
+
+## The reload sound: the one set above, else a real recording, else null (silent).
+func get_reload_sound() -> AudioStream:
+	if reload_sound:
+		return reload_sound
+	return RecordedSounds.pick("reload_" + recording_name) if not recording_name.is_empty() else null
 
 
 ## Seconds between two shots.

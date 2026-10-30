@@ -668,7 +668,7 @@ func _make_weapon_data() -> void:
 	mosin.ads_sensitivity_multiplier = 0.5
 	mosin.fire_sound = load(a + "mosin_shot.wav")
 	mosin.cycle_sound = load(a + "bolt_cycle.wav")
-	mosin.reload_sound = load(a + "reload.wav")
+	mosin.recording_name = "mosin" # reload sound: assets/audio/recorded/reload_mosin… (if any)
 	mosin.empty_sound = load(a + "empty_click.wav")
 	ResourceSaver.save(mosin, "res://resources/weapons/mosin_m28_30.tres")
 
@@ -703,7 +703,7 @@ func _make_weapon_data() -> void:
 	suomi.ads_move_multiplier = 0.75
 	suomi.ads_sensitivity_multiplier = 0.75
 	suomi.fire_sound = load(a + "suomi_shot.wav")
-	suomi.reload_sound = load(a + "reload.wav")
+	suomi.recording_name = "suomi"
 	suomi.empty_sound = load(a + "empty_click.wav")
 	ResourceSaver.save(suomi, "res://resources/weapons/suomi_kp31.tres")
 
@@ -741,7 +741,7 @@ func _make_weapon_data() -> void:
 	maxim.steam_heat = 0.6
 	maxim.overheat_recover_heat = 0.5
 	maxim.fire_sound = load(a + "maxim_shot.wav")
-	maxim.reload_sound = load(a + "belt_reload.wav")
+	maxim.recording_name = "maxim"
 	maxim.empty_sound = load(a + "empty_click.wav")
 	ResourceSaver.save(maxim, "res://resources/weapons/maxim_m09_21.tres")
 
@@ -1175,7 +1175,7 @@ func _build_hud() -> Node:
 	tick.volume_db = -8.0
 	tick.bus = &"UI"
 	var hurt: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HurtSound")
-	hurt.stream = load("res://assets/audio/hurt_thump.wav")
+	# (no stream: HUD picks a real recording, assets/audio/recorded/hurt…)
 	hurt.volume_db = -4.0
 	hurt.bus = &"UI"
 	_ignore_mouse(hud) # the HUD must never catch the mouse (see the M2 mouse-look bug)

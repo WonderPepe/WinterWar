@@ -173,6 +173,12 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   recordings by name from `assets/audio/footsteps/` (snow / trench|gravel / wood; trench falls
   back to snow) with `ResourceLoader.list_directory` (works in exports). No files = silent.
   Wind loop is at -14 dB (owner: wind too loud).
+- Reload and hurt sounds: the generated reload.wav / belt_reload.wav / hurt_thump.wav were removed
+  (owner: "sounding bad"). `RecordedSounds` (scripts/game/recorded_sounds.gd) loads real files by
+  name prefix from `assets/audio/recorded/` (`reload_<WeaponData.recording_name>…`, `hurt…`);
+  `WeaponData.get_reload_sound()` = `reload_sound` if set, else a recording, else null (silent).
+  make_sounds.py still runs those generators without saving (keeps the random numbers the same).
+  Placeholder sounds that remain: shots, bolt cycle, empty click, hit tick, ambience, cracks, steam.
 - Breath vapour: faint (alpha ~0.1), below the line of sight; Settings `show_breath` (menu
   "Breath vapour") switches it off for you and the soldiers. Maxim smoke: thin, pushed out of
   the slit.

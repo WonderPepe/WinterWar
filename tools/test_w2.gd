@@ -187,5 +187,10 @@ func run() -> void:
 	check(p.get_mounted_gun() == null and p.camera.position.length() < 0.001, "camera back to normal off the gun")
 	check(not hud.heat_row.visible, "heat bar only on the Maxim")
 
+	# Bad generated sounds removed (owner's request): reload and hurt use real recordings only.
+	for w: WeaponData in [wc.loadout[0], wc.loadout[1], gun.data]:
+		check(w.reload_sound == null and not w.recording_name.is_empty(), "%s: no generated reload sound, recordings name '%s'" % [w.display_name, w.recording_name])
+	check(hud.hurt_sound.stream == null or RecordedSounds.get_sounds("hurt").size() > 0, "no generated hurt sound")
+
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

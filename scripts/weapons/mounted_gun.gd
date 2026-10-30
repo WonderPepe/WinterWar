@@ -378,6 +378,7 @@ func _set_is_reloading(value: bool) -> void:
 	is_reloading = value
 	if started:
 		_reload_started = Time.get_ticks_msec() / 1000.0
-	if started and is_node_ready() and data and data.reload_sound:
-		mech_audio.stream = data.reload_sound
+	var sound: AudioStream = data.get_reload_sound() if data else null
+	if started and is_node_ready() and sound:
+		mech_audio.stream = sound
 		mech_audio.play()

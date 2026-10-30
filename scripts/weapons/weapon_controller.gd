@@ -411,7 +411,7 @@ func _set_is_reloading(value: bool) -> void:
 	if started and is_node_ready() and player.is_local_player():
 		var w := get_current_weapon()
 		_current_view_model().play_reload(w.reload_time)
-		_play(mech_audio, w.reload_sound)
+		_play(mech_audio, w.get_reload_sound())
 
 
 func _current_view_model() -> ViewModel:

@@ -1,12 +1,11 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
-[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="1_b8hig"]
-[ext_resource type="AudioStream" path="res://assets/audio/maxim_shot.wav" id="2_to0n0"]
-[ext_resource type="AudioStream" path="res://assets/audio/belt_reload.wav" id="3_rsaiy"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="4_ekikg"]
+[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="1_a2l4n"]
+[ext_resource type="AudioStream" path="res://assets/audio/maxim_shot.wav" id="2_b8hig"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="3_to0n0"]
 
 [resource]
-script = ExtResource("4_ekikg")
+script = ExtResource("3_to0n0")
 display_name = "Maxim M/09-21"
 fire_mode = 2
 rounds_per_minute = 580.0
@@ -31,6 +30,6 @@ recoil_return_speed = 12.0
 ads_fov = 50.0
 ads_sensitivity_multiplier = 0.5
 heat_per_shot = 0.0062
-fire_sound = ExtResource("2_to0n0")
-reload_sound = ExtResource("3_rsaiy")
-empty_sound = ExtResource("1_b8hig")
+fire_sound = ExtResource("2_b8hig")
+recording_name = "maxim"
+empty_sound = ExtResource("1_a2l4n")

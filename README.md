@@ -119,6 +119,10 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   the name into `assets/audio/footsteps/` (see the README there – e.g. Kenney "Impact Sounds",
   CC0). Without files the game has no footsteps. (The generated ones sounded bad.)
 - **Settings**: a separate "Wind and battle" volume, and "Breath vapour" on/off.
+- **Reload and "you got hit" sounds** use real recordings only (the generated ones sounded bad):
+  put files named `reload_mosin…`, `reload_suomi…`, `reload_maxim…` and `hurt…` (several
+  hurt files = a random one each time) into `assets/audio/recorded/` – see the README there.
+  Without files these moments are silent.
 
 ## Editing the trench and bunker
 They are built from CSG shapes in `levels/source/trench_csg.tscn` and baked into plain meshes

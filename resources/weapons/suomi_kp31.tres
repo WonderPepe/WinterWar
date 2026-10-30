@@ -1,15 +1,14 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
-[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="1_ll07p"]
-[ext_resource type="AudioStream" path="res://assets/audio/suomi_shot.wav" id="2_ugx13"]
-[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="3_qugrq"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="4_kcdc7"]
-[ext_resource type="PackedScene" path="res://scenes/weapons/suomi_viewmodel.tscn" id="5_xgywx"]
+[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="1_t44f0"]
+[ext_resource type="AudioStream" path="res://assets/audio/suomi_shot.wav" id="2_ll07p"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="3_ugx13"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/suomi_viewmodel.tscn" id="4_qugrq"]
 
 [resource]
-script = ExtResource("4_kcdc7")
+script = ExtResource("3_ugx13")
 display_name = "Suomi KP/-31"
-view_model = ExtResource("5_xgywx")
+view_model = ExtResource("4_qugrq")
 fire_mode = 2
 rounds_per_minute = 850.0
 damage = 25.0
@@ -35,6 +34,6 @@ ads_fov = 62.0
 ads_time = 0.2
 ads_move_multiplier = 0.75
 ads_sensitivity_multiplier = 0.75
-fire_sound = ExtResource("2_ugx13")
-reload_sound = ExtResource("3_qugrq")
-empty_sound = ExtResource("1_ll07p")
+fire_sound = ExtResource("2_ll07p")
+recording_name = "suomi"
+empty_sound = ExtResource("1_t44f0")

@@ -43,7 +43,9 @@ save("suomi_shot.wav", gunshot(0.35, 0.006, 0.05, 80, 0.07, 0.35))
 n = int(0.6 * SR)
 save("bolt_cycle.wav", click(n, 0.0, 2400, 0.03) + click(n, 0.12, 1700, 0.05, 0.7) + click(n, 0.33, 2000, 0.05, 0.8) + click(n, 0.45, 2600, 0.03))
 n = int(1.2 * SR)
-save("reload.wav", click(n, 0.05, 1500, 0.06) + click(n, 0.3, 1100, 0.08, 0.8) + click(n, 0.75, 1900, 0.05) + click(n, 0.95, 2500, 0.03, 0.9))
+# (reload.wav removed: sounded bad – real recordings go in assets/audio/recorded/. The call
+#  stays so the random numbers below come out the same.)
+_ = (click(n, 0.05, 1500, 0.06) + click(n, 0.3, 1100, 0.08, 0.8) + click(n, 0.75, 1900, 0.05) + click(n, 0.95, 2500, 0.03, 0.9))
 n = int(0.15 * SR)
 save("empty_click.wav", click(n, 0.0, 3000, 0.02))
 n = int(0.08 * SR)
@@ -52,7 +54,7 @@ save("hit_tick.wav", np.sin(2*np.pi*1800*t) * np.exp(-t / 0.015) + click(n, 0.0,
 # Maxim (added in W1): heavy rifle cartridge, short tail so fast fire doesn't turn to mush.
 save("maxim_shot.wav", gunshot(0.45, 0.009, 0.07, 48, 0.12, 0.28))
 n = int(2.0 * SR)
-save("belt_reload.wav", click(n, 0.05, 900, 0.08) + click(n, 0.45, 1300, 0.06, 0.8) + click(n, 0.8, 700, 0.12, 0.9)
+_ = (click(n, 0.05, 900, 0.08) + click(n, 0.45, 1300, 0.06, 0.8) + click(n, 0.8, 700, 0.12, 0.9)
      + click(n, 1.3, 1800, 0.05) + click(n, 1.55, 1100, 0.07, 0.9) + click(n, 1.8, 2300, 0.04))
 # ---- P2: footsteps, ambience, bullet cracks ----
 def bandnoise(n, lo_a, hi_a):
@@ -122,9 +124,9 @@ for i in range(2):
     zip_ = bandnoise(n, 0.2, 0.7) * env(n, 0.001, 0.03) * 0.8
     save(f"bullet_crack_{i+1}.wav", crack + zip_)
 
-# Being hit: a dull body thump.
+# Being hit: (hurt_thump.wav removed – sounded bad; real recordings: assets/audio/recorded/hurt…)
 n = int(0.35 * SR); t = np.arange(n) / SR
-save("hurt_thump.wav", np.sin(2*np.pi*70*t*(1 - 0.4*t)) * env(n, 0.002, 0.08) + lowpass(rng.uniform(-1, 1, n), 0.15) * env(n, 0.001, 0.03) * 0.7)
+_ = (np.sin(2*np.pi*70*t*(1 - 0.4*t)) * env(n, 0.002, 0.08) + lowpass(rng.uniform(-1, 1, n), 0.15) * env(n, 0.001, 0.03) * 0.7)
 
 # ---- W2: steam hissing from the Maxim's water jacket: 3 s seamless loop ----
 n = int(3 * SR); fade = int(0.5 * SR)

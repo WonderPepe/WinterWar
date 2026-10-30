@@ -76,7 +76,12 @@ func _find_local_player() -> void:
 func _on_health_changed(new_health: int) -> void:
 	if new_health < _last_health:
 		_flash = 1.0 # we got hurt: flash the screen edges red
-		hurt_sound.play()
+		# Real recordings only (assets/audio/recorded/hurt…): the generated thump sounded bad.
+		var sound: AudioStream = RecordedSounds.pick("hurt")
+		if sound:
+			hurt_sound.stream = sound
+			hurt_sound.pitch_scale = randf_range(0.95, 1.05)
+			hurt_sound.play()
 	_last_health = new_health
 
 
