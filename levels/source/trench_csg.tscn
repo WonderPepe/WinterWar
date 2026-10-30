@@ -5,186 +5,186 @@
 [ext_resource type="Material" path="res://resources/materials/bunker_logs.tres" id="3_6ejl5"]
 [ext_resource type="Material" path="res://resources/materials/snow_drift.tres" id="4_65e47"]
 
-[node name="TrenchCSG" type="Node3D" unique_id=1257091251]
+[node name="TrenchCSG" type="Node3D" unique_id=410366821]
 
-[node name="Trench" type="CSGCombiner3D" parent="." unique_id=1132598625 groups=["navigation_source"]]
+[node name="Trench" type="CSGCombiner3D" parent="." unique_id=1199609554 groups=["navigation_source"]]
 use_collision = true
 metadata/surface = "earthwork"
 
-[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=1776906835]
+[node name="EarthSlab" type="CSGBox3D" parent="Trench" unique_id=811125200]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.25, 61)
 size = Vector3(210, 2.5, 18)
 material = ExtResource("1_s1gjp")
 
-[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=682359557]
+[node name="TrenchCut1" type="CSGBox3D" parent="Trench" unique_id=1756152088]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -90, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=149099046]
+[node name="TrenchCut2" type="CSGBox3D" parent="Trench" unique_id=268108014]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -70, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=1779648991]
+[node name="TrenchCut3" type="CSGBox3D" parent="Trench" unique_id=1194834630]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -50, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=1605700668]
+[node name="TrenchCut4" type="CSGBox3D" parent="Trench" unique_id=1969073519]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, -30, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=1250668982]
+[node name="TrenchCut5" type="CSGBox3D" parent="Trench" unique_id=622582803]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, -10, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=834565477]
+[node name="TrenchCut6" type="CSGBox3D" parent="Trench" unique_id=2017953760]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 10, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=871267439]
+[node name="TrenchCut7" type="CSGBox3D" parent="Trench" unique_id=535380863]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 30, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=1019063286]
+[node name="TrenchCut8" type="CSGBox3D" parent="Trench" unique_id=1345604159]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 50, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=735738904]
+[node name="TrenchCut9" type="CSGBox3D" parent="Trench" unique_id=1401929472]
 transform = Transform3D(0.9578263, 0, -0.28734788, 0, 1, 0, 0.28734788, 0, 0.9578263, 70, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=1551811460]
+[node name="TrenchCut10" type="CSGBox3D" parent="Trench" unique_id=1537304587]
 transform = Transform3D(0.9578263, 0, 0.28734788, 0, 1, 0, -0.28734788, 0, 0.9578263, 90, -0.8, 61)
 operation = 2
 size = Vector3(22.880613, 3.6, 2)
 material = ExtResource("2_hgdh8")
 
-[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=1328674062]
+[node name="ExitCut_x-80" type="CSGBox3D" parent="Trench" unique_id=924183302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("2_hgdh8")
 
-[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=501737733]
+[node name="ExitRamp_x-80" type="CSGBox3D" parent="Trench" unique_id=786487614]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -80, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=339890111]
+[node name="ExitLanding_x-80" type="CSGBox3D" parent="Trench" unique_id=801276237]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=1606391869]
+[node name="ExitCut_x-40" type="CSGBox3D" parent="Trench" unique_id=322334199]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("2_hgdh8")
 
-[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=674205196]
+[node name="ExitRamp_x-40" type="CSGBox3D" parent="Trench" unique_id=871374556]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, -40, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=1238332346]
+[node name="ExitLanding_x-40" type="CSGBox3D" parent="Trench" unique_id=1005610251]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=1640648984]
+[node name="ExitCut_x40" type="CSGBox3D" parent="Trench" unique_id=1132377779]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("2_hgdh8")
 
-[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=1846319942]
+[node name="ExitRamp_x40" type="CSGBox3D" parent="Trench" unique_id=885522826]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 40, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=1378891544]
+[node name="ExitLanding_x40" type="CSGBox3D" parent="Trench" unique_id=1477155954]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=1860232299]
+[node name="ExitCut_x80" type="CSGBox3D" parent="Trench" unique_id=1293248012]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.8, 67.5)
 operation = 2
 size = Vector3(1.6, 3.6, 7)
 material = ExtResource("2_hgdh8")
 
-[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=231352631]
+[node name="ExitRamp_x80" type="CSGBox3D" parent="Trench" unique_id=1450331175]
 transform = Transform3D(1, 0, 0, 0, 0.9518082, 0.30669376, 0, -0.30669376, 0.9518082, 80, -0.9605425, 67.34201)
 size = Vector3(1.6, 0.6, 4.827843)
 material = ExtResource("1_s1gjp")
 
-[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=427581630]
+[node name="ExitLanding_x80" type="CSGBox3D" parent="Trench" unique_id=123154532]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, -0.15, 70.4)
 size = Vector3(1.6, 0.4, 2)
 material = ExtResource("1_s1gjp")
 
-[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=1634751505]
+[node name="BunkerRoomCut" type="CSGBox3D" parent="Trench" unique_id=1379566420]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.29, 66.95)
 operation = 2
 size = Vector3(5, 2.62, 4.1)
 material = ExtResource("3_6ejl5")
 
-[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=1238141669 groups=["navigation_source"]]
+[node name="Bunker" type="CSGCombiner3D" parent="." unique_id=1202570121 groups=["navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 67.75)
 use_collision = true
 metadata/surface = "wood"
 
-[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=1623714885]
+[node name="Walls" type="CSGBox3D" parent="Bunker" unique_id=372628523]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 size = Vector3(6, 1, 5.5)
 material = ExtResource("3_6ejl5")
 
-[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=1770162560]
+[node name="Inside" type="CSGBox3D" parent="Bunker" unique_id=328654104]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 operation = 2
 size = Vector3(5, 1.2, 4.5)
 material = ExtResource("3_6ejl5")
 
-[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=43650758]
+[node name="FiringSlit" type="CSGBox3D" parent="Bunker" unique_id=809150395]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -2.5)
 operation = 2
 size = Vector3(3, 0.35, 1)
 material = ExtResource("3_6ejl5")
 
-[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=1041733602]
+[node name="Roof" type="CSGBox3D" parent="Bunker" unique_id=1331620472]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 size = Vector3(6.8, 0.5, 6.3)
 material = ExtResource("3_6ejl5")
 
-[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=1088003160]
+[node name="RoofSnow" type="CSGBox3D" parent="Bunker" unique_id=1249478360]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
 size = Vector3(6.6, 0.25, 6.1)
 material = ExtResource("4_65e47")
 
-[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=1102823686]
+[node name="FrontLog1" type="CSGCylinder3D" parent="Bunker" unique_id=1464277123]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.12, -3.2)
 radius = 0.17
 height = 7.0
 material = ExtResource("3_6ejl5")
 
-[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=924830962]
+[node name="FrontLog2" type="CSGCylinder3D" parent="Bunker" unique_id=1349065332]
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 1.44, -3.2)
 radius = 0.17
 height = 7.0

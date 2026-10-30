@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://resources/shaders/winter_sky.gdshader" id="1_5fuhi"]
+
+[resource]
+shader = ExtResource("1_5fuhi")
+shader_parameter/zenith_color = null
+shader_parameter/horizon_color = null
+shader_parameter/ground_color = null
+shader_parameter/sun_glow_color = null
+shader_parameter/horizon_softness = null
+shader_parameter/glow_strength = null
+shader_parameter/sun_size_deg = null
+shader_parameter/sun_brightness = null
+shader_parameter/cloud_cover = null
+shader_parameter/cloud_color = null

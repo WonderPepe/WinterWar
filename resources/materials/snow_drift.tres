@@ -1,5 +1,22 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://resources/shaders/snow.gdshader" id="1_udtxd"]
+[ext_resource type="Texture2D" path="res://assets/textures/snow_mask.png" id="2_ghsfo"]
+[ext_resource type="Texture2D" path="res://assets/textures/snow_normal.png" id="3_2daqd"]
 
 [resource]
-albedo_color = Color(0.9, 0.93, 0.98, 1)
-roughness = 0.8
+render_priority = 0
+shader = ExtResource("1_udtxd")
+shader_parameter/snow_normal = ExtResource("3_2daqd")
+shader_parameter/snow_mask = ExtResource("2_ghsfo")
+shader_parameter/snow_color = null
+shader_parameter/snow_shade_color = null
+shader_parameter/ice_color = null
+shader_parameter/dirt_color = null
+shader_parameter/ripple_scale = null
+shader_parameter/patch_scale = null
+shader_parameter/normal_strength = 0.35
+shader_parameter/wrap = null
+shader_parameter/sparkle_strength = null
+shader_parameter/sparkle_distance = null
+shader_parameter/detail_distance = null

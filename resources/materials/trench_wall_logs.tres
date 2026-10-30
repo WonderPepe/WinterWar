@@ -1,5 +1,22 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://resources/shaders/log_wall.gdshader" id="1_nmo4e"]
+[ext_resource type="Texture2D" path="res://assets/textures/logs_albedo.png" id="2_anw3l"]
+[ext_resource type="Texture2D" path="res://assets/textures/snow_mask.png" id="3_1kqs3"]
+[ext_resource type="Texture2D" path="res://assets/textures/logs_normal.png" id="4_snjwi"]
 
 [resource]
-albedo_color = Color(0.22, 0.17, 0.12, 1)
-roughness = 0.9
+render_priority = 0
+shader = ExtResource("1_nmo4e")
+shader_parameter/albedo_texture = ExtResource("2_anw3l")
+shader_parameter/normal_texture = ExtResource("4_snjwi")
+shader_parameter/noise_texture = ExtResource("3_1kqs3")
+shader_parameter/tile_size_m = null
+shader_parameter/tint = Color(0.95, 0.92, 0.9, 1)
+shader_parameter/normal_strength = null
+shader_parameter/snow_color = null
+shader_parameter/snow_band = true
+shader_parameter/snow_line_y = 0.0
+shader_parameter/snow_band_width = null
+shader_parameter/top_snow = null
+shader_parameter/log_top_snow = null

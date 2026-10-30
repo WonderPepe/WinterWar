@@ -19,6 +19,7 @@ func apply() -> void:
 	var forest := get_tree().get_first_node_in_group("forest") as ForestScatter
 	if forest:
 		forest.set_visibility_end(p.tree_distance)
+		forest.set_detail_distance(p.tree_detail_distance)
 	var world := get_tree().get_first_node_in_group("world_environment") as WorldEnvironment
 	if world and world.environment:
 		world.environment.fog_density = p.fog_density

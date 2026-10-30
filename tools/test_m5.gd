@@ -18,11 +18,13 @@ func _ready() -> void:
 	var sun: DirectionalLight3D = get_tree().get_first_node_in_group("sun")
 	var forest: ForestScatter = get_tree().get_first_node_in_group("forest")
 	var env: Environment = (get_tree().get_first_node_in_group("world_environment") as WorldEnvironment).environment
-	var chunk: MultiMeshInstance3D = null
+	var chunk: MultiMeshInstance3D = null # a far (simple trees) chunk
+	var near_chunk: MultiMeshInstance3D = null # a near (detailed trees) chunk
 	for c in forest.get_children():
-		if c is MultiMeshInstance3D:
+		if c is MultiMeshInstance3D and c.name.begins_with("Far_") and chunk == null:
 			chunk = c
-			break
+		if c is MultiMeshInstance3D and c.name.begins_with("Near") and near_chunk == null:
+			near_chunk = c
 
 	check(game.get_node("Level/Trench") is StaticBody3D and game.get_node("Level/Bunker") is StaticBody3D, "level uses the baked trench and bunker (no CSG)")
 	check(game.get_node("Level").find_children("*", "CSGShape3D", true, false).is_empty(), "no CSG nodes left in the level")
@@ -30,15 +32,18 @@ func _ready() -> void:
 	Settings.set_quality(Settings.Quality.LOW)
 	await get_tree().process_frame
 	check(not sun.shadow_enabled, "Low: no shadows")
-	check(is_equal_approx(chunk.visibility_range_end, 110.0), "Low: trees drawn to 110 m")
+	check(is_equal_approx(chunk.visibility_range_end, 140.0), "Low: trees drawn to 140 m")
+	check(is_equal_approx(near_chunk.visibility_range_end, 35.0) and is_equal_approx(chunk.visibility_range_begin, 35.0), "Low: detailed trees only to 35 m")
 	check(p.snow_particles.amount == 250, "Low: less snow (%d)" % p.snow_particles.amount)
 	check(is_equal_approx(get_tree().root.scaling_3d_scale, 0.75), "Low: 75 % render scale")
-	check(is_equal_approx(env.fog_density, 0.009), "Low: denser fog hides the shorter view")
+	check(is_equal_approx(env.fog_density, 0.006), "Low: denser fog hides the shorter view")
 
 	Settings.set_quality(Settings.Quality.HIGH)
 	await get_tree().process_frame
 	check(sun.shadow_enabled and is_equal_approx(sun.directional_shadow_max_distance, 70.0), "High: shadows to 70 m")
-	check(is_equal_approx(chunk.visibility_range_end, 190.0) and p.snow_particles.amount == 900, "High: trees to 190 m, full snow")
+	check(is_equal_approx(chunk.visibility_range_end, 220.0) and p.snow_particles.amount == 900, "High: trees to 220 m, full snow")
+	check(is_equal_approx(near_chunk.visibility_range_end, 70.0), "High: detailed trees to 70 m")
+	check(forest.get_node_or_null("TreeLine") != null, "distant tree line exists")
 
 	Settings.set_mouse_sensitivity(2.0)
 	Settings.set_volume(0.5)

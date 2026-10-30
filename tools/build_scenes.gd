@@ -3,6 +3,8 @@ extends SceneTree
 ## resources so they are written in Godot's own format.
 
 const MAT_DIR := "res://resources/materials/"
+const SHADER_DIR := "res://resources/shaders/"
+const TEX_DIR := "res://assets/textures/"
 
 
 func _initialize() -> void:
@@ -74,12 +76,17 @@ func _make_materials() -> Dictionary:
 	flake.albedo_color = Color(0.95, 0.97, 1.0)
 	ResourceSaver.save(flake, MAT_DIR + "snowflake.tres")
 	return {
-		"snow": _mat("snow_ground.tres", Color(0.86, 0.89, 0.95), 0.85, true),
-		"drift": _mat("snow_drift.tres", Color(0.9, 0.93, 0.98), 0.8),
-		"trench_wall": _mat("trench_wall_logs.tres", Color(0.22, 0.17, 0.12)),
-		"bunker_log": _mat("bunker_logs.tres", Color(0.27, 0.2, 0.14)),
-		"trunk": _mat("tree_trunk.tres", Color(0.22, 0.17, 0.13)),
-		"foliage": _mat("tree_foliage.tres", Color.WHITE, 0.9, true),
+		"snow": _shader_mat("snow_ground.tres", "snow", {}),
+		"drift": _shader_mat("snow_drift.tres", "snow", {"normal_strength": 0.35}),
+		"trench_wall": _shader_mat("trench_wall_logs.tres", "log_wall", {
+			"albedo_texture": load(TEX_DIR + "logs_albedo.png"), "normal_texture": load(TEX_DIR + "logs_normal.png"),
+			"snow_band": true, "snow_line_y": 0.0, "tint": Color(0.95, 0.92, 0.9)}),
+		"bunker_log": _shader_mat("bunker_logs.tres", "log_wall", {
+			"albedo_texture": load(TEX_DIR + "logs_albedo.png"), "normal_texture": load(TEX_DIR + "logs_normal.png"),
+			"snow_band": false, "log_top_snow": 0.0, "tile_size_m": Vector2(2.4, 1.2), "tint": Color(1.05, 0.98, 0.92)}),
+		"trunk": _bark_mat("tree_trunk.tres"),
+		"foliage": _shader_mat("tree_foliage.tres", "spruce", {}),
+		"tree_line": _shader_mat("tree_line.tres", "tree_line", {"silhouette": load(TEX_DIR + "treeline.png")}),
 		"player_body": _mat("player_body.tres", Color(0.82, 0.83, 0.8)),
 		"flake": load(MAT_DIR + "snowflake.tres"),
 		"gun_wood": _mat("gun_wood.tres", Color(0.36, 0.22, 0.12), 0.6),
@@ -91,6 +98,37 @@ func _make_materials() -> Dictionary:
 		"enemy_cap": _mat("enemy_budenovka.tres", Color(0.26, 0.26, 0.2)),
 		"enemy_skin": _mat("enemy_skin.tres", Color(0.72, 0.57, 0.47)),
 	}
+
+
+## A material using one of the shaders in resources/shaders/. The snow textures are
+## given to every shader that has a slot for them.
+func _shader_mat(file: String, shader: String, params: Dictionary) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load(SHADER_DIR + shader + ".gdshader")
+	var defaults := {
+		"snow_normal": load(TEX_DIR + "snow_normal.png"),
+		"snow_mask": load(TEX_DIR + "snow_mask.png"),
+		"noise_texture": load(TEX_DIR + "snow_mask.png"),
+	}
+	var names: Array = m.shader.get_shader_uniform_list().map(func(u: Dictionary) -> String: return u.name)
+	for key in defaults:
+		if key in names:
+			m.set_shader_parameter(key, defaults[key])
+	for key in params:
+		assert(key in names, "%s has no parameter %s" % [shader, key])
+		m.set_shader_parameter(key, params[key])
+	ResourceSaver.save(m, MAT_DIR + file)
+	return load(MAT_DIR + file)
+
+
+func _bark_mat(file: String) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = load(TEX_DIR + "bark.png")
+	m.albedo_color = Color(0.85, 0.8, 0.78)
+	m.roughness = 0.95
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	ResourceSaver.save(m, MAT_DIR + file)
+	return load(MAT_DIR + file)
 
 
 func _metal(file: String) -> StandardMaterial3D:
@@ -274,39 +312,42 @@ func _build_level(mats: Dictionary) -> Node:
 	# --- Atmosphere ---
 	var we: WorldEnvironment = _add(root, WorldEnvironment.new(), "WorldEnvironment")
 	var env := Environment.new()
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.42, 0.47, 0.55)
-	sky_mat.sky_horizon_color = Color(0.68, 0.71, 0.76)
-	sky_mat.ground_bottom_color = Color(0.6, 0.63, 0.68)
-	sky_mat.ground_horizon_color = Color(0.68, 0.71, 0.76)
-	sky_mat.sun_angle_max = 20.0
-	sky_mat.sun_curve = 0.3
+	# Clear, freezing day: our own sky shader (resources/shaders/winter_sky.gdshader).
+	var sky_mat := ShaderMaterial.new()
+	sky_mat.shader = load(SHADER_DIR + "winter_sky.gdshader")
+	ResourceSaver.save(sky_mat, MAT_DIR + "winter_sky.tres")
 	var sky := Sky.new()
-	sky.sky_material = sky_mat
+	sky.sky_material = load(MAT_DIR + "winter_sky.tres")
+	sky.radiance_size = Sky.RADIANCE_SIZE_64 # the sky is soft: a tiny reflection map is enough
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
+	# Shadows are lit only by the blue sky -> cold blue shadows next to warm sunlit snow.
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_color = Color(0.62, 0.7, 0.85)
-	env.ambient_light_sky_contribution = 0.5
-	env.ambient_light_energy = 0.6
+	env.ambient_light_color = Color(0.56, 0.68, 0.9)
+	env.ambient_light_sky_contribution = 0.55
+	env.ambient_light_energy = 0.5
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	# Linear tonemapping: in the Compatibility renderer "Filmic" looks different when the
 	# render scale is below 100 %, which would make the quality presets change the colours.
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-	env.tonemap_exposure = 0.95
+	env.tonemap_exposure = 0.85
+	# Light haze: distant things fade to pale blue (density is set by the quality preset).
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.66, 0.7, 0.77)
+	env.fog_light_color = Color(0.74, 0.81, 0.9)
 	env.fog_light_energy = 1.0
-	env.fog_density = 0.007
-	env.fog_sky_affect = 0.5
-	env.fog_height = 1.0
-	env.fog_height_density = 0.04
+	env.fog_sun_scatter = 0.25
+	env.fog_density = 0.003
+	env.fog_sky_affect = 0.15
+	env.fog_height = 0.5
+	env.fog_height_density = 0.03
 	we.environment = env
 	we.add_to_group("world_environment", true)
 
+	# Low winter sun in the south-west: warm light, long shadows towards the trench.
 	var sun: DirectionalLight3D = _add(root, DirectionalLight3D.new(), "Sun")
-	sun.rotation = Vector3(deg_to_rad(-14.0), deg_to_rad(-150.0), 0.0)
-	sun.light_color = Color(0.9, 0.92, 0.98)
-	sun.light_energy = 0.85
+	sun.rotation = Vector3(deg_to_rad(-13.0), deg_to_rad(-150.0), 0.0)
+	sun.light_color = Color(1.0, 0.87, 0.72)
+	sun.light_energy = 1.25
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_max_distance = 70.0
@@ -345,6 +386,7 @@ func _build_level(mats: Dictionary) -> Node:
 	forest.add_to_group("navigation_source", true)
 	forest.set("trunk_material", mats.trunk)
 	forest.set("foliage_material", mats.foliage)
+	forest.set("tree_line_material", mats.tree_line)
 
 	# --- Trench and bunker ---
 	# Edited as CSG in levels/source/trench_csg.tscn; tools/bake_csg.gd turns them into plain

@@ -128,8 +128,9 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 	normals.resize(n * n)
 	colors.resize(n * n)
 	uvs.resize(n * n)
-	var snow := Color(0.93, 0.95, 1.0)
-	var ice := Color(0.72, 0.78, 0.86)
+	# Vertex colours tell the snow shader what is where:
+	# red below 1 = ice on the bog, green below 1 = trampled, dirty snow (trench floor).
+	var trench_floor: Rect2 = trench_area.grow(-0.5)
 	for iz in n:
 		for ix in n:
 			var i: int = iz * n + ix
@@ -142,9 +143,11 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 			var hd: float = heights[maxi(iz - 1, 0) * n + ix]
 			var hu: float = heights[mini(iz + 1, n - 1) * n + ix]
 			normals[i] = Vector3(hl - hr, 2.0, hd - hu).normalized()
-			# Icy grey-blue patches on the bog, white snow elsewhere.
-			var patch: float = clampf(noise.get_noise_2d(x * 3.0 + 500.0, z * 3.0) * 2.0 + 0.3, 0.0, 1.0)
-			colors[i] = snow.lerp(ice, patch * _bog_weight(z) * 0.6)
+			# Icy patches on the bog (wind has blown the snow away), trampled snow in the trench.
+			var patch: float = smoothstep(0.05, 0.35, noise.get_noise_2d(x * 3.0 + 500.0, z * 3.0))
+			var ice: float = patch * _bog_weight(z) * 0.85
+			var dirt: float = 0.7 if trench_floor.has_point(Vector2(x, z)) else 0.0
+			colors[i] = Color(1.0 - ice, 1.0 - dirt, 1.0)
 			uvs[i] = Vector2(x, z) * 0.25
 
 	var indices := PackedInt32Array()
@@ -208,7 +211,7 @@ func _add_horizon(half: float) -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_normal(Vector3.UP)
-	st.set_color(Color(0.93, 0.95, 1.0))
+	st.set_color(Color.WHITE)
 	for r in rects:
 		var a := Vector3(r.position.x, y, r.position.y)
 		var b := Vector3(r.end.x, y, r.position.y)

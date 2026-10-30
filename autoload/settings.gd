@@ -13,16 +13,16 @@ const SAVE_PATH: String = "user://settings.cfg"
 ## What each quality level changes. Tweak these numbers to rebalance the presets.
 const PRESETS: Dictionary = {
 	Quality.LOW: {
-		"shadows": false, "shadow_distance": 0.0, "tree_distance": 110.0,
-		"snow_amount": 250, "render_scale": 0.75, "fog_density": 0.009,
+		"shadows": false, "shadow_distance": 0.0, "tree_distance": 140.0, "tree_detail_distance": 35.0,
+		"snow_amount": 250, "render_scale": 0.75, "fog_density": 0.006,
 	},
 	Quality.MEDIUM: {
-		"shadows": true, "shadow_distance": 40.0, "tree_distance": 150.0,
-		"snow_amount": 550, "render_scale": 0.9, "fog_density": 0.008,
+		"shadows": true, "shadow_distance": 40.0, "tree_distance": 180.0, "tree_detail_distance": 50.0,
+		"snow_amount": 550, "render_scale": 0.9, "fog_density": 0.0045,
 	},
 	Quality.HIGH: {
-		"shadows": true, "shadow_distance": 70.0, "tree_distance": 190.0,
-		"snow_amount": 900, "render_scale": 1.0, "fog_density": 0.007,
+		"shadows": true, "shadow_distance": 70.0, "tree_distance": 220.0, "tree_detail_distance": 70.0,
+		"snow_amount": 900, "render_scale": 1.0, "fog_density": 0.0035,
 	},
 }
 

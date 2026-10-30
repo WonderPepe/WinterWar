@@ -1,6 +1,13 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://resources/shaders/spruce.gdshader" id="1_0rsj5"]
+[ext_resource type="Texture2D" path="res://assets/textures/snow_mask.png" id="2_g68wp"]
 
 [resource]
-vertex_color_use_as_albedo = true
-vertex_color_is_srgb = true
-roughness = 0.9
+render_priority = 0
+shader = ExtResource("1_0rsj5")
+shader_parameter/noise_texture = ExtResource("2_g68wp")
+shader_parameter/needle_color = null
+shader_parameter/needle_color_2 = null
+shader_parameter/snow_color = null
+shader_parameter/snow_amount = null

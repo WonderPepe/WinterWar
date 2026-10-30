@@ -24,7 +24,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] M3 enemy AI (state machine) and wave spawner
 - [x] M4 HUD, death/respawn (5 s), main menu (Single Player; greyed-out Host/Join Co-op), pause menu
 - [x] M5 web export test and performance check (Settings menu, benchmark, baked CSG)
-- Next ideas: polish (lighting, textures, sound, models), real Summa terrain, co-op (WebRTC).
+- [x] P1 graphics: clear freezing day (sky shader, snow shader, log walls, spruce LOD forest, tree line)
+- Next: weapons milestone (real Mosin/Suomi models from `assets_source/`, Maxim mounted in the
+  bunker, Lahti-Saloranta; CREDITS.md for CC-BY models), then P2 (effects, sound, soldiers),
+  real Summa terrain, co-op (WebRTC).
 
 ## Multiplayer-ready architecture (mandatory)
 - Single player = host with no clients (OfflineMultiplayerPeer, peer id 1). Code everything
@@ -83,10 +86,34 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Web export preset "Web" (no threads) → `export/web/` (git-ignored). Export from the command
   line: `godot --headless --path . --export-release "Web" export/web/index.html` (needs the
   4.7.2 export templates). `python3 tools/web_smoke_test.py` checks it in headless Chromium.
-- Measured budget (High): ~180 draw calls, ~250k triangles/frame, CPU scripts 1–2 ms + physics
-  2.5–4 ms with 16 enemies (native). Keep new art within the README's budget table.
+- Measured budget (High, after P1): ~185 draw calls (255 max), ~250k triangles/frame, CPU scripts
+  1–2 ms + physics 2.5–4 ms with 16 enemies (native). Keep new art within the README's budget table.
+
+## Graphics (P1) – how it is built
+- Look: stylized-realistic, clear freezing day, low warm sun in the SSW (in front-left of the
+  trench), blue sky ambient → blue shadows. Linear tonemap, exposure 0.85, sun energy 1.25.
+- Shaders in `resources/shaders/`; materials (`resources/materials/*.tres`) are written by
+  `build_scenes.gd` (`_shader_mat`). Textures in `assets/textures/` come from
+  `tools/make_textures.py` (FFT noise → tileable). Import settings: VRAM compressed + mipmaps
+  (`snow_mask.png` lossless: it holds data, sparkle dots), normal-map detection disabled –
+  shaders decode normals themselves (`xy * 2 - 1`).
+- Snow/log shaders map textures by **world position** (CSG UVs are stretched).
+- Terrain vertex colour for the snow shader: R < 1 = ice (bog), G < 1 = trampled snow
+  (trench floor). Meshes without vertex colours read as white = plain snow.
+- Forest: per chunk `Near0/Near1_*` (detailed, no shadow), `Shadow_*` (simple tree, shadows
+  only), `Far_*` (simple tree beyond `detail_distance`), `TreeLine` ring (radius 330/520 m).
+  Per-tree values go in the MultiMesh **instance colour** (B = snow, A = tint); spruce vertex
+  colour R = can hold snow, G = AO, B/A = 1; UV.x = 0 at trunk … 1 at branch tips.
+  Tree *look* uses its own RNG so positions (and the baked navmesh) stay unchanged.
+- Quality presets also set `tree_detail_distance` (35/50/70 m).
 
 ## Gotchas learned
+- Compatibility renderer: a MultiMesh with `use_custom_data` but without `use_colors` made
+  `COLOR` zero in the shader. Use instance colours instead of custom data.
+- Shader files use `//` comments – `##` is a GDScript thing and breaks shader compilation.
+- GLSL reserved words (e.g. `patch`) can't be variable names in shaders.
+- Headless runs use a dummy renderer: shader errors only show up with a real GL window
+  (xvfb + `--rendering-driver opengl3`), e.g. `tools/shots_p1.gd`.
 - UI Controls catch mouse events by default: HUD elements must use `mouse_filter = IGNORE`.
   Mouse look is read in `PlayerInput._input()` for that reason.
 - CSG subtraction faces take the material of the subtracting shape (trench walls = log material).
@@ -116,5 +143,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   level (`build_scenes.gd`) and run `bake_nav.gd`. `make_sounds.py` synthesizes placeholder sounds.
 - Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
+  `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb),
+  `make_textures.py` (regenerates `assets/textures/`),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.
