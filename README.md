@@ -92,9 +92,11 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   gun smoke (your own gun's is fainter), breath vapour, drifting snow (High/Medium).
 - **Sound**: audio buses in `default_bus_layout.tres` (SFX with an outdoor echo, Ambience,
   UI), wind and the distant battle (`scripts/game/ambience.gd`, muffled down in the trench),
-  footsteps on snow / trench floor / wood (`scripts/player/player_fx.gd`), the crack of bullets
-  passing close, a red arc showing where a hit came from. All sounds are made by
-  `tools/make_sounds.py` – they can be swapped for real recordings later (same file names).
+  the crack of bullets passing close, a red arc showing where a hit came from. These sounds are
+  made by `tools/make_sounds.py` – they can be swapped for real recordings later (same names).
+- **Footsteps** use real recordings only: put .ogg/.wav files with "snow", "trench" or "wood" in
+  the name into `assets/audio/footsteps/` (see the README there – e.g. Kenney "Impact Sounds",
+  CC0). Without files the game has no footsteps. (The generated ones sounded bad.)
 - **Settings**: a separate "Wind and battle" volume.
 
 ## Editing the trench and bunker

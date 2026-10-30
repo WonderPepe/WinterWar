@@ -1,7 +1,8 @@
 class_name PlayerFX
 extends Node3D
 ## Small things that make a player feel present (child of Player, runs on every computer):
-## - footsteps: crunching snow, the duller trampled trench floor, wood in the bunker;
+## - footsteps on snow, the trampled trench floor and bunker wood – only if recordings are in
+##   res://assets/audio/footsteps/ (see FootstepSounds);
 ## - breath vapour in front of your face (only your own player);
 ## - drifting snow: thin streaks of snow blown along the ground around you (only your own).
 ## Only reads the player's synced state, so it works the same for remote players in co-op.
@@ -11,11 +12,6 @@ extends Node3D
 @export var breath_interval: float = 3.2 ## Seconds between breaths when calm...
 @export var tired_breath_interval: float = 1.3 ## ...and when out of breath.
 
-const STEP_SOUNDS: Dictionary = {
-	"snow": ["res://assets/audio/step_snow_1.wav", "res://assets/audio/step_snow_2.wav", "res://assets/audio/step_snow_3.wav"],
-	"trench": ["res://assets/audio/step_trench_1.wav", "res://assets/audio/step_trench_2.wav"],
-	"wood": ["res://assets/audio/step_wood_1.wav", "res://assets/audio/step_wood_2.wav"],
-}
 
 var _streams: Dictionary = {} # surface -> Array[AudioStream]
 var _distance: float = 0.0
@@ -44,11 +40,8 @@ func _ready() -> void:
 	drift = make_drift_emitter()
 	drift.top_level = true # the wind blows the same way whichever way you face
 	add_child(drift)
-	for surface: String in STEP_SOUNDS:
-		var list: Array[AudioStream] = []
-		for path: String in STEP_SOUNDS[surface]:
-			list.append(load(path))
-		_streams[surface] = list
+	for surface in ["snow", "trench", "wood"]:
+		_streams[surface] = FootstepSounds.get_sounds(surface)
 	_last_pos = player.global_position
 	var local: bool = player.is_local_player()
 	set_drift_amount(Settings.preset().get("drift_amount", 200))
@@ -82,6 +75,8 @@ func _process(delta: float) -> void:
 func _play_step() -> void:
 	var surface: String = _surface_below()
 	var list: Array = _streams[surface]
+	if list.is_empty():
+		return # no recordings for this ground yet
 	footsteps.stream = list[_rng.randi() % list.size()]
 	footsteps.pitch_scale = _rng.randf_range(0.9, 1.12)
 	var vol: float = -10.0 if player.is_crouching else -4.0

@@ -168,6 +168,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   `bullet_passed` (sent only to the peer whose head the bullet passed within 3 m).
 - `ImpactEffects` pools: holes, sprays per surface (snow/wood/cloth), smoke, flashes, crack
   sounds. `make_smoke_emitter()` / `make_soft_texture()` are static (Maxim, breath reuse them).
+- Footsteps: generated ones were removed (owner: "very bad"). `FootstepSounds` loads real
+  recordings by name from `assets/audio/footsteps/` (snow / trench|gravel / wood; trench falls
+  back to snow) with `ResourceLoader.list_directory` (works in exports). No files = silent.
+  Wind loop is at -14 dB (owner: wind too loud).
 - `PlayerFX` (child of Player): footsteps (surface from a ray down: wood meta / trench y < -0.8 /
   snow), breath (child of the camera, local only), drift (top_level, local only, preset
   `drift_amount`). Player `notify_hurt` RPC → `hurt_from` signal → HUD `DamageIndicator`.

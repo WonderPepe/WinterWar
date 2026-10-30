@@ -33,7 +33,7 @@ func _ready() -> void:
 	_wind = AudioStreamPlayer.new()
 	_wind.stream = wind_stream
 	_wind.bus = &"Ambience"
-	_wind.volume_db = -4.0
+	_wind.volume_db = -14.0 # quiet: you should notice the cold wind, not listen to it
 	add_child(_wind)
 	_wind.play()
 	for path in ARTILLERY:

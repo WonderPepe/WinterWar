@@ -72,14 +72,15 @@ def crunch(dur, grains, bright, decay):
     x = lowpass(x, bright) + 0.25 * lowpass(rng.uniform(-1, 1, n), 0.05) * env(n, 0.005, decay)
     return x * env(n, 0.002, decay)
 
+# (Generated footsteps were removed in P2: they sounded bad. Real recordings go in
+#  assets/audio/footsteps/ – see scripts/game/footstep_sounds.gd. The crunch() helper is
+#  kept: the random numbers below must stay in the same order to give the same sounds.)
 for i in range(3):
-    save(f"step_snow_{i+1}.wav", crunch(0.22, 160, 0.55, 0.07))
+    crunch(0.22, 160, 0.55, 0.07)
 for i in range(2):
-    save(f"step_trench_{i+1}.wav", crunch(0.18, 60, 0.25, 0.05))
+    crunch(0.18, 60, 0.25, 0.05)
 for i in range(2):
-    n = int(0.2 * SR); t = np.arange(n) / SR
-    thud = np.sin(2*np.pi*(110 + 20*i)*t) * env(n, 0.001, 0.04) + lowpass(rng.uniform(-1, 1, n), 0.3) * env(n, 0.0005, 0.02) * 0.6
-    save(f"step_wood_{i+1}.wav", thud)
+    rng.uniform(-1, 1, int(0.2 * SR))
 
 # Wind: 12 s seamless loop (noise filtered, slowly swelling gusts). The end is cross-faded into
 # the start so it can loop without a click.

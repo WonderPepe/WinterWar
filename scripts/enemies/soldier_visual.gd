@@ -5,7 +5,8 @@ extends Node3D
 ## The body is the SoldierMesh on a Skeleton3D. This script poses the bones in code every
 ## frame: walking/running legs, kneeling to fire, rifle carried / held forward / shouldered,
 ## recoil, and the arms always reaching for the rifle (simple "IK": we place the hands and
-## work out the elbows). It also plays his footsteps and breath vapour when you are near.
+## work out the elbows). It also plays his breath vapour when you are near, and his
+## footsteps if there are recordings (see FootstepSounds).
 ##
 ## Runs on EVERY computer and only reads what the host syncs (position, state, kneeling),
 ## so all players see the same soldier doing the same thing.
@@ -81,8 +82,7 @@ func _ready() -> void:
 		_footsteps.unit_size = 3.0
 		_footsteps.volume_db = -8.0
 		add_child(_footsteps)
-		for i in 3:
-			_step_sounds.append(load("res://assets/audio/step_snow_%d.wav" % (i + 1)))
+		_step_sounds = FootstepSounds.get_sounds("snow")
 		_breath = make_breath_emitter()
 		_breath.position = Vector3(0, 1.6, -0.15)
 		add_child(_breath)
@@ -121,7 +121,7 @@ func _process(delta: float) -> void:
 	_kick = move_toward(_kick, 0.0, delta * 6.0)
 	_hit = move_toward(_hit, 0.0, delta * 3.0)
 	var dead: bool = _enemy.state == Enemy.State.DEAD
-	if dead and not _was_dead and near:
+	if dead and not _was_dead and near and not _step_sounds.is_empty():
 		# The thud of the body falling into the snow.
 		_footsteps.stream = _step_sounds[0]
 		_footsteps.pitch_scale = 0.55
@@ -137,6 +137,8 @@ func _is_near_camera() -> bool:
 
 
 func _play_step() -> void:
+	if _step_sounds.is_empty():
+		return
 	_footsteps.stream = _step_sounds[_rng.randi() % _step_sounds.size()]
 	_footsteps.pitch_scale = _rng.randf_range(0.9, 1.1)
 	_footsteps.volume_db = -8.0

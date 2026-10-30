@@ -58,14 +58,19 @@ func run() -> void:
 	p.global_position = Vector3(-10, 0.5, 30)
 	await get_tree().physics_frame
 	var heard_step := false
-	var surface_snow := false
 	for i in 40:
 		p.global_position += Vector3(0.1, 0, 0) # walking 0.1 m per frame
 		await get_tree().process_frame
-		if pfx.footsteps.playing:
-			heard_step = true
-			surface_snow = pfx.footsteps.stream.resource_path.contains("snow")
-	check(heard_step and surface_snow, "footsteps in the snow")
+		heard_step = heard_step or pfx.footsteps.playing
+	check(FootstepSounds.has_any() or not heard_step, "no footstep recordings yet: silent")
+	# With a recording for snow (any sound will do for the test) the steps play.
+	pfx._streams["snow"] = [load("res://assets/audio/hurt_thump.wav")] as Array[AudioStream]
+	heard_step = false
+	for i in 40:
+		p.global_position += Vector3(0.1, 0, 0)
+		await get_tree().process_frame
+		heard_step = heard_step or pfx.footsteps.playing
+	check(heard_step, "footsteps play when there are recordings")
 	pfx._breath_timer = 0.0
 	await frames(2)
 	check(pfx.breath.emitting, "breathing out")
