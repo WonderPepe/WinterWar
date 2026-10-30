@@ -1,0 +1,117 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/mounted_gun.gd" id="1_3gngd"]
+[ext_resource type="Resource" path="res://resources/weapons/maxim_m09_21.tres" id="2_6b113"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/maxim/model.gltf" id="3_j7gxs"]
+[ext_resource type="Material" path="res://resources/materials/muzzle_flash.tres" id="4_tinhd"]
+[ext_resource type="Material" path="res://resources/materials/nest_logs.tres" id="5_pvbpq"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_e23ke"]
+material = ExtResource("4_tinhd")
+size = Vector2(0.3, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ldrfo"]
+material = ExtResource("4_tinhd")
+size = Vector2(0.08, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_s6dld"]
+material = ExtResource("5_pvbpq")
+size = Vector3(1, 1.262, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0ujeh"]
+size = Vector3(1, 1.262, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n0kws"]
+material = ExtResource("5_pvbpq")
+size = Vector3(0.8, 0.18199995, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1cjh1"]
+size = Vector3(0.8, 0.18199995, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_aeunk"]
+size = Vector3(0.45, 0.42, 1.1)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_qqngv"]
+properties/0/path = NodePath(".:user_id")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:ammo")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath(".:is_reloading")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+
+[node name="MaximMG" type="StaticBody3D" unique_id=1778379351]
+script = ExtResource("1_3gngd")
+data = ExtResource("2_6b113")
+traverse_left_deg = 14.0
+traverse_right_deg = 40.0
+elevation_min_deg = -7.0
+elevation_max_deg = 4.0
+turning_part_names = PackedStringArray("karabin_001_3", "Zapatka_4", "Cube_0", "pocisk_5", "pocisk_001_7", "pocisk_002_8", "pocisk_003_9", "pocisk_004_6", "pocisk_005_11", "pocisk_006_10", "pocisk_007_12", "pocisk_008_15", "pocisk_009_16", "pocisk_010_24", "pociskpusty_23", "pociskpusty_001_22", "pociskpusty_002_17", "pociskpusty_003_18", "pociskpusty_004_19", "pociskpusty_005_20", "pociskpusty_006_21")
+hidden_part_names = PackedStringArray("Cube_0")
+metadata/surface = "wood"
+
+[node name="Model" type="Node3D" parent="." unique_id=1071738689 instance=ExtResource("3_j7gxs")]
+transform = Transform3D(0.0135, 0, 0, 0, 0.0135, 0, 0, 0, 0.0135, 0, 0.36855, -0.44550002)
+
+[node name="Pivot" type="Node3D" parent="." unique_id=1126344776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28755, 0)
+
+[node name="Muzzle" type="Marker3D" parent="Pivot" unique_id=202645768]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Pivot/Muzzle" unique_id=968237026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_e23ke")
+
+[node name="SideFlash" type="MeshInstance3D" parent="Pivot/Muzzle/MuzzleFlash" unique_id=598366585]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.05)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_ldrfo")
+
+[node name="FlashLight" type="OmniLight3D" parent="Pivot/Muzzle" unique_id=1306881032]
+light_color = Color(1, 0.75, 0.45, 1)
+light_energy = 3.0
+omni_range = 7.0
+
+[node name="SeatPoint" type="Marker3D" parent="." unique_id=417335547]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.08, 0.8)
+
+[node name="ExitPoint" type="Marker3D" parent="." unique_id=1991163157]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, -1.212, 1)
+
+[node name="PlatformMesh" type="MeshInstance3D" parent="." unique_id=946374779]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_s6dld")
+
+[node name="PlatformCollision" type="CollisionShape3D" parent="." unique_id=677551455]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
+shape = SubResource("BoxShape3D_0ujeh")
+
+[node name="StepMesh" type="MeshInstance3D" parent="." unique_id=859223951]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
+cast_shadow = 0
+mesh = SubResource("BoxMesh_n0kws")
+
+[node name="StepCollision" type="CollisionShape3D" parent="." unique_id=5256839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
+shape = SubResource("BoxShape3D_1cjh1")
+
+[node name="GunCollision" type="CollisionShape3D" parent="." unique_id=1994645791]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.338, -0.05)
+shape = SubResource("BoxShape3D_aeunk")
+
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=611793566]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
+unit_size = 30.0
+max_polyphony = 6
+
+[node name="MechAudio" type="AudioStreamPlayer3D" parent="." unique_id=1776299079]
+unit_size = 6.0
+
+[node name="GunSync" type="MultiplayerSynchronizer" parent="." unique_id=1004180081]
+replication_config = SubResource("SceneReplicationConfig_qqngv")

@@ -14,6 +14,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Fire / aim down sights | Left mouse / right mouse |
 | Reload | R |
 | Mosin-Nagant / Suomi | 1 / 2 |
+| Use / leave the Maxim (in the bunker) | F |
 | Pause menu | Esc |
 | Debug: god mode / enemy state labels / debug text | F1 / F2 / F3 |
 
@@ -50,10 +51,10 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 ## Performance budget (measured after P1 graphics, High quality)
 | | Now | Budget for future graphics |
 |---|---|---|
-| Draw calls per frame | ~190 average, ~260 max | ≤ 300 |
+| Draw calls per frame | ~205 average, ~260 max | ≤ 300 |
 | Triangles per frame (incl. shadows) | ~250 000 | ≤ 400 000 |
 | CPU: physics (16 enemies) | ~2.5–3 ms (desktop) | ≤ 8 ms total in the browser |
-| Download | ~42 MB (≈12 MB compressed) | ≤ 60 MB |
+| Download | ~50 MB (≈18 MB compressed) | ≤ 60 MB |
 | Textures | 6 generated textures, ≤ 2048 px, VRAM-compressed | ≤ 2048 px, VRAM-compressed |
 
 ## Graphics (P1: clear freezing day)
@@ -70,6 +71,18 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - Sun direction/colour and the haze are on the **Sun** and **WorldEnvironment** nodes in
   `levels/test_level.tscn`.
 
+## Weapons (W1)
+- **Mosin-Nagant** and **Suomi** use real 3D models (CC-BY, see `CREDITS.md`). The downloads
+  in `assets_source/` are unpacked and their textures shrunk by `tools/import_weapons.py` into
+  `assets/models/weapons/`.
+- **Maxim M/09-21** stands in the bunker at the firing slit (`scenes/weapons/maxim_mg.tscn`,
+  script `scripts/weapons/mounted_gun.gd`, data `resources/weapons/maxim_m09_21.tres`).
+  Walk up to it and press **F**; **R** loads a new belt (250 rounds, unlimited belts);
+  **F** again to leave. It turns 14° left / 40° right and a little up and down – as far as
+  the slit allows.
+- The models' licence (CC-BY 4.0) requires naming their makers: `CREDITS.md` and the
+  **Credits** button in the main menu. Keep them when you publish the game.
+
 ## Editing the trench and bunker
 They are built from CSG shapes in `levels/source/trench_csg.tscn` and baked into plain meshes
 (`levels/baked/`) because CSG is slow to load in a browser. After editing the CSG scene, the
@@ -84,7 +97,8 @@ meshes and the navigation mesh must be re-baked (`tools/bake_csg.gd`, then `tool
 - `resources/` – materials, weapon data (`resources/weapons/*.tres`) and enemy data
   (`resources/enemies/*.tres`) – tune weapons and enemies here
 - `ui/` – main menu, HUD, pause menu, theme (`ui/winter_theme.tres`)
-- `assets/` – sounds (placeholders), generated textures (`assets/textures/`)
+- `assets/` – sounds (placeholders), generated textures (`assets/textures/`), weapon models
+  (`assets/models/weapons/`)
 - `resources/shaders/` – sky, snow, log wall, spruce and tree-line shaders
 
 ## Multiplayer-ready design
@@ -108,5 +122,5 @@ select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 - [x] M4: HUD, death/respawn, main menu
 - [x] M5: web export test and performance check
 - [x] P1: graphics – clear freezing day: sky, snow, log walls, spruce forest
-- [ ] Weapons: real Mosin and Suomi models, Maxim in the bunker, Lahti-Saloranta
+- [x] W1: real Mosin and Suomi models, Maxim in the bunker (Lahti-Saloranta later, if a model turns up)
 - [ ] P2: effects, sound, soldiers

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mosin Nagant M91
+* source:	https://sketchfab.com/3d-models/mosin-nagant-m91-55c00242c4024307a761a89167e39a7c
+* author:	Doink (https://sketchfab.com/Doinkoloink)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mosin Nagant M91" (https://sketchfab.com/3d-models/mosin-nagant-m91-55c00242c4024307a761a89167e39a7c) by Doink (https://sketchfab.com/Doinkoloink) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

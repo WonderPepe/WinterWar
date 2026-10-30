@@ -67,6 +67,7 @@ func _init() -> void:
 	action("reload", [key(KEY_R)])
 	action("weapon_1", [key(KEY_1)])
 	action("weapon_2", [key(KEY_2)])
+	action("interact", [key(KEY_F)]) # use / leave the Maxim
 	action("pause", [key(KEY_ESCAPE)])
 	action("debug_god_mode", [key(KEY_F1)])
 	action("debug_enemy_labels", [key(KEY_F2)])

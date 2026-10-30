@@ -1,0 +1,11 @@
+Model Information:
+* title:	Machine Gun Maxim
+* source:	https://sketchfab.com/3d-models/machine-gun-maxim-c3be4e0b9ddc4297a8356852b21bdc37
+* author:	jezusek (https://sketchfab.com/jezusek)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Machine Gun Maxim" (https://sketchfab.com/3d-models/machine-gun-maxim-c3be4e0b9ddc4297a8356852b21bdc37) by jezusek (https://sketchfab.com/jezusek) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

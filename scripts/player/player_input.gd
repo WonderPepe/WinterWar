@@ -27,6 +27,7 @@ var look_sensitivity_scale: float = 1.0 ## Lowered by the weapon while aiming.
 var _jump_requested: bool = false
 var _reload_requested: bool = false
 var _switch_requested: int = -1
+var _interact_requested: bool = false
 var _block_fire_until_release: bool = false # the click that grabs the mouse must not shoot
 var _was_captured: bool = false
 
@@ -69,6 +70,8 @@ func _process(_delta: float) -> void:
 		request_switch.rpc_id(1, 0)
 	if Input.is_action_just_pressed("weapon_2"):
 		request_switch.rpc_id(1, 1)
+	if Input.is_action_just_pressed("interact"):
+		request_interact.rpc_id(1)
 	if Input.is_action_just_pressed("debug_god_mode"):
 		request_god_mode.rpc_id(1)
 
@@ -99,10 +102,22 @@ func set_look(yaw: float, pitch: float) -> void:
 
 
 ## Turns the view. Used by the mouse and by weapon recoil.
+## On a mounted gun the view can only turn as far as the gun can.
 func add_look(pitch_delta: float, yaw_delta: float) -> void:
 	var limit: float = deg_to_rad(max_pitch_degrees)
 	look_pitch = clampf(look_pitch + pitch_delta, -limit, limit)
 	look_yaw += yaw_delta
+	var gun: MountedGun = (get_parent() as Player).get_mounted_gun()
+	if gun:
+		var clamped: Vector2 = gun.clamp_look(look_yaw, look_pitch)
+		look_yaw = clamped.x
+		look_pitch = clamped.y
+
+
+## F: use / leave a mounted gun (the host decides).
+@rpc("authority", "call_local", "reliable")
+func request_interact() -> void:
+	_interact_requested = true
 
 
 @rpc("authority", "call_local", "reliable")
@@ -134,6 +149,13 @@ func consume_switch() -> int:
 	var slot: int = _switch_requested
 	_switch_requested = -1
 	return slot
+
+
+## Called by the Player on the host: returns true once per interact request (F).
+func consume_interact() -> bool:
+	var requested: bool = _interact_requested
+	_interact_requested = false
+	return requested
 
 
 ## Called by the Player on the host: returns true once per jump request.

@@ -62,6 +62,12 @@ func _warm_up() -> void:
 	player.get_parent().add_child(visual)
 	visual.global_position = cam.global_position - cam.global_basis.z * 4.0 - Vector3.UP * 1.2
 	_temp.append(visual)
+	# The Maxim's own model (its materials are only seen once you enter the bunker).
+	var maxim_model: Node3D = load("res://assets/models/weapons/maxim/model.gltf").instantiate()
+	player.get_parent().add_child(maxim_model)
+	maxim_model.scale = Vector3.ONE * 0.01
+	maxim_model.global_position = cam.global_position - cam.global_basis.z * 2.5
+	_temp.append(maxim_model)
 
 	for i in frames:
 		await get_tree().process_frame

@@ -54,6 +54,7 @@ var is_dead: bool = false:
 	set = _set_dead
 var kills: int = 0
 var deaths: int = 0
+var mounted_gun_path: NodePath = NodePath() ## The mounted gun we are using (empty = none).
 
 var _deep_snow_count: int = 0 # how many deep-snow zones we are standing in
 var _regen_timer: float = 0.0
@@ -96,6 +97,26 @@ func is_local_player() -> bool:
 	return get_peer_id() == multiplayer.get_unique_id()
 
 
+## The mounted gun (Maxim) this player is using, or null.
+func get_mounted_gun() -> MountedGun:
+	if mounted_gun_path.is_empty():
+		return null
+	return get_node_or_null(mounted_gun_path) as MountedGun
+
+
+## The nearest free mounted gun within reach, or null (also used by the HUD prompt).
+func find_usable_gun() -> MountedGun:
+	var best: MountedGun = null
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("mounted_guns"):
+		var gun := node as MountedGun
+		var dist: float = global_position.distance_to(gun.seat.global_position)
+		if gun.is_free() and dist <= gun.use_distance and dist < best_dist:
+			best = gun
+			best_dist = dist
+	return best
+
+
 func is_in_deep_snow() -> bool:
 	return _deep_snow_count > 0
 
@@ -124,13 +145,41 @@ func _physics_process(delta: float) -> void:
 		if not is_on_floor():
 			velocity.y -= _gravity * delta
 		input.consume_jump()
+		input.consume_interact()
 		move_and_slide()
+		return
+	if _handle_mounted_gun():
 		return
 	_update_crouch_state()
 	_apply_gravity_and_jump(delta)
 	_update_sprint_and_stamina(delta)
 	_apply_movement(delta)
 	move_and_slide()
+
+
+## Host: F uses or leaves a mounted gun. While on the gun the player stays at its seat.
+## Returns true while mounted (then normal movement is skipped).
+func _handle_mounted_gun() -> bool:
+	var gun := get_mounted_gun()
+	if input.consume_interact():
+		if gun:
+			gun.release()
+			return false
+		var usable := find_usable_gun()
+		if usable:
+			usable.mount(self)
+			gun = usable
+	if gun == null:
+		return false
+	global_position = gun.seat.global_position
+	velocity = Vector3.ZERO
+	is_crouching = false
+	is_sprinting = false
+	input.consume_jump()
+	_regen_timer -= get_physics_process_delta_time()
+	if _regen_timer <= 0.0 and stamina < max_stamina:
+		stamina = minf(stamina + stamina_regen * get_physics_process_delta_time(), max_stamina)
+	return true
 
 
 func _update_crouch_state() -> void:
@@ -215,6 +264,9 @@ func take_damage(amount: float, _attacker_id: int, _hit_position: Vector3, _hit_
 func respawn(at: Transform3D) -> void:
 	if not multiplayer.is_server():
 		return
+	var gun := get_mounted_gun()
+	if gun:
+		gun.release()
 	global_transform = at
 	velocity = Vector3.ZERO
 	health = max_health

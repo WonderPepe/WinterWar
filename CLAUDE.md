@@ -25,9 +25,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] M4 HUD, death/respawn (5 s), main menu (Single Player; greyed-out Host/Join Co-op), pause menu
 - [x] M5 web export test and performance check (Settings menu, benchmark, baked CSG)
 - [x] P1 graphics: clear freezing day (sky shader, snow shader, log walls, spruce LOD forest, tree line)
-- Next: weapons milestone (real Mosin/Suomi models from `assets_source/`, Maxim mounted in the
-  bunker, Lahti-Saloranta; CREDITS.md for CC-BY models), then P2 (effects, sound, soldiers),
-  real Summa terrain, co-op (WebRTC).
+- [x] W1 weapons: imported Mosin/Suomi view models, Maxim M/09-21 mounted in the bunker (F),
+  CREDITS.md + Credits menu. Lahti-Saloranta left out (no usable model; the owner's choice) –
+  weapon slot 3 is free for it.
+- Next: P2 (effects, sound, soldiers), real Summa terrain, co-op (WebRTC).
 
 ## Multiplayer-ready architecture (mandatory)
 - Single player = host with no clients (OfflineMultiplayerPeer, peer id 1). Code everything
@@ -116,7 +117,28 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Benchmark turns V-Sync off on desktop (else FPS is capped at the monitor rate). Godot's
   TIME_PROCESS includes CPU-side rendering, so the benchmark shows physics time only.
 
+## Weapons (W1) – how it is built
+- Downloads (Sketchfab glTF zips) stay in `assets_source/` (git-ignored); `tools/import_weapons.py`
+  writes `assets/models/weapons/<name>/model.gltf` + textures shrunk to ≤1024 px.
+  All three models are CC-BY 4.0 → `CREDITS.md` (shown in the main menu via the builder).
+- View models: `_place_gun_mesh()` in the builder puts the glTF under `Model/Mesh`, turned and
+  scaled so the model's rear sight lands on `AimPoint` (Mosin model points +z → yaw PI, scale
+  0.774; Suomi is in cm → 0.0094). `ViewModel` gathers `bolt_part_names` into a Bolt node and
+  hides `hidden_part_names` at runtime (names from the glTF). Per-gun `hip_offset`.
+- Maxim = `MountedGun` (StaticBody3D, group `mounted_guns`): host owns `user_id`, `ammo`,
+  `is_reloading` (GunSync). `Player.mounted_gun_path` (StateSync) links player → gun; host
+  pins the player to `SeatPoint` and handles F (`request_interact`/`consume_interact`).
+  `WeaponController` routes trigger/ammo/reload to the gun while mounted; the host's bullet
+  logic is shared: `WeaponController.resolve_shot()`. `PlayerInput.add_look()` clamps the view
+  with `MountedGun.clamp_look()` (left/right traverse separate). Turning model parts are
+  reparented under `Pivot` at runtime (`turning_part_names`); the glTF animation is unused.
+- Maxim placement: barrel at y 0.2 in the 0.5 m firing slit (y 0.1–0.6, made taller in W1),
+  gun at x = -1.0 so the bunker entrance stays free (test_m1 crouch test). Limits 14° L / 40° R,
+  -7°…+4°: `test_w1.gd` checks every allowed aim fits through the slit.
+
 ## Gotchas learned
+- A new `class_name` (e.g. `MountedGun`) or new audio files: run `godot --headless --import`
+  once before the builder/tests, or scripts using the name fail to parse.
 - Compatibility renderer: a MultiMesh with `use_custom_data` but without `use_colors` made
   `COLOR` zero in the shader. Use instance colours instead of custom data.
 - Shader files use `//` comments – `##` is a GDScript thing and breaks shader compilation.
@@ -152,7 +174,9 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   level (`build_scenes.gd`) and run `bake_nav.gd`. `make_sounds.py` synthesizes placeholder sounds.
 - Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
-  `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb),
+  `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
+  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `_model_shots.gd` (renders imported
+  models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

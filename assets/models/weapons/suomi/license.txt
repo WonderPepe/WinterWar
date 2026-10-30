@@ -1,0 +1,11 @@
+Model Information:
+* title:	Suomi KP-31
+* source:	https://sketchfab.com/3d-models/suomi-kp-31-7e5a00199276485b96b4749f68a0a9a0
+* author:	soidev (https://sketchfab.com/soidev)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Suomi KP-31" (https://sketchfab.com/3d-models/suomi-kp-31-7e5a00199276485b96b4749f68a0a9a0) by soidev (https://sketchfab.com/soidev) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

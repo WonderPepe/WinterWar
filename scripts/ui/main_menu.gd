@@ -14,6 +14,9 @@ static var start_pressed_msec: int = 0
 @onready var quit_button: Button = $Center/VBox/QuitButton
 @onready var settings_button: Button = $Center/VBox/SettingsButton
 @onready var benchmark_button: Button = $Center/VBox/BenchmarkButton
+@onready var credits_button: Button = $Center/VBox/CreditsButton
+@onready var credits: Control = $Credits
+@onready var credits_back: Button = $Credits/Panel/VBox/BackButton
 @onready var menu_box: Control = $Center
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 
@@ -31,6 +34,14 @@ func _ready() -> void:
 		menu_box.visible = true
 		settings_button.grab_focus())
 	settings_menu.visible = false
+	credits_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		credits.visible = true
+		credits_back.grab_focus())
+	credits_back.pressed.connect(func() -> void:
+		credits.visible = false
+		menu_box.visible = true
+		credits_button.grab_focus())
 	quit_button.pressed.connect(get_tree().quit)
 	host_button.disabled = true # co-op comes later
 	join_button.disabled = true

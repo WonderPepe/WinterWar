@@ -49,4 +49,9 @@ save("empty_click.wav", click(n, 0.0, 3000, 0.02))
 n = int(0.08 * SR)
 t = np.arange(n) / SR
 save("hit_tick.wav", np.sin(2*np.pi*1800*t) * np.exp(-t / 0.015) + click(n, 0.0, 3200, 0.01, 0.3))
+# Maxim (added in W1): heavy rifle cartridge, short tail so fast fire doesn't turn to mush.
+save("maxim_shot.wav", gunshot(0.45, 0.009, 0.07, 48, 0.12, 0.28))
+n = int(2.0 * SR)
+save("belt_reload.wav", click(n, 0.05, 900, 0.08) + click(n, 0.45, 1300, 0.06, 0.8) + click(n, 0.8, 700, 0.12, 0.9)
+     + click(n, 1.3, 1800, 0.05) + click(n, 1.55, 1100, 0.07, 0.9) + click(n, 1.8, 2300, 0.04))
 print("sounds written")

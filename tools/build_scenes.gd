@@ -19,6 +19,7 @@ func _initialize() -> void:
 	_make_enemy_data()
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
+	_save(_build_maxim(mats), "res://scenes/weapons/maxim_mg.tscn")
 	_save(_build_trench_source(mats), TRENCH_SOURCE)
 	_save(_build_level(mats), "res://levels/test_level.tscn")
 	DirAccess.make_dir_recursive_absolute("res://ui")
@@ -84,6 +85,9 @@ func _make_materials() -> Dictionary:
 		"bunker_log": _shader_mat("bunker_logs.tres", "log_wall", {
 			"albedo_texture": load(TEX_DIR + "logs_albedo.png"), "normal_texture": load(TEX_DIR + "logs_normal.png"),
 			"snow_band": false, "log_top_snow": 0.0, "tile_size_m": Vector2(2.4, 1.2), "tint": Color(1.05, 0.98, 0.92)}),
+		"nest_log": _shader_mat("nest_logs.tres", "log_wall", {
+			"albedo_texture": load(TEX_DIR + "logs_albedo.png"), "normal_texture": load(TEX_DIR + "logs_normal.png"),
+			"snow_band": false, "log_top_snow": 0.0, "top_snow": 0.0, "tile_size_m": Vector2(1.6, 0.8)}),
 		"trunk": _shader_mat("tree_trunk.tres", "spruce", {"trunk": true, "bark_texture": load(TEX_DIR + "bark.png")}),
 		"foliage": _shader_mat("tree_foliage.tres", "spruce", {}),
 		"tree_line": _shader_mat("tree_line.tres", "tree_line", {"silhouette": load(TEX_DIR + "treeline.png")}),
@@ -267,6 +271,7 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:is_crouching", true, ON_CHANGE],
 		[".:is_sprinting", true, ON_CHANGE],
 		[".:god_mode", true, ON_CHANGE],
+		[".:mounted_gun_path", true, ON_CHANGE],
 	])
 	return p
 
@@ -386,6 +391,10 @@ func _build_level(mats: Dictionary) -> Node:
 		_baked_body(root, "Bunker", Vector3(0, 0, 67.75), "wood")
 	else:
 		_add(root, load(TRENCH_SOURCE).instantiate(), "TrenchCSG")
+
+	# --- Maxim machine gun in the bunker, firing through the slit ---
+	var maxim: Node3D = _add(root, load("res://scenes/weapons/maxim_mg.tscn").instantiate(), "MaximMG")
+	maxim.position = Vector3(-1.0, MAXIM_BARREL_Y - MAXIM_BARREL_HEIGHT, 65.88)
 
 	# --- Deep snow ---
 	var zones: Node3D = _add(root, Node3D.new(), "DeepSnowZones")
@@ -553,48 +562,45 @@ func _view_root(n: String, mats: Dictionary, muzzle: Vector3, aim: Vector3) -> A
 	return [root, model]
 
 
-## Mosin-Nagant M/28-30 placeholder: wooden stock, long barrel, bolt handle on the right.
+## Places an imported gun model (glTF) inside a view model's Model node.
+## `rear_sight` / `muzzle` are points in the imported model's own coordinates; the model is
+## turned (`yaw`) and scaled so that its rear sight lands exactly on the AimPoint.
+## Returns the muzzle position in Model coordinates.
+func _place_gun_mesh(model: Node3D, gltf: String, yaw: float, scale: float, rear_sight: Vector3, muzzle: Vector3) -> Vector3:
+	var mesh: Node3D = load(gltf).instantiate()
+	_add(model, mesh, "Mesh")
+	var basis := Basis(Vector3.UP, yaw).scaled(Vector3.ONE * scale)
+	var aim: Vector3 = (model.get_node("AimPoint") as Node3D).position
+	mesh.transform = Transform3D(basis, aim - basis * rear_sight)
+	return mesh.transform * muzzle
+
+
+## Mosin-Nagant M/28-30 view model: imported "Mosin Nagant M91" model (Doink, CC-BY 4.0).
 func _build_mosin_view(mats: Dictionary) -> Node:
-	var r := _view_root("MosinViewModel", mats, Vector3(0, 0.03, -1.0), Vector3(0, 0.066, -0.16))
+	var r := _view_root("MosinViewModel", mats, Vector3.ZERO, Vector3(0, 0.066, -0.16))
 	var model: Node3D = r[1]
-	_part(model, "Stock", _box(Vector3(0.055, 0.1, 0.62)), Vector3(0, -0.035, 0.12), mats.gun_wood)
-	_part(model, "Wrist", _box(Vector3(0.05, 0.07, 0.15)), Vector3(0, -0.005, -0.12), mats.gun_wood)
-	_part(model, "Forend", _box(Vector3(0.05, 0.055, 0.5)), Vector3(0, 0.005, -0.45), mats.gun_wood)
-	_part(model, "Receiver", _box(Vector3(0.04, 0.04, 0.2)), Vector3(0, 0.02, -0.04), mats.gun_metal)
-	_part(model, "RearSightBase", _box(Vector3(0.03, 0.014, 0.06)), Vector3(0, 0.048, -0.16), mats.gun_metal)
-	_part(model, "Barrel", _cyl(0.011, 0.82), Vector3(0, 0.035, -0.6), mats.gun_metal, ALONG_Z)
-	_part(model, "RearSightL", _box(Vector3(0.008, 0.02, 0.03)), Vector3(-0.012, 0.064, -0.16), mats.gun_metal)
-	_part(model, "RearSightR", _box(Vector3(0.008, 0.02, 0.03)), Vector3(0.012, 0.064, -0.16), mats.gun_metal)
-	_part(model, "FrontSightHood", _box(Vector3(0.022, 0.03, 0.02)), Vector3(0, 0.055, -0.98), mats.gun_metal)
-	_part(model, "FrontSightPost", _box(Vector3(0.004, 0.024, 0.006)), Vector3(0, 0.064, -0.975), mats.gun_metal)
-	var bolt: Node3D = _add(model, Node3D.new(), "Bolt")
-	bolt.position = Vector3(0, 0.025, 0.02)
-	_part(bolt, "BoltBody", _cyl(0.01, 0.16), Vector3(0, 0, 0), mats.gun_metal, ALONG_Z)
-	_part(bolt, "Handle", _cyl(0.006, 0.07), Vector3(0.035, -0.015, 0.06), mats.gun_metal, ALONG_X)
-	var knob := SphereMesh.new()
-	knob.radius = 0.013
-	knob.height = 0.026
-	_part(bolt, "Knob", knob, Vector3(0.07, -0.02, 0.06), mats.gun_metal)
-	r[0].set("bolt", bolt)
-	r[0].set("ads_eye_distance", 0.36)
+	# The model is 1.69 m long and points to +z: scale to the real 1.31 m and turn it around.
+	var muzzle := _place_gun_mesh(model, "res://assets/models/weapons/mosin/model.gltf", PI, 0.774,
+			Vector3(0.0, 0.0645, -0.06), Vector3(0.0, 0.034, 0.85))
+	(model.get_node("Muzzle") as Node3D).position = muzzle
+	r[0].set("bolt_part_names", PackedStringArray(["LP_BoltHandle", "LP_Bolt_Pigg", "LP_BoltCog", "LP_BoltHammer", "LP_BoltUnderside"]))
+	r[0].set("hidden_part_names", PackedStringArray(["LP_Clip", "LP_BulletHolster", "LP_BulletHead"]))
+	r[0].set("bolt_travel", 0.09)
+	r[0].set("ads_eye_distance", 0.42)
 	return r[0]
 
 
-## Suomi KP/-31 placeholder: wooden stock, round receiver, barrel jacket, drum magazine.
+## Suomi KP/-31 view model: imported "Suomi KP-31" model (soidev, CC-BY 4.0).
 func _build_suomi_view(mats: Dictionary) -> Node:
-	var r := _view_root("SuomiViewModel", mats, Vector3(0, 0.02, -0.66), Vector3(0, 0.076, -0.05))
+	var r := _view_root("SuomiViewModel", mats, Vector3.ZERO, Vector3(0, 0.076, -0.05))
 	var model: Node3D = r[1]
-	_part(model, "Stock", _box(Vector3(0.05, 0.09, 0.5)), Vector3(0, -0.045, 0.2), mats.gun_wood)
-	_part(model, "Fore", _box(Vector3(0.05, 0.05, 0.18)), Vector3(0, -0.01, -0.14), mats.gun_wood)
-	_part(model, "Receiver", _cyl(0.024, 0.34), Vector3(0, 0.02, -0.08), mats.gun_metal, ALONG_Z)
-	_part(model, "BarrelJacket", _cyl(0.02, 0.36), Vector3(0, 0.02, -0.42), mats.gun_metal, ALONG_Z)
-	_part(model, "Muzzle", _cyl(0.012, 0.04), Vector3(0, 0.02, -0.62), mats.gun_metal, ALONG_Z)
-	_part(model, "Drum", _cyl(0.095, 0.065, 16), Vector3(0, -0.1, -0.1), mats.gun_metal, ALONG_X)
-	_part(model, "RearSightBase", _box(Vector3(0.03, 0.02, 0.03)), Vector3(0, 0.05, -0.05), mats.gun_metal)
-	_part(model, "RearSightL", _box(Vector3(0.01, 0.016, 0.012)), Vector3(-0.009, 0.068, -0.05), mats.gun_metal)
-	_part(model, "RearSightR", _box(Vector3(0.01, 0.016, 0.012)), Vector3(0.009, 0.068, -0.05), mats.gun_metal)
-	_part(model, "FrontSight", _box(Vector3(0.004, 0.05, 0.006)), Vector3(0, 0.051, -0.6), mats.gun_metal)
-	r[0].set("ads_eye_distance", 0.3)
+	# The model is in centimetres (92 cm long, real gun 87 cm) and already points to -z.
+	var muzzle := _place_gun_mesh(model, "res://assets/models/weapons/suomi/model.gltf", 0.0, 0.0094,
+			Vector3(0.0, 9.65, 1.5), Vector3(0.0, 5.9, -46.8))
+	(model.get_node("Muzzle") as Node3D).position = muzzle
+	r[0].set("hidden_part_names", PackedStringArray(["SuomiKP31_Magazine", "9mm_Case"]))
+	r[0].set("ads_eye_distance", 0.4)
+	r[0].set("hip_offset", Vector3(0.0, -0.02, -0.08))
 	return r[0]
 
 
@@ -667,6 +673,130 @@ func _make_weapon_data() -> void:
 	suomi.reload_sound = load(a + "reload.wav")
 	suomi.empty_sound = load(a + "empty_click.wav")
 	ResourceSaver.save(suomi, "res://resources/weapons/suomi_kp31.tres")
+
+	var maxim := WeaponData.new()
+	maxim.display_name = "Maxim M/09-21"
+	maxim.fire_mode = WeaponData.FireMode.FULL_AUTO
+	maxim.rounds_per_minute = 580.0
+	maxim.damage = 100.0
+	maxim.max_range_m = 1000.0
+	maxim.falloff_start_m = 500.0
+	maxim.falloff_end_m = 1000.0
+	maxim.min_damage_multiplier = 0.8
+	maxim.noise_radius_m = 250.0
+	maxim.magazine_size = 250 # one cloth belt
+	maxim.starting_reserve = 0
+	maxim.reload_time = 6.0
+	maxim.hip_spread_deg = 0.35
+	maxim.ads_spread_deg = 0.2
+	maxim.move_spread_deg = 0.0
+	maxim.bloom_per_shot_deg = 0.02
+	maxim.max_bloom_deg = 0.5
+	maxim.bloom_recovery_deg_per_s = 2.0
+	maxim.recoil_pitch_deg = 0.25
+	maxim.recoil_yaw_deg = 0.15
+	maxim.recoil_recovery = 0.9
+	maxim.recoil_return_speed = 12.0
+	maxim.ads_fov = 50.0
+	maxim.ads_time = 0.25
+	maxim.ads_sensitivity_multiplier = 0.5
+	maxim.fire_sound = load(a + "maxim_shot.wav")
+	maxim.reload_sound = load(a + "belt_reload.wav")
+	maxim.empty_sound = load(a + "empty_click.wav")
+	ResourceSaver.save(maxim, "res://resources/weapons/maxim_m09_21.tres")
+
+
+# ---------------------------------------------------------------- Maxim
+## Maxim M/09-21 on its wheeled mount, with a log platform and a step (a small gun nest).
+## Imported model "Machine Gun Maxim" by jezusek (CC-BY 4.0), in model units (~1.35 cm).
+## The scene origin is at the bottom of the mount; -z points down the barrel.
+const MAXIM_SCALE := 0.0135
+const MAXIM_MOUNT_BOTTOM := Vector3(0.0, -27.3, 33.0) # model units: under the turning point
+const MAXIM_PIVOT := Vector3(0.0, -6.0, 33.0)         # model units: where the gun turns
+const MAXIM_BARREL_HEIGHT := 0.338                    # barrel above the scene origin (m)
+const MAXIM_BARREL_Y := 0.2                           # barrel height in the level (slit 0.1-0.6)
+const MAXIM_EYE := Vector3(0.0, 0.52, 0.8)            # gunner's eye, scene coordinates
+
+
+func _build_maxim(mats: Dictionary) -> Node:
+	var gun := StaticBody3D.new()
+	gun.name = "MaximMG"
+	gun.set_script(load("res://scripts/weapons/mounted_gun.gd"))
+	gun.collision_layer = 0b1
+	gun.set_meta("surface", "wood")
+	gun.set("data", load("res://resources/weapons/maxim_m09_21.tres"))
+	gun.set("traverse_left_deg", 14.0)  # the gun stands left of centre in the slit
+	gun.set("traverse_right_deg", 40.0)
+	gun.set("elevation_min_deg", -7.0)
+	gun.set("elevation_max_deg", 4.0)
+	gun.set("turning_part_names", PackedStringArray(["karabin_001_3", "Zapatka_4", "Cube_0",
+		"pocisk_5", "pocisk_001_7", "pocisk_002_8", "pocisk_003_9", "pocisk_004_6", "pocisk_005_11",
+		"pocisk_006_10", "pocisk_007_12", "pocisk_008_15", "pocisk_009_16", "pocisk_010_24",
+		"pociskpusty_23", "pociskpusty_001_22", "pociskpusty_002_17", "pociskpusty_003_18",
+		"pociskpusty_004_19", "pociskpusty_005_20", "pociskpusty_006_21"]))
+	gun.set("hidden_part_names", PackedStringArray(["Cube_0"])) # the model's own muzzle flash
+
+	var model: Node3D = _add(gun, load("res://assets/models/weapons/maxim/model.gltf").instantiate(), "Model")
+	model.scale = Vector3.ONE * MAXIM_SCALE
+	model.position = -MAXIM_MOUNT_BOTTOM * MAXIM_SCALE
+
+	var pivot: Node3D = _add(gun, Node3D.new(), "Pivot")
+	pivot.position = (MAXIM_PIVOT - MAXIM_MOUNT_BOTTOM) * MAXIM_SCALE
+	var muzzle: Marker3D = _add(pivot, Marker3D.new(), "Muzzle")
+	muzzle.position = Vector3(0.0, MAXIM_BARREL_HEIGHT - pivot.position.y, (-21.3 - MAXIM_PIVOT.z) * MAXIM_SCALE)
+	var flash := QuadMesh.new()
+	flash.size = Vector2(0.3, 0.3)
+	_part(muzzle, "MuzzleFlash", flash, Vector3(0, 0, -0.06), mats.muzzle_flash)
+	var side_flash := QuadMesh.new()
+	side_flash.size = Vector2(0.08, 0.26)
+	_part(muzzle.get_node("MuzzleFlash"), "SideFlash", side_flash, Vector3(0, 0, -0.05), mats.muzzle_flash, Vector3(0, PI / 2.0, 0))
+	var light: OmniLight3D = _add(muzzle, OmniLight3D.new(), "FlashLight")
+	light.light_color = Color(1.0, 0.75, 0.45)
+	light.light_energy = 3.0
+	light.omni_range = 7.0
+
+	# Where the gunner stands (feet) and where they step off to.
+	var seat: Marker3D = _add(gun, Marker3D.new(), "SeatPoint")
+	seat.position = MAXIM_EYE - Vector3(0, 1.6, 0) # 1.6 m = standing eye height
+	var exit: Marker3D = _add(gun, Marker3D.new(), "ExitPoint")
+	var floor_y: float = -DEPTH - (MAXIM_BARREL_Y - MAXIM_BARREL_HEIGHT) # trench floor in scene coordinates
+	exit.position = Vector3(1.1, floor_y + 0.05, 1.0)
+
+	# Log platform under the gun and a low step for the gunner.
+	_nest_box(gun, "Platform", Vector3(1.0, -floor_y, 1.2), Vector3(0.05, floor_y / 2.0, 0.0), mats.nest_log)
+	var step_h: float = seat.position.y - floor_y
+	_nest_box(gun, "Step", Vector3(0.8, step_h, 0.6), Vector3(0.0, floor_y + step_h / 2.0, seat.position.z), mats.nest_log)
+	# The gun itself stops bullets (the shield!), roughly.
+	var gun_shape: CollisionShape3D = _add(gun, CollisionShape3D.new(), "GunCollision")
+	var box := BoxShape3D.new()
+	box.size = Vector3(0.45, 0.42, 1.1)
+	gun_shape.shape = box
+	gun_shape.position = Vector3(0.0, MAXIM_BARREL_HEIGHT, -0.05)
+
+	var shot_audio: AudioStreamPlayer3D = _add(gun, AudioStreamPlayer3D.new(), "ShotAudio")
+	shot_audio.position = muzzle.position
+	shot_audio.max_polyphony = 6
+	shot_audio.unit_size = 30.0
+	var mech_audio: AudioStreamPlayer3D = _add(gun, AudioStreamPlayer3D.new(), "MechAudio")
+	mech_audio.unit_size = 6.0
+	var sync: MultiplayerSynchronizer = _add(gun, MultiplayerSynchronizer.new(), "GunSync")
+	sync.root_path = NodePath("..")
+	sync.replication_config = _sync_config([
+		[".:user_id", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:ammo", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:is_reloading", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+	])
+	return gun
+
+
+## A log box (mesh + collision) for the gun nest.
+func _nest_box(body: Node3D, n: String, size: Vector3, pos: Vector3, mat: Material) -> void:
+	_part(body, n + "Mesh", _box(size), pos, mat)
+	var cs: CollisionShape3D = _add(body, CollisionShape3D.new(), n + "Collision")
+	var shape := BoxShape3D.new()
+	shape.size = size
+	cs.shape = shape
+	cs.position = pos
 
 
 # ---------------------------------------------------------------- shooting range target
@@ -946,6 +1076,14 @@ func _build_hud() -> Node:
 	_label(wv, "NextWave", "", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.85, 0.5))
 	_label(wv, "Score", "Kills 0   Deaths 0", 14, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
 
+	# Centre, below the crosshair: "[F] Use Maxim".
+	var prompt := _label(hud, "InteractPrompt", "", 17, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.7))
+	prompt.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	prompt.offset_left = -300
+	prompt.offset_right = 300
+	prompt.offset_top = 150
+	prompt.offset_bottom = 180
+
 	var banner := _label(hud, "WaveBanner", "WAVE 1", 60, HORIZONTAL_ALIGNMENT_CENTER)
 	banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	banner.offset_left = -300
@@ -1070,26 +1208,44 @@ func _build_main_menu(theme: Theme) -> Node:
 	_full_rect(center)
 	center.offset_bottom = -120 # centre the menu in the sky, above the snowy ground
 	var vb: VBoxContainer = _add(center, VBoxContainer.new(), "VBox")
-	vb.add_theme_constant_override("separation", 12)
+	vb.add_theme_constant_override("separation", 9)
 	_label(vb, "Kicker", "TALVISOTA", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.85, 0.9, 0.97))
 	_label(vb, "Title", "WINTER WAR: SUMMA", 64, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(vb, "Subtitle", "Battle of Summa  ·  Mannerheim Line  ·  1939–40", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
 	var spacer: Control = _add(vb, Control.new(), "Spacer")
-	spacer.custom_minimum_size = Vector2(0, 24)
+	spacer.custom_minimum_size = Vector2(0, 14)
 	for b in [["SinglePlayerButton", "Single Player", ""], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
 			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
-			["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["QuitButton", "Quit", ""]]:
+			["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
+			["QuitButton", "Quit", ""]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
 		btn.text = b[1]
 		btn.tooltip_text = b[2]
-		btn.custom_minimum_size = Vector2(340, 50)
+		btn.custom_minimum_size = Vector2(340, 44)
 		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
 
 	var sm: Control = _add(mm, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
 	sm.visible = false
-	var ver := _label(mm, "Version", "Prototype · M5", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+
+	# Credits: the text of CREDITS.md (the models' licence requires naming their authors).
+	var cc: CenterContainer = _add(mm, CenterContainer.new(), "Credits")
+	_full_rect(cc)
+	cc.visible = false
+	var panel: PanelContainer = _add(cc, PanelContainer.new(), "Panel")
+	var cvb: VBoxContainer = _add(panel, VBoxContainer.new(), "VBox")
+	cvb.add_theme_constant_override("separation", 14)
+	var credits_text: String = FileAccess.get_file_as_string("res://CREDITS.md").replace("# ", "").replace("#", "")
+	var cl := _label(cvb, "Text", credits_text.strip_edges(), 15, HORIZONTAL_ALIGNMENT_LEFT, Color(0.92, 0.94, 0.97))
+	cl.custom_minimum_size = Vector2(760, 0)
+	cl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var back: Button = _add(cvb, Button.new(), "BackButton")
+	back.text = "Back"
+	back.custom_minimum_size = Vector2(200, 44)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	var ver := _label(mm, "Version", "Prototype · W1", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
 	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.offset_left = -300
 	ver.offset_top = -34
@@ -1153,7 +1309,8 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	bunker.position = Vector3(0, 0, 67.75)
 	_csg_box(bunker, "Walls", Vector3(6, 1.0, 5.5), Vector3(0, 0.5, 0), mats.bunker_log)
 	_csg_box(bunker, "Inside", Vector3(5, 1.2, 4.5), Vector3(0, 0.5, 0), mats.bunker_log, SUB)
-	_csg_box(bunker, "FiringSlit", Vector3(3.0, 0.35, 1.0), Vector3(0, 0.3, -2.5), mats.bunker_log, SUB)
+	# Firing slit: 3 m wide, 0.5 m tall (room for the Maxim and a view over its sights).
+	_csg_box(bunker, "FiringSlit", Vector3(3.0, 0.5, 1.0), Vector3(0, 0.35, -2.5), mats.bunker_log, SUB)
 	_csg_box(bunker, "Roof", Vector3(6.8, 0.5, 6.3), Vector3(0, 1.25, 0), mats.bunker_log)
 	_csg_box(bunker, "RoofSnow", Vector3(6.6, 0.25, 6.1), Vector3(0, 1.62, 0), mats.drift)
 	for i in 2: # two big logs along the front edge of the roof

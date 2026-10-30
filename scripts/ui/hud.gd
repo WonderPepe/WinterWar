@@ -33,6 +33,7 @@ var _death_time: float = -1.0
 @onready var death_screen: Control = $DeathScreen
 @onready var respawn_label: Label = $DeathScreen/Respawn
 @onready var hit_sound: AudioStreamPlayer = $HitSound
+@onready var interact_prompt: Label = $InteractPrompt
 
 
 func _ready() -> void:
@@ -91,8 +92,19 @@ func _update_weapon() -> void:
 	weapon_panel.visible = not _player.is_dead
 	if w:
 		weapon_name.text = w.display_name
-		ammo_label.text = "%d / %d" % [weapons.get_mag_ammo(), weapons.get_reserve_ammo()]
-	reload_label.visible = weapons.is_reloading
+		var reserve: int = weapons.get_reserve_ammo()
+		ammo_label.text = "%d / %s" % [weapons.get_mag_ammo(), "∞" if reserve < 0 else str(reserve)]
+	reload_label.visible = weapons.is_reloading_now()
+	reload_label.text = "NEW BELT" if weapons.get_mounted_gun() else "RELOADING"
+	# "[F] Use Maxim" near a free mounted gun, a reminder how to leave while on it.
+	var gun := weapons.get_mounted_gun()
+	if _player.is_dead:
+		interact_prompt.text = ""
+	elif gun:
+		interact_prompt.text = "[F] Leave the gun    [R] New belt"
+	else:
+		var usable := _player.find_usable_gun()
+		interact_prompt.text = "[F] Use %s" % usable.data.display_name if usable else ""
 	crosshair.visible = not weapons.is_aiming and not _player.is_dead
 	crosshair.spread_deg = weapons.get_current_spread_deg()
 	crosshair.fov_deg = _player.camera.fov

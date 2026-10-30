@@ -3,11 +3,18 @@ extends Node3D
 ## The first-person model of a weapon (only drawn for the player on this computer).
 ## Plays simple code-driven animations: recoil kick, bolt cycling, reloading, raising.
 ## Expected children: Model (with AimPoint, Muzzle/MuzzleFlash, Muzzle/FlashLight).
+## The visible gun is an imported 3D model (Model/Mesh). Its moving parts are found by
+## name when the game starts (`bolt_part_names`), and loose extra parts can be hidden.
 
 @export var bolt: Node3D ## Optional part that slides back when the bolt is worked.
+## Parts of the imported model that form the bolt: they are gathered into one "Bolt" node.
+@export var bolt_part_names: PackedStringArray = []
+## Parts of the imported model that should not be shown (e.g. loose cartridges).
+@export var hidden_part_names: PackedStringArray = []
 @export var bolt_travel: float = 0.08 ## How far the bolt slides back (metres).
 @export var flash_duration: float = 0.05
 @export var ads_eye_distance: float = 0.3 ## When aiming, the rear sight sits this far in front of the eye.
+@export var hip_offset: Vector3 = Vector3.ZERO ## Moves this gun from the standard hip position.
 
 ## Where the rear sight is when the model is at rest (used to line up the sights).
 var aim_point_rest: Vector3
@@ -28,6 +35,7 @@ var _tween: Tween
 
 
 func _ready() -> void:
+	_prepare_imported_model()
 	aim_point_rest = ($Model/AimPoint as Node3D).position
 	flash.visible = false
 	flash_light.visible = false
@@ -45,6 +53,29 @@ func _process(delta: float) -> void:
 	var flashing: bool = _now() < _flash_until
 	flash.visible = flashing
 	flash_light.visible = flashing
+
+
+## Sets up the imported model: hide extra parts, build the Bolt node, no shadows.
+func _prepare_imported_model() -> void:
+	var mesh_root: Node = get_node_or_null("Model/Mesh")
+	if mesh_root == null:
+		return
+	for part_name in hidden_part_names:
+		var part := mesh_root.find_child(part_name, true, false) as Node3D
+		if part:
+			part.visible = false
+	if bolt == null and not bolt_part_names.is_empty():
+		var new_bolt := Node3D.new()
+		new_bolt.name = "Bolt"
+		model.add_child(new_bolt)
+		for part_name in bolt_part_names:
+			var part := mesh_root.find_child(part_name, true, false) as Node3D
+			if part:
+				part.reparent(new_bolt, true) # keep where it is, but move with the bolt now
+		bolt = new_bolt
+	# A gun held in front of the camera must not throw shadows on the world.
+	for mi in mesh_root.find_children("*", "GeometryInstance3D", true, false):
+		(mi as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func play_fire(kick_back_m: float, kick_rotation_deg: float) -> void:

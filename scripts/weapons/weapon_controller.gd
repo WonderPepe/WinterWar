@@ -8,6 +8,8 @@ extends Node
 ## - The HOST checks the shot is allowed, does the raycast, applies damage, owns the
 ##   ammo counts and tells everyone where the bullet hit.
 ## In single player we are both, so everything happens instantly.
+## While the player is on a mounted gun (Maxim), the trigger, ammo and reload go to that
+## gun instead of the hand weapons (see MountedGun).
 
 signal weapon_changed(data: WeaponData)
 signal hit_confirmed(killed: bool)
@@ -63,16 +65,37 @@ func _ready() -> void:
 	_apply_slot()
 
 
+## The mounted gun the player is using, or null.
+func get_mounted_gun() -> MountedGun:
+	return player.get_mounted_gun()
+
+
 func get_current_weapon() -> WeaponData:
+	var gun := get_mounted_gun()
+	if gun:
+		return gun.data
 	return loadout[current_slot] if current_slot < loadout.size() else null
 
 
 func get_mag_ammo() -> int:
+	var gun := get_mounted_gun()
+	if gun:
+		return gun.ammo
 	return mag_ammo[current_slot] if current_slot < mag_ammo.size() else 0
 
 
+## Spare rounds; -1 means "unlimited" (mounted gun with plenty of belts).
 func get_reserve_ammo() -> int:
+	var gun := get_mounted_gun()
+	if gun:
+		return -1 if gun.infinite_belts else 0
 	return reserve_ammo[current_slot] if current_slot < reserve_ammo.size() else 0
+
+
+## True while the current weapon (hand weapon or mounted gun) is being reloaded.
+func is_reloading_now() -> bool:
+	var gun := get_mounted_gun()
+	return gun.is_reloading if gun else is_reloading
 
 
 ## Movement speed multiplier while aiming (used by Player on the host).
@@ -87,9 +110,9 @@ func _process(delta: float) -> void:
 		return
 	if multiplayer.is_server():
 		_host_process(delta, w)
-	is_aiming = input.aim_held and not is_reloading and not player.is_sprinting
+	is_aiming = input.aim_held and not is_reloading_now() and not player.is_sprinting
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
-	holder.visible = player.is_local_player() and not player.is_dead
+	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null
 	if player.is_local_player():
 		_owner_process(delta, w)
 
@@ -110,11 +133,14 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 			_fire(w)
 		else:
 			_dry_fire(w)
-	_update_view(delta, w)
+	if get_mounted_gun():
+		_update_mounted_view(w)
+	else:
+		_update_view(delta, w)
 
 
 func _can_fire_now() -> bool:
-	return _now() >= _next_fire_time and not is_reloading and not player.is_sprinting and not player.is_dead
+	return _now() >= _next_fire_time and not is_reloading_now() and not player.is_sprinting and not player.is_dead
 
 
 func _fire(w: WeaponData) -> void:
@@ -125,6 +151,12 @@ func _fire(w: WeaponData) -> void:
 	else:
 		_next_fire_time = _now() + interval
 	var direction: Vector3 = _spread_direction(w)
+	var gun := get_mounted_gun()
+	if gun:
+		gun.server_fire.rpc_id(1, camera.global_position, direction) # ask the host to fire
+		gun.play_local_fire()
+		_add_recoil(w)
+		return
 	server_fire.rpc_id(1, camera.global_position, direction) # ask the host to fire
 
 	# Local effects right away (no waiting for the network).
@@ -134,7 +166,11 @@ func _fire(w: WeaponData) -> void:
 	if w.fire_mode == WeaponData.FireMode.BOLT_ACTION and rounds_before > 1:
 		vm.play_bolt_cycle(w.bolt_cycle_time)
 		get_tree().create_timer(w.bolt_cycle_time * 0.25).timeout.connect(_play.bind(mech_audio, w.cycle_sound))
-	# Recoil moves the real aim; part of it returns by itself.
+	_add_recoil(w)
+
+
+## Recoil moves the real aim; part of it returns by itself.
+func _add_recoil(w: WeaponData) -> void:
 	var kick: float = deg_to_rad(w.recoil_pitch_deg)
 	input.add_look(kick, deg_to_rad(_rng.randf_range(-w.recoil_yaw_deg, w.recoil_yaw_deg)))
 	_recoil_to_recover += kick * w.recoil_recovery
@@ -144,7 +180,7 @@ func _fire(w: WeaponData) -> void:
 func _dry_fire(w: WeaponData) -> void:
 	_next_fire_time = _now() + 0.3
 	_play(mech_audio, w.empty_sound)
-	if get_reserve_ammo() > 0:
+	if get_reserve_ammo() != 0:
 		input.request_reload.rpc_id(1) # empty: reload automatically
 
 
@@ -173,7 +209,7 @@ func _update_view(delta: float, w: WeaponData) -> void:
 	var vm := _current_view_model()
 	var aim_smooth: float = smoothstep(0.0, 1.0, _aim_t)
 	var ads_position: Vector3 = Vector3(0.0, 0.0, -vm.ads_eye_distance) - vm.aim_point_rest
-	var target: Vector3 = hip_position.lerp(ads_position, aim_smooth)
+	var target: Vector3 = (hip_position + vm.hip_offset).lerp(ads_position, aim_smooth)
 
 	var speed: float = player.get_speed()
 	if speed > 0.5:
@@ -190,8 +226,21 @@ func _update_view(delta: float, w: WeaponData) -> void:
 	input.look_sensitivity_scale = lerpf(1.0, w.ads_sensitivity_multiplier, aim_smooth)
 
 
+## On a mounted gun there is no hand weapon to place: just zoom while aiming (right mouse).
+func _update_mounted_view(w: WeaponData) -> void:
+	var aim_smooth: float = smoothstep(0.0, 1.0, _aim_t)
+	camera.fov = lerpf(base_fov, w.ads_fov, aim_smooth)
+	input.look_sensitivity_scale = lerpf(0.8, w.ads_sensitivity_multiplier, aim_smooth)
+
+
 # ------------------------------------------------------------------ host side
 func _host_process(delta: float, w: WeaponData) -> void:
+	var gun := get_mounted_gun()
+	if gun:
+		input.consume_switch() # no weapon switching on the gun
+		if input.consume_reload():
+			gun.start_reload() # a new belt
+		return
 	var slot: int = input.consume_switch()
 	if slot >= 0 and slot < loadout.size() and slot != current_slot:
 		is_reloading = false
@@ -240,15 +289,25 @@ func server_fire(origin: Vector3, direction: Vector3) -> void:
 		return # someone tried to fire another player's gun
 	var w := get_current_weapon()
 	var now: float = _now()
-	if w == null or is_reloading or player.is_dead or get_mag_ammo() <= 0 or now < _server_next_fire:
+	if w == null or get_mounted_gun() or is_reloading or player.is_dead or get_mag_ammo() <= 0 or now < _server_next_fire:
 		return
 	_server_next_fire = now + w.get_shot_interval() * 0.8 # small tolerance for network jitter
 	if origin.distance_to(camera.global_position) > 2.0:
 		origin = camera.global_position # don't trust a far-away origin
 	mag_ammo[current_slot] -= 1
+	resolve_shot(origin, direction, w, [])
+	# Let other computers see/hear this player's shot.
+	if not player.is_local_player():
+		_play_remote_fire_effects()
+	remote_fire_effects.rpc()
 
+
+## Host only: the bullet itself. Raycast, damage, hit marker, impact effect, noise.
+## Also used by mounted guns (`exclude` = the gun's own body, so it can't shoot itself).
+func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: Array[RID]) -> void:
+	var shooter: int = player.get_peer_id()
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction.normalized() * w.max_range_m, shot_collision_mask)
-	query.exclude = [player.get_rid()]
+	query.exclude = [player.get_rid()] + exclude
 	var hit: Dictionary = player.get_world_3d().direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
 		var collider: Node = hit.collider
@@ -260,13 +319,8 @@ func server_fire(origin: Vector3, direction: Vector3) -> void:
 			confirm_hit.rpc_id(shooter, killed)
 		var attach: NodePath = collider.get_path() if collider.has_meta("attach_holes") else NodePath()
 		show_impact.rpc(hit.position, hit.normal, ImpactEffects.surface_of(collider, hit.normal), attach)
-
 	# Enemies within earshot hear the shot and look towards it.
 	get_tree().call_group("enemies", "hear_noise", origin, origin, w.noise_radius_m)
-	# Let other computers see/hear this player's shot.
-	if not player.is_local_player():
-		_play_remote_fire_effects()
-	remote_fire_effects.rpc()
 
 
 @rpc("authority", "call_local", "reliable")
