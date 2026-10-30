@@ -1,18 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_kvpfn"]
-[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_dinhu"]
-[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="3_kvuet"]
-[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="4_trtic"]
-[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="5_ir15t"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="6_ca42v"]
-[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="7_rysoc"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="8_ssvqc"]
-[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="9_264po"]
-[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="10_1kice"]
-[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="11_5newe"]
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_dinhu"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_kvuet"]
+[ext_resource type="Script" path="res://scripts/game/shader_warmup.gd" id="3_trtic"]
+[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="4_ir15t"]
+[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="5_ca42v"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="6_rysoc"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="7_ssvqc"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="8_264po"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="9_1kice"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="10_5newe"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="11_37s47"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="12_bt5mj"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_37s47"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_e1j6l"]
 properties/0/path = NodePath(".:wave_number")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -20,48 +21,51 @@ properties/1/path = NodePath(".:alive_count")
 properties/1/spawn = true
 properties/1/replication_mode = 2
 
-[node name="Game" type="Node3D" unique_id=205122081 node_paths=PackedStringArray("players_root")]
-script = ExtResource("1_kvpfn")
+[node name="Game" type="Node3D" unique_id=683611735 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_dinhu")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=932699850 instance=ExtResource("2_dinhu")]
+[node name="Level" type="Node3D" parent="." unique_id=1546268816 instance=ExtResource("2_kvuet")]
 
-[node name="Players" type="Node3D" parent="." unique_id=639346216]
+[node name="Players" type="Node3D" parent="." unique_id=2000537013]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=3202248]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1712175769]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="QualityApplier" type="Node" parent="." unique_id=1588994576]
-script = ExtResource("3_kvuet")
+[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=86834355]
+script = ExtResource("3_trtic")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=657070677]
-script = ExtResource("4_trtic")
+[node name="QualityApplier" type="Node" parent="." unique_id=570531837]
+script = ExtResource("4_ir15t")
 
-[node name="Enemies" type="Node3D" parent="." unique_id=1807360205]
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=691739934]
+script = ExtResource("5_ca42v")
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=813834151]
+[node name="Enemies" type="Node3D" parent="." unique_id=548090476]
+
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=997991342]
 _spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="WaveSpawner" type="Node" parent="." unique_id=114613941 node_paths=PackedStringArray("enemies_root")]
-script = ExtResource("5_ir15t")
-enemy_scene = ExtResource("6_ca42v")
+[node name="WaveSpawner" type="Node" parent="." unique_id=299964766 node_paths=PackedStringArray("enemies_root")]
+script = ExtResource("6_rysoc")
+enemy_scene = ExtResource("7_ssvqc")
 enemies_root = NodePath("../Enemies")
 
-[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=1605708004]
-replication_config = SubResource("SceneReplicationConfig_37s47")
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=1723714333]
+replication_config = SubResource("SceneReplicationConfig_e1j6l")
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=936150977 instance=ExtResource("7_rysoc")]
-script = ExtResource("8_ssvqc")
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1568066238 instance=ExtResource("8_264po")]
+script = ExtResource("9_1kice")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1138751358 instance=ExtResource("9_264po")]
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=761684467 instance=ExtResource("10_5newe")]
 layer = 20
-script = ExtResource("10_1kice")
+script = ExtResource("11_37s47")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=870171116]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1057511634]
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=1641624157]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=943763417]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0
@@ -69,4 +73,4 @@ offset_bottom = 10.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-script = ExtResource("11_5newe")
+script = ExtResource("12_bt5mj")

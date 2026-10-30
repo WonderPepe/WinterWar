@@ -129,8 +129,8 @@ func _finish() -> void:
 		"",
 		"Average FPS: %.1f        1%% low FPS: %.1f        Worst frame: %.1f ms" % [avg_fps, low_fps, worst * 1000.0],
 		"Draw calls: %.0f average, %.0f max        Triangles: %.0fk        Objects: %.0f" % [_sum.draw_calls / n, _max_draw_calls, _sum.primitives / n / 1000.0, _sum.objects / n],
-		"Scripts: %.2f ms/frame        Physics: %.2f ms/frame" % [_sum.process_ms / n, _sum.physics_ms / n],
-		"Memory: %.0f MB        Video memory: %.0f MB" % [Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0, Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0],
+		_cpu_line(n),
+		_memory_line(),
 		"Load time (menu click -> game): %.1f s" % _load_seconds,
 		"",
 		"Quality: %s   Resolution: %dx%d at %d%%   Platform: %s%s" % [Settings.Quality.keys()[Settings.quality], view_size.x, view_size.y, int(Settings.preset().render_scale * 100), OS.get_name(), " (browser)" if OS.has_feature("web") else ""],
@@ -140,6 +140,20 @@ func _finish() -> void:
 	_results_text = "\n".join(lines)
 	print("BENCHMARK RESULTS\n", _results_text)
 	_show_results()
+
+
+## Browsers don't give Godot reliable script timings or memory use, so show "n/a" there.
+func _cpu_line(n: float) -> String:
+	if OS.has_feature("web"):
+		return "Scripts: n/a in browsers        Physics: %.2f ms/frame" % (_sum.physics_ms / n)
+	return "Scripts: %.2f ms/frame        Physics: %.2f ms/frame" % [_sum.process_ms / n, _sum.physics_ms / n]
+
+
+func _memory_line() -> String:
+	var vram: float = Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0
+	if OS.has_feature("web"):
+		return "Memory: n/a in browsers        Video memory: %.0f MB" % vram
+	return "Memory: %.0f MB        Video memory: %.0f MB" % [Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0, vram]
 
 
 func _build_progress_label() -> void:

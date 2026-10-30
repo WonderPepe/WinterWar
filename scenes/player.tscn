@@ -85,57 +85,57 @@ properties/7/path = NodePath(".:god_mode")
 properties/7/spawn = true
 properties/7/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D" unique_id=2039426209]
+[node name="Player" type="CharacterBody3D" unique_id=1666806977]
 collision_layer = 2
 collision_mask = 7
 floor_max_angle = 0.80285144
 floor_snap_length = 0.3
 script = ExtResource("1_smehm")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=375602790]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=501744917]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_a8ls1")
 
-[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=771319436]
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1025196299]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 mesh = SubResource("CapsuleMesh_qfm1y")
 
-[node name="Head" type="Node3D" parent="." unique_id=520857831]
+[node name="Head" type="Node3D" parent="." unique_id=1633275664]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1496815855]
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=514363770]
 far = 600.0
 
-[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=855753733]
+[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=1914930266]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, -0.17, -0.3)
 
-[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=1872854561]
+[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=934224356]
 target_position = Vector3(0, 0, -0.9)
 
-[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=894811442]
+[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=110296339]
 unit_size = 25.0
 max_polyphony = 4
 
-[node name="WeaponController" type="Node" parent="." unique_id=1196273612]
+[node name="WeaponController" type="Node" parent="." unique_id=1855138804]
 script = ExtResource("3_y4r1p")
 loadout = Array[ExtResource("4_d2wvv")]([ExtResource("5_3v2ag"), ExtResource("6_jej6c")])
 
-[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=457546661]
+[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1499717767]
 volume_db = -4.0
 max_polyphony = 4
 
-[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1667458549]
+[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=435957472]
 volume_db = -6.0
 
-[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=1797067456]
+[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=1954557504]
 replication_config = SubResource("SceneReplicationConfig_fulsm")
 
-[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=1456459958]
+[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=13175373]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("SphereShape3D_4r5pv")
 target_position = Vector3(0, 0.75, 0)
 
-[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=300611542]
+[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=1108600746]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
 cast_shadow = 0
 emitting = false
@@ -152,11 +152,11 @@ gravity = Vector3(0.4, -1, 0.2)
 initial_velocity_min = 0.3
 initial_velocity_max = 0.8
 
-[node name="PlayerInput" type="Node" parent="." unique_id=198291280]
+[node name="PlayerInput" type="Node" parent="." unique_id=403481966]
 script = ExtResource("8_oprun")
 
-[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=1439262644]
+[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=803003166]
 replication_config = SubResource("SceneReplicationConfig_i4ail")
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=1109958060]
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=836824166]
 replication_config = SubResource("SceneReplicationConfig_a38lo")

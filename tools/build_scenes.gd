@@ -432,6 +432,8 @@ func _build_game() -> Node:
 	spawner.add_spawnable_scene("res://scenes/player.tscn")
 	g.set("players_root", players)
 
+	var warm: CanvasLayer = _add(g, CanvasLayer.new(), "ShaderWarmup")
+	warm.set_script(load("res://scripts/game/shader_warmup.gd"))
 	var qa: Node = _add(g, Node.new(), "QualityApplier")
 	qa.set_script(load("res://scripts/game/quality_applier.gd"))
 	var fx: Node3D = _add(g, Node3D.new(), "ImpactEffects")

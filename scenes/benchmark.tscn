@@ -4,9 +4,9 @@
 [ext_resource type="PackedScene" path="res://scenes/game.tscn" id="2_hsk30"]
 [ext_resource type="Script" path="res://scripts/game/game.gd" id="3_m38n2"]
 
-[node name="Benchmark" type="Node" unique_id=899617631]
+[node name="Benchmark" type="Node" unique_id=1247287526]
 script = ExtResource("1_7i2d1")
 
-[node name="Game" type="Node3D" parent="." unique_id=205122081 node_paths=PackedStringArray("players_root") instance=ExtResource("2_hsk30")]
+[node name="Game" type="Node3D" parent="." unique_id=683611735 node_paths=PackedStringArray("players_root") instance=ExtResource("2_hsk30")]
 script = ExtResource("3_m38n2")
 players_root = NodePath("Players")
