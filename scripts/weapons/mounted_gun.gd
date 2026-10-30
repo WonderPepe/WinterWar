@@ -58,8 +58,12 @@ func _ready() -> void:
 	_smoke = ImpactEffects.make_smoke_emitter(ImpactEffects.make_soft_texture())
 	_smoke.one_shot = false
 	_smoke.explosiveness = 0.0
-	_smoke.amount = 24
-	_smoke.lifetime = 2.2
+	_smoke.amount = 10
+	_smoke.lifetime = 1.4
+	_smoke.initial_velocity_min = 3.0 # pushed out through the slit, away from the gunner
+	_smoke.initial_velocity_max = 5.0
+	_smoke.gravity = Vector3(0.1, 0.25, 0.0)
+	((_smoke.mesh as PrimitiveMesh).material as StandardMaterial3D).albedo_color.a = 0.15
 	_smoke.emitting = false
 	_smoke.direction = Vector3.FORWARD # muzzle space: out of the barrel
 	muzzle.add_child(_smoke)

@@ -80,6 +80,7 @@ func _warm_up() -> void:
 	if effects:
 		for hole in effects._holes:
 			hole.visible = false
+		effects.hide_all() # no smoke or snow spray hanging in front of you when the game starts
 	for n in _temp:
 		n.queue_free()
 	queue_free()

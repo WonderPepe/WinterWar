@@ -35,7 +35,7 @@ func _ready() -> void:
 	footsteps.unit_size = 4.0
 	add_child(footsteps)
 	breath = SoldierVisual.make_breath_emitter()
-	breath.position = Vector3(0, -0.07, -0.25)
+	breath.position = Vector3(0, -0.14, -0.35) # below the line of sight
 	get_node("../Head/Camera3D").add_child(breath) # (the Player's own variables aren't ready yet)
 	drift = make_drift_emitter()
 	drift.top_level = true # the wind blows the same way whichever way you face
@@ -106,7 +106,8 @@ func _update_breath(delta: float) -> void:
 		return
 	var tired: bool = player.is_sprinting or player.stamina < player.max_stamina * 0.4
 	_breath_timer = (tired_breath_interval if tired else breath_interval) * _rng.randf_range(0.85, 1.15)
-	breath.restart()
+	if Settings.show_breath:
+		breath.restart()
 
 
 ## Thin streaks of snow blown along the ground (the wind is the same as the falling snow's).

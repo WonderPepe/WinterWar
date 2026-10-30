@@ -1389,6 +1389,12 @@ func _build_settings_menu(theme: Theme) -> Node:
 	amb.custom_minimum_size = Vector2(240, 32)
 	_label(grid, "AmbienceValue", "70 %", 16)
 
+	_label(grid, "BreathLabel", "Breath vapour", 18)
+	var br: CheckButton = _add(grid, CheckButton.new(), "Breath")
+	br.text = ""
+	br.button_pressed = true
+	_label(grid, "BreathHint", "", 14)
+
 	_label(grid, "FullscreenLabel", "Fullscreen", 18)
 	var fs: CheckButton = _add(grid, CheckButton.new(), "Fullscreen")
 	fs.text = ""

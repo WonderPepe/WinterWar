@@ -5,24 +5,24 @@
 [ext_resource type="PackedScene" path="res://ui/settings_menu.tscn" id="3_6ap7o"]
 [ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="4_j3kxr"]
 
-[node name="PauseMenu" type="CanvasLayer" unique_id=1046119197]
+[node name="PauseMenu" type="CanvasLayer" unique_id=1870200322]
 layer = 20
 script = ExtResource("1_avurv")
 
-[node name="Root" type="Control" parent="." unique_id=738370296]
+[node name="Root" type="Control" parent="." unique_id=35757097]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource("2_npydk")
 
-[node name="Dim" type="ColorRect" parent="Root" unique_id=440965316]
+[node name="Dim" type="ColorRect" parent="Root" unique_id=1810641589]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.02, 0.03, 0.05, 0.55)
 
-[node name="Panel" type="PanelContainer" parent="Root" unique_id=2076771351]
+[node name="Panel" type="PanelContainer" parent="Root" unique_id=902619649]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -31,11 +31,11 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="Root/Panel" unique_id=42141178]
+[node name="VBox" type="VBoxContainer" parent="Root/Panel" unique_id=328192603]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="Root/Panel/VBox" unique_id=1266895108]
+[node name="Title" type="Label" parent="Root/Panel/VBox" unique_id=1916064071]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -44,7 +44,7 @@ theme_override_constants/outline_size = 6
 text = "PAUSED"
 horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="Root/Panel/VBox" unique_id=1680789472]
+[node name="Hint" type="Label" parent="Root/Panel/VBox" unique_id=1447328544]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -53,22 +53,22 @@ theme_override_constants/outline_size = 3
 text = "Click Resume to play  (Esc opens this menu)"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="Root/Panel/VBox" unique_id=67954598]
+[node name="ResumeButton" type="Button" parent="Root/Panel/VBox" unique_id=516096259]
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 text = "Resume"
 
-[node name="SettingsButton" type="Button" parent="Root/Panel/VBox" unique_id=232259172]
+[node name="SettingsButton" type="Button" parent="Root/Panel/VBox" unique_id=902099429]
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 text = "Settings"
 
-[node name="MainMenuButton" type="Button" parent="Root/Panel/VBox" unique_id=1026371391]
+[node name="MainMenuButton" type="Button" parent="Root/Panel/VBox" unique_id=1602049939]
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 text = "Main Menu"
 
-[node name="SettingsMenu" type="Control" parent="Root" unique_id=981933190 instance=ExtResource("3_6ap7o")]
+[node name="SettingsMenu" type="Control" parent="Root" unique_id=2060031796 instance=ExtResource("3_6ap7o")]
 visible = false
 layout_mode = 1
 anchors_preset = 15

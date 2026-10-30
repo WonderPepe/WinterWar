@@ -121,6 +121,7 @@ func _spawn_spray(surface: String, pos: Vector3, normal: Vector3, up: Vector3) -
 	_next_spray[surface] = (i + 1) % pool.size()
 	var p := pool[i]
 	p.global_transform = Transform3D(Basis.looking_at(-normal, up) * Basis(Vector3.RIGHT, PI / 2.0), pos)
+	p.visible = true
 	p.restart()
 
 
@@ -134,8 +135,8 @@ func spawn_smoke(pos: Vector3, direction: Vector3, big: bool = false, faint: boo
 	s.amount = 10 if big else (4 if faint else 6)
 	s.color = Color(1, 1, 1, 0.35 if faint else 1.0)
 	var m := (s.mesh as PrimitiveMesh).material as StandardMaterial3D
-	if not m.vertex_color_use_as_albedo: # browser fallback: the strength is in the material
-		m.albedo_color.a = 0.2 if faint else 0.5
+	m.albedo_color.a = 0.1 if faint else 0.3 # thin: it must never hide what you aim at
+	s.visible = true
 	s.initial_velocity_min = 2.5 if faint else 1.0
 	s.initial_velocity_max = 4.0 if faint else 2.5
 	s.restart()
@@ -150,6 +151,15 @@ func play_crack(pos: Vector3) -> void:
 	a.pitch_scale = randf_range(0.9, 1.15)
 	a.play()
 	cracks_played += 1
+
+
+## Hide every spray and smoke puff at once (after the shader warm-up showed them).
+func hide_all() -> void:
+	for pool in _sprays.values():
+		for p: CPUParticles3D in pool:
+			p.visible = false
+	for s in _smoke:
+		s.visible = false
 
 
 ## Surface type from the "surface" metadata of the hit object (or its parents).
@@ -246,12 +256,13 @@ func _make_spray(surface: String) -> CPUParticles3D:
 	return p
 
 
-## WEB WORKAROUND: in browsers (WebGL), particles that take their colour from the particle
-## system ("vertex colour") are drawn BLACK. So in a browser we give the material one fixed
-## colour instead and let the particles shrink away at the end instead of fading out.
-## Call this after the particle system and its mesh material are set up.
-static func web_fallback(p: CPUParticles3D, force: bool = false) -> void:
-	if not (force or OS.has_feature("web")) or p.color_ramp == null:
+## WORKAROUND: particles that take their colour from the particle system ("vertex colour",
+## colour ramp) are drawn BLACK in browsers and on some graphics cards (Windows computers that
+## run the Compatibility renderer through ANGLE/Direct3D). So every particle effect gets ONE
+## fixed colour in its material instead, and the particles shrink away at the end instead of
+## fading out. Call this after the particle system and its mesh material are set up.
+static func web_fallback(p: CPUParticles3D, _force: bool = true) -> void:
+	if p.color_ramp == null:
 		return
 	var m := (p.mesh as PrimitiveMesh).material as StandardMaterial3D
 	m.vertex_color_use_as_albedo = false
@@ -289,8 +300,8 @@ static func make_smoke_emitter(tex: Texture2D) -> CPUParticles3D:
 	p.scale_amount_min = 0.8
 	p.scale_amount_max = 1.3
 	var fade := Gradient.new()
-	fade.set_color(0, Color(0.62, 0.63, 0.66, 0.55))
-	fade.set_color(1, Color(0.75, 0.76, 0.79, 0.0))
+	fade.set_color(0, Color(0.86, 0.87, 0.89, 0.3)) # light grey-white against the snow
+	fade.set_color(1, Color(0.9, 0.91, 0.93, 0.0))
 	p.color_ramp = fade
 	var q := QuadMesh.new()
 	q.size = Vector2(0.35, 0.35)

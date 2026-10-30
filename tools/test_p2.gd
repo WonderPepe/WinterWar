@@ -30,6 +30,13 @@ func run() -> void:
 	get_tree().get_first_node_in_group("wave_spawner").set_process(false)
 	var fx: ImpactEffects = get_tree().get_first_node_in_group("impact_effects")
 
+	# --- After the warm-up no smoke or spray is left in front of the camera ---
+	await get_tree().create_timer(0.5).timeout
+	var leftover := false
+	for sm in fx._smoke:
+		leftover = leftover or sm.visible
+	check(not leftover, "no smoke left over from the warm-up")
+
 	# --- Audio buses ---
 	var sfx: int = AudioServer.get_bus_index(&"SFX")
 	check(sfx > 0 and AudioServer.get_bus_index(&"Ambience") > 0 and AudioServer.get_bus_index(&"UI") > 0, "audio buses SFX / Ambience / UI exist")
@@ -74,6 +81,12 @@ func run() -> void:
 	pfx._breath_timer = 0.0
 	await frames(2)
 	check(pfx.breath.emitting, "breathing out")
+	Settings.set_show_breath(false)
+	pfx.breath.emitting = false
+	pfx._breath_timer = 0.0
+	await frames(2)
+	check(not pfx.breath.emitting, "breath vapour can be switched off")
+	Settings.set_show_breath(true)
 
 	# --- Soldier ---
 	var e: Enemy = load("res://scenes/enemies/soviet_rifleman.tscn").instantiate()
@@ -155,8 +168,8 @@ func run() -> void:
 	var probe := ImpactEffects.make_smoke_emitter(ImpactEffects.make_soft_texture())
 	ImpactEffects.web_fallback(probe, true)
 	var probe_mat := (probe.mesh as PrimitiveMesh).material as StandardMaterial3D
-	check(probe.color_ramp == null and not probe_mat.vertex_color_use_as_albedo and probe_mat.albedo_color.a > 0.2,
-		"browser fallback: particles use a material colour and shrink away")
+	check(probe.color_ramp == null and not probe_mat.vertex_color_use_as_albedo and probe_mat.albedo_color.a > 0.1,
+		"particles use a material colour (no black vertex colours) and shrink away")
 	check(probe.scale_amount_curve.sample(1.0) < 0.01, "browser fallback: particles shrink to nothing")
 	probe.free()
 

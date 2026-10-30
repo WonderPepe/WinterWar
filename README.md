@@ -97,7 +97,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - **Footsteps** use real recordings only: put .ogg/.wav files with "snow", "trench" or "wood" in
   the name into `assets/audio/footsteps/` (see the README there – e.g. Kenney "Impact Sounds",
   CC0). Without files the game has no footsteps. (The generated ones sounded bad.)
-- **Settings**: a separate "Wind and battle" volume.
+- **Settings**: a separate "Wind and battle" volume, and "Breath vapour" on/off.
 
 ## Editing the trench and bunker
 They are built from CSG shapes in `levels/source/trench_csg.tscn` and baked into plain meshes

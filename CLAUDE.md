@@ -172,6 +172,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   recordings by name from `assets/audio/footsteps/` (snow / trench|gravel / wood; trench falls
   back to snow) with `ResourceLoader.list_directory` (works in exports). No files = silent.
   Wind loop is at -14 dB (owner: wind too loud).
+- Breath vapour: faint (alpha ~0.1), below the line of sight; Settings `show_breath` (menu
+  "Breath vapour") switches it off for you and the soldiers. Maxim smoke: thin, pushed out of
+  the slit.
 - `PlayerFX` (child of Player): footsteps (surface from a ray down: wood meta / trench y < -0.8 /
   snow), breath (child of the camera, local only), drift (top_level, local only, preset
   `drift_amount`). Player `notify_hurt` RPC → `hurt_from` signal → HUD `DamageIndicator`.
@@ -185,10 +188,13 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
   `= PackedStringArray()` as the default. Check exports with `tools/check_web_pack.gd`. The
   export also caches converted scenes in `.godot/exported/` – delete it if in doubt.
-- **Web bug:** CPUParticles3D colours (`vertex_color_use_as_albedo` + `color`/`color_ramp`) render
-  BLACK in WebGL (seen as big black blobs: smoke, breath). `ImpactEffects.web_fallback(p)` turns
-  them into a fixed material colour + shrink-away curve when `OS.has_feature("web")`. Every new
-  particle effect must call it. (MultiMesh instance colours on the trees are fine.)
+- **Particle colour bug:** CPUParticles3D colours (`vertex_color_use_as_albedo` + `color` /
+  `color_ramp`) render BLACK in WebGL AND on the owner's Windows/AMD desktop (dark haze from breath and
+  Maxim smoke). `ImpactEffects.web_fallback(p)` now ALWAYS turns them into a fixed material colour
+  + shrink-away curve. Every new particle effect must call it; set strength via the material's
+  `albedo_color.a`. (MultiMesh instance colours on the trees are fine.)
+- Shader warm-up effects must be hidden afterwards (`ImpactEffects.hide_all()`), or the warm-up
+  smoke hangs in front of the camera when the game starts.
 - Editor re-imports: the owner's editor switched the imported weapon textures to VRAM compressed +
   mipmaps (normal maps as normal maps). Keep those `.import` files. The Web preset exports only
   desktop formats (`for_mobile=false`), otherwise the textures are stored twice.

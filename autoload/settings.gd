@@ -30,6 +30,7 @@ var quality: Quality = Quality.HIGH
 var mouse_sensitivity: float = 1.0 ## Multiplier on the normal mouse speed.
 var volume: float = 0.8 ## 0..1
 var ambience_volume: float = 0.7 ## 0..1: wind and the distant battle.
+var show_breath: bool = true ## Breath vapour (yours and the soldiers').
 var fullscreen: bool = false
 
 
@@ -79,6 +80,11 @@ func set_ambience_volume(value: float) -> void:
 	_save_and_apply()
 
 
+func set_show_breath(value: bool) -> void:
+	show_breath = value
+	_save_and_apply()
+
+
 func set_fullscreen(value: bool) -> void:
 	fullscreen = value
 	_save_and_apply()
@@ -91,6 +97,7 @@ func _save_and_apply() -> void:
 	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	cfg.set_value("audio", "volume", volume)
 	cfg.set_value("audio", "ambience_volume", ambience_volume)
+	cfg.set_value("graphics", "show_breath", show_breath)
 	cfg.save(SAVE_PATH)
 	apply()
 
@@ -104,3 +111,4 @@ func _load() -> void:
 	mouse_sensitivity = cfg.get_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	volume = cfg.get_value("audio", "volume", volume)
 	ambience_volume = cfg.get_value("audio", "ambience_volume", ambience_volume)
+	show_breath = cfg.get_value("graphics", "show_breath", show_breath)

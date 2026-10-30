@@ -116,7 +116,8 @@ func _process(delta: float) -> void:
 	if near and _enemy.state != Enemy.State.DEAD:
 		_breath_timer -= delta
 		if _breath_timer <= 0.0:
-			_breath.restart()
+			if Settings.show_breath:
+				_breath.restart()
 			_breath_timer = _rng.randf_range(2.0, 3.5) if _speed < 2.5 else _rng.randf_range(1.0, 1.6)
 	_kick = move_toward(_kick, 0.0, delta * 6.0)
 	_hit = move_toward(_hit, 0.0, delta * 3.0)
@@ -254,11 +255,11 @@ static func make_breath_emitter() -> CPUParticles3D:
 	p.name = "Breath"
 	p.emitting = false
 	p.one_shot = true
-	p.amount = 6
-	p.lifetime = 1.4
+	p.amount = 4
+	p.lifetime = 1.2
 	p.explosiveness = 0.6
 	p.local_coords = false
-	p.direction = Vector3(0, 0.2, -1)
+	p.direction = Vector3(0, -0.1, -1)
 	p.spread = 25.0
 	p.initial_velocity_min = 0.25
 	p.initial_velocity_max = 0.5
@@ -270,11 +271,11 @@ static func make_breath_emitter() -> CPUParticles3D:
 	grow.add_point(Vector2(1.0, 1.0))
 	p.scale_amount_curve = grow
 	var fade := Gradient.new()
-	fade.set_color(0, Color(0.95, 0.97, 1.0, 0.3))
+	fade.set_color(0, Color(0.95, 0.97, 1.0, 0.12)) # a faint white puff, nothing more
 	fade.set_color(1, Color(0.95, 0.97, 1.0, 0.0))
 	p.color_ramp = fade
 	var q := QuadMesh.new()
-	q.size = Vector2(0.14, 0.14)
+	q.size = Vector2(0.1, 0.1)
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES

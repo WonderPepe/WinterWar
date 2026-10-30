@@ -12,32 +12,32 @@ size = Vector2(0.24, 0.24)
 material = ExtResource("2_pmwkc")
 size = Vector2(0.06, 0.2)
 
-[node name="MosinViewModel" type="Node3D" unique_id=510331111]
+[node name="MosinViewModel" type="Node3D" unique_id=1722854127]
 script = ExtResource("1_qlnuf")
 bolt_part_names = PackedStringArray("LP_BoltHandle", "LP_Bolt_Pigg", "LP_BoltCog", "LP_BoltHammer", "LP_BoltUnderside")
 hidden_part_names = PackedStringArray("LP_Clip", "LP_BulletHolster", "LP_BulletHead")
 bolt_travel = 0.09
 ads_eye_distance = 0.42
 
-[node name="Model" type="Node3D" parent="." unique_id=1715086266]
+[node name="Model" type="Node3D" parent="." unique_id=1256775416]
 
-[node name="AimPoint" type="Marker3D" parent="Model" unique_id=1790803642]
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=590398536]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.066, -0.16)
 
-[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1082058700]
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1573596714]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.1575356e-08, 0.042393006, -0.86434007)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1581691410]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1294124946]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_qtyoa")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=2009272226]
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=1421122733]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_bx4r5")
 
-[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=50438054]
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=1434509520]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 2.5
 omni_range = 6.0
