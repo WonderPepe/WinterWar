@@ -23,11 +23,15 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 
 ## Web version (browser)
 1. **Once:** in Godot choose **Editor → Manage Export Templates → Download and Install** (~1 GB).
-2. **Quick test:** click the 🌐 button at the top right of the editor (**Remote Debug → Run in Browser**).
-   Godot starts a small local web server and opens the game in your browser.
+2. **Quick test from the editor:** the small browser/HTML5 icon button at the top right of the
+   editor ("Run in Browser") exports and opens the game. It is greyed out when the export
+   templates are missing or the Web preset has a problem – **Project → Export… → Web** then shows
+   the reason in red at the bottom.
 3. **Export files:** **Project → Export… → Web → Export Project** → saves to `export/web/`.
-   Opening `index.html` by double-clicking does **not** work (browsers block it from disk) –
-   use step 2 or upload it.
+   Opening `index.html` by double-clicking does **not** work (browsers block it from disk).
+   Instead double-click **`export/web/play_in_browser.bat`**: it starts a small local web server
+   (PowerShell, nothing to install) and opens the game. Close its window to stop it.
+   (If the .bat is missing, copy `serve.ps1` and `play_in_browser.bat` from `tools/web/`.)
 4. **Share on itch.io (free):** create a new project, *Kind of project* = **HTML**. Zip the
    *contents* of `export/web/` (so `index.html` is at the top of the zip), upload it and tick
    **"This file will be played in the browser"**. Viewport 1280 × 720, enable the fullscreen
