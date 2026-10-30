@@ -10,3 +10,6 @@
 
 # Files the Claude desktop app saves into the project
 /Claude outputs/
+
+# Raw asset downloads (processed copies go to assets/)
+/assets_source/
