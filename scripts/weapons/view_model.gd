@@ -2,7 +2,8 @@ class_name ViewModel
 extends Node3D
 ## The first-person model of a weapon (only drawn for the player on this computer).
 ## Plays simple code-driven animations: recoil kick, bolt cycling, reloading, raising.
-## Expected children: Model (with AimPoint, Muzzle/MuzzleFlash, Muzzle/FlashLight).
+## Expected children: Model (with AimPoint, Muzzle/MuzzleFlash, Muzzle/FlashLight, and the
+## hand positions GripR / GripL / BoltGrip used by FirstPersonArms).
 ## The visible gun is an imported 3D model (Model/Mesh). Its moving parts are found by
 ## name when the game starts (`bolt_part_names`), and loose extra parts can be hidden.
 
@@ -15,6 +16,12 @@ extends Node3D
 @export var flash_duration: float = 0.05
 @export var ads_eye_distance: float = 0.3 ## When aiming, the rear sight sits this far in front of the eye.
 @export var hip_offset: Vector3 = Vector3.ZERO ## Moves this gun from the standard hip position.
+@export var reload_with_right_hand: bool = false ## Which hand fetches new ammo (Mosin: right, Suomi: left).
+
+## 0..1: how far the right hand has moved from the grip to the bolt handle (bolt-action).
+var bolt_hand: float = 0.0
+## 0..1: how far the reloading hand has gone down to the ammo pouch.
+var reload_hand: float = 0.0
 
 ## Where the rear sight is when the model is at rest (used to line up the sights).
 var aim_point_rest: Vector3
@@ -28,6 +35,10 @@ var _kick_rotation: float = 0.0
 var _flash_until: float = 0.0
 var _bolt_rest: Vector3
 var _tween: Tween
+var _hand_tween: Tween
+var _grip_r: Node3D
+var _grip_l: Node3D
+var _bolt_grip: Node3D
 
 @onready var model: Node3D = $Model
 @onready var flash: Node3D = $Model/Muzzle/MuzzleFlash
@@ -41,6 +52,29 @@ func _ready() -> void:
 	flash_light.visible = false
 	if bolt:
 		_bolt_rest = bolt.position
+	_grip_r = get_node_or_null("Model/GripR")
+	_grip_l = get_node_or_null("Model/GripL")
+	_bolt_grip = get_node_or_null("Model/BoltGrip")
+	if _bolt_grip and bolt:
+		_bolt_grip.reparent(bolt, true) # the hand rides along with the bolt
+
+
+## Where the hands go this frame: [right, left] as global transforms ([] = no grip points).
+func get_hand_grips() -> Array[Transform3D]:
+	if _grip_r == null or _grip_l == null:
+		return []
+	var r: Transform3D = _grip_r.global_transform
+	var l: Transform3D = _grip_l.global_transform
+	if _bolt_grip and bolt_hand > 0.0:
+		r = r.interpolate_with(_bolt_grip.global_transform, smoothstep(0.0, 1.0, bolt_hand))
+	if reload_hand > 0.0:
+		var t: float = smoothstep(0.0, 1.0, reload_hand)
+		var holder := get_parent() as Node3D
+		if reload_with_right_hand:
+			r = r.interpolate_with(Transform3D(r.basis, holder.global_transform * Vector3(0.12, -0.5, 0.25)), t)
+		else:
+			l = l.interpolate_with(Transform3D(l.basis, holder.global_transform * Vector3(-0.3, -0.5, 0.2)), t)
+	return [r, l]
 
 
 func _process(delta: float) -> void:
@@ -94,6 +128,11 @@ func play_bolt_cycle(duration: float) -> void:
 		_tween.tween_property(bolt, "position", _bolt_rest + Vector3(0, 0, bolt_travel), duration * 0.2)
 		_tween.tween_property(bolt, "position", _bolt_rest, duration * 0.2)
 	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * 0.2)
+	# The right hand leaves the grip, works the bolt and comes back.
+	if _bolt_grip:
+		_hand_tween = create_tween()
+		_hand_tween.tween_property(self, "bolt_hand", 1.0, duration * 0.2).set_delay(duration * 0.06)
+		_hand_tween.tween_property(self, "bolt_hand", 0.0, duration * 0.2).set_delay(duration * 0.44)
 
 
 ## Reload: dip the weapon down and tilt it, then bring it back up.
@@ -104,6 +143,10 @@ func play_reload(duration: float) -> void:
 	_tween.tween_property(self, "anim_rotation", Vector3(deg_to_rad(15), 0, deg_to_rad(-35)), duration * 0.15)
 	_tween.chain().tween_property(self, "anim_offset", Vector3.ZERO, duration * 0.15).set_delay(duration * 0.7)
 	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * 0.15).set_delay(duration * 0.7)
+	# One hand goes down to the ammo pouch and comes back with a clip / drum.
+	_hand_tween = create_tween()
+	_hand_tween.tween_property(self, "reload_hand", 1.0, duration * 0.2).set_delay(duration * 0.08)
+	_hand_tween.tween_property(self, "reload_hand", 0.0, duration * 0.25).set_delay(duration * 0.15)
 
 
 ## Weapon switched in: start low and raise it.
@@ -119,6 +162,10 @@ func play_raise(duration: float = 0.35) -> void:
 func _restart_tween() -> void:
 	if _tween:
 		_tween.kill()
+	if _hand_tween:
+		_hand_tween.kill()
+	bolt_hand = 0.0
+	reload_hand = 0.0
 	if bolt:
 		bolt.position = _bolt_rest
 	_tween = create_tween()

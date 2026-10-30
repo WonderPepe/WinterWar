@@ -126,4 +126,14 @@ for i in range(2):
 n = int(0.35 * SR); t = np.arange(n) / SR
 save("hurt_thump.wav", np.sin(2*np.pi*70*t*(1 - 0.4*t)) * env(n, 0.002, 0.08) + lowpass(rng.uniform(-1, 1, n), 0.15) * env(n, 0.001, 0.03) * 0.7)
 
+# ---- W2: steam hissing from the Maxim's water jacket: 3 s seamless loop ----
+n = int(3 * SR); fade = int(0.5 * SR)
+raw = bandnoise(n + fade, 0.25, 0.85)
+t = np.arange(n + fade) / SR
+w = raw * (0.8 + 0.2 * np.sin(2*np.pi*t/3*2)) # it "breathes" a little
+loop = w[:n].copy()
+ramp = np.linspace(0, 1, fade)
+loop[:fade] = loop[:fade] * ramp + w[n:n+fade] * (1 - ramp)
+save("steam_hiss.wav", loop * 0.6)
+
 print("sounds written")

@@ -21,6 +21,9 @@ func run() -> void:
 		[(vm.get("bolt_part_names") as PackedStringArray).size() == 5, "Mosin bolt parts kept in the export"],
 		[(gun.get("turning_part_names") as PackedStringArray).size() > 10, "Maxim turning parts kept in the export"],
 		[not (vm.find_child("LP_Clip", true, false) as Node3D).visible, "loose clip hidden in the export"],
+		[vm.get_node_or_null("Model/GripR") != null and vm.get_node_or_null("Model/Bolt/BoltGrip") != null, "W2: hand grip points in the export"],
+		[gun.get("_belt_anim") != null and gun.get("_turn_pivot") != null, "W2: Maxim belt animation re-pointed in the export"],
+		[ResourceLoader.exists("res://assets/audio/steam_hiss.wav"), "W2: steam sound in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

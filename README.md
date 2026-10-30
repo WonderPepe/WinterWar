@@ -11,7 +11,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Sprint | Shift (uses stamina) |
 | Crouch | C (or Ctrl – but avoid Ctrl in the browser, Ctrl+W closes the tab) |
 | Jump | Space |
-| Fire / aim down sights | Left mouse / right mouse |
+| Fire / aim down sights | Left mouse / right mouse (on the Maxim: look through its sights) |
 | Reload | R |
 | Mosin-Nagant / Suomi | 1 / 2 |
 | Use / leave the Maxim (in the bunker) | F |
@@ -83,6 +83,27 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - The models' licence (CC-BY 4.0) requires naming their makers: `CREDITS.md` and the
   **Credits** button in the main menu. Keep them when you publish the game.
 
+## Arms and Maxim polish (W2)
+- **Your own arms** (`scripts/player/fp_arms.gd`, node `Player/Head/Camera3D/Arms`): white
+  snow-camo smock sleeves (lumipuku) over the grey tunic and white wool trigger-finger mittens,
+  built in code as one mesh with a skeleton (one draw call). The hands are placed on the
+  gun's grip points every frame – `GripR` / `GripL` markers on each view model and on the
+  Maxim – and the elbows bend to fit ("two-bone IK"). The right hand works the Mosin's bolt
+  (`BoltGrip`, moves with the bolt); one hand goes to the pouch when reloading.
+  To move a hand, move the marker (in `tools/build_scenes.gd`, `_grip()`); the shoulders and
+  elbow direction are exported values on the Arms node.
+- **Aiming closer**: the sights now come nearer the eye (Mosin 0.39 m, Suomi 0.35 m; were
+  0.42 / 0.40). Change `ads_eye_distance` on a view model to tune it.
+- **Maxim**:
+  - right mouse brings your eye down behind the rear sight (`Pivot/SightEye`);
+  - the model's own belt-feed animation plays while firing (cartridges move in, empty cases drop);
+  - the water jacket heats up: about 120 rounds of non-stop fire make it **steam** (and hiss),
+    about 390 boil it – **OVERHEATED**, no firing until it cools to about half (~8 s);
+  - short bursts never overheat it (a hot gun cools faster);
+  - the HUD shows a heat bar while you are on the gun;
+  - the heat numbers are in `maxim_m09_21.tres` (Heat group): `heat_per_shot`, `cooling_rate`, …;
+  - the right hand feeds the new belt when you press R.
+
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,
   boots, Mosin with bayonet – one mesh with a skeleton, so each soldier is a single draw call.
@@ -140,3 +161,4 @@ select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 - [x] P1: graphics – clear freezing day: sky, snow, log walls, spruce forest
 - [x] W1: real Mosin and Suomi models, Maxim in the bunker (Lahti-Saloranta later, if a model turns up)
 - [x] P2: effects, sound, soldiers
+- [x] W2: first-person arms (snow camo, mittens), aiming closer, Maxim sights / belt feed / steam / overheating

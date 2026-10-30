@@ -65,7 +65,7 @@ func run() -> void:
 	# --- Maxim exists in the bunker ---
 	gun = get_tree().get_first_node_in_group("mounted_guns")
 	check(gun != null and gun.data != null and gun.data.display_name.begins_with("Maxim"), "Maxim placed in the level")
-	check(gun.pivot.find_child("karabin_001_3", true, false) != null, "gun parts turn with the Pivot")
+	check(gun._turn_pivot != null and gun._turn_pivot.find_child("karabin_001_3", true, false) != null, "gun parts turn with the Pivot (TurnPivot)")
 	check(InputMap.has_action("interact") and InputMap.action_get_events("interact")[0].physical_keycode == KEY_F, "F = interact")
 
 	# Too far away: F does nothing.

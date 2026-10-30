@@ -25,6 +25,9 @@ var _death_time: float = -1.0
 @onready var weapon_name: Label = $WeaponPanel/WeaponName
 @onready var ammo_label: Label = $WeaponPanel/Ammo
 @onready var reload_label: Label = $WeaponPanel/Reloading
+@onready var overheat_label: Label = $WeaponPanel/Overheated
+@onready var heat_row: Control = $WeaponPanel/HeatRow
+@onready var heat_bar: ProgressBar = $WeaponPanel/HeatRow/HeatBar
 @onready var wave_label: Label = $WavePanel/Wave
 @onready var enemies_label: Label = $WavePanel/Enemies
 @onready var next_wave_label: Label = $WavePanel/NextWave
@@ -101,6 +104,7 @@ func _update_weapon() -> void:
 		ammo_label.text = "%d / %s" % [weapons.get_mag_ammo(), "∞" if reserve < 0 else str(reserve)]
 	reload_label.visible = weapons.is_reloading_now()
 	reload_label.text = "NEW BELT" if weapons.get_mounted_gun() else "RELOADING"
+	_update_heat(weapons.get_mounted_gun())
 	# "[F] Use Maxim" near a free mounted gun, a reminder how to leave while on it.
 	var gun := weapons.get_mounted_gun()
 	if _player.is_dead:
@@ -113,6 +117,20 @@ func _update_weapon() -> void:
 	crosshair.visible = not weapons.is_aiming and not _player.is_dead
 	crosshair.spread_deg = weapons.get_current_spread_deg()
 	crosshair.fov_deg = _player.camera.fov
+
+
+## Maxim water-jacket heat: white → orange → red, and "OVERHEATED" (blinking) at the top.
+func _update_heat(gun: MountedGun) -> void:
+	var shown: bool = gun != null and gun.data != null and gun.data.heat_per_shot > 0.0
+	heat_row.visible = shown
+	overheat_label.visible = shown and gun.is_overheated
+	if not shown:
+		return
+	heat_bar.value = gun.heat
+	var col: Color = Color(0.95, 0.95, 0.95).lerp(Color(1.0, 0.6, 0.2), smoothstep(0.3, 0.6, gun.heat))
+	col = col.lerp(Color(0.95, 0.2, 0.12), smoothstep(0.75, 1.0, gun.heat))
+	(heat_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = col
+	overheat_label.modulate.a = 0.6 + 0.4 * sin(Time.get_ticks_msec() / 120.0)
 
 
 func _update_waves(delta: float) -> void:

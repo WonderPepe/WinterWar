@@ -47,6 +47,13 @@ enum FireMode { BOLT_ACTION, SEMI_AUTO, FULL_AUTO }
 @export_range(0.1, 1.0) var ads_move_multiplier: float = 0.6 ## Movement speed while aiming.
 @export_range(0.1, 1.0) var ads_sensitivity_multiplier: float = 0.6 ## Mouse sensitivity while aiming.
 
+@export_group("Heat (water-cooled machine gun)")
+@export var heat_per_shot: float = 0.0 ## 0 = never heats up. Heat goes from 0 (cold) to 1 (overheated).
+@export var cooling_rate: float = 0.09 ## Share of the heat lost per second (a hot gun cools faster).
+@export_range(0.0, 1.0) var firing_cooling_multiplier: float = 0.4 ## Cooling is slower while firing.
+@export_range(0.0, 1.0) var steam_heat: float = 0.6 ## Steam starts rising from the water jacket here.
+@export_range(0.0, 1.0) var overheat_recover_heat: float = 0.5 ## Overheated: no firing until it cools to this.
+
 @export_group("Sounds")
 @export var fire_sound: AudioStream
 @export var cycle_sound: AudioStream ## Bolt being worked (bolt-action only).

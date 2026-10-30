@@ -12,35 +12,43 @@ size = Vector2(0.24, 0.24)
 material = ExtResource("2_e2pjt")
 size = Vector2(0.06, 0.2)
 
-[node name="SuomiViewModel" type="Node3D" unique_id=1231192390]
+[node name="SuomiViewModel" type="Node3D" unique_id=1876717690]
 script = ExtResource("1_88rm6")
 bolt_part_names = PackedStringArray()
 hidden_part_names = PackedStringArray("SuomiKP31_Magazine", "9mm_Case")
-ads_eye_distance = 0.4
+ads_eye_distance = 0.35
 hip_offset = Vector3(0, -0.02, -0.08)
 
-[node name="Model" type="Node3D" parent="." unique_id=1633602876]
+[node name="Model" type="Node3D" parent="." unique_id=706135388]
 
-[node name="AimPoint" type="Marker3D" parent="Model" unique_id=2005255151]
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=488671815]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.076, -0.05)
 
-[node name="Muzzle" type="Marker3D" parent="Model" unique_id=748485577]
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1002254387]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.040750004, -0.50402)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=767802935]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=871858961]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_38q6o")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=1555164138]
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=125326743]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_em3ed")
 
-[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=443028850]
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=215835875]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 2.5
 omni_range = 6.0
 
 [node name="Mesh" type="Node3D" parent="Model" unique_id=1514144432 instance=ExtResource("3_comnv")]
 transform = Transform3D(0.0094, 0, 0, 0, 0.0094, 0, 0, 0, 0.0094, 0, -0.014709994, -0.0641)
+
+[node name="GripR" type="Marker3D" parent="Model" unique_id=1640900574]
+transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.30151135, -0.94868326, -0.2860388, 0.90453404, 0.31622776, 0.022, -0.04, 0.1)
+gizmo_extents = 0.03
+
+[node name="GripL" type="Marker3D" parent="Model" unique_id=69216]
+transform = Transform3D(-0.20388064, -0.649189, 0.7327935, 0.9540568, -0.29962572, -1.4901161e-08, 0.21956378, 0.69912666, 0.6804511, 0, -0.01, -0.21)
+gizmo_extents = 0.03

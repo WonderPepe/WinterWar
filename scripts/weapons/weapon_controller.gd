@@ -99,6 +99,25 @@ func is_reloading_now() -> bool:
 	return gun.is_reloading if gun else is_reloading
 
 
+## Where the first-person hands go this frame: [right, left] as global transforms
+## (on the hand weapon's grips, or on the Maxim's). Empty = no hands (dead).
+func get_hand_grips() -> Array[Transform3D]:
+	if player.is_dead:
+		return []
+	var gun := get_mounted_gun()
+	if gun:
+		return gun.get_hand_grips()
+	if current_slot >= _view_models.size():
+		return []
+	return _current_view_model().get_hand_grips()
+
+
+## True while the mounted gun is too hot to fire.
+func is_gun_overheated() -> bool:
+	var gun := get_mounted_gun()
+	return gun != null and gun.is_overheated
+
+
 ## Movement speed multiplier while aiming (used by Player on the host).
 func get_move_multiplier() -> float:
 	var w := get_current_weapon()
@@ -128,6 +147,10 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 
 	if not input.fire_held:
 		_trigger_ready = true
+	elif is_gun_overheated():
+		if _trigger_ready: # boiling: the trigger just clicks
+			_trigger_ready = false
+			_play(mech_audio, w.empty_sound)
 	elif _can_fire_now() and (w.fire_mode == WeaponData.FireMode.FULL_AUTO or _trigger_ready):
 		_trigger_ready = false
 		if get_mag_ammo() > 0:
@@ -135,7 +158,7 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 		else:
 			_dry_fire(w)
 	if get_mounted_gun():
-		_update_mounted_view(w)
+		_update_mounted_view(w, get_mounted_gun())
 	else:
 		_update_view(delta, w)
 
@@ -224,13 +247,16 @@ func _update_view(delta: float, w: WeaponData) -> void:
 		target.z += clampf(wall_check_distance - dist, 0.0, 0.35)
 
 	holder.position = holder.position.lerp(target, clampf(delta * 18.0, 0.0, 1.0))
+	camera.position = Vector3.ZERO # (moved only on a mounted gun)
 	camera.fov = lerpf(base_fov, w.ads_fov, aim_smooth)
 	input.look_sensitivity_scale = lerpf(1.0, w.ads_sensitivity_multiplier, aim_smooth)
 
 
-## On a mounted gun there is no hand weapon to place: just zoom while aiming (right mouse).
-func _update_mounted_view(w: WeaponData) -> void:
+## On a mounted gun the gun doesn't move to your eye – your eye moves to the gun: right mouse
+## brings the camera down behind the rear sight (Pivot/SightEye) and zooms in.
+func _update_mounted_view(w: WeaponData, gun: MountedGun) -> void:
 	var aim_smooth: float = smoothstep(0.0, 1.0, _aim_t)
+	camera.position = (camera.get_parent() as Node3D).to_local(gun.sight_eye.global_position) * aim_smooth
 	camera.fov = lerpf(base_fov, w.ads_fov, aim_smooth)
 	input.look_sensitivity_scale = lerpf(0.8, w.ads_sensitivity_multiplier, aim_smooth)
 

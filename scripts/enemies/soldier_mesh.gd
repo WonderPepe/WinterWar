@@ -153,6 +153,38 @@ static func _build() -> ArrayMesh:
 	return mesh
 
 
+# ------------------------------------------------------------------ shared building blocks
+## Other code-built skinned meshes (FirstPersonArms) use the same helpers:
+## begin_build(), use_bone(), frustum()/box()/sphere(), then finish_build().
+static func begin_build() -> void:
+	_st = SurfaceTool.new()
+	_st.set_skin_weight_count(SurfaceTool.SKIN_4_WEIGHTS) # must come before begin()
+	_st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_bone_fn = Callable()
+
+
+static func finish_build() -> ArrayMesh:
+	var mesh := _st.commit()
+	_st = null
+	return mesh
+
+
+static func use_bone(bone: int) -> void:
+	_use_bone(bone)
+
+
+static func frustum(a: Vector3, b: Vector3, ra: float, rb: float, sides: int, col: Color, depth: float = 1.0) -> void:
+	_frustum(a, b, ra, rb, sides, col, depth)
+
+
+static func box(center: Vector3, size: Vector3, col: Color) -> void:
+	_box(center, size, col)
+
+
+static func sphere(center: Vector3, radius: Vector3, segments: int, rings: int, col: Color) -> void:
+	_sphere(center, radius, segments, rings, col)
+
+
 static var _bones := PackedInt32Array([0, 0, 0, 0])
 static var _weights := PackedFloat32Array([1.0, 0.0, 0.0, 0.0])
 

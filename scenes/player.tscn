@@ -1,25 +1,26 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_ur7pv"]
-[ext_resource type="Material" path="res://resources/materials/player_body.tres" id="2_y4r1p"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_controller.gd" id="3_d2wvv"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="4_3v2ag"]
-[ext_resource type="Resource" path="res://resources/weapons/mosin_m28_30.tres" id="5_jej6c"]
-[ext_resource type="Resource" path="res://resources/weapons/suomi_kp31.tres" id="6_f1ej7"]
-[ext_resource type="Script" path="res://scripts/player/player_fx.gd" id="7_oprun"]
-[ext_resource type="Material" path="res://resources/materials/snowflake.tres" id="8_a8ls1"]
-[ext_resource type="Script" path="res://scripts/player/player_input.gd" id="9_qfm1y"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_y4r1p"]
+[ext_resource type="Material" path="res://resources/materials/player_body.tres" id="2_d2wvv"]
+[ext_resource type="Script" path="res://scripts/player/fp_arms.gd" id="3_3v2ag"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_controller.gd" id="4_jej6c"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="5_f1ej7"]
+[ext_resource type="Resource" path="res://resources/weapons/mosin_m28_30.tres" id="6_oprun"]
+[ext_resource type="Resource" path="res://resources/weapons/suomi_kp31.tres" id="7_a8ls1"]
+[ext_resource type="Script" path="res://scripts/player/player_fx.gd" id="8_qfm1y"]
+[ext_resource type="Material" path="res://resources/materials/snowflake.tres" id="9_fulsm"]
+[ext_resource type="Script" path="res://scripts/player/player_input.gd" id="10_4r5pv"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_fulsm"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_60mlk"]
 radius = 0.35
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_4r5pv"]
-material = ExtResource("2_y4r1p")
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_i4ail"]
+material = ExtResource("2_d2wvv")
 radius = 0.35
 height = 1.8
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_60mlk"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_a38lo"]
 properties/0/path = NodePath(".:current_slot")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -33,14 +34,14 @@ properties/3/path = NodePath(".:is_reloading")
 properties/3/spawn = true
 properties/3/replication_mode = 2
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_i4ail"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_4ni07"]
 radius = 0.3
 
-[sub_resource type="QuadMesh" id="QuadMesh_a38lo"]
-material = ExtResource("8_a8ls1")
+[sub_resource type="QuadMesh" id="QuadMesh_l71n6"]
+material = ExtResource("9_fulsm")
 size = Vector2(0.05, 0.05)
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_4ni07"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ke2ow"]
 properties/0/path = NodePath(".:move_dir")
 properties/0/spawn = false
 properties/0/replication_mode = 1
@@ -60,7 +61,7 @@ properties/5/path = NodePath(".:aim_held")
 properties/5/spawn = false
 properties/5/replication_mode = 2
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_l71n6"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ujl30"]
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
@@ -89,65 +90,68 @@ properties/8/path = NodePath(".:mounted_gun_path")
 properties/8/spawn = true
 properties/8/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D" unique_id=1802351059]
+[node name="Player" type="CharacterBody3D" unique_id=817160613]
 collision_layer = 2
 collision_mask = 7
 floor_max_angle = 0.80285144
 floor_snap_length = 0.3
-script = ExtResource("1_ur7pv")
+script = ExtResource("1_y4r1p")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=302033405]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1394914637]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("CapsuleShape3D_fulsm")
+shape = SubResource("CapsuleShape3D_60mlk")
 
-[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=132057388]
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1028933696]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_4r5pv")
+mesh = SubResource("CapsuleMesh_i4ail")
 
-[node name="Head" type="Node3D" parent="." unique_id=303649082]
+[node name="Head" type="Node3D" parent="." unique_id=1751337504]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1721841058]
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1058825351]
 far = 600.0
 
-[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=1755223048]
+[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=314904844]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, -0.17, -0.3)
 
-[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=1057573721]
+[node name="Arms" type="Node3D" parent="Head/Camera3D" unique_id=341177657]
+script = ExtResource("3_3v2ag")
+
+[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=1843658645]
 target_position = Vector3(0, 0, -0.9)
 
-[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=214433001]
+[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=1908228750]
 unit_size = 25.0
 max_polyphony = 4
 bus = &"SFX"
 attenuation_filter_cutoff_hz = 2500.0
 attenuation_filter_db = -30.0
 
-[node name="WeaponController" type="Node" parent="." unique_id=1432206708]
-script = ExtResource("3_d2wvv")
-loadout = Array[ExtResource("4_3v2ag")]([ExtResource("5_jej6c"), ExtResource("6_f1ej7")])
+[node name="WeaponController" type="Node" parent="." unique_id=1729543465]
+script = ExtResource("4_jej6c")
+loadout = Array[ExtResource("5_f1ej7")]([ExtResource("6_oprun"), ExtResource("7_a8ls1")])
 
-[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1921206503]
+[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1397908344]
 volume_db = -4.0
 max_polyphony = 4
 bus = &"SFX"
 
-[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1423913115]
+[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=1074514994]
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=400063809]
-replication_config = SubResource("SceneReplicationConfig_60mlk")
+[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=730768397]
+replication_config = SubResource("SceneReplicationConfig_a38lo")
 
-[node name="PlayerFX" type="Node3D" parent="." unique_id=495830254]
-script = ExtResource("7_oprun")
+[node name="PlayerFX" type="Node3D" parent="." unique_id=2018466689]
+script = ExtResource("8_qfm1y")
 
-[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=633446750]
+[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=1033208762]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("SphereShape3D_i4ail")
+shape = SubResource("SphereShape3D_4ni07")
 target_position = Vector3(0, 0.75, 0)
 
-[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=1985026941]
+[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=11443092]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
 cast_shadow = 0
 emitting = false
@@ -155,7 +159,7 @@ amount = 900
 lifetime = 8.0
 preprocess = 8.0
 fixed_fps = 30
-mesh = SubResource("QuadMesh_a38lo")
+mesh = SubResource("QuadMesh_l71n6")
 emission_shape = 3
 emission_box_extents = Vector3(22, 1, 22)
 direction = Vector3(0, -1, 0)
@@ -164,11 +168,11 @@ gravity = Vector3(0.4, -1, 0.2)
 initial_velocity_min = 0.3
 initial_velocity_max = 0.8
 
-[node name="PlayerInput" type="Node" parent="." unique_id=1016423976]
-script = ExtResource("9_qfm1y")
+[node name="PlayerInput" type="Node" parent="." unique_id=497057898]
+script = ExtResource("10_4r5pv")
 
-[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=318910575]
-replication_config = SubResource("SceneReplicationConfig_4ni07")
+[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=1700339884]
+replication_config = SubResource("SceneReplicationConfig_ke2ow")
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=161657363]
-replication_config = SubResource("SceneReplicationConfig_l71n6")
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=356914608]
+replication_config = SubResource("SceneReplicationConfig_ujl30")

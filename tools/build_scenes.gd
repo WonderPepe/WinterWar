@@ -188,6 +188,8 @@ func _build_player(mats: Dictionary) -> Node:
 
 	var holder: Node3D = _add(cam, Node3D.new(), "WeaponHolder")
 	holder.position = Vector3(0.13, -0.17, -0.3)
+	var arms: Node3D = _add(cam, Node3D.new(), "Arms") # snow-camo sleeves + mittens (W2)
+	arms.set_script(load("res://scripts/player/fp_arms.gd"))
 	var wall_check: RayCast3D = _add(cam, RayCast3D.new(), "WallCheck")
 	wall_check.target_position = Vector3(0, 0, -0.9)
 	wall_check.collision_mask = 0b1
@@ -584,6 +586,20 @@ func _place_gun_mesh(model: Node3D, gltf: String, yaw: float, scale: float, rear
 	return mesh.transform * muzzle
 
 
+## A hand position on a gun (FirstPersonArms puts a mitten there): `pos` = where the palm
+## touches, `fingers` = the way the fingers point, `palm` = the way the palm faces.
+## The marker's axes are the hand's own: fingers along -Y, thumb side -Z.
+func _grip(parent: Node3D, n: String, pos: Vector3, fingers: Vector3, palm: Vector3, right: bool) -> Marker3D:
+	var f: Vector3 = fingers.normalized()
+	var p: Vector3 = (palm - f * f.dot(palm)).normalized()
+	var x: Vector3 = -p if right else p
+	var y: Vector3 = -f
+	var m: Marker3D = _add(parent, Marker3D.new(), n)
+	m.transform = Transform3D(Basis(x, y, x.cross(y)), pos)
+	m.gizmo_extents = 0.03
+	return m
+
+
 ## Mosin-Nagant M/28-30 view model: imported "Mosin Nagant M91" model (Doink, CC-BY 4.0).
 func _build_mosin_view(mats: Dictionary) -> Node:
 	var r := _view_root("MosinViewModel", mats, Vector3.ZERO, Vector3(0, 0.066, -0.16))
@@ -595,7 +611,13 @@ func _build_mosin_view(mats: Dictionary) -> Node:
 	r[0].set("bolt_part_names", PackedStringArray(["LP_BoltHandle", "LP_Bolt_Pigg", "LP_BoltCog", "LP_BoltHammer", "LP_BoltUnderside"]))
 	r[0].set("hidden_part_names", PackedStringArray(["LP_Clip", "LP_BulletHolster", "LP_BulletHead"]))
 	r[0].set("bolt_travel", 0.09)
-	r[0].set("ads_eye_distance", 0.42)
+	r[0].set("ads_eye_distance", 0.39) # (W1: 0.42; the bolt knob ends 0.31 behind the sight)
+	r[0].set("reload_with_right_hand", true) # stripper clips from the pouch
+	# Hands: right on the wrist of the stock (finger at the trigger), left under the fore-end,
+	# BoltGrip = the bolt knob (the right hand goes there to work the bolt).
+	_grip(model, "GripR", Vector3(0.017, -0.025, 0.19), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
+	_grip(model, "GripL", Vector3(0.0, -0.012, -0.27), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
+	_grip(model, "BoltGrip", Vector3(0.05, 0.045, 0.085), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
 	return r[0]
 
 
@@ -608,8 +630,10 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 			Vector3(0.0, 9.65, 1.5), Vector3(0.0, 5.9, -46.8))
 	(model.get_node("Muzzle") as Node3D).position = muzzle
 	r[0].set("hidden_part_names", PackedStringArray(["SuomiKP31_Magazine", "9mm_Case"]))
-	r[0].set("ads_eye_distance", 0.4)
+	r[0].set("ads_eye_distance", 0.35) # (W1: 0.40)
 	r[0].set("hip_offset", Vector3(0.0, -0.02, -0.08))
+	_grip(model, "GripR", Vector3(0.022, -0.04, 0.1), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
+	_grip(model, "GripL", Vector3(0.0, -0.01, -0.21), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
 	return r[0]
 
 
@@ -709,6 +733,13 @@ func _make_weapon_data() -> void:
 	maxim.ads_fov = 50.0
 	maxim.ads_time = 0.25
 	maxim.ads_sensitivity_multiplier = 0.5
+	# Water jacket: ~120 rounds of non-stop fire make it steam, ~390 (two belts) boil it.
+	# Short bursts never do (a hot gun cools faster).
+	maxim.heat_per_shot = 0.0062
+	maxim.cooling_rate = 0.09
+	maxim.firing_cooling_multiplier = 0.4
+	maxim.steam_heat = 0.6
+	maxim.overheat_recover_heat = 0.5
 	maxim.fire_sound = load(a + "maxim_shot.wav")
 	maxim.reload_sound = load(a + "belt_reload.wav")
 	maxim.empty_sound = load(a + "empty_click.wav")
@@ -725,6 +756,11 @@ const MAXIM_PIVOT := Vector3(0.0, -6.0, 33.0)         # model units: where the g
 const MAXIM_BARREL_HEIGHT := 0.338                    # barrel above the scene origin (m)
 const MAXIM_BARREL_Y := 0.2                           # barrel height in the level (slit 0.1-0.6)
 const MAXIM_EYE := Vector3(0.0, 0.52, 0.8)            # gunner's eye, scene coordinates
+
+
+## A point given in the imported Maxim model's units → Pivot coordinates (metres).
+func _maxim_pivot_point(model_units: Vector3) -> Vector3:
+	return (model_units - MAXIM_PIVOT) * MAXIM_SCALE
 
 
 func _build_maxim(mats: Dictionary) -> Node:
@@ -763,6 +799,16 @@ func _build_maxim(mats: Dictionary) -> Node:
 	light.light_color = Color(1.0, 0.75, 0.45)
 	light.light_energy = 3.0
 	light.omni_range = 7.0
+	# W2: the eye position for aiming through the sights (on the line rear sight → front sight),
+	# the hands on the spade grips, the right hand's place at the feed block (new belt), and
+	# where steam leaves the water jacket.
+	var eye: Marker3D = _add(pivot, Marker3D.new(), "SightEye")
+	eye.position = _maxim_pivot_point(Vector3(0.0, 6.55, 84.0))
+	_grip(pivot, "GripR", _maxim_pivot_point(Vector3(5.3, -2.0, 63.0)), Vector3(-0.3, -0.15, -0.95), Vector3(-1, 0, 0), true)
+	_grip(pivot, "GripL", _maxim_pivot_point(Vector3(-5.3, -2.0, 63.0)), Vector3(0.3, -0.15, -0.95), Vector3(1, 0, 0), false)
+	_grip(pivot, "BeltGrip", _maxim_pivot_point(Vector3(9.5, 3.0, 36.0)), Vector3(-0.4, -0.3, -0.85), Vector3(-1, 0, 0), true)
+	var steam: Marker3D = _add(pivot, Marker3D.new(), "SteamPoint")
+	steam.position = _maxim_pivot_point(Vector3(0.0, 2.2, 2.0))
 
 	# Where the gunner stands (feet) and where they step off to.
 	var seat: Marker3D = _add(gun, Marker3D.new(), "SeatPoint")
@@ -790,12 +836,20 @@ func _build_maxim(mats: Dictionary) -> Node:
 	var mech_audio: AudioStreamPlayer3D = _add(gun, AudioStreamPlayer3D.new(), "MechAudio")
 	mech_audio.unit_size = 6.0
 	mech_audio.bus = &"SFX"
+	var steam_audio: AudioStreamPlayer3D = _add(gun, AudioStreamPlayer3D.new(), "SteamAudio")
+	steam_audio.stream = load("res://assets/audio/steam_hiss.wav")
+	steam_audio.position = steam.position + pivot.position
+	steam_audio.unit_size = 4.0
+	steam_audio.bus = &"SFX"
 	var sync: MultiplayerSynchronizer = _add(gun, MultiplayerSynchronizer.new(), "GunSync")
 	sync.root_path = NodePath("..")
+	sync.delta_interval = 0.1 # heat changes every frame: 10 updates a second are plenty
 	sync.replication_config = _sync_config([
 		[".:user_id", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:ammo", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:is_reloading", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:heat", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:is_overheated", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 	return gun
 
@@ -1050,14 +1104,24 @@ func _build_hud() -> Node:
 	var wp: VBoxContainer = _add(hud, VBoxContainer.new(), "WeaponPanel")
 	wp.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	wp.offset_left = -344
-	wp.offset_top = -110
+	wp.offset_top = -140
 	wp.offset_right = -24
 	wp.offset_bottom = -24
 	wp.alignment = BoxContainer.ALIGNMENT_END
 	wp.add_theme_constant_override("separation", 0)
 	_label(wp, "Reloading", "RELOADING", 16, HORIZONTAL_ALIGNMENT_RIGHT, Color(1.0, 0.8, 0.35))
+	_label(wp, "Overheated", "OVERHEATED", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(1.0, 0.45, 0.3))
 	_label(wp, "WeaponName", "Weapon", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.88, 0.91, 0.95))
 	_label(wp, "Ammo", "0 / 0", 36, HORIZONTAL_ALIGNMENT_RIGHT)
+	# Maxim water-jacket heat (hidden for the hand weapons).
+	var heat_row: HBoxContainer = _add(wp, HBoxContainer.new(), "HeatRow")
+	heat_row.alignment = BoxContainer.ALIGNMENT_END
+	_label(heat_row, "HeatTitle", "HEAT", 13, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.85, 0.88, 0.92))
+	var heat_bar := _bar(heat_row, "HeatBar", Color(0.95, 0.95, 0.95, 0.9), Vector2(180, 8))
+	heat_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	heat_bar.max_value = 1.0
+	heat_bar.step = 0.0
+	heat_bar.value = 0.0
 
 	# Top centre: wave information and score.
 	var wv: VBoxContainer = _add(hud, VBoxContainer.new(), "WavePanel")

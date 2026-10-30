@@ -12,35 +12,48 @@ size = Vector2(0.24, 0.24)
 material = ExtResource("2_pmwkc")
 size = Vector2(0.06, 0.2)
 
-[node name="MosinViewModel" type="Node3D" unique_id=1722854127]
+[node name="MosinViewModel" type="Node3D" unique_id=1459421886]
 script = ExtResource("1_qlnuf")
 bolt_part_names = PackedStringArray("LP_BoltHandle", "LP_Bolt_Pigg", "LP_BoltCog", "LP_BoltHammer", "LP_BoltUnderside")
 hidden_part_names = PackedStringArray("LP_Clip", "LP_BulletHolster", "LP_BulletHead")
 bolt_travel = 0.09
-ads_eye_distance = 0.42
+ads_eye_distance = 0.39
+reload_with_right_hand = true
 
-[node name="Model" type="Node3D" parent="." unique_id=1256775416]
+[node name="Model" type="Node3D" parent="." unique_id=352314677]
 
-[node name="AimPoint" type="Marker3D" parent="Model" unique_id=590398536]
+[node name="AimPoint" type="Marker3D" parent="Model" unique_id=288645879]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.066, -0.16)
 
-[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1573596714]
+[node name="Muzzle" type="Marker3D" parent="Model" unique_id=1154157365]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.1575356e-08, 0.042393006, -0.86434007)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=1294124946]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Muzzle" unique_id=174876664]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_qtyoa")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=1421122733]
+[node name="SideFlash" type="MeshInstance3D" parent="Model/Muzzle/MuzzleFlash" unique_id=1385834130]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.04)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_bx4r5")
 
-[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=1434509520]
+[node name="FlashLight" type="OmniLight3D" parent="Model/Muzzle" unique_id=483559148]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 2.5
 omni_range = 6.0
 
 [node name="Mesh" type="Node3D" parent="Model" unique_id=1688442610 instance=ExtResource("3_4ufyb")]
 transform = Transform3D(-0.774, 0, -6.7665226e-08, 0, 0.774, 0, 6.7665226e-08, 0, -0.774, -4.0599133e-09, 0.016077004, -0.20644)
+
+[node name="GripR" type="Marker3D" parent="Model" unique_id=1612514187]
+transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.30151135, -0.94868326, -0.2860388, 0.90453404, 0.31622776, 0.017, -0.025, 0.19)
+gizmo_extents = 0.03
+
+[node name="GripL" type="Marker3D" parent="Model" unique_id=2059369761]
+transform = Transform3D(-0.20388064, -0.649189, 0.7327935, 0.9540568, -0.29962572, -1.4901161e-08, 0.21956378, 0.69912666, 0.6804511, 0, -0.012, -0.27)
+gizmo_extents = 0.03
+
+[node name="BoltGrip" type="Marker3D" parent="Model" unique_id=858009472]
+transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.30151135, -0.94868326, -0.2860388, 0.90453404, 0.31622776, 0.05, 0.045, 0.085)
+gizmo_extents = 0.03

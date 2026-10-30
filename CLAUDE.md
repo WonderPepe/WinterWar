@@ -30,13 +30,14 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   weapon slot 3 is free for it.
 - [x] P2 effects, sound, soldiers (skinned code-built soldier, code animation, sprays/smoke/breath/
   drift, audio buses, ambience, footsteps, bullet cracks, damage indicator, hit flinch).
+- [x] W2 arms + Maxim polish (first-person arms with snow-camo sleeves and mittens on grip
+  markers, closer ADS, Maxim sights / belt-feed animation / heat, steam, overheating).
 - Next: the owner picks from "Development ideas" below.
 
-## Development ideas (after P2, not yet approved)
-1. Maxim polish (owner: "needs to be improved"): proper aiming through its sights, belt feed
-   animation (the glTF has one), steam from the water jacket in long bursts, overheating,
-   gunner's hands on the grips, better sound.
-2. Hands and arms in first person (guns float now); Finnish white snow-camo sleeves/mittens.
+## Development ideas (not yet approved)
+1. (done in W2) Maxim sights/belt/heat. Still open: better Maxim sound, water can + hose.
+2. (done in W2) First-person arms. Still open: arms for co-op players' third-person bodies
+   (players are capsules now), reload animations that really move clips/drums.
 3. Real Summa terrain from the owner's maps + Copernicus DEM; real trench line, the big concrete
    bunkers (e.g. Sj5 "Millionaire"), anti-tank rocks, barbed wire, shell craters.
 4. Soviet attack variety: tanks (T-26/T-28) with infantry behind them, artillery barrages
@@ -183,6 +184,37 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Measured (High, P2): ~165 draw calls (220 max) – fewer than before thanks to one-draw-call
   soldiers – ~275k triangles. Web download ~50 MB.
 
+## Arms and Maxim polish (W2) – how it is built
+- `FirstPersonArms` (Camera3D/Arms, `process_priority = 100` so it runs after the guns moved):
+  6 root bones (upper arm, forearm, hand × 2), one skinned mesh built with SoldierMesh's public
+  helpers (`begin_build/use_bone/frustum/sphere/finish_build`), soldier shader. Rest pose =
+  arms hanging down, so the MeshInstance needs a `custom_aabb` (else culled when raised).
+  IK: hand bone = grip marker basis; wrist = marker − basis·`PALM_CONTACT`; elbow by law of
+  cosines; bend direction from `elbow_pole_right` with `bend.z >= 0` (an elbow swinging forward
+  folds the arm up in front of the eye when aiming). Out of reach → the shoulder moves forward.
+  Separate shoulders: right high/back (at the butt), left low (arm comes up from below).
+- Grip markers (`_grip()` in the builder): marker axes are hand axes – fingers along −Y, palm
+  along −X (right hand) / +X (left), thumb side −Z. `WeaponController.get_hand_grips()` returns
+  [right, left] global transforms (view model or mounted gun). ViewModel blends the right hand
+  to `BoltGrip` (re-parented into the runtime Bolt node) with `bolt_hand`, and one hand to the
+  pouch with `reload_hand` (`reload_with_right_hand`). MountedGun blends the right hand to
+  `BeltGrip` during a new belt.
+- Hand-weapon grip lessons: fingers of the right hand point forward-DOWN (thumb over the top);
+  pointing them up put the mitten right in front of the eye when aiming.
+- Maxim: turning parts now go under a `TurnPivot` INSIDE the glTF (same units as the parts),
+  which copies `Pivot` every frame (`pivot.global_transform * _turn_offset`). The glTF animation
+  is duplicated, its tracks re-pointed to the moved parts, position keys shifted by
+  `TurnPivot.position`, the model's own library REMOVED (otherwise AnimationMixer warns about
+  unresolved tracks), and it plays once per shot (`speed_scale = length / shot interval`).
+- Heat (host, synced on GunSync with `delta_interval = 0.1`): +`heat_per_shot` per round,
+  cooling `heat * cooling_rate` per second (×0.4 while firing), overheated at 1.0 until
+  `overheat_recover_heat`. Steam (`make_steam_emitter`, web_fallback) + `steam_hiss.wav` loop
+  above `steam_heat`. Owner side: `_can_fire_now` never fires while overheated (click instead).
+- Mounted ADS moves the CAMERA to `Pivot/SightEye` (camera.position in Head space × aim
+  amount); `_update_view` resets it to zero off the gun.
+- `tools/shots_w2.gd [prefix] [side]` (the "side" option adds a camera beside the player to
+  check the grips), `tools/test_w2.gd`.
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -242,7 +274,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
 - Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
-  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `_model_shots.gd` (renders imported
+  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),

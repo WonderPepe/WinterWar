@@ -30,6 +30,7 @@ recoil_recovery = 0.9
 recoil_return_speed = 12.0
 ads_fov = 50.0
 ads_sensitivity_multiplier = 0.5
+heat_per_shot = 0.0062
 fire_sound = ExtResource("2_to0n0")
 reload_sound = ExtResource("3_rsaiy")
 empty_sound = ExtResource("1_b8hig")
