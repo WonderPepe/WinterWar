@@ -5,9 +5,13 @@ extends Node3D
 ##
 ## A MultiMesh draws hundreds of copies of one mesh in a single draw call, which is
 ## much faster than hundreds of separate tree nodes (important for the web).
-## Trees are grouped into square chunks. Each chunk has two "levels of detail" (LOD):
+## Trees have two "levels of detail" (LOD):
 ## - near (closer than `detail_distance`): detailed spruces, two different shapes,
-## - far: a simple spruce with the same outline, hidden beyond `visibility_end`.
+## - far: a simple spruce with the same outline, fading out at `visibility_end`.
+## The switch happens tree by tree in the spruce shader (a soft dissolve), using the camera
+## position this script passes to the materials every frame. Trees are also grouped into
+## square chunks, and whole chunks that are surely too far for a level are skipped
+## (visibility ranges) so the graphics card has less to do.
 ## Shadows always use the simple tree (nobody notices, and it is much cheaper).
 
 @export_tool_button("Rebuild forest") var rebuild_action: Callable = build
@@ -26,8 +30,9 @@ extends Node3D
 @export var chunk_size: float = 50.0
 @export var visibility_end: float = 220.0 ## Chunks further away than this are not drawn.
 @export var detail_distance: float = 70.0 ## Closer than this, chunks use the detailed trees.
-@export var trunk_material: Material
-@export var foliage_material: Material
+@export var fade_band: float = 10.0 ## Metres over which one tree changes into the other.
+@export var trunk_material: ShaderMaterial ## spruce.gdshader with `trunk` on
+@export var foliage_material: ShaderMaterial ## spruce.gdshader
 
 @export_group("Distant tree line")
 @export var tree_line_material: Material
@@ -36,6 +41,9 @@ extends Node3D
 
 var _near_instances: Array[MultiMeshInstance3D] = []
 var _far_instances: Array[MultiMeshInstance3D] = []
+var _near_materials: Array[ShaderMaterial] = [] # detailed tree + shadow tree
+var _far_materials: Array[ShaderMaterial] = []
+var _last_camera_pos := Vector3(INF, INF, INF)
 
 
 func _ready() -> void:
@@ -43,20 +51,54 @@ func _ready() -> void:
 	build()
 
 
+## Every frame: tell the tree materials where the camera is (for the per-tree LOD).
+func _process(_delta: float) -> void:
+	var cam: Camera3D = _current_camera()
+	if cam == null:
+		return
+	var pos: Vector3 = cam.global_position
+	if pos.distance_squared_to(_last_camera_pos) < 0.04: # moved less than 20 cm
+		return
+	_last_camera_pos = pos
+	for m in _near_materials + _far_materials:
+		m.set_shader_parameter("lod_camera", pos)
+
+
 ## Changes how far away trees are still drawn (used by the quality setting).
 func set_visibility_end(distance: float) -> void:
 	visibility_end = distance
-	for mmi in _far_instances:
-		mmi.visibility_range_end = distance
+	_apply_ranges()
 
 
 ## Changes up to which distance the detailed trees are used (used by the quality setting).
 func set_detail_distance(distance: float) -> void:
 	detail_distance = distance
+	_apply_ranges()
+
+
+## Chunk ranges are wider than the tree ranges by the chunk's radius, so a chunk is
+## never hidden while one of its trees should still be visible. The shader does the rest.
+func _apply_ranges() -> void:
+	var chunk_radius: float = chunk_size * 0.75
 	for mmi in _near_instances:
-		mmi.visibility_range_end = distance
+		mmi.visibility_range_end = detail_distance + chunk_radius
 	for mmi in _far_instances:
-		mmi.visibility_range_begin = distance
+		mmi.visibility_range_begin = maxf(detail_distance - fade_band - chunk_radius, 0.0)
+		mmi.visibility_range_end = visibility_end + chunk_radius
+	for m in _near_materials + _far_materials:
+		m.set_shader_parameter("lod_distance", detail_distance)
+		m.set_shader_parameter("view_distance", visibility_end)
+		m.set_shader_parameter("fade_band", fade_band)
+
+
+func _current_camera() -> Camera3D:
+	if Engine.is_editor_hint():
+		if not Engine.has_singleton("EditorInterface"):
+			return null
+		var editor: Object = Engine.get_singleton("EditorInterface")
+		var vp: SubViewport = editor.get_editor_viewport_3d(0)
+		return vp.get_camera_3d() if vp else null
+	return get_viewport().get_camera_3d()
 
 
 func build() -> void:
@@ -65,6 +107,17 @@ func build() -> void:
 			child.free()
 	_near_instances.clear()
 	_far_instances.clear()
+	_last_camera_pos = Vector3(INF, INF, INF)
+	if foliage_material == null or trunk_material == null:
+		push_warning("ForestScatter: trunk or foliage material missing")
+		return
+	# Copies of the tree materials: one set for the detailed trees, one for the simple ones.
+	var near_foliage := _lod_material(foliage_material, 0)
+	var near_trunk := _lod_material(trunk_material, 0)
+	var far_foliage := _lod_material(foliage_material, 1)
+	var far_trunk := _lod_material(trunk_material, 1)
+	_near_materials = [near_foliage, near_trunk]
+	_far_materials = [far_foliage, far_trunk]
 
 	var terrain := get_node_or_null(terrain_path) as TerrainGenerator
 	if terrain == null:
@@ -87,7 +140,7 @@ func build() -> void:
 	look_rng.seed = random_seed + 1
 
 	# Sort trees into chunks.
-	var chunks: Dictionary = {}  # Vector2i -> Array of [Transform3D, variant, Color]
+	var chunks: Dictionary = {}  # Vector2i -> Array of [Transform3D, Color]
 	for p in positions:
 		if _is_kept_clear(p):
 			continue
@@ -97,22 +150,30 @@ func build() -> void:
 		var key := Vector2i(floori(p.x / chunk_size), floori(p.y / chunk_size))
 		if not chunks.has(key):
 			chunks[key] = []
-		var variant: int = look_rng.randi_range(0, 1)
 		# Per-tree values for the shader, sent as the instance colour: blue = snow, alpha = tint.
 		var custom := Color(1.0, 1.0, look_rng.randf(), look_rng.randf())
-		chunks[key].append([Transform3D(basis, origin), variant, custom])
+		chunks[key].append([Transform3D(basis, origin), custom])
 
 	var near_meshes: Array[ArrayMesh] = [
-		_make_spruce(11, 7, 8, 7.4, 1.75, true, 6),  # tall and slender
-		_make_spruce(23, 6, 9, 6.8, 2.1, true, 6),   # shorter and fuller
+		_make_spruce(11, 7, 8, 7.4, 1.75, true, 6, near_trunk, near_foliage),  # tall and slender
+		_make_spruce(23, 6, 9, 6.8, 2.1, true, 6, near_trunk, near_foliage),   # shorter and fuller
 	]
-	var far_mesh: ArrayMesh = _make_spruce(11, 4, 5, 7.2, 1.9, false, 4)
+	var far_mesh: ArrayMesh = _make_spruce(11, 4, 5, 7.2, 1.9, false, 4, far_trunk, far_foliage)
+	# Same simple tree, but shown where the detailed trees are: it only casts their shadows.
+	var shadow_mesh: ArrayMesh = _make_spruce(11, 4, 5, 7.2, 1.9, false, 4, near_trunk, near_foliage)
 	var trunk_shape := CylinderShape3D.new()
 	trunk_shape.radius = 0.3
 	trunk_shape.height = 4.0
 	for key in chunks:
-		_add_chunk(key, chunks[key], near_meshes, far_mesh, trunk_shape)
+		_add_chunk(key, chunks[key], near_meshes, far_mesh, shadow_mesh, trunk_shape)
+	_apply_ranges()
 	_add_tree_line()
+
+
+func _lod_material(base: ShaderMaterial, mode: int) -> ShaderMaterial:
+	var m: ShaderMaterial = base.duplicate()
+	m.set_shader_parameter("lod_mode", mode)
+	return m
 
 
 func _is_kept_clear(p: Vector2) -> bool:
@@ -130,7 +191,7 @@ func _make_multimesh(mesh: Mesh, trees: Array) -> MultiMesh:
 	mm.instance_count = trees.size()
 	for i in trees.size():
 		mm.set_instance_transform(i, trees[i][0])
-		mm.set_instance_color(i, trees[i][2])
+		mm.set_instance_color(i, trees[i][1])
 	return mm
 
 
@@ -144,24 +205,18 @@ func _add_mmi(n: String, mm: MultiMesh, shadow: GeometryInstance3D.ShadowCasting
 	return mmi
 
 
-func _add_chunk(key: Vector2i, trees: Array, near_meshes: Array[ArrayMesh], far_mesh: ArrayMesh, trunk_shape: Shape3D) -> void:
+func _add_chunk(key: Vector2i, trees: Array, near_meshes: Array[ArrayMesh], far_mesh: ArrayMesh,
+		shadow_mesh: ArrayMesh, trunk_shape: Shape3D) -> void:
 	var tag: String = "%d_%d" % [key.x, key.y]
-	# Near: one MultiMesh per tree shape. No shadows (the "Shadow" one below casts them).
-	for v in near_meshes.size():
-		var of_variant: Array = trees.filter(func(t: Array) -> bool: return t[1] == v)
-		if of_variant.is_empty():
-			continue
-		var near := _add_mmi("Near%d_%s" % [v, tag], _make_multimesh(near_meshes[v], of_variant), GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
-		near.visibility_range_end = detail_distance
-		_near_instances.append(near)
-	var simple_mm := _make_multimesh(far_mesh, trees)
-	var shadow := _add_mmi("Shadow_" + tag, simple_mm, GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY)
-	shadow.visibility_range_end = detail_distance
+	# Near: detailed trees. Neighbouring chunks use different tree shapes (one draw call
+	# per chunk instead of two). No shadows (the "Shadow" one below casts them).
+	var shape: int = posmod(key.x + key.y, near_meshes.size())
+	var near := _add_mmi("Near%d_%s" % [shape, tag], _make_multimesh(near_meshes[shape], trees), GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+	_near_instances.append(near)
+	var shadow := _add_mmi("Shadow_" + tag, _make_multimesh(shadow_mesh, trees), GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY)
 	_near_instances.append(shadow)
-	# Far: the simple tree.
-	var far := _add_mmi("Far_" + tag, simple_mm, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
-	far.visibility_range_begin = detail_distance
-	far.visibility_range_end = visibility_end
+	# Far: the simple tree. No shadows: the sun's shadows end before the far trees start.
+	var far := _add_mmi("Far_" + tag, _make_multimesh(far_mesh, trees), GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
 	_far_instances.append(far)
 
 	# Trunk collision (also created in the editor so "Bake NavigationMesh" sees the trees).
@@ -182,7 +237,7 @@ func _add_chunk(key: Vector2i, trees: Array, near_meshes: Array[ArrayMesh], far_
 ## Each layer is a jagged star: `points` branch tips with notches between them.
 ## `underside` adds the darker bottom of each layer (only needed close up).
 func _make_spruce(shape_seed: int, tiers: int, points: int, height: float, max_radius: float,
-		underside: bool, trunk_sides: int) -> ArrayMesh:
+		underside: bool, trunk_sides: int, trunk_mat: Material, foliage_mat: Material) -> ArrayMesh:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = shape_seed
 	var mesh := ArrayMesh.new()
@@ -205,7 +260,7 @@ func _make_spruce(shape_seed: int, tiers: int, points: int, height: float, max_r
 		var v_top: float = -trunk_h / 2.0
 		_tri(st, [b0, b1, t1], [d0, d1, d1], [Vector2(u0, 0), Vector2(u1, 0), Vector2(u1, v_top)], (d0 + d1).normalized())
 		_tri(st, [b0, t1, t0], [d0, d1, d0], [Vector2(u0, 0), Vector2(u1, v_top), Vector2(u0, v_top)], (d0 + d1).normalized())
-	st.set_material(trunk_material)
+	st.set_material(trunk_mat)
 	st.commit(mesh)
 
 	# Branch tiers, from the bottom up.
@@ -244,7 +299,7 @@ func _make_spruce(shape_seed: int, tiers: int, points: int, height: float, max_r
 				var db: Vector3 = (Vector3(b.x, 0, b.z).normalized() * 0.5 + Vector3.DOWN * 0.85).normalized()
 				var dark := Color(0, 0.55, 1)
 				_tri(st, [inner, b, a], [Vector3.DOWN, db, da], [Vector2(0, 0), Vector2(1, 0), Vector2(1, 0)], (da + db).normalized(), [Color(0, 0.35, 1), dark, dark])
-	st.set_material(foliage_material)
+	st.set_material(foliage_mat)
 	st.commit(mesh)
 	return mesh
 

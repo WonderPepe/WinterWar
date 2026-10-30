@@ -1,9 +1,22 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/bark.png" id="1_npnnk"]
+[ext_resource type="Shader" path="res://resources/shaders/spruce.gdshader" id="1_yd1ph"]
+[ext_resource type="Texture2D" path="res://assets/textures/bark.png" id="2_yd77l"]
+[ext_resource type="Texture2D" path="res://assets/textures/snow_mask.png" id="3_7rhy2"]
 
 [resource]
-albedo_color = Color(0.85, 0.8, 0.78, 1)
-albedo_texture = ExtResource("1_npnnk")
-roughness = 0.95
-texture_filter = 5
+render_priority = 0
+shader = ExtResource("1_yd1ph")
+shader_parameter/noise_texture = ExtResource("3_7rhy2")
+shader_parameter/needle_color = null
+shader_parameter/needle_color_2 = null
+shader_parameter/snow_color = null
+shader_parameter/snow_amount = null
+shader_parameter/trunk = true
+shader_parameter/bark_texture = ExtResource("2_yd77l")
+shader_parameter/bark_tint = null
+shader_parameter/lod_mode = null
+shader_parameter/lod_camera = null
+shader_parameter/lod_distance = null
+shader_parameter/view_distance = null
+shader_parameter/fade_band = null

@@ -84,7 +84,7 @@ func _make_materials() -> Dictionary:
 		"bunker_log": _shader_mat("bunker_logs.tres", "log_wall", {
 			"albedo_texture": load(TEX_DIR + "logs_albedo.png"), "normal_texture": load(TEX_DIR + "logs_normal.png"),
 			"snow_band": false, "log_top_snow": 0.0, "tile_size_m": Vector2(2.4, 1.2), "tint": Color(1.05, 0.98, 0.92)}),
-		"trunk": _bark_mat("tree_trunk.tres"),
+		"trunk": _shader_mat("tree_trunk.tres", "spruce", {"trunk": true, "bark_texture": load(TEX_DIR + "bark.png")}),
 		"foliage": _shader_mat("tree_foliage.tres", "spruce", {}),
 		"tree_line": _shader_mat("tree_line.tres", "tree_line", {"silhouette": load(TEX_DIR + "treeline.png")}),
 		"player_body": _mat("player_body.tres", Color(0.82, 0.83, 0.8)),
@@ -117,16 +117,6 @@ func _shader_mat(file: String, shader: String, params: Dictionary) -> ShaderMate
 	for key in params:
 		assert(key in names, "%s has no parameter %s" % [shader, key])
 		m.set_shader_parameter(key, params[key])
-	ResourceSaver.save(m, MAT_DIR + file)
-	return load(MAT_DIR + file)
-
-
-func _bark_mat(file: String) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_texture = load(TEX_DIR + "bark.png")
-	m.albedo_color = Color(0.85, 0.8, 0.78)
-	m.roughness = 0.95
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	ResourceSaver.save(m, MAT_DIR + file)
 	return load(MAT_DIR + file)
 

@@ -31,6 +31,7 @@ var _load_seconds: float = 0.0
 var _progress_label: Label
 var _results_layer: CanvasLayer
 var _results_text: String = ""
+var _saved_vsync: DisplayServer.VSyncMode = DisplayServer.VSYNC_ENABLED
 
 @onready var game: Game = $Game
 
@@ -39,6 +40,10 @@ func _ready() -> void:
 	if MainMenu.start_pressed_msec > 0:
 		_load_seconds = (Time.get_ticks_msec() - MainMenu.start_pressed_msec) / 1000.0
 	game.get_node("PauseMenu").queue_free() # the benchmark controls the game itself
+	# V-Sync off: otherwise the game waits for the screen and FPS stops at 60 (or 144...),
+	# hiding how fast it really is. Browsers always sync to the screen, so there it stays on.
+	_saved_vsync = DisplayServer.window_get_vsync_mode()
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_terrain = get_tree().get_first_node_in_group("terrain")
 	_player = get_tree().get_first_node_in_group("players")
@@ -80,6 +85,10 @@ func _process(delta: float) -> void:
 		_finish()
 
 
+func _exit_tree() -> void:
+	DisplayServer.window_set_vsync_mode(_saved_vsync)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		NetworkManager.leave_game()
@@ -105,6 +114,7 @@ func _follow_route() -> void:
 func _finish() -> void:
 	_running = false
 	_player.input.fire_held = false
+	DisplayServer.window_set_vsync_mode(_saved_vsync)
 	var frames: int = _frame_times.size()
 	var total: float = 0.0
 	for ft in _frame_times:
@@ -135,18 +145,17 @@ func _finish() -> void:
 		"",
 		"Quality: %s   Resolution: %dx%d at %d%%   Platform: %s%s" % [Settings.Quality.keys()[Settings.quality], view_size.x, view_size.y, int(Settings.preset().render_scale * 100), OS.get_name(), " (browser)" if OS.has_feature("web") else ""],
 		"Graphics: %s / %s" % [RenderingServer.get_video_adapter_vendor(), RenderingServer.get_video_adapter_name()],
-		"Godot %s   Frames measured: %d" % [Engine.get_version_info().string, frames],
+		"Godot %s   Frames measured: %d   V-Sync: %s" % [Engine.get_version_info().string, frames, "on (browser)" if OS.has_feature("web") else "off during the test"],
 	]
 	_results_text = "\n".join(lines)
 	print("BENCHMARK RESULTS\n", _results_text)
 	_show_results()
 
 
-## Browsers don't give Godot reliable script timings or memory use, so show "n/a" there.
+## Godot's "process" timer also counts rendering work done on the CPU, so it can't show
+## pure script time. Show the physics time (enemies, bullets, movement) instead.
 func _cpu_line(n: float) -> String:
-	if OS.has_feature("web"):
-		return "Scripts: n/a in browsers        Physics: %.2f ms/frame" % (_sum.physics_ms / n)
-	return "Scripts: %.2f ms/frame        Physics: %.2f ms/frame" % [_sum.process_ms / n, _sum.physics_ms / n]
+	return "Physics (movement, AI, bullets): %.2f ms/frame" % (_sum.physics_ms / n)
 
 
 func _memory_line() -> String:

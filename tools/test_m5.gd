@@ -32,8 +32,10 @@ func _ready() -> void:
 	Settings.set_quality(Settings.Quality.LOW)
 	await get_tree().process_frame
 	check(not sun.shadow_enabled, "Low: no shadows")
-	check(is_equal_approx(chunk.visibility_range_end, 140.0), "Low: trees drawn to 140 m")
-	check(is_equal_approx(near_chunk.visibility_range_end, 35.0) and is_equal_approx(chunk.visibility_range_begin, 35.0), "Low: detailed trees only to 35 m")
+	var far_mat: ShaderMaterial = forest._far_materials[0]
+	var near_mat: ShaderMaterial = forest._near_materials[0]
+	check(is_equal_approx(far_mat.get_shader_parameter("view_distance"), 140.0) and chunk.visibility_range_end >= 140.0, "Low: trees drawn to 140 m")
+	check(is_equal_approx(near_mat.get_shader_parameter("lod_distance"), 35.0) and near_chunk.visibility_range_end >= 35.0, "Low: detailed trees only to 35 m")
 	check(p.snow_particles.amount == 250, "Low: less snow (%d)" % p.snow_particles.amount)
 	check(is_equal_approx(get_tree().root.scaling_3d_scale, 0.75), "Low: 75 % render scale")
 	check(is_equal_approx(env.fog_density, 0.006), "Low: denser fog hides the shorter view")
@@ -41,8 +43,11 @@ func _ready() -> void:
 	Settings.set_quality(Settings.Quality.HIGH)
 	await get_tree().process_frame
 	check(sun.shadow_enabled and is_equal_approx(sun.directional_shadow_max_distance, 70.0), "High: shadows to 70 m")
-	check(is_equal_approx(chunk.visibility_range_end, 220.0) and p.snow_particles.amount == 900, "High: trees to 220 m, full snow")
-	check(is_equal_approx(near_chunk.visibility_range_end, 70.0), "High: detailed trees to 70 m")
+	check(is_equal_approx(far_mat.get_shader_parameter("view_distance"), 220.0) and p.snow_particles.amount == 900, "High: trees to 220 m, full snow")
+	check(is_equal_approx(near_mat.get_shader_parameter("lod_distance"), 70.0) and near_chunk.visibility_range_end >= 70.0, "High: detailed trees to 70 m")
+	await get_tree().process_frame
+	var cam_pos: Vector3 = get_viewport().get_camera_3d().global_position
+	check(near_mat.get_shader_parameter("lod_camera").distance_to(cam_pos) < 0.5, "tree materials know where the camera is")
 	check(forest.get_node_or_null("TreeLine") != null, "distant tree line exists")
 
 	Settings.set_mouse_sensitivity(2.0)

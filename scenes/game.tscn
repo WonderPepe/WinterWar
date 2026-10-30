@@ -21,51 +21,51 @@ properties/1/path = NodePath(".:alive_count")
 properties/1/spawn = true
 properties/1/replication_mode = 2
 
-[node name="Game" type="Node3D" unique_id=6128393 node_paths=PackedStringArray("players_root")]
+[node name="Game" type="Node3D" unique_id=1788794988 node_paths=PackedStringArray("players_root")]
 script = ExtResource("1_dinhu")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=243684006 instance=ExtResource("2_kvuet")]
+[node name="Level" type="Node3D" parent="." unique_id=689487722 instance=ExtResource("2_kvuet")]
 
-[node name="Players" type="Node3D" parent="." unique_id=1202697344]
+[node name="Players" type="Node3D" parent="." unique_id=2074047803]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=377802773]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1356296598]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=672941702]
+[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1454876645]
 script = ExtResource("3_trtic")
 
-[node name="QualityApplier" type="Node" parent="." unique_id=1178268727]
+[node name="QualityApplier" type="Node" parent="." unique_id=131484504]
 script = ExtResource("4_ir15t")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=2010381811]
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=474880878]
 script = ExtResource("5_ca42v")
 
-[node name="Enemies" type="Node3D" parent="." unique_id=302919126]
+[node name="Enemies" type="Node3D" parent="." unique_id=1886134561]
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=729704570]
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1605326773]
 _spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="WaveSpawner" type="Node" parent="." unique_id=1036553202 node_paths=PackedStringArray("enemies_root")]
+[node name="WaveSpawner" type="Node" parent="." unique_id=1818615011 node_paths=PackedStringArray("enemies_root")]
 script = ExtResource("6_rysoc")
 enemy_scene = ExtResource("7_ssvqc")
 enemies_root = NodePath("../Enemies")
 
-[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=1293880238]
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=583904997]
 replication_config = SubResource("SceneReplicationConfig_e1j6l")
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=707331883 instance=ExtResource("8_264po")]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=728671246 instance=ExtResource("8_264po")]
 script = ExtResource("9_1kice")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1723061004 instance=ExtResource("10_5newe")]
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1361298347 instance=ExtResource("10_5newe")]
 layer = 20
 script = ExtResource("11_37s47")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1361263020]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=361405074]
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=90332038]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=949811832]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0

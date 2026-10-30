@@ -73,10 +73,10 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="HUD" type="CanvasLayer" unique_id=707331883]
+[node name="HUD" type="CanvasLayer" unique_id=728671246]
 script = ExtResource("1_7ihmi")
 
-[node name="Crosshair" type="Control" parent="." unique_id=1988355185]
+[node name="Crosshair" type="Control" parent="." unique_id=1342211587]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -84,7 +84,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("2_en2x2")
 
-[node name="HitMarker" type="Control" parent="." unique_id=355825547]
+[node name="HitMarker" type="Control" parent="." unique_id=1964121524]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -92,7 +92,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("3_1v5rv")
 
-[node name="DamageFlash" type="TextureRect" parent="." unique_id=1591309501]
+[node name="DamageFlash" type="TextureRect" parent="." unique_id=910802052]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -100,7 +100,7 @@ mouse_filter = 2
 texture = SubResource("GradientTexture2D_spcu4")
 expand_mode = 1
 
-[node name="Vitals" type="VBoxContainer" parent="." unique_id=1917789773]
+[node name="Vitals" type="VBoxContainer" parent="." unique_id=831176124]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -111,7 +111,7 @@ offset_bottom = -24.0
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="HealthTitle" type="Label" parent="Vitals" unique_id=1782121888]
+[node name="HealthTitle" type="Label" parent="Vitals" unique_id=1466285916]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -119,7 +119,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "HEALTH"
 
-[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=456366371]
+[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=178355571]
 custom_minimum_size = Vector2(280, 24)
 layout_mode = 2
 mouse_filter = 2
@@ -128,7 +128,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_m0eg6")
 value = 100.0
 show_percentage = false
 
-[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=1359087013]
+[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=1190041982]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -140,7 +140,7 @@ text = "100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=1511775578]
+[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=1083779398]
 custom_minimum_size = Vector2(280, 7)
 layout_mode = 2
 mouse_filter = 2
@@ -149,7 +149,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_so1yu")
 value = 100.0
 show_percentage = false
 
-[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=1402138397]
+[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=1527850187]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -163,7 +163,7 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 2
 
-[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=1562497089]
+[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=1465161209]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.8, 0.35, 1)
@@ -172,7 +172,7 @@ theme_override_constants/outline_size = 3
 text = "RELOADING"
 horizontal_alignment = 2
 
-[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=355795028]
+[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=1074311884]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -181,7 +181,7 @@ theme_override_constants/outline_size = 3
 text = "Weapon"
 horizontal_alignment = 2
 
-[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=616001122]
+[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=1359814367]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -190,7 +190,7 @@ theme_override_constants/outline_size = 7
 text = "0 / 0"
 horizontal_alignment = 2
 
-[node name="WavePanel" type="VBoxContainer" parent="." unique_id=1065329006]
+[node name="WavePanel" type="VBoxContainer" parent="." unique_id=1019296643]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -201,7 +201,7 @@ offset_bottom = 120.0
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Wave" type="Label" parent="WavePanel" unique_id=625701841]
+[node name="Wave" type="Label" parent="WavePanel" unique_id=1166595307]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -210,7 +210,7 @@ theme_override_constants/outline_size = 4
 text = "Get ready"
 horizontal_alignment = 1
 
-[node name="Enemies" type="Label" parent="WavePanel" unique_id=1991173981]
+[node name="Enemies" type="Label" parent="WavePanel" unique_id=552577666]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -219,7 +219,7 @@ theme_override_constants/outline_size = 3
 text = "Enemies: 0"
 horizontal_alignment = 1
 
-[node name="NextWave" type="Label" parent="WavePanel" unique_id=1998488468]
+[node name="NextWave" type="Label" parent="WavePanel" unique_id=1210427038]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.85, 0.5, 1)
@@ -227,7 +227,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="Score" type="Label" parent="WavePanel" unique_id=1559769229]
+[node name="Score" type="Label" parent="WavePanel" unique_id=1626420027]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -236,7 +236,7 @@ theme_override_constants/outline_size = 3
 text = "Kills 0   Deaths 0"
 horizontal_alignment = 1
 
-[node name="WaveBanner" type="Label" parent="." unique_id=974240079]
+[node name="WaveBanner" type="Label" parent="." unique_id=2110202881]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -253,21 +253,21 @@ theme_override_constants/outline_size = 12
 text = "WAVE 1"
 horizontal_alignment = 1
 
-[node name="DeathScreen" type="Control" parent="." unique_id=1804934326]
+[node name="DeathScreen" type="Control" parent="." unique_id=1655590344]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=422071114]
+[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=472655246]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0.08, 0, 0, 0.55)
 
-[node name="YouDied" type="Label" parent="DeathScreen" unique_id=905059579]
+[node name="YouDied" type="Label" parent="DeathScreen" unique_id=440931176]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -284,7 +284,7 @@ theme_override_constants/outline_size = 12
 text = "YOU DIED"
 horizontal_alignment = 1
 
-[node name="Respawn" type="Label" parent="DeathScreen" unique_id=1583234398]
+[node name="Respawn" type="Label" parent="DeathScreen" unique_id=1989985641]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -301,6 +301,6 @@ theme_override_constants/outline_size = 4
 text = "Respawning in 5..."
 horizontal_alignment = 1
 
-[node name="HitSound" type="AudioStreamPlayer" parent="." unique_id=1622136579]
+[node name="HitSound" type="AudioStreamPlayer" parent="." unique_id=107637201]
 stream = ExtResource("4_q43x7")
 volume_db = -8.0
