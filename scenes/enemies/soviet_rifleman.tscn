@@ -1,52 +1,16 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/enemies/enemy.gd" id="1_1i86x"]
-[ext_resource type="Resource" path="res://resources/enemies/soviet_rifleman.tres" id="2_kvoyh"]
-[ext_resource type="Material" path="res://resources/materials/enemy_greatcoat.tres" id="3_qrnq5"]
-[ext_resource type="Material" path="res://resources/materials/enemy_skin.tres" id="4_16w8m"]
-[ext_resource type="Material" path="res://resources/materials/enemy_budenovka.tres" id="5_pe1ff"]
-[ext_resource type="Material" path="res://resources/materials/gun_wood.tres" id="6_onvuj"]
-[ext_resource type="Material" path="res://resources/materials/gun_metal.tres" id="7_3mqm1"]
-[ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="8_36h6i"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy.gd" id="1_llyfj"]
+[ext_resource type="Resource" path="res://resources/enemies/soviet_rifleman.tres" id="2_0f3yq"]
+[ext_resource type="Script" path="res://scripts/enemies/soldier_visual.gd" id="3_1qay1"]
+[ext_resource type="Material" path="res://resources/materials/soldier.tres" id="4_1i86x"]
+[ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="5_kvoyh"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_exyxr"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qrnq5"]
 radius = 0.33
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_qc5fo"]
-material = ExtResource("3_qrnq5")
-radius = 0.3
-height = 1.55
-radial_segments = 12
-rings = 4
-
-[sub_resource type="SphereMesh" id="SphereMesh_vt6eu"]
-material = ExtResource("4_16w8m")
-radius = 0.12
-height = 0.24
-radial_segments = 10
-rings = 6
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_araca"]
-material = ExtResource("5_pe1ff")
-top_radius = 0.015
-bottom_radius = 0.135
-height = 0.24
-radial_segments = 10
-
-[sub_resource type="BoxMesh" id="BoxMesh_7ty6n"]
-material = ExtResource("6_onvuj")
-size = Vector3(0.05, 0.08, 0.9)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_1uiom"]
-material = ExtResource("7_3mqm1")
-top_radius = 0.012
-bottom_radius = 0.012
-height = 0.45
-radial_segments = 6
-rings = 0
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_a3uxn"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_16w8m"]
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
@@ -63,65 +27,41 @@ properties/4/path = NodePath(".:health")
 properties/4/spawn = true
 properties/4/replication_mode = 2
 
-[node name="SovietRifleman" type="CharacterBody3D" unique_id=941182440]
+[node name="SovietRifleman" type="CharacterBody3D" unique_id=1105324442]
 collision_layer = 4
 collision_mask = 3
 floor_max_angle = 0.80285144
 floor_snap_length = 0.4
-script = ExtResource("1_1i86x")
-data = ExtResource("2_kvoyh")
+script = ExtResource("1_llyfj")
+data = ExtResource("2_0f3yq")
 metadata/surface = "cloth"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1039400130]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=620020542]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("CapsuleShape3D_exyxr")
+shape = SubResource("CapsuleShape3D_qrnq5")
 
-[node name="Visual" type="Node3D" parent="." unique_id=1385782436]
+[node name="Visual" type="Node3D" parent="." unique_id=1939127405]
+script = ExtResource("3_1qay1")
+material = ExtResource("4_1i86x")
 
-[node name="Greatcoat" type="MeshInstance3D" parent="Visual" unique_id=1338144365]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.775, 0)
-mesh = SubResource("CapsuleMesh_qc5fo")
-
-[node name="Head" type="MeshInstance3D" parent="Visual" unique_id=1779765093]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.02)
-cast_shadow = 0
-mesh = SubResource("SphereMesh_vt6eu")
-
-[node name="Budenovka" type="MeshInstance3D" parent="Visual" unique_id=813162178]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -0.02)
-cast_shadow = 0
-mesh = SubResource("CylinderMesh_araca")
-
-[node name="Rifle" type="Node3D" parent="Visual" unique_id=589220760]
-transform = Transform3D(0.90630776, -0.42261827, 0, 0.24240388, 0.5198368, -0.81915206, 0.34618863, 0.74240386, 0.57357645, 0.18, 1.15, -0.22)
-
-[node name="Stock" type="MeshInstance3D" parent="Visual/Rifle" unique_id=490155645]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
-cast_shadow = 0
-mesh = SubResource("BoxMesh_7ty6n")
-
-[node name="Barrel" type="MeshInstance3D" parent="Visual/Rifle" unique_id=749666548]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.03, -0.55)
-cast_shadow = 0
-mesh = SubResource("CylinderMesh_1uiom")
-
-[node name="Muzzle" type="Marker3D" parent="Visual/Rifle" unique_id=2118277072]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -0.8)
-
-[node name="Eyes" type="Marker3D" parent="." unique_id=1646225783]
+[node name="Eyes" type="Marker3D" parent="." unique_id=1927497026]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.1)
 
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=476859272]
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1540886343]
 target_desired_distance = 1.5
 height = 2.0
 
-[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1253414570]
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=385255713]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
-stream = ExtResource("8_36h6i")
+stream = ExtResource("5_kvoyh")
 volume_db = -2.0
 unit_size = 30.0
+max_polyphony = 2
+bus = &"SFX"
+attenuation_filter_cutoff_hz = 2500.0
+attenuation_filter_db = -30.0
 
-[node name="DebugLabel" type="Label3D" parent="." unique_id=2005094624]
+[node name="DebugLabel" type="Label3D" parent="." unique_id=674305607]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
 visible = false
 pixel_size = 0.0012
@@ -130,5 +70,5 @@ no_depth_test = true
 fixed_size = true
 outline_size = 8
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=817705056]
-replication_config = SubResource("SceneReplicationConfig_a3uxn")
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=579740331]
+replication_config = SubResource("SceneReplicationConfig_16w8m")

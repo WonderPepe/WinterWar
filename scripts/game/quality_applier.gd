@@ -1,6 +1,6 @@
 extends Node
 ## Applies the graphics quality setting (Settings autoload) to this level:
-## sun shadows, tree draw distance, fog and falling snow.
+## sun shadows, tree draw distance, fog, falling and drifting snow.
 ## Runs when the game starts and whenever the player changes a setting.
 
 func _ready() -> void:
@@ -25,3 +25,6 @@ func apply() -> void:
 		world.environment.fog_density = p.fog_density
 	for node in get_tree().get_nodes_in_group("players"):
 		(node as Player).snow_particles.amount = p.snow_amount
+		var fx := node.get_node_or_null("PlayerFX") as PlayerFX
+		if fx:
+			fx.set_drift_amount(p.drift_amount)

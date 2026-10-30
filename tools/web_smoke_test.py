@@ -37,9 +37,11 @@ async def main():
         print(f"engine started: {started} ({time.time() - t0:.1f} s)")
         await asyncio.sleep(5)
         await page.screenshot(path=os.path.join(SHOTS, "web_menu.png"))
-        await page.mouse.click(480, 210)  # Single Player (960x540 layout)
+        await page.mouse.click(480, 197)  # Single Player (960x540 layout)
         await asyncio.sleep(20)
         await page.screenshot(path=os.path.join(SHOTS, "web_game.png"), timeout=180000)
+        await asyncio.sleep(25)  # the software renderer is slow: look again later
+        await page.screenshot(path=os.path.join(SHOTS, "web_game_later.png"), timeout=180000)
         await browser.close()
     print("console errors:", errors if errors else "none")
     print("RESULT:", "OK" if started and not errors else "FAILED")

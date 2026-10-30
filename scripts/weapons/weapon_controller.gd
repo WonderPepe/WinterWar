@@ -41,6 +41,7 @@ var _bob_time: float = 0.0
 var _server_next_fire: float = 0.0 # host: anti-cheat fire-rate check
 var _reload_timer: float = 0.0     # host
 var _view_models: Array[ViewModel] = []
+var _last_smoke_time: float = 0.0
 var _rng := RandomNumberGenerator.new()
 
 @onready var player: Player = get_parent()
@@ -163,6 +164,7 @@ func _fire(w: WeaponData) -> void:
 	var vm := _current_view_model()
 	vm.play_fire(w.kick_back_m, w.kick_rotation_deg)
 	_play(shot_audio, w.fire_sound)
+	_spawn_smoke((vm.get_node("Model/Muzzle") as Node3D).global_position, -camera.global_basis.z, true)
 	if w.fire_mode == WeaponData.FireMode.BOLT_ACTION and rounds_before > 1:
 		vm.play_bolt_cycle(w.bolt_cycle_time)
 		get_tree().create_timer(w.bolt_cycle_time * 0.25).timeout.connect(_play.bind(mech_audio, w.cycle_sound))
@@ -347,6 +349,17 @@ func _play_remote_fire_effects() -> void:
 	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
 	if effects:
 		effects.spawn_flash(camera.global_position - camera.global_basis.z * 0.9)
+	_spawn_smoke(camera.global_position - camera.global_basis.z * 0.9, -camera.global_basis.z)
+
+
+## Gun smoke at the muzzle. Automatic fire makes one puff every ~0.15 s, not one per round.
+func _spawn_smoke(pos: Vector3, direction: Vector3, faint: bool = false) -> void:
+	if _now() - _last_smoke_time < 0.15:
+		return
+	_last_smoke_time = _now()
+	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
+	if effects:
+		effects.spawn_smoke(pos, direction, false, faint)
 
 
 # ------------------------------------------------------------------ helpers

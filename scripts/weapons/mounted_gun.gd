@@ -18,8 +18,8 @@ extends StaticBody3D
 @export var use_distance: float = 1.8 ## How close (to SeatPoint) you must be to take the gun.
 @export var infinite_belts: bool = true ## The bunker has plenty of ammunition boxes.
 ## Names of the imported model's parts that turn with the gun (everything else stays put).
-@export var turning_part_names: PackedStringArray = []
-@export var hidden_part_names: PackedStringArray = []
+@export var turning_part_names: PackedStringArray = PackedStringArray()
+@export var hidden_part_names: PackedStringArray = PackedStringArray()
 @export var flash_duration: float = 0.05
 
 # --- Synced from the host by GunSync ---
@@ -33,6 +33,8 @@ var _server_next_fire: float = 0.0 # host
 var _flash_until: float = 0.0
 var _kick: float = 0.0
 var _pivot_rest: Vector3
+var _smoke: CPUParticles3D
+var _smoke_until: float = 0.0
 
 @onready var pivot: Node3D = $Pivot
 @onready var muzzle: Node3D = $Pivot/Muzzle
@@ -52,6 +54,15 @@ func _ready() -> void:
 	flash_light.visible = false
 	_pivot_rest = pivot.position
 	_prepare_model()
+	# Long bursts leave a haze of gun smoke in front of the slit.
+	_smoke = ImpactEffects.make_smoke_emitter(ImpactEffects.make_soft_texture())
+	_smoke.one_shot = false
+	_smoke.explosiveness = 0.0
+	_smoke.amount = 24
+	_smoke.lifetime = 2.2
+	_smoke.emitting = false
+	_smoke.direction = Vector3.FORWARD # muzzle space: out of the barrel
+	muzzle.add_child(_smoke)
 
 
 ## Puts the turning parts of the imported model under Pivot and hides extra parts.
@@ -109,6 +120,7 @@ func _process(delta: float) -> void:
 	var flashing: bool = Time.get_ticks_msec() / 1000.0 < _flash_until
 	flash.visible = flashing
 	flash_light.visible = flashing and user != null and user.is_local_player()
+	_smoke.emitting = Time.get_ticks_msec() / 1000.0 < _smoke_until
 
 
 # ------------------------------------------------------------------ host side
@@ -191,6 +203,7 @@ func play_local_fire() -> void:
 
 func _show_fire(local: bool) -> void:
 	_flash_until = Time.get_ticks_msec() / 1000.0 + flash_duration
+	_smoke_until = Time.get_ticks_msec() / 1000.0 + 0.3
 	flash.rotation.z = randf() * TAU
 	_kick = 0.025 if local else 0.015
 	if data and data.fire_sound:

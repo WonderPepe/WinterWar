@@ -34,6 +34,8 @@ var _death_time: float = -1.0
 @onready var respawn_label: Label = $DeathScreen/Respawn
 @onready var hit_sound: AudioStreamPlayer = $HitSound
 @onready var interact_prompt: Label = $InteractPrompt
+@onready var damage_indicator: DamageIndicator = $DamageIndicator
+@onready var hurt_sound: AudioStreamPlayer = $HurtSound
 
 
 func _ready() -> void:
@@ -63,12 +65,15 @@ func _find_local_player() -> void:
 			_last_health = p.health
 			p.health_changed.connect(_on_health_changed)
 			p.weapons.hit_confirmed.connect(_on_hit_confirmed)
+			p.hurt_from.connect(damage_indicator.add_hit)
+			damage_indicator.set_player(p)
 			return
 
 
 func _on_health_changed(new_health: int) -> void:
 	if new_health < _last_health:
 		_flash = 1.0 # we got hurt: flash the screen edges red
+		hurt_sound.play()
 	_last_health = new_health
 
 

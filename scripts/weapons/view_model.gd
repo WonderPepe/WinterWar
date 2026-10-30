@@ -8,9 +8,9 @@ extends Node3D
 
 @export var bolt: Node3D ## Optional part that slides back when the bolt is worked.
 ## Parts of the imported model that form the bolt: they are gathered into one "Bolt" node.
-@export var bolt_part_names: PackedStringArray = []
+@export var bolt_part_names: PackedStringArray = PackedStringArray()
 ## Parts of the imported model that should not be shown (e.g. loose cartridges).
-@export var hidden_part_names: PackedStringArray = []
+@export var hidden_part_names: PackedStringArray = PackedStringArray()
 @export var bolt_travel: float = 0.08 ## How far the bolt slides back (metres).
 @export var flash_duration: float = 0.05
 @export var ads_eye_distance: float = 0.3 ## When aiming, the rear sight sits this far in front of the eye.

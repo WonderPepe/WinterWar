@@ -90,6 +90,7 @@ func _make_materials() -> Dictionary:
 			"snow_band": false, "log_top_snow": 0.0, "top_snow": 0.0, "tile_size_m": Vector2(1.6, 0.8)}),
 		"trunk": _shader_mat("tree_trunk.tres", "spruce", {"trunk": true, "bark_texture": load(TEX_DIR + "bark.png")}),
 		"foliage": _shader_mat("tree_foliage.tres", "spruce", {}),
+		"soldier": _shader_mat("soldier.tres", "soldier", {}),
 		"tree_line": _shader_mat("tree_line.tres", "tree_line", {"silhouette": load(TEX_DIR + "treeline.png")}),
 		"player_body": _mat("player_body.tres", Color(0.82, 0.83, 0.8)),
 		"flake": load(MAT_DIR + "snowflake.tres"),
@@ -98,9 +99,6 @@ func _make_materials() -> Dictionary:
 		"target_wood": _mat("target_wood.tres", Color(0.55, 0.42, 0.28)),
 		"target_cloth": _mat("target_soviet_cloth.tres", Color(0.3, 0.28, 0.2)),
 		"muzzle_flash": _flash_mat("muzzle_flash.tres"),
-		"enemy_coat": _mat("enemy_greatcoat.tres", Color(0.31, 0.3, 0.22)),
-		"enemy_cap": _mat("enemy_budenovka.tres", Color(0.26, 0.26, 0.2)),
-		"enemy_skin": _mat("enemy_skin.tres", Color(0.72, 0.57, 0.47)),
 	}
 
 
@@ -196,6 +194,9 @@ func _build_player(mats: Dictionary) -> Node:
 	var remote_audio: AudioStreamPlayer3D = _add(head, AudioStreamPlayer3D.new(), "RemoteAudio")
 	remote_audio.max_polyphony = 4
 	remote_audio.unit_size = 25.0
+	remote_audio.bus = &"SFX"
+	remote_audio.attenuation_filter_cutoff_hz = 2500.0
+	remote_audio.attenuation_filter_db = -30.0
 
 	var wc: Node = _add(p, Node.new(), "WeaponController")
 	wc.set_script(load("res://scripts/weapons/weapon_controller.gd"))
@@ -204,8 +205,10 @@ func _build_player(mats: Dictionary) -> Node:
 	var shot_audio: AudioStreamPlayer = _add(wc, AudioStreamPlayer.new(), "ShotAudio")
 	shot_audio.max_polyphony = 4
 	shot_audio.volume_db = -4.0
+	shot_audio.bus = &"SFX"
 	var mech_audio: AudioStreamPlayer = _add(wc, AudioStreamPlayer.new(), "MechAudio")
 	mech_audio.volume_db = -6.0
+	mech_audio.bus = &"SFX"
 	var wsync: MultiplayerSynchronizer = _add(wc, MultiplayerSynchronizer.new(), "WeaponSync")
 	wsync.root_path = NodePath("..")
 	wsync.replication_config = _sync_config([
@@ -214,6 +217,10 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:reserve_ammo", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:is_reloading", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
+
+	# Footsteps, breath vapour and drifting snow (made in code by player_fx.gd).
+	var fx: Node3D = _add(p, Node3D.new(), "PlayerFX")
+	fx.set_script(load("res://scripts/player/player_fx.gd"))
 
 	var ceiling: ShapeCast3D = _add(p, ShapeCast3D.new(), "CeilingCheck")
 	var sphere := SphereShape3D.new()
@@ -475,6 +482,8 @@ func _build_game() -> Node:
 
 	var warm: CanvasLayer = _add(g, CanvasLayer.new(), "ShaderWarmup")
 	warm.set_script(load("res://scripts/game/shader_warmup.gd"))
+	var amb: Node = _add(g, Node.new(), "Ambience")
+	amb.set_script(load("res://scripts/game/ambience.gd"))
 	var qa: Node = _add(g, Node.new(), "QualityApplier")
 	qa.set_script(load("res://scripts/game/quality_applier.gd"))
 	var fx: Node3D = _add(g, Node3D.new(), "ImpactEffects")
@@ -777,8 +786,10 @@ func _build_maxim(mats: Dictionary) -> Node:
 	shot_audio.position = muzzle.position
 	shot_audio.max_polyphony = 6
 	shot_audio.unit_size = 30.0
+	shot_audio.bus = &"SFX"
 	var mech_audio: AudioStreamPlayer3D = _add(gun, AudioStreamPlayer3D.new(), "MechAudio")
 	mech_audio.unit_size = 6.0
+	mech_audio.bus = &"SFX"
 	var sync: MultiplayerSynchronizer = _add(gun, MultiplayerSynchronizer.new(), "GunSync")
 	sync.root_path = NodePath("..")
 	sync.replication_config = _sync_config([
@@ -860,33 +871,10 @@ func _build_enemy(mats: Dictionary) -> Node:
 	cs.shape = capsule
 	cs.position.y = 0.9
 
+	# The body is built and animated in code (scripts/enemies/soldier_visual.gd + soldier_mesh.gd).
 	var visual: Node3D = _add(e, Node3D.new(), "Visual")
-	var coat := CapsuleMesh.new()
-	coat.radius = 0.3
-	coat.height = 1.55
-	coat.radial_segments = 12
-	coat.rings = 4
-	var coat_mi := _part(visual, "Greatcoat", coat, Vector3(0, 0.775, 0), mats.enemy_coat)
-	coat_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	var head := SphereMesh.new()
-	head.radius = 0.12
-	head.height = 0.24
-	head.radial_segments = 10
-	head.rings = 6
-	_part(visual, "Head", head, Vector3(0, 1.62, -0.02), mats.enemy_skin)
-	var cap := CylinderMesh.new()
-	cap.top_radius = 0.015
-	cap.bottom_radius = 0.135
-	cap.height = 0.24
-	cap.radial_segments = 10
-	_part(visual, "Budenovka", cap, Vector3(0, 1.8, -0.02), mats.enemy_cap)
-	var rifle: Node3D = _add(visual, Node3D.new(), "Rifle")
-	rifle.position = Vector3(0.18, 1.15, -0.22)
-	rifle.rotation = Vector3(deg_to_rad(55.0), 0, deg_to_rad(25.0))
-	_part(rifle, "Stock", _box(Vector3(0.05, 0.08, 0.9)), Vector3(0, 0, 0.05), mats.gun_wood)
-	_part(rifle, "Barrel", _cyl(0.012, 0.45, 6), Vector3(0, 0.03, -0.55), mats.gun_metal, ALONG_Z)
-	var muzzle: Marker3D = _add(rifle, Marker3D.new(), "Muzzle")
-	muzzle.position = Vector3(0, 0.03, -0.8)
+	visual.set_script(load("res://scripts/enemies/soldier_visual.gd"))
+	visual.set("material", mats.soldier)
 
 	var eyes: Marker3D = _add(e, Marker3D.new(), "Eyes")
 	eyes.position = Vector3(0, 1.6, -0.1)
@@ -900,8 +888,13 @@ func _build_enemy(mats: Dictionary) -> Node:
 
 	var audio: AudioStreamPlayer3D = _add(e, AudioStreamPlayer3D.new(), "ShotAudio")
 	audio.stream = load("res://assets/audio/mosin_shot.wav")
+	audio.bus = &"SFX"
 	audio.unit_size = 30.0
 	audio.volume_db = -2.0
+	audio.max_polyphony = 2
+	# Far-away shots lose their sharp high tones: you can hear roughly how far the shooter is.
+	audio.attenuation_filter_cutoff_hz = 2500.0
+	audio.attenuation_filter_db = -30.0
 	audio.position = Vector3(0, 1.4, 0)
 
 	var label: Label3D = _add(e, Label3D.new(), "DebugLabel")
@@ -1013,6 +1006,9 @@ func _build_hud() -> Node:
 	var cross: Control = _add(hud, Control.new(), "Crosshair")
 	cross.set_script(load("res://scripts/ui/crosshair.gd"))
 	_full_rect(cross)
+	var dmg: Control = _add(hud, Control.new(), "DamageIndicator")
+	dmg.set_script(load("res://scripts/ui/damage_indicator.gd"))
+	_full_rect(dmg)
 	var marker: Control = _add(hud, Control.new(), "HitMarker")
 	marker.set_script(load("res://scripts/ui/hit_marker.gd"))
 	_full_rect(marker)
@@ -1113,6 +1109,11 @@ func _build_hud() -> Node:
 	var tick: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HitSound")
 	tick.stream = load("res://assets/audio/hit_tick.wav")
 	tick.volume_db = -8.0
+	tick.bus = &"UI"
+	var hurt: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HurtSound")
+	hurt.stream = load("res://assets/audio/hurt_thump.wav")
+	hurt.volume_db = -4.0
+	hurt.bus = &"UI"
 	_ignore_mouse(hud) # the HUD must never catch the mouse (see the M2 mouse-look bug)
 	return hud
 
@@ -1245,7 +1246,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	back.custom_minimum_size = Vector2(200, 44)
 	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-	var ver := _label(mm, "Version", "Prototype · W1", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+	var ver := _label(mm, "Version", "Prototype · P2", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
 	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.offset_left = -300
 	ver.offset_top = -34
@@ -1378,6 +1379,15 @@ func _build_settings_menu(theme: Theme) -> Node:
 	vol.value = 80
 	vol.custom_minimum_size = Vector2(240, 32)
 	_label(grid, "VolumeValue", "80 %", 16)
+
+	_label(grid, "AmbienceLabel", "Wind and battle", 18)
+	var amb: HSlider = _add(grid, HSlider.new(), "Ambience")
+	amb.min_value = 0
+	amb.max_value = 100
+	amb.step = 1
+	amb.value = 70
+	amb.custom_minimum_size = Vector2(240, 32)
+	_label(grid, "AmbienceValue", "70 %", 16)
 
 	_label(grid, "FullscreenLabel", "Fullscreen", 18)
 	var fs: CheckButton = _add(grid, CheckButton.new(), "Fullscreen")

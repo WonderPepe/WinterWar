@@ -51,10 +51,10 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 ## Performance budget (measured after P1 graphics, High quality)
 | | Now | Budget for future graphics |
 |---|---|---|
-| Draw calls per frame | ~205 average, ~260 max | ≤ 300 |
-| Triangles per frame (incl. shadows) | ~250 000 | ≤ 400 000 |
+| Draw calls per frame | ~165 average, ~220 max | ≤ 300 |
+| Triangles per frame (incl. shadows) | ~275 000 | ≤ 400 000 |
 | CPU: physics (16 enemies) | ~2.5–3 ms (desktop) | ≤ 8 ms total in the browser |
-| Download | ~50 MB (≈18 MB compressed) | ≤ 60 MB |
+| Download | ~52 MB (≈17 MB compressed) | ≤ 60 MB |
 | Textures | 6 generated textures, ≤ 2048 px, VRAM-compressed | ≤ 2048 px, VRAM-compressed |
 
 ## Graphics (P1: clear freezing day)
@@ -82,6 +82,20 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   the slit allows.
 - The models' licence (CC-BY 4.0) requires naming their makers: `CREDITS.md` and the
   **Credits** button in the main menu. Keep them when you publish the game.
+
+## Effects, sound and soldiers (P2)
+- **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,
+  boots, Mosin with bayonet – one mesh with a skeleton, so each soldier is a single draw call.
+  `scripts/enemies/soldier_visual.gd` animates them in code: walking/running, kneeling to
+  fire, rifle carried / held forward / shouldered, recoil, flinching when hit, falling.
+- **Effects** (`scripts/weapons/impact_effects.gd`): snow sprays, wood splinters, cloth dust,
+  gun smoke (your own gun's is fainter), breath vapour, drifting snow (High/Medium).
+- **Sound**: audio buses in `default_bus_layout.tres` (SFX with an outdoor echo, Ambience,
+  UI), wind and the distant battle (`scripts/game/ambience.gd`, muffled down in the trench),
+  footsteps on snow / trench floor / wood (`scripts/player/player_fx.gd`), the crack of bullets
+  passing close, a red arc showing where a hit came from. All sounds are made by
+  `tools/make_sounds.py` – they can be swapped for real recordings later (same file names).
+- **Settings**: a separate "Wind and battle" volume.
 
 ## Editing the trench and bunker
 They are built from CSG shapes in `levels/source/trench_csg.tscn` and baked into plain meshes
@@ -123,4 +137,4 @@ select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 - [x] M5: web export test and performance check
 - [x] P1: graphics – clear freezing day: sky, snow, log walls, spruce forest
 - [x] W1: real Mosin and Suomi models, Maxim in the bunker (Lahti-Saloranta later, if a model turns up)
-- [ ] P2: effects, sound, soldiers
+- [x] P2: effects, sound, soldiers

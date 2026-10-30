@@ -14,21 +14,22 @@ const SAVE_PATH: String = "user://settings.cfg"
 const PRESETS: Dictionary = {
 	Quality.LOW: {
 		"shadows": false, "shadow_distance": 0.0, "tree_distance": 140.0, "tree_detail_distance": 35.0,
-		"snow_amount": 250, "render_scale": 0.75, "fog_density": 0.006,
+		"snow_amount": 250, "drift_amount": 0, "render_scale": 0.75, "fog_density": 0.006,
 	},
 	Quality.MEDIUM: {
 		"shadows": true, "shadow_distance": 40.0, "tree_distance": 180.0, "tree_detail_distance": 50.0,
-		"snow_amount": 550, "render_scale": 0.9, "fog_density": 0.0045,
+		"snow_amount": 550, "drift_amount": 120, "render_scale": 0.9, "fog_density": 0.0045,
 	},
 	Quality.HIGH: {
 		"shadows": true, "shadow_distance": 70.0, "tree_distance": 220.0, "tree_detail_distance": 70.0,
-		"snow_amount": 900, "render_scale": 1.0, "fog_density": 0.0035,
+		"snow_amount": 900, "drift_amount": 220, "render_scale": 1.0, "fog_density": 0.0035,
 	},
 }
 
 var quality: Quality = Quality.HIGH
 var mouse_sensitivity: float = 1.0 ## Multiplier on the normal mouse speed.
 var volume: float = 0.8 ## 0..1
+var ambience_volume: float = 0.7 ## 0..1: wind and the distant battle.
 var fullscreen: bool = false
 
 
@@ -47,6 +48,9 @@ func preset() -> Dictionary:
 ## Apply everything that is global, then tell the rest of the game to update.
 func apply() -> void:
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.0001)))
+	var amb: int = AudioServer.get_bus_index(&"Ambience")
+	if amb >= 0:
+		AudioServer.set_bus_volume_db(amb, linear_to_db(maxf(ambience_volume, 0.0001)) - 3.0)
 	get_tree().root.scaling_3d_scale = preset().render_scale
 	var want_full: bool = fullscreen
 	var is_full: bool = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
@@ -70,6 +74,11 @@ func set_volume(value: float) -> void:
 	_save_and_apply()
 
 
+func set_ambience_volume(value: float) -> void:
+	ambience_volume = value
+	_save_and_apply()
+
+
 func set_fullscreen(value: bool) -> void:
 	fullscreen = value
 	_save_and_apply()
@@ -81,6 +90,7 @@ func _save_and_apply() -> void:
 	cfg.set_value("graphics", "fullscreen", fullscreen)
 	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	cfg.set_value("audio", "volume", volume)
+	cfg.set_value("audio", "ambience_volume", ambience_volume)
 	cfg.save(SAVE_PATH)
 	apply()
 
@@ -93,3 +103,4 @@ func _load() -> void:
 	fullscreen = cfg.get_value("graphics", "fullscreen", fullscreen)
 	mouse_sensitivity = cfg.get_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	volume = cfg.get_value("audio", "volume", volume)
+	ambience_volume = cfg.get_value("audio", "ambience_volume", ambience_volume)

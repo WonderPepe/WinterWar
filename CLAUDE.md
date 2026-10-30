@@ -28,7 +28,28 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] W1 weapons: imported Mosin/Suomi view models, Maxim M/09-21 mounted in the bunker (F),
   CREDITS.md + Credits menu. Lahti-Saloranta left out (no usable model; the owner's choice) –
   weapon slot 3 is free for it.
-- Next: P2 (effects, sound, soldiers), real Summa terrain, co-op (WebRTC).
+- [x] P2 effects, sound, soldiers (skinned code-built soldier, code animation, sprays/smoke/breath/
+  drift, audio buses, ambience, footsteps, bullet cracks, damage indicator, hit flinch).
+- Next: the owner picks from "Development ideas" below.
+
+## Development ideas (after P2, not yet approved)
+1. Maxim polish (owner: "needs to be improved"): proper aiming through its sights, belt feed
+   animation (the glTF has one), steam from the water jacket in long bursts, overheating,
+   gunner's hands on the grips, better sound.
+2. Hands and arms in first person (guns float now); Finnish white snow-camo sleeves/mittens.
+3. Real Summa terrain from the owner's maps + Copernicus DEM; real trench line, the big concrete
+   bunkers (e.g. Sj5 "Millionaire"), anti-tank rocks, barbed wire, shell craters.
+4. Soviet attack variety: tanks (T-26/T-28) with infantry behind them, artillery barrages
+   (craters, camera shake), enemies using cover, grenades, smoke screens, officers.
+5. Player options: Molotov cocktails / satchel charges against tanks, grenades, bandages,
+   ammo crate in the trench, a firing step, prone, leaning.
+6. Game structure: hold for N waves → victory/defeat screen, difficulty levels, short winter day
+   turning to dusk/night with flares, scores.
+7. Finnish comrades: AI riflemen in the trench (later replaced by co-op players).
+8. Co-op over WebRTC (needs a small signaling server) with a lobby code.
+9. Real sound recordings (CC0) to replace the generated ones; shouts; menu music.
+10. Options: field of view, key rebinding, gamepad; itch.io release page.
+11. Lahti-Saloranta (slot 3) if a usable model turns up, or built from shapes.
 
 ## Multiplayer-ready architecture (mandatory)
 - Single player = host with no clients (OfflineMultiplayerPeer, peer id 1). Code everything
@@ -136,7 +157,43 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   gun at x = -1.0 so the bunker entrance stays free (test_m1 crouch test). Limits 14° L / 40° R,
   -7°…+4°: `test_w1.gd` checks every allowed aim fits through the slit.
 
+## Effects, sound, soldiers (P2) – how it is built
+- Soldier = `SoldierVisual` (Enemy's `Visual`): builds a Skeleton3D (12 bones, `SoldierMesh.Bone`)
+  and one shared skinned ArrayMesh (`SoldierMesh.get_mesh()`, ~780 tris, vertex colours; alpha =
+  cloth type for `soldier.gdshader`). Poses are set in code every frame from synced state
+  (position delta → walk speed, `state`, `is_kneeling`); arms use 2-bone IK to grip the rifle.
+  Muzzle = BoneAttachment3D on the rifle bone (`visual.muzzle`; it lags the bone by one frame).
+  Per-soldier material copy (coat tint) and size. Death fall direction comes from `hash(name)`
+  so all computers agree. Enemy RPCs: `show_shot_effects`, `show_hit` (flinch),
+  `bullet_passed` (sent only to the peer whose head the bullet passed within 3 m).
+- `ImpactEffects` pools: holes, sprays per surface (snow/wood/cloth), smoke, flashes, crack
+  sounds. `make_smoke_emitter()` / `make_soft_texture()` are static (Maxim, breath reuse them).
+- `PlayerFX` (child of Player): footsteps (surface from a ray down: wood meta / trench y < -0.8 /
+  snow), breath (child of the camera, local only), drift (top_level, local only, preset
+  `drift_amount`). Player `notify_hurt` RPC → `hurt_from` signal → HUD `DamageIndicator`.
+- Buses: Master → SFX (Reverb + HardLimiter), Ambience (LowPass used for muffling; volume from
+  Settings `ambience_volume`), UI. Made by `tools/make_buses.gd`. Set `bus` on every new player.
+- Measured (High, P2): ~165 draw calls (220 max) – fewer than before thanks to one-draw-call
+  soldiers – ~275k triangles. Web download ~50 MB.
+
 ## Gotchas learned
+- **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
+  converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
+  `= PackedStringArray()` as the default. Check exports with `tools/check_web_pack.gd`. The
+  export also caches converted scenes in `.godot/exported/` – delete it if in doubt.
+- **Web bug:** CPUParticles3D colours (`vertex_color_use_as_albedo` + `color`/`color_ramp`) render
+  BLACK in WebGL (seen as big black blobs: smoke, breath). `ImpactEffects.web_fallback(p)` turns
+  them into a fixed material colour + shrink-away curve when `OS.has_feature("web")`. Every new
+  particle effect must call it. (MultiMesh instance colours on the trees are fine.)
+- Editor re-imports: the owner's editor switched the imported weapon textures to VRAM compressed +
+  mipmaps (normal maps as normal maps). Keep those `.import` files. The Web preset exports only
+  desktop formats (`for_mobile=false`), otherwise the textures are stored twice.
+- SurfaceTool: `set_skin_weight_count()` must be called BEFORE `begin()`.
+- A child's `_ready()` runs before its parent's `@onready` variables are set (PlayerFX can't use
+  `player.camera` in `_ready`; use the node path).
+- CPUParticles3D `direction` is in the emitter's own space (rotated emitters: use local axes).
+- Headless tests run frames very fast (tiny delta): wait with timers, not frame counts, when
+  something is smoothed over time.
 - A new `class_name` (e.g. `MountedGun`) or new audio files: run `godot --headless --import`
   once before the builder/tests, or scripts using the name fail to parse.
 - Compatibility renderer: a MultiMesh with `use_custom_data` but without `use_colors` made
@@ -177,6 +234,8 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
-  `make_textures.py` (regenerates `assets/textures/`),
+  `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
+  poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),
+  `check_web_pack.gd` (checks the exported pck, see gotchas),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

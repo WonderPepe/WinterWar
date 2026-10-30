@@ -42,7 +42,7 @@ properties/2/path = NodePath(".:is_reloading")
 properties/2/spawn = true
 properties/2/replication_mode = 2
 
-[node name="MaximMG" type="StaticBody3D" unique_id=1778379351]
+[node name="MaximMG" type="StaticBody3D" unique_id=1337313970]
 script = ExtResource("1_3gngd")
 data = ExtResource("2_6b113")
 traverse_left_deg = 14.0
@@ -56,62 +56,64 @@ metadata/surface = "wood"
 [node name="Model" type="Node3D" parent="." unique_id=1071738689 instance=ExtResource("3_j7gxs")]
 transform = Transform3D(0.0135, 0, 0, 0, 0.0135, 0, 0, 0, 0.0135, 0, 0.36855, -0.44550002)
 
-[node name="Pivot" type="Node3D" parent="." unique_id=1126344776]
+[node name="Pivot" type="Node3D" parent="." unique_id=981883322]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28755, 0)
 
-[node name="Muzzle" type="Marker3D" parent="Pivot" unique_id=202645768]
+[node name="Muzzle" type="Marker3D" parent="Pivot" unique_id=1472681081]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Pivot/Muzzle" unique_id=968237026]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Pivot/Muzzle" unique_id=2057180219]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_e23ke")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Pivot/Muzzle/MuzzleFlash" unique_id=598366585]
+[node name="SideFlash" type="MeshInstance3D" parent="Pivot/Muzzle/MuzzleFlash" unique_id=1707813952]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.05)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_ldrfo")
 
-[node name="FlashLight" type="OmniLight3D" parent="Pivot/Muzzle" unique_id=1306881032]
+[node name="FlashLight" type="OmniLight3D" parent="Pivot/Muzzle" unique_id=1513048026]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 3.0
 omni_range = 7.0
 
-[node name="SeatPoint" type="Marker3D" parent="." unique_id=417335547]
+[node name="SeatPoint" type="Marker3D" parent="." unique_id=354239885]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.08, 0.8)
 
-[node name="ExitPoint" type="Marker3D" parent="." unique_id=1991163157]
+[node name="ExitPoint" type="Marker3D" parent="." unique_id=84668461]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, -1.212, 1)
 
-[node name="PlatformMesh" type="MeshInstance3D" parent="." unique_id=946374779]
+[node name="PlatformMesh" type="MeshInstance3D" parent="." unique_id=1107181438]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_s6dld")
 
-[node name="PlatformCollision" type="CollisionShape3D" parent="." unique_id=677551455]
+[node name="PlatformCollision" type="CollisionShape3D" parent="." unique_id=1733084587]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
 shape = SubResource("BoxShape3D_0ujeh")
 
-[node name="StepMesh" type="MeshInstance3D" parent="." unique_id=859223951]
+[node name="StepMesh" type="MeshInstance3D" parent="." unique_id=747271559]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_n0kws")
 
-[node name="StepCollision" type="CollisionShape3D" parent="." unique_id=5256839]
+[node name="StepCollision" type="CollisionShape3D" parent="." unique_id=2122870754]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
 shape = SubResource("BoxShape3D_1cjh1")
 
-[node name="GunCollision" type="CollisionShape3D" parent="." unique_id=1994645791]
+[node name="GunCollision" type="CollisionShape3D" parent="." unique_id=1046189601]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.338, -0.05)
 shape = SubResource("BoxShape3D_aeunk")
 
-[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=611793566]
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1399266723]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
 unit_size = 30.0
 max_polyphony = 6
+bus = &"SFX"
 
-[node name="MechAudio" type="AudioStreamPlayer3D" parent="." unique_id=1776299079]
+[node name="MechAudio" type="AudioStreamPlayer3D" parent="." unique_id=1732492536]
 unit_size = 6.0
+bus = &"SFX"
 
-[node name="GunSync" type="MultiplayerSynchronizer" parent="." unique_id=1004180081]
+[node name="GunSync" type="MultiplayerSynchronizer" parent="." unique_id=919139904]
 replication_config = SubResource("SceneReplicationConfig_qqngv")

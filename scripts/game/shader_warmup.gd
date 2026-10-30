@@ -53,6 +53,7 @@ func _warm_up() -> void:
 		for surface in ["snow", "wood", "cloth"]:
 			effects.spawn_impact(front, cam.global_basis.z, surface) # facing the camera
 		effects.spawn_flash(front)
+		effects.spawn_smoke(front, -cam.global_basis.z)
 	# A soldier model (just its meshes, without the AI).
 	var enemy_scene: PackedScene = load("res://scenes/enemies/soviet_rifleman.tscn")
 	var enemy: Node = enemy_scene.instantiate()

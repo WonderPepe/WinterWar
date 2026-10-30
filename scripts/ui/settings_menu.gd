@@ -10,6 +10,8 @@ signal closed
 @onready var sensitivity_value: Label = $Panel/VBox/Grid/SensitivityValue
 @onready var volume: HSlider = $Panel/VBox/Grid/Volume
 @onready var volume_value: Label = $Panel/VBox/Grid/VolumeValue
+@onready var ambience: HSlider = $Panel/VBox/Grid/Ambience
+@onready var ambience_value: Label = $Panel/VBox/Grid/AmbienceValue
 @onready var fullscreen: CheckButton = $Panel/VBox/Grid/Fullscreen
 @onready var back: Button = $Panel/VBox/BackButton
 
@@ -24,6 +26,9 @@ func _ready() -> void:
 		_refresh_labels())
 	volume.value_changed.connect(func(v: float) -> void:
 		Settings.set_volume(v / 100.0)
+		_refresh_labels())
+	ambience.value_changed.connect(func(v: float) -> void:
+		Settings.set_ambience_volume(v / 100.0)
 		_refresh_labels())
 	fullscreen.toggled.connect(Settings.set_fullscreen)
 	back.pressed.connect(close)
@@ -54,6 +59,7 @@ func _on_visibility_changed() -> void:
 	quality.select(Settings.quality)
 	sensitivity.set_value_no_signal(Settings.mouse_sensitivity)
 	volume.set_value_no_signal(Settings.volume * 100.0)
+	ambience.set_value_no_signal(Settings.ambience_volume * 100.0)
 	fullscreen.set_pressed_no_signal(Settings.fullscreen)
 	_refresh_labels()
 
@@ -61,3 +67,4 @@ func _on_visibility_changed() -> void:
 func _refresh_labels() -> void:
 	sensitivity_value.text = "%.2f×" % sensitivity.value
 	volume_value.text = "%d %%" % int(volume.value)
+	ambience_value.text = "%d %%" % int(ambience.value)

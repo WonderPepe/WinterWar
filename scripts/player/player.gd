@@ -11,6 +11,7 @@ signal health_changed(new_health: int)
 signal stamina_changed(new_stamina: float)
 signal died(player: Player)   ## Emitted on the host when health reaches 0.
 signal respawned(player: Player)
+signal hurt_from(source: Vector3) ## On the player's own computer: where a hit came from.
 
 @export_group("Movement")
 @export var walk_speed: float = 4.0
@@ -258,6 +259,12 @@ func take_damage(amount: float, _attacker_id: int, _hit_position: Vector3, _hit_
 	is_dead = true
 	died.emit(self) # the Game starts the respawn timer
 	return true
+
+
+## The host tells the hit player's computer where the shot came from (damage indicator).
+@rpc("authority", "call_local", "unreliable")
+func notify_hurt(source: Vector3) -> void:
+	hurt_from.emit(source)
 
 
 ## Host only: bring the player back to life at the given place.

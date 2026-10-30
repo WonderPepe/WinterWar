@@ -15,6 +15,7 @@ static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
 
 @export var data: EnemyData
 @export var corpse_time: float = 20.0 ## Seconds before a dead body is removed.
+@export var near_miss_distance: float = 3.0 ## A bullet this close to your head makes a crack.
 
 # --- Synced from the host by StateSync ---
 var state: State = State.IDLE:
@@ -49,10 +50,9 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
-@onready var visual: Node3D = $Visual
-@onready var rifle: Node3D = $Visual/Rifle
+@onready var visual: SoldierVisual = $Visual
 @onready var eyes: Marker3D = $Eyes
-@onready var muzzle: Marker3D = $Visual/Rifle/Muzzle
+@onready var muzzle: Marker3D = visual.muzzle
 @onready var collision: CollisionShape3D = $CollisionShape3D
 @onready var shot_audio: AudioStreamPlayer3D = $ShotAudio
 @onready var debug_label: Label3D = $DebugLabel
@@ -254,14 +254,26 @@ func _shoot() -> void:
 	var hit_position := Vector3.ZERO
 	var hit_normal := Vector3.UP
 	var surface: String = ""
+	var hit_player: Player = null
 	if not hit.is_empty():
 		hit_position = hit.position
 		hit_normal = hit.normal
 		if hit.collider is Player:
-			(hit.collider as Player).take_damage(data.damage, -1, hit.position, hit.normal)
+			hit_player = hit.collider
+			hit_player.take_damage(data.damage, -1, hit.position, hit.normal)
+			hit_player.notify_hurt.rpc_id(hit_player.get_peer_id(), origin) # where it came from
 		else:
 			surface = ImpactEffects.surface_of(hit.collider, hit.normal)
 	show_shot_effects.rpc(hit_position, hit_normal, surface)
+	# Players the bullet flew close past hear its crack.
+	var bullet_end: Vector3 = hit_position if not hit.is_empty() else origin + direction * data.shot_range_m
+	for node in get_tree().get_nodes_in_group("players"):
+		var p := node as Player
+		if p == hit_player or p.is_dead:
+			continue
+		var closest: Vector3 = Geometry3D.get_closest_point_to_segment(p.head.global_position, origin, bullet_end)
+		if closest.distance_to(p.head.global_position) < near_miss_distance and closest.distance_to(origin) > 10.0:
+			bullet_passed.rpc_id(p.get_peer_id(), closest)
 	# Comrades nearby hear the shot and look towards what we are shooting at.
 	get_tree().call_group("enemies", "hear_noise", origin, _last_known_position, data.shot_noise_radius_m)
 
@@ -270,11 +282,27 @@ func _shoot() -> void:
 @rpc("authority", "call_local", "unreliable")
 func show_shot_effects(hit_position: Vector3, hit_normal: Vector3, surface: String) -> void:
 	shot_audio.play()
+	visual.play_fire()
 	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
 	if effects:
 		effects.spawn_flash(muzzle.global_position)
+		effects.spawn_smoke(muzzle.global_position, -muzzle.global_basis.z)
 		if surface != "":
 			effects.spawn_impact(hit_position, hit_normal, surface)
+
+
+## Wounded (but not killed): flinch on every computer.
+@rpc("authority", "call_local", "unreliable")
+func show_hit() -> void:
+	visual.play_hit()
+
+
+## Sent only to the player the bullet flew past: play its crack there.
+@rpc("authority", "call_local", "unreliable")
+func bullet_passed(where: Vector3) -> void:
+	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
+	if effects:
+		effects.play_crack(where)
 
 
 # ------------------------------------------------------------------ damage & death
@@ -286,6 +314,7 @@ func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_n
 	if health <= 0.0:
 		_die()
 		return true
+	show_hit.rpc()
 	# Wounded: react towards whoever shot us.
 	var attacker: Player = null
 	for node in get_tree().get_nodes_in_group("players"):
@@ -373,18 +402,19 @@ func _process(_delta: float) -> void:
 
 func _update_visuals() -> void:
 	var capsule := collision.shape as CapsuleShape3D
-	var tween := create_tween().set_parallel(true)
 	if state == State.DEAD:
 		collision.set_deferred("disabled", true) # bullets and players pass through bodies
-		tween.tween_property(visual, "rotation:x", deg_to_rad(88.0), 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		# Fall: backwards most of the time, sometimes forwards, a little twisted. Chosen from the
+		# soldier's name so every computer shows the same fall.
+		var h: int = absi(hash(str(name)))
+		var fall_x: float = deg_to_rad(86.0) if h % 10 < 7 else deg_to_rad(-84.0)
+		var tween := create_tween().set_parallel(true)
+		tween.tween_property(visual, "rotation:x", fall_x, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tween.tween_property(visual, "rotation:y", ((h / 10) % 9 - 4) * 0.1, 0.55)
 		return
 	# Kneeling makes the soldier smaller (harder to hit) and lowers his eyes.
 	var height: float = 1.2 if is_kneeling else 1.8
 	capsule.height = height
 	collision.position.y = height / 2.0
 	eyes.position.y = 1.05 if is_kneeling else 1.6
-	tween.tween_property(visual, "scale:y", height / 1.8, 0.25)
-	# Rifle: shouldered and pointing forward when attacking, carried diagonally otherwise.
-	var aiming: bool = state == State.ATTACK
-	tween.tween_property(rifle, "rotation", Vector3(0.0, 0.0, 0.0) if aiming else Vector3(deg_to_rad(55.0), 0.0, deg_to_rad(25.0)), 0.3)
-	tween.tween_property(rifle, "position", Vector3(0.12, 1.42, -0.35) if aiming else Vector3(0.18, 1.15, -0.22), 0.3)
+	# The pose itself (kneeling, aiming, walking) is done by the SoldierVisual.
