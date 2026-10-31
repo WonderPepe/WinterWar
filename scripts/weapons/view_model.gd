@@ -44,6 +44,9 @@ var bolt_hand: float = 0.0
 var reload_hand: float = 0.0
 ## 0..1 through a magazine change (only guns with `magazine_part_name`); < 0 = not changing.
 var magazine_progress: float = -1.0
+## When the bolt is worked while aiming, the hand stays a little below the bolt knob, so the
+## mitten (only ~8 cm from the eye there) doesn't fill the view.
+var bolt_hand_low: bool = false
 
 ## Where the rear sight is when the model is at rest (used to line up the sights).
 var aim_point_rest: Vector3
@@ -95,7 +98,10 @@ func get_hand_grips() -> Array[Transform3D]:
 	var r: Transform3D = _grip_r.global_transform
 	var l: Transform3D = _grip_l.global_transform
 	if _bolt_grip and bolt_hand > 0.0:
-		r = r.interpolate_with(_bolt_grip.global_transform, smoothstep(0.0, 1.0, bolt_hand))
+		var bolt_xf: Transform3D = _bolt_grip.global_transform
+		if bolt_hand_low:
+			bolt_xf.origin += model.global_basis * Vector3(0.015, -0.085, 0.05)
+		r = r.interpolate_with(bolt_xf, smoothstep(0.0, 1.0, bolt_hand))
 	if magazine_progress >= 0.0 and _magazine:
 		l = model.global_transform * _left_hand_on_magazine(magazine_progress)
 	elif reload_hand > 0.0:
@@ -273,10 +279,13 @@ func play_fire(kick_back_m: float, kick_rotation_deg: float) -> void:
 	flash.rotation.z = randf() * TAU # vary the flash shape a little
 
 
-## Bolt-action: tilt the rifle and slide the bolt back and forward.
-func play_bolt_cycle(duration: float) -> void:
+## Bolt-action: tilt the rifle and slide the bolt back and forward. When aiming, the rifle
+## stays on the shoulder (only a small tilt), so the sights come straight back after the cycle –
+## with the full tilt it looked as if aiming down the sights broke off after every shot.
+func play_bolt_cycle(duration: float, aiming: bool = false) -> void:
 	_restart_tween()
-	var tilt := Vector3(0.0, 0.0, deg_to_rad(-20.0))
+	bolt_hand_low = aiming
+	var tilt := Vector3(0.0, 0.0, deg_to_rad(-6.0 if aiming else -20.0))
 	_tween.tween_property(self, "anim_rotation", tilt, duration * 0.2).set_delay(duration * 0.1)
 	if bolt:
 		_tween.tween_property(bolt, "position", _bolt_rest + Vector3(0, 0, bolt_travel), duration * 0.2)

@@ -134,7 +134,10 @@ func _process(delta: float) -> void:
 		return
 	if multiplayer.is_server():
 		_host_process(delta, w)
-	is_aiming = input.aim_held and not is_reloading_now() and not player.is_sprinting and not player.is_bandaging
+	# A hand weapon leaves the shoulder to reload; on the Maxim the gunner stays behind the sights
+	# while the right hand feeds the new belt.
+	var reloading_hand_weapon: bool = is_reloading_now() and get_mounted_gun() == null
+	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
 	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null
 	if player.is_local_player():
@@ -194,7 +197,7 @@ func _fire(w: WeaponData) -> void:
 	_play(shot_audio, w.fire_sound)
 	_spawn_smoke((vm.get_node("Model/Muzzle") as Node3D).global_position, -camera.global_basis.z, true)
 	if w.fire_mode == WeaponData.FireMode.BOLT_ACTION and rounds_before > 1:
-		vm.play_bolt_cycle(w.bolt_cycle_time)
+		vm.play_bolt_cycle(w.bolt_cycle_time, is_aiming)
 		get_tree().create_timer(w.bolt_cycle_time * 0.25).timeout.connect(_play.bind(mech_audio, w.get_cycle_sound()))
 	_add_recoil(w)
 
@@ -202,8 +205,12 @@ func _fire(w: WeaponData) -> void:
 ## Recoil moves the real aim; part of it returns by itself.
 func _add_recoil(w: WeaponData) -> void:
 	var kick: float = deg_to_rad(w.recoil_pitch_deg)
+	var pitch_before: float = input.look_pitch
 	input.add_look(kick, deg_to_rad(_rng.randf_range(-w.recoil_yaw_deg, w.recoil_yaw_deg)))
-	_recoil_to_recover += kick * w.recoil_recovery
+	# Only bring back what the kick really moved: at the Maxim's elevation limit (or looking
+	# straight up) the kick is cut off, and recovering the full amount would drag the aim down.
+	var applied: float = maxf(input.look_pitch - pitch_before, 0.0)
+	_recoil_to_recover += applied * w.recoil_recovery
 	_bloom_deg = minf(_bloom_deg + w.bloom_per_shot_deg, w.max_bloom_deg)
 
 
@@ -264,7 +271,7 @@ func _update_view(delta: float, w: WeaponData) -> void:
 ## brings the camera down behind the rear sight (Pivot/SightEye) and zooms in.
 func _update_mounted_view(w: WeaponData, gun: MountedGun) -> void:
 	var aim_smooth: float = smoothstep(0.0, 1.0, _aim_t)
-	camera.position = (camera.get_parent() as Node3D).to_local(gun.sight_eye.global_position) * aim_smooth
+	camera.position = (camera.get_parent() as Node3D).to_local(gun.get_sight_eye_position()) * aim_smooth
 	camera.fov = lerpf(base_fov, w.ads_fov, aim_smooth)
 	input.look_sensitivity_scale = lerpf(0.8, w.ads_sensitivity_multiplier, aim_smooth)
 

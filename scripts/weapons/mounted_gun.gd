@@ -27,6 +27,7 @@ extends StaticBody3D
 @export var turning_part_names: PackedStringArray = PackedStringArray()
 @export var hidden_part_names: PackedStringArray = PackedStringArray()
 @export var flash_duration: float = 0.05
+@export_range(0.0, 1.0) var sight_kick_share: float = 0.25 ## How much of the recoil push the aiming eye follows.
 
 # --- Synced from the host by GunSync ---
 var user_id: int = 0 ## Peer id of the player on the gun, 0 = free.
@@ -194,6 +195,14 @@ static func make_steam_emitter() -> CPUParticles3D:
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	ImpactEffects.web_fallback(p) # fixed material colour (particle colours turn black on some GPUs)
 	return p
+
+
+## Where the eye goes when aiming through the sights (global). The gun's recoil push moves the
+## sights only a little here (a quarter): with the full push, the view jolted back and forth at
+## every round and looked as if the aim dropped out.
+func get_sight_eye_position() -> Vector3:
+	var pivot_pos: Vector3 = _pivot_rest + pivot.basis.z * _kick * sight_kick_share
+	return global_transform * (pivot_pos + pivot.basis * sight_eye.position)
 
 
 ## Where the gunner's hands go this frame: [right, left] as global transforms.

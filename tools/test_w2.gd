@@ -207,8 +207,31 @@ func run() -> void:
 	await seconds(1.5)
 	grips = wc.get_hand_grips()
 	check(grips[0].origin.distance_to(gun.belt_grip.global_position) < 0.02, "right hand feeds the new belt")
+	# v0.1.3: the gunner stays behind the sights during a new belt.
+	p.input.aim_held = true
+	await seconds(0.5)
+	check(wc.is_aiming and wc._aim_t > 0.99, "aiming through the sights continues during a new belt")
 	gun._reload_timer = 0.0
 	await seconds(0.3)
+	# v0.1.3: no view jolt at every round, and no downward drift at the elevation limit.
+	p.input.add_look(deg_to_rad(20.0), 0.0)
+	await seconds(0.3)
+	gun.heat = 0.0
+	gun.ammo = 250
+	var pitch0: float = p.input.look_pitch
+	var last_cam: Vector3 = p.camera.global_position
+	var jolt := 0.0
+	p.input.fire_held = true
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 1500:
+		await frames(1)
+		jolt = maxf(jolt, p.camera.global_position.distance_to(last_cam))
+		last_cam = p.camera.global_position
+	p.input.fire_held = false
+	await seconds(0.8)
+	check(wc.is_aiming and jolt < 0.01, "steady sight picture while firing (max %.3f m/frame)" % jolt)
+	check(absf(p.input.look_pitch - pitch0) < deg_to_rad(0.2), "recoil doesn't drag the aim down at the elevation limit")
+	p.input.aim_held = false
 
 	# Off the gun: camera back, heat bar hidden.
 	p.input.request_interact()
