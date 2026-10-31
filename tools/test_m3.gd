@@ -131,6 +131,12 @@ func run() -> void:
 		e.take_damage(500.0, 1, e.global_position, Vector3.UP)
 	await seconds(0.5)
 	check(waves.alive_count == 0, "wave 1 cleared")
+	# A new day: the day screen holds the countdown until it closes (Space or reading time).
+	var day := get_tree().get_first_node_in_group("game").get_node_or_null("HUD/DayScreen") as DayScreen
+	check(day != null and day.is_open and waves.hold, "day screen after the wave holds the next one")
+	if day:
+		day.close_now()
+	check(not waves.hold, "closing it lets the countdown run")
 	await seconds(2.5)
 	check(waves.wave_number == 2, "wave 2 started")
 	Engine.time_scale = 3.0

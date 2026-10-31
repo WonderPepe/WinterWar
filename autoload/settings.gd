@@ -31,7 +31,6 @@ var mouse_sensitivity: float = 1.0 ## Multiplier on the normal mouse speed.
 var volume: float = 0.8 ## 0..1
 var ambience_volume: float = 0.7 ## 0..1: wind and the distant battle.
 var show_breath: bool = true ## Breath vapour (yours and the soldiers').
-var show_front_reports: bool = false ## Telegram with the day's front report after each wave (off by default).
 var fullscreen: bool = false
 var difficulty: int = 1 ## 0 = Easy, 1 = Normal, 2 = Hard (resources/difficulty/).
 
@@ -87,11 +86,6 @@ func set_show_breath(value: bool) -> void:
 	_save_and_apply()
 
 
-func set_show_front_reports(value: bool) -> void:
-	show_front_reports = value
-	_save_and_apply()
-
-
 func set_difficulty(value: int) -> void:
 	difficulty = value
 	_save_and_apply()
@@ -111,7 +105,6 @@ func _save_and_apply() -> void:
 	cfg.set_value("audio", "ambience_volume", ambience_volume)
 	cfg.set_value("graphics", "show_breath", show_breath)
 	cfg.set_value("game", "difficulty", difficulty)
-	cfg.set_value("game", "show_front_reports", show_front_reports)
 	cfg.save(SAVE_PATH)
 	apply()
 
@@ -127,4 +120,3 @@ func _load() -> void:
 	ambience_volume = cfg.get_value("audio", "ambience_volume", ambience_volume)
 	show_breath = cfg.get_value("graphics", "show_breath", show_breath)
 	difficulty = cfg.get_value("game", "difficulty", difficulty)
-	show_front_reports = cfg.get_value("game", "show_front_reports", show_front_reports)

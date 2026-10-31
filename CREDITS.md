@@ -22,6 +22,12 @@ the game; the models are otherwise unchanged.
 - "Artillery Barrage" by Mozfoo, made from an explosion by Steveygos93
   https://freesound.org/s/486086/ – made mono and a little quieter for the game.
 
+## Photographs (Creative Commons Attribution 4.0)
+- Wartime photographs from the Finnish Wartime Photograph Archive: **SA-kuva**
+  (https://sa-kuva.fi/), used under CC BY 4.0. Shown on the day screen between waves; made
+  smaller and greyscale for the game. Photos: 144607, 144608, 144612, a_8, a_123, a_125,
+  a_126, a_128, a_129, a_511.
+
 ## Font
 - "FreeMono Bold" from GNU FreeFont (https://savannah.gnu.org/projects/freefont/), used for the
   front-report telegrams. GNU GPL v3 with the font exception – see

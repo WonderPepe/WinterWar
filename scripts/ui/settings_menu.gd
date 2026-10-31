@@ -13,7 +13,6 @@ signal closed
 @onready var ambience: HSlider = $Panel/VBox/Grid/Ambience
 @onready var ambience_value: Label = $Panel/VBox/Grid/AmbienceValue
 @onready var breath: CheckButton = $Panel/VBox/Grid/Breath
-@onready var front_reports: CheckButton = $Panel/VBox/Grid/FrontReports
 @onready var fullscreen: CheckButton = $Panel/VBox/Grid/Fullscreen
 @onready var back: Button = $Panel/VBox/BackButton
 
@@ -33,7 +32,6 @@ func _ready() -> void:
 		Settings.set_ambience_volume(v / 100.0)
 		_refresh_labels())
 	breath.toggled.connect(Settings.set_show_breath)
-	front_reports.toggled.connect(Settings.set_show_front_reports)
 	fullscreen.toggled.connect(Settings.set_fullscreen)
 	back.pressed.connect(close)
 	visibility_changed.connect(_on_visibility_changed)
@@ -65,7 +63,6 @@ func _on_visibility_changed() -> void:
 	volume.set_value_no_signal(Settings.volume * 100.0)
 	ambience.set_value_no_signal(Settings.ambience_volume * 100.0)
 	breath.set_pressed_no_signal(Settings.show_breath)
-	front_reports.set_pressed_no_signal(Settings.show_front_reports)
 	fullscreen.set_pressed_no_signal(Settings.fullscreen)
 	_refresh_labels()
 

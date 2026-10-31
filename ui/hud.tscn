@@ -1,53 +1,27 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_spcu4"]
-[ext_resource type="Resource" path="res://resources/front_reports.tres" id="2_ff8ar"]
-[ext_resource type="Script" path="res://scripts/ui/crosshair.gd" id="3_m0eg6"]
-[ext_resource type="Script" path="res://scripts/ui/damage_indicator.gd" id="4_b00kl"]
-[ext_resource type="Script" path="res://scripts/ui/hit_marker.gd" id="5_so1yu"]
-[ext_resource type="FontFile" path="res://assets/fonts/FreeMonoBold.ttf" id="6_65xic"]
-[ext_resource type="Theme" path="res://ui/winter_theme.tres" id="8_u6vop"]
-[ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="9_xtm2r"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_ff8ar"]
+[ext_resource type="Resource" path="res://resources/front_reports.tres" id="2_m0eg6"]
+[ext_resource type="Script" path="res://scripts/ui/crosshair.gd" id="3_b00kl"]
+[ext_resource type="Script" path="res://scripts/ui/damage_indicator.gd" id="4_so1yu"]
+[ext_resource type="Script" path="res://scripts/ui/hit_marker.gd" id="5_65xic"]
+[ext_resource type="Script" path="res://scripts/ui/day_screen.gd" id="6_mp5xd"]
+[ext_resource type="FontFile" path="res://assets/fonts/FreeMonoBold.ttf" id="7_u6vop"]
+[ext_resource type="Shader" path="res://resources/shaders/old_photo.gdshader" id="8_xtm2r"]
+[ext_resource type="Theme" path="res://ui/winter_theme.tres" id="9_kc1f2"]
+[ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="10_6mpex"]
 
-[sub_resource type="Gradient" id="Gradient_kc1f2"]
+[sub_resource type="Gradient" id="Gradient_mlhsj"]
 offsets = PackedFloat32Array(0, 1, 0.55)
 colors = PackedColorArray(0.6, 0, 0, 0, 0.6, 0, 0, 0.8, 0.6, 0, 0, 0)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_6mpex"]
-gradient = SubResource("Gradient_kc1f2")
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_x3e77"]
+gradient = SubResource("Gradient_mlhsj")
 width = 128
 height = 128
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mlhsj"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0, 0, 0, 0.45)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.25)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x3e77"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.7, 0.13, 0.1, 0.95)
-border_color = Color(0, 0, 0, 0)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exqf6"]
 content_margin_left = 0.0
@@ -70,7 +44,7 @@ content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.78, 0.87, 0.96, 0.9)
+bg_color = Color(0.7, 0.13, 0.1, 0.95)
 border_color = Color(0, 0, 0, 0)
 corner_radius_top_left = 2
 corner_radius_top_right = 2
@@ -98,7 +72,7 @@ content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.95, 0.95, 0.95, 0.9)
+bg_color = Color(0.78, 0.87, 0.96, 0.9)
 border_color = Color(0, 0, 0, 0)
 corner_radius_top_left = 2
 corner_radius_top_right = 2
@@ -106,11 +80,61 @@ corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5jwjf"]
-content_margin_left = 30.0
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0.45)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.25)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nso1x"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.95, 0.95, 0.95, 0.9)
+border_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hyw70"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.88, 0.86, 0.8, 1)
+border_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 1
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_radius_bottom_left = 1
+shadow_size = 10
+shadow_offset = Vector2(4, 5)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxdcy"]
+shader = ExtResource("8_xtm2r")
+shader_parameter/grain = null
+shader_parameter/vignette = null
+shader_parameter/flicker = null
+shader_parameter/tone = null
+shader_parameter/contrast = null
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6y3bq"]
+content_margin_left = 28.0
 content_margin_top = 16.0
-content_margin_right = 30.0
+content_margin_right = 28.0
 content_margin_bottom = 20.0
-bg_color = Color(0.93, 0.88, 0.74, 0.97)
+bg_color = Color(0.93, 0.88, 0.74, 0.98)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -120,47 +144,47 @@ corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.35)
+shadow_color = Color(0, 0, 0, 0.5)
 shadow_size = 8
 shadow_offset = Vector2(3, 4)
 
-[node name="HUD" type="CanvasLayer" unique_id=98779071]
-script = ExtResource("1_spcu4")
-front_reports = ExtResource("2_ff8ar")
+[node name="HUD" type="CanvasLayer" unique_id=2103568338]
+script = ExtResource("1_ff8ar")
+front_reports = ExtResource("2_m0eg6")
 
-[node name="Crosshair" type="Control" parent="." unique_id=1291764234]
+[node name="Crosshair" type="Control" parent="." unique_id=1731805570]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource("3_m0eg6")
+script = ExtResource("3_b00kl")
 
-[node name="DamageIndicator" type="Control" parent="." unique_id=405020034]
+[node name="DamageIndicator" type="Control" parent="." unique_id=1862839494]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource("4_b00kl")
+script = ExtResource("4_so1yu")
 
-[node name="HitMarker" type="Control" parent="." unique_id=917645476]
+[node name="HitMarker" type="Control" parent="." unique_id=195141681]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource("5_so1yu")
+script = ExtResource("5_65xic")
 
-[node name="DamageFlash" type="TextureRect" parent="." unique_id=1115029593]
+[node name="DamageFlash" type="TextureRect" parent="." unique_id=1733100973]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-texture = SubResource("GradientTexture2D_6mpex")
+texture = SubResource("GradientTexture2D_x3e77")
 expand_mode = 1
 
-[node name="Vitals" type="VBoxContainer" parent="." unique_id=1778012847]
+[node name="Vitals" type="VBoxContainer" parent="." unique_id=1463741768]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -171,7 +195,7 @@ offset_bottom = -24.0
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Bandages" type="Label" parent="Vitals" unique_id=1688761356]
+[node name="Bandages" type="Label" parent="Vitals" unique_id=1192309132]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.95, 0.88, 0.86, 1)
@@ -179,7 +203,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Bandages: 2   [B]"
 
-[node name="HealthTitle" type="Label" parent="Vitals" unique_id=84967996]
+[node name="HealthTitle" type="Label" parent="Vitals" unique_id=161029290]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -187,16 +211,16 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "HEALTH"
 
-[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=1132262851]
+[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=4932179]
 custom_minimum_size = Vector2(280, 24)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_mlhsj")
-theme_override_styles/fill = SubResource("StyleBoxFlat_x3e77")
+theme_override_styles/background = SubResource("StyleBoxFlat_exqf6")
+theme_override_styles/fill = SubResource("StyleBoxFlat_3ju8l")
 value = 100.0
 show_percentage = false
 
-[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=1353517865]
+[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=1058810682]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -208,16 +232,16 @@ text = "100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=48193748]
+[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=494002683]
 custom_minimum_size = Vector2(280, 7)
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_exqf6")
-theme_override_styles/fill = SubResource("StyleBoxFlat_3ju8l")
+theme_override_styles/background = SubResource("StyleBoxFlat_b1px6")
+theme_override_styles/fill = SubResource("StyleBoxFlat_c3smh")
 value = 100.0
 show_percentage = false
 
-[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=245586456]
+[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=276645021]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -231,7 +255,7 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 2
 
-[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=242462279]
+[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=399169361]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.8, 0.35, 1)
@@ -240,7 +264,7 @@ theme_override_constants/outline_size = 3
 text = "RELOADING"
 horizontal_alignment = 2
 
-[node name="Overheated" type="Label" parent="WeaponPanel" unique_id=1602767916]
+[node name="Overheated" type="Label" parent="WeaponPanel" unique_id=1691750513]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(1, 0.45, 0.3, 1)
@@ -249,7 +273,7 @@ theme_override_constants/outline_size = 3
 text = "OVERHEATED"
 horizontal_alignment = 2
 
-[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=758523602]
+[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=670317896]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -258,7 +282,7 @@ theme_override_constants/outline_size = 3
 text = "Weapon"
 horizontal_alignment = 2
 
-[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=292761567]
+[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=875702163]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -267,12 +291,12 @@ theme_override_constants/outline_size = 7
 text = "0 / 0"
 horizontal_alignment = 2
 
-[node name="HeatRow" type="HBoxContainer" parent="WeaponPanel" unique_id=1701332731]
+[node name="HeatRow" type="HBoxContainer" parent="WeaponPanel" unique_id=1385389515]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="HeatTitle" type="Label" parent="WeaponPanel/HeatRow" unique_id=265967204]
+[node name="HeatTitle" type="Label" parent="WeaponPanel/HeatRow" unique_id=97416883]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -281,18 +305,18 @@ theme_override_constants/outline_size = 3
 text = "HEAT"
 horizontal_alignment = 2
 
-[node name="HeatBar" type="ProgressBar" parent="WeaponPanel/HeatRow" unique_id=739044381]
+[node name="HeatBar" type="ProgressBar" parent="WeaponPanel/HeatRow" unique_id=232936044]
 custom_minimum_size = Vector2(180, 8)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_b1px6")
-theme_override_styles/fill = SubResource("StyleBoxFlat_c3smh")
+theme_override_styles/background = SubResource("StyleBoxFlat_5jwjf")
+theme_override_styles/fill = SubResource("StyleBoxFlat_nso1x")
 max_value = 1.0
 step = 0.0
 show_percentage = false
 
-[node name="WavePanel" type="VBoxContainer" parent="." unique_id=1668517153]
+[node name="WavePanel" type="VBoxContainer" parent="." unique_id=1588068888]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -303,7 +327,7 @@ offset_bottom = 150.0
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Wave" type="Label" parent="WavePanel" unique_id=1031520484]
+[node name="Wave" type="Label" parent="WavePanel" unique_id=1824761782]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -312,7 +336,7 @@ theme_override_constants/outline_size = 4
 text = "Get ready"
 horizontal_alignment = 1
 
-[node name="Enemies" type="Label" parent="WavePanel" unique_id=789976416]
+[node name="Enemies" type="Label" parent="WavePanel" unique_id=725816235]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -321,7 +345,7 @@ theme_override_constants/outline_size = 3
 text = "Enemies: 0"
 horizontal_alignment = 1
 
-[node name="NextWave" type="Label" parent="WavePanel" unique_id=1639745354]
+[node name="NextWave" type="Label" parent="WavePanel" unique_id=418087096]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.85, 0.5, 1)
@@ -329,7 +353,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="Score" type="Label" parent="WavePanel" unique_id=340574642]
+[node name="Score" type="Label" parent="WavePanel" unique_id=2008940397]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -338,7 +362,7 @@ theme_override_constants/outline_size = 3
 text = "Kills 0   Deaths 0"
 horizontal_alignment = 1
 
-[node name="TrenchAlert" type="Label" parent="WavePanel" unique_id=411670935]
+[node name="TrenchAlert" type="Label" parent="WavePanel" unique_id=861501160]
 visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
@@ -347,7 +371,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 horizontal_alignment = 1
 
-[node name="InteractPrompt" type="Label" parent="." unique_id=2094602402]
+[node name="InteractPrompt" type="Label" parent="." unique_id=1225605153]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -363,7 +387,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="WaveBanner" type="Label" parent="." unique_id=493886425]
+[node name="WaveBanner" type="Label" parent="." unique_id=647634959]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -380,7 +404,7 @@ theme_override_constants/outline_size = 12
 text = "WAVE 1"
 horizontal_alignment = 1
 
-[node name="WaveBannerSub" type="Label" parent="." unique_id=1392746004]
+[node name="WaveBannerSub" type="Label" parent="." unique_id=513687898]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -396,7 +420,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 horizontal_alignment = 1
 
-[node name="ArtilleryWarning" type="Label" parent="." unique_id=110310707]
+[node name="ArtilleryWarning" type="Label" parent="." unique_id=2079149497]
 visible = false
 anchors_preset = 5
 anchor_left = 0.5
@@ -411,85 +435,21 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 6
 horizontal_alignment = 1
 
-[node name="FrontReport" type="PanelContainer" parent="." unique_id=408006606]
-visible = false
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -350.0
-offset_top = 128.0
-offset_right = 350.0
-offset_bottom = 128.0
-grow_horizontal = 2
-rotation = -0.013962634
-pivot_offset = Vector2(350, 110)
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_5jwjf")
-
-[node name="VBox" type="VBoxContainer" parent="FrontReport" unique_id=204161475]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 6
-
-[node name="Header" type="Label" parent="FrontReport/VBox" unique_id=1584604933]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("6_65xic")
-theme_override_font_sizes/font_size = 26
-theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 0
-text = "S Ä H K Ö S A N O M A"
-horizontal_alignment = 1
-visible_characters_behavior = 1
-
-[node name="Rule" type="ColorRect" parent="FrontReport/VBox" unique_id=1626621492]
-custom_minimum_size = Vector2(0, 2)
-layout_mode = 2
-mouse_filter = 2
-color = Color(0.16, 0.12, 0.09, 0.7)
-
-[node name="Date" type="Label" parent="FrontReport/VBox" unique_id=968322443]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("6_65xic")
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 0
-text = "21.12.1939"
-horizontal_alignment = 2
-visible_characters_behavior = 1
-
-[node name="Text" type="Label" parent="FrontReport/VBox" unique_id=359386079]
-custom_minimum_size = Vector2(640, 0)
-layout_mode = 2
-theme_override_constants/line_spacing = 2
-theme_override_fonts/font = ExtResource("6_65xic")
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 0
-autowrap_mode = 3
-visible_characters_behavior = 1
-
-[node name="TypeSound" type="AudioStreamPlayer" parent="FrontReport" unique_id=1839929550]
-volume_db = -6.0
-bus = &"UI"
-
-[node name="DeathScreen" type="Control" parent="." unique_id=809866248]
+[node name="DeathScreen" type="Control" parent="." unique_id=290821529]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=1933474429]
+[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=2078567365]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0.08, 0, 0, 0.55)
 
-[node name="YouDied" type="Label" parent="DeathScreen" unique_id=741243320]
+[node name="YouDied" type="Label" parent="DeathScreen" unique_id=1068705353]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -506,7 +466,7 @@ theme_override_constants/outline_size = 12
 text = "YOU DIED"
 horizontal_alignment = 1
 
-[node name="Respawn" type="Label" parent="DeathScreen" unique_id=312761543]
+[node name="Respawn" type="Label" parent="DeathScreen" unique_id=340305346]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -523,42 +483,200 @@ theme_override_constants/outline_size = 4
 text = "Respawning in 5..."
 horizontal_alignment = 1
 
-[node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=1179399304]
-volume_db = -4.0
-bus = &"UI"
-
-[node name="EndScreen" type="Control" parent="." unique_id=1094985978]
+[node name="DayScreen" type="Control" parent="." unique_id=1668823200]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = ExtResource("8_u6vop")
-script = ExtResource("9_xtm2r")
+mouse_filter = 2
+script = ExtResource("6_mp5xd")
 
-[node name="Dim" type="ColorRect" parent="EndScreen" unique_id=289208466]
+[node name="Black" type="ColorRect" parent="DayScreen" unique_id=1460454084]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.025, 0.025, 0.03, 1)
+
+[node name="Content" type="Control" parent="DayScreen" unique_id=1390274845]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+mouse_filter = 2
+
+[node name="Title" type="VBoxContainer" parent="DayScreen/Content" unique_id=1433515070]
+layout_mode = 0
+offset_left = -500.0
+offset_top = -330.0
+offset_right = 500.0
+offset_bottom = -240.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="Day" type="Label" parent="DayScreen/Content/Title" unique_id=1410396389]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+text = "P Ä I V Ä   1"
+horizontal_alignment = 1
+
+[node name="Date" type="Label" parent="DayScreen/Content/Title" unique_id=460355858]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_u6vop")
+theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 8
+text = "21. joulukuuta 1939"
+horizontal_alignment = 1
+
+[node name="PhotoFrame" type="PanelContainer" parent="DayScreen/Content" unique_id=289185314]
+layout_mode = 0
+rotation = 0.012217305
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hyw70")
+
+[node name="Clip" type="Control" parent="DayScreen/Content/PhotoFrame" unique_id=842604587]
+custom_minimum_size = Vector2(600, 420)
+clip_contents = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Photo" type="TextureRect" parent="DayScreen/Content/PhotoFrame/Clip" unique_id=1172642290]
+material = SubResource("ShaderMaterial_cxdcy")
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 420.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Credit" type="Label" parent="DayScreen/Content" unique_id=329003518]
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.62, 0.6, 0.56, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+text = "Kuva: SA-kuva"
+
+[node name="Telegram" type="PanelContainer" parent="DayScreen/Content" unique_id=890735888]
+layout_mode = 0
+offset_left = 50.0
+offset_top = -140.0
+offset_right = 580.0
+offset_bottom = -140.0
+rotation = -0.013962634
+pivot_offset = Vector2(265, 150)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_6y3bq")
+
+[node name="VBox" type="VBoxContainer" parent="DayScreen/Content/Telegram" unique_id=1793835778]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="Label" parent="DayScreen/Content/Telegram/VBox" unique_id=819695139]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_u6vop")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 0
+text = "S Ä H K Ö S A N O M A"
+horizontal_alignment = 1
+visible_characters_behavior = 1
+
+[node name="Rule" type="ColorRect" parent="DayScreen/Content/Telegram/VBox" unique_id=815829834]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.16, 0.12, 0.09, 0.7)
+
+[node name="Date" type="Label" parent="DayScreen/Content/Telegram/VBox" unique_id=12409698]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_u6vop")
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 0
+text = "21.12.1939"
+horizontal_alignment = 2
+visible_characters_behavior = 1
+
+[node name="Text" type="Label" parent="DayScreen/Content/Telegram/VBox" unique_id=781818020]
+custom_minimum_size = Vector2(474, 0)
+layout_mode = 2
+theme_override_constants/line_spacing = 2
+theme_override_fonts/font = ExtResource("7_u6vop")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.16, 0.12, 0.09, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 0
+autowrap_mode = 3
+visible_characters_behavior = 1
+
+[node name="TypeSound" type="AudioStreamPlayer" parent="DayScreen/Content/Telegram" unique_id=367686009]
+volume_db = -6.0
+bus = &"UI"
+
+[node name="Hint" type="Label" parent="DayScreen/Content" unique_id=1042139181]
+layout_mode = 0
+offset_left = -300.0
+offset_top = 300.0
+offset_right = 300.0
+offset_bottom = 324.0
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.75, 0.73, 0.68, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+text = "[Välilyönti] Jatka"
+horizontal_alignment = 1
+
+[node name="Static" type="AudioStreamPlayer" parent="DayScreen" unique_id=686483917]
+bus = &"UI"
+
+[node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=530663079]
+volume_db = -4.0
+bus = &"UI"
+
+[node name="EndScreen" type="Control" parent="." unique_id=194464235]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("9_kc1f2")
+script = ExtResource("10_6mpex")
+
+[node name="Dim" type="ColorRect" parent="EndScreen" unique_id=290637731]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0.03, 0.04, 0.07, 0.62)
 
-[node name="Center" type="CenterContainer" parent="EndScreen" unique_id=13449897]
+[node name="Center" type="CenterContainer" parent="EndScreen" unique_id=1712676809]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="EndScreen/Center" unique_id=1843905617]
+[node name="Panel" type="PanelContainer" parent="EndScreen/Center" unique_id=1027237537]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="EndScreen/Center/Panel" unique_id=1383102443]
+[node name="VBox" type="VBoxContainer" parent="EndScreen/Center/Panel" unique_id=1845013082]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=831666258]
+[node name="Title" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=526266184]
 layout_mode = 2
 theme_override_font_sizes/font_size = 46
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -567,7 +685,7 @@ theme_override_constants/outline_size = 9
 text = "THE LINE HELD"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=42658614]
+[node name="Subtitle" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=993285570]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -576,10 +694,10 @@ theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Report" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=84143441]
+[node name="Report" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=821076136]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("6_65xic")
+theme_override_fonts/font = ExtResource("7_u6vop")
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(1, 0.92, 0.75, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
@@ -587,7 +705,7 @@ theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Stats" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=328407624]
+[node name="Stats" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=1185002646]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.96, 0.98, 1)
@@ -595,18 +713,18 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="Buttons" type="HBoxContainer" parent="EndScreen/Center/Panel/VBox" unique_id=689989072]
+[node name="Buttons" type="HBoxContainer" parent="EndScreen/Center/Panel/VBox" unique_id=2063450277]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="PlayAgainButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=915694192]
+[node name="PlayAgainButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=1143724025]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 text = "Play again"
 
-[node name="MainMenuButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=479574273]
+[node name="MainMenuButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=980492554]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 text = "Main menu"

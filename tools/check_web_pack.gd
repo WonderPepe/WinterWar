@@ -31,6 +31,8 @@ func run() -> void:
 		[ResourceLoader.exists("res://assets/audio/officer_whistle_placeholder.wav"), "G2: whistle sound in the export"],
 		[(load("res://resources/front_reports.tres") as FrontReports).texts.size() == 10, "front reports in the export"],
 		[load("res://assets/fonts/FreeMonoBold.ttf") is Font, "telegram font in the export"],
+		[(load("res://resources/front_reports.tres") as FrontReports).get_photo(10) != null, "day-screen photos in the export"],
+		[load("res://resources/shaders/old_photo.gdshader") is Shader, "old-photo shader in the export"],
 		[(load("res://assets/audio/background/plane_flyover_viima.ogg") as AudioStream).get_length() > 35.0, "plane fly-over sound in the export"],
 		[(load("res://assets/audio/artillery/barrage.ogg") as AudioStream).get_length() > 27.0, "artillery barrage sound in the export"],
 		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves[3].barrage, "barrage flags kept in the export"],

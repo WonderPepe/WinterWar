@@ -33,6 +33,8 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 
 ## False = no more waves (the battle is over).
 var active: bool = true
+## True = the countdown to the next wave waits (host: the day screen between waves is open).
+var hold: bool = false
 ## What each wave is made of (set by the MatchDirector). Empty = riflemen only (old rule).
 var wave_list: Array[WaveData] = []
 
@@ -61,7 +63,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not multiplayer.is_server() or not active:
 		return
-	_timer -= delta
+	if not (hold and _phase == Phase.WAITING):
+		_timer -= delta
 	match _phase:
 		Phase.WAITING:
 			if _timer <= 0.0:

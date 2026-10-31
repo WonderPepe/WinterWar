@@ -72,9 +72,19 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   that day (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for Hard's waves 9–10; in
   order, wave n → report n), ~16 s or until the next wave starts; the victory screen shows the
   report of the last day held. Texts are the owner's own – never reword them.
-- Open: `Claude outputs/v013_update.zip` (v0.1.3 aiming fixes) was made in an earlier chat but
-  never applied/committed (it was built from an older CLAUDE.md – merge by hand, don't unzip
-  over the project). Ask the owner before applying.
+- [x] v0.1.3 aiming fixes (players: "ADS ends for a moment and comes back"), merged by hand later:
+  Maxim new belt no longer ends ADS (hand-weapon reloads only); Maxim ADS camera follows only
+  `sight_kick_share` 0.25 of the recoil push (`MountedGun.get_sight_eye_position()`); recoil
+  recovery brings back only the applied kick (no downward drag at the elevation limit); aimed
+  Mosin bolt cycle keeps the hand below the knob (`ViewModel.bolt_hand_low`, 6° tilt).
+- [x] Day screen ("a new day" after each wave, owner's design): black screen, SA-kuva photo as an
+  old print, Finnish date title, the telegram types out, optional radio static for 5 s, Space /
+  Enter continues. Front reports are ALWAYS shown now (the Settings switch was removed – owner).
+  Owner's choices: same lighting as before (dusk over the whole battle; weather/day-night later),
+  no spoken voice for now (later: the owner may record one sentence per day himself).
+  Radio static: recommended CC0 Freesound 199438 "Radio Fuzz for Old Radio Broadcast"
+  (martinimeniscus) – the cloud workspace can't reach freesound.org, so the owner downloads it
+  into `assets_source/`; then trim/convert it to `assets/audio/recorded/radio_static.ogg`.
 
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
@@ -398,22 +408,32 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   CC-BY 4.0; credited) – trimmed 1.5 s + 39.3 s, mono, -3 dB + limiter (the stereo mix clipped),
   fades. Original WAV in `assets_source/` (git-ignored). `tools/test_background.gd`.
 
-## Front reports – how it is built
+## Front reports / day screen – how it is built
 - `FrontReports` resource (`scripts/game/front_reports.gd`, `resources/front_reports.tres`, written
-  by the builder from `FRONT_REPORTS`): `dates` + `texts` (PackedStringArray, default
-  `PackedStringArray()` because of the export bug). `get_report(wave)` → [date, text] or empty.
-- **Off by default** (owner's wish): `Settings.show_front_reports` (saved in "game"), switch
-  "Front reports" in the Settings menu. Off = no telegram and no report on the end screen.
-- Looks like a telegram (owner's wish): paper-coloured panel (StyleBoxFlat + shadow, rotated
-  -0.8°), header "S Ä H K Ö S A N O M A", date right, text in `assets/fonts/FreeMonoBold.ttf`
-  (GNU FreeFont, GPL + font exception; licence file next to it, CREDITS.md). The HUD types it
-  out with `visible_characters` (date first, then text; `type_speed` 28 letters/s; labels use
-  `VC_CHARS_AFTER_SHAPING` so the lines don't re-wrap while typing), then `report_time` 10 s to
-  read. Optional `RecordedSounds "telegraph"` clatter while typing.
-- HUD `front_reports` export + `FrontReport` panel (top centre, below the wave panel). It watches
-  the synced `MatchDirector.waves_cleared`, so co-op clients see it too (no RPC). Hidden while the
-  end screen is up; `EndScreen.open(director, player, reports)` shows the last day on victory.
-- `tools/shots_reports.gd` (screenshots), checks in `test_g2.gd` and `check_web_pack.gd`.
+  by the builder from `FRONT_REPORTS` = [date, owner's text, photo file]): `dates`, `texts`,
+  `photos` (res paths, `PackedStringArray()` defaults because of the export bug).
+  `get_report(wave)` → [date, text] or empty; `get_photo(wave)` loads the photo on demand.
+- Photos: `assets/photos/sa_kuva_*.jpg` (SA-kuva, CC BY 4.0, credited in CREDITS.md and on screen
+  "Kuva: SA-kuva"), made from the owner's originals in `assets_source/` (≈5000 px) → greyscale,
+  1280 px, JPG q86. Import: lossy WebP (`compress/mode=1`, quality 0.85), no mipmaps ≈ 150 kB each.
+  Day → photo: 21.12 144612 (anti-tank rocks), 22.12 a_511 (captured tank), 23.12 144608,
+  24.12 a_128 (dugout), 25.12 a_126, 26.12 a_125 (officers), 27.12 a_8 (trench, upright photo),
+  28.12 a_123 (dark foxhole), 31.12 144607, 01.01 a_129. Spares: 144616, 144609, a_4, a_127.
+- `DayScreen` (HUD/DayScreen, `scripts/ui/day_screen.gd`, built by `_build_day_screen()`): HUD
+  `_update_day_screen()` watches the synced `MatchDirector.waves_cleared` (co-op clients too, no RPC)
+  and calls `open(wave, reports)`; not after the last wave (end screen takes over, `close_now()`).
+  Timeline: black 0–1 s, photo 1–2.2 s, title ~2 s, telegram types from `type_start` 3 s at
+  `type_speed` 28/s, then `read_time` 7 s; photo zooms `zoom` 6 % over the screen; Space (jump) /
+  Enter after `skip_after` 1.5 s; a new wave starting also closes it. Not paused: SFX + Ambience
+  buses are ducked `duck_db` −20 dB (Ambience keeps Settings' formula). Host: `WaveSpawner.hold`
+  stops the WAITING countdown while it is open. Static = `RecordedSounds "radio_static"` (silent
+  if missing), clatter = `"telegraph"`. `Content` hangs from the screen centre (photo area centred
+  at (−300, 30), telegram at (50, −140), 530 px wide).
+- `resources/shaders/old_photo.gdshader` (canvas_item): warm grey tone, 18 fps film grain,
+  vignette, flicker; writes `COLOR = vec4(g * tone, COLOR.a)`.
+- Victory: `EndScreen.open(director, player, reports)` shows the last day's report.
+- `tools/shots_reports.gd [days…]` (screenshots, xvfb), checks in `test_g2.gd`, `test_m3.gd`,
+  `check_web_pack.gd`.
 
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export

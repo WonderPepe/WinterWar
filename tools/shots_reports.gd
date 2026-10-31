@@ -1,5 +1,6 @@
 extends Node
-## Screenshots of the front report after a wave and on the victory screen (not part of the game).
+## Screenshots of the day screen (photo + front report) after waves and of the victory screen.
+## Optional argument: the days to show, e.g. "2 7" (default 2 7).
 ##   xvfb-run godot --rendering-driver opengl3 --path . --script tools/run.gd -- tools/shots_reports.gd
 
 func _ready() -> void:
@@ -13,11 +14,23 @@ func _ready() -> void:
 	p.input.set_process(false)
 	get_tree().get_first_node_in_group("wave_spawner").set_process(false)
 	var director: MatchDirector = get_tree().get_first_node_in_group("match_director")
-	director.waves_cleared = 2
-	await get_tree().create_timer(3.0).timeout
-	await _shot("report_typing")
-	await get_tree().create_timer(6.0).timeout
-	await _shot("report_wave2")
+	var days: Array[int] = [2, 7]
+	var args := OS.get_cmdline_user_args()
+	if args.size() > 1:
+		days.clear()
+		for a in args.slice(1):
+			days.append(int(a))
+	var day: DayScreen = get_tree().get_first_node_in_group("game").get_node("HUD/DayScreen")
+	for d in days:
+		director.waves_cleared = d
+		await get_tree().create_timer(2.2).timeout
+		await _shot("day%d_title" % d)
+		await get_tree().create_timer(2.5).timeout
+		await _shot("day%d_typing" % d)
+		await get_tree().create_timer(day._total - day._t - 1.0).timeout
+		await _shot("day%d_read" % d)
+		day.close_now()
+		await get_tree().create_timer(0.3).timeout
 	director.waves_cleared = director.waves_to_win
 	director.end_match(MatchDirector.Result.VICTORY)
 	await get_tree().create_timer(0.5).timeout

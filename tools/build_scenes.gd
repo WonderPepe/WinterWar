@@ -1040,17 +1040,18 @@ func _make_difficulty_data() -> void:
 
 
 ## After each cleared wave the HUD shows the next front report (the owner's texts).
+## [date, the owner's own text (never reword), SA-kuva photo in assets/photos/ (CC BY 4.0)].
 const FRONT_REPORTS := [
-	["21.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on päivän aikana jatkanut hyökkäyksiään Summan suunnalla. Puolustusasemamme ovat kestäneet raskaan tykistötulen. Tilanne on hallinnassa.\""],
-	["22.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on jälleen yrittänyt murtaa asemamme Summan lohkolla. Hyökkäys on torjuttu. Useita vihollispanssareita on tuhottu esteisiin ja korsujen tuleen. Miehistön taistelutahto on hyvä.\""],
-	["23.12.1939", "\"Rintamatiedotus. Summassa on kulunut päivä ankarissa taisteluissa. Vihollinen jatkaa tykistökeskityksiä, mutta asemamme pitävät. Joukkomme ovat aiheuttaneet hyökkääjälle raskaita tappioita.\""],
-	["24.12.1939", "\"Jouluaatto Kannaksella. Vihollisen toiminta on ollut vilkasta koko päivän. Puolustajat viettävät pyhää asemissaan. Mieliala joukkojen keskuudessa on luja.\""],
-	["25.12.1939", "\"Joulupäivä Summassa. Taistelut jatkuvat. Puolustajat viettävät joulua asemissaan. Vihollisen yritykset edetä Viipurin suuntaan on pysäytetty.\""],
-	["26.12.1939", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\""],
-	["27.12.1939", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\""],
-	["28.12.1939", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\""],
-	["31.12.1939", "\"Vuoden viimeinen päivä Kannaksella. Summan puolustajat ovat torjuneet vihollisen hyökkäyksiä jo viikkojen ajan. Asemat pitävät edelleen. Uuteen vuoteen siirrytään valppaina ja taistelutahto korkeana.\""],
-	["01.01.1940", "\"Täällä Kannaksen rintama. Uusi vuosi on alkanut vihollisen tykistötulella Summan lohkolla. Puolustajat ovat kuitenkin säilyttäneet asemansa. Tilanne rintamalla on vakaa.\""],
+	["21.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on päivän aikana jatkanut hyökkäyksiään Summan suunnalla. Puolustusasemamme ovat kestäneet raskaan tykistötulen. Tilanne on hallinnassa.\"", "sa_kuva_144612"],
+	["22.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on jälleen yrittänyt murtaa asemamme Summan lohkolla. Hyökkäys on torjuttu. Useita vihollispanssareita on tuhottu esteisiin ja korsujen tuleen. Miehistön taistelutahto on hyvä.\"", "sa_kuva_a_511"],
+	["23.12.1939", "\"Rintamatiedotus. Summassa on kulunut päivä ankarissa taisteluissa. Vihollinen jatkaa tykistökeskityksiä, mutta asemamme pitävät. Joukkomme ovat aiheuttaneet hyökkääjälle raskaita tappioita.\"", "sa_kuva_144608"],
+	["24.12.1939", "\"Jouluaatto Kannaksella. Vihollisen toiminta on ollut vilkasta koko päivän. Puolustajat viettävät pyhää asemissaan. Mieliala joukkojen keskuudessa on luja.\"", "sa_kuva_a_128"],
+	["25.12.1939", "\"Joulupäivä Summassa. Taistelut jatkuvat. Puolustajat viettävät joulua asemissaan. Vihollisen yritykset edetä Viipurin suuntaan on pysäytetty.\"", "sa_kuva_a_126"],
+	["26.12.1939", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\"", "sa_kuva_a_125"],
+	["27.12.1939", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\"", "sa_kuva_a_8"],
+	["28.12.1939", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\"", "sa_kuva_a_123"],
+	["31.12.1939", "\"Vuoden viimeinen päivä Kannaksella. Summan puolustajat ovat torjuneet vihollisen hyökkäyksiä jo viikkojen ajan. Asemat pitävät edelleen. Uuteen vuoteen siirrytään valppaina ja taistelutahto korkeana.\"", "sa_kuva_144607"],
+	["01.01.1940", "\"Täällä Kannaksen rintama. Uusi vuosi on alkanut vihollisen tykistötulella Summan lohkolla. Puolustajat ovat kuitenkin säilyttäneet asemansa. Tilanne rintamalla on vakaa.\"", "sa_kuva_a_129"],
 ]
 
 
@@ -1058,11 +1059,14 @@ func _make_front_reports() -> void:
 	var r := FrontReports.new()
 	var dates := PackedStringArray()
 	var texts := PackedStringArray()
+	var photos := PackedStringArray()
 	for f: Array in FRONT_REPORTS:
 		dates.append(f[0])
 		texts.append(f[1])
+		photos.append("res://assets/photos/%s.jpg" % f[2] if f.size() > 2 else "")
 	r.dates = dates
 	r.texts = texts
+	r.photos = photos
 	ResourceSaver.save(r, "res://resources/front_reports.tres")
 
 
@@ -1279,6 +1283,102 @@ func _bar(parent: Node, n: String, fill: Color, min_size: Vector2) -> ProgressBa
 	return b
 
 
+## "A new day" between waves (DayScreen): black screen, an SA-kuva photo as an old print on the
+## left, the date at the top and the front report as a TELEGRAM on the right (typewriter letters,
+## FreeMono Bold, typed out one by one by the script), radio static at the start.
+func _build_day_screen(hud: Node) -> void:
+	var tele_font: Font = load("res://assets/fonts/FreeMonoBold.ttf")
+	var ink := Color(0.16, 0.12, 0.09)
+	var ds: Control = _add(hud, Control.new(), "DayScreen")
+	ds.set_script(load("res://scripts/ui/day_screen.gd"))
+	_full_rect(ds)
+	ds.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var black: ColorRect = _add(ds, ColorRect.new(), "Black")
+	black.color = Color(0.025, 0.025, 0.03, 1.0)
+	_full_rect(black)
+	black.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Everything else hangs from the screen centre, so a wider window only adds black at the sides.
+	var content: Control = _add(ds, Control.new(), "Content")
+	content.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var title: VBoxContainer = _add(content, VBoxContainer.new(), "Title")
+	title.position = Vector2(-500, -330)
+	title.size = Vector2(1000, 90)
+	title.add_theme_constant_override("separation", 2)
+	var day := _label(title, "Day", "P Ä I V Ä   1", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.78, 0.74, 0.66))
+	var date := _label(title, "Date", "21. joulukuuta 1939", 40, HORIZONTAL_ALIGNMENT_CENTER, Color(0.95, 0.92, 0.85))
+	date.add_theme_font_override("font", tele_font)
+
+	# The photo as an old print: off-white border, a shadow, laid down a little crooked.
+	var pf: PanelContainer = _add(content, PanelContainer.new(), "PhotoFrame")
+	var print_style := _flat(Color(0.88, 0.86, 0.8), Color(0, 0, 0, 0), 0, 1)
+	for side in ["left", "right", "top", "bottom"]:
+		print_style.set("content_margin_" + side, 12)
+	print_style.shadow_color = Color(0, 0, 0, 0.6)
+	print_style.shadow_size = 10
+	print_style.shadow_offset = Vector2(4, 5)
+	pf.add_theme_stylebox_override("panel", print_style)
+	pf.rotation = deg_to_rad(0.7)
+	pf.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var clip: Control = _add(pf, Control.new(), "Clip")
+	clip.clip_contents = true # the slow zoom stays inside the print
+	clip.custom_minimum_size = Vector2(600, 420)
+	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var photo: TextureRect = _add(clip, TextureRect.new(), "Photo")
+	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	photo.stretch_mode = TextureRect.STRETCH_SCALE
+	photo.size = Vector2(600, 420)
+	photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var photo_mat := ShaderMaterial.new()
+	photo_mat.shader = load("res://resources/shaders/old_photo.gdshader")
+	photo.material = photo_mat
+	var credit := _label(content, "Credit", "Kuva: SA-kuva", 14, HORIZONTAL_ALIGNMENT_LEFT, Color(0.62, 0.6, 0.56))
+	credit.size = Vector2(600, 20)
+
+	var fr: PanelContainer = _add(content, PanelContainer.new(), "Telegram")
+	fr.position = Vector2(50, -140)
+	fr.size = Vector2(530, 0)
+	fr.pivot_offset = Vector2(265, 150)
+	fr.rotation = deg_to_rad(-0.8)
+	fr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var paper := _flat(Color(0.93, 0.88, 0.74, 0.98), Color(0.55, 0.45, 0.3, 0.9), 1, 2)
+	paper.content_margin_left = 28
+	paper.content_margin_right = 28
+	paper.content_margin_top = 16
+	paper.content_margin_bottom = 20
+	paper.shadow_color = Color(0, 0, 0, 0.5)
+	paper.shadow_size = 8
+	paper.shadow_offset = Vector2(3, 4)
+	fr.add_theme_stylebox_override("panel", paper)
+	var fr_v: VBoxContainer = _add(fr, VBoxContainer.new(), "VBox")
+	fr_v.add_theme_constant_override("separation", 6)
+	var head := _label(fr_v, "Header", "S Ä H K Ö S A N O M A", 24, HORIZONTAL_ALIGNMENT_CENTER, ink)
+	var rule: ColorRect = _add(fr_v, ColorRect.new(), "Rule")
+	rule.color = Color(ink, 0.7)
+	rule.custom_minimum_size = Vector2(0, 2)
+	var fr_d := _label(fr_v, "Date", "21.12.1939", 19, HORIZONTAL_ALIGNMENT_RIGHT, ink)
+	var fr_t := _label(fr_v, "Text", "", 18, HORIZONTAL_ALIGNMENT_LEFT, ink)
+	fr_t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fr_t.custom_minimum_size = Vector2(474, 0)
+	for l: Label in [head, fr_d, fr_t]:
+		l.add_theme_font_override("font", tele_font)
+		l.add_theme_constant_override("outline_size", 0)
+		# Letters appear one by one, but the lines are laid out for the whole text from the start.
+		l.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+	fr_t.add_theme_constant_override("line_spacing", 2)
+	var tick_snd: AudioStreamPlayer = _add(fr, AudioStreamPlayer.new(), "TypeSound")
+	tick_snd.bus = &"UI" # (no stream: a real recording assets/audio/recorded/telegraph…, if any)
+	tick_snd.volume_db = -6.0
+
+	var hint := _label(content, "Hint", "[Välilyönti] Jatka", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(0.75, 0.73, 0.68))
+	hint.position = Vector2(-300, 300)
+	hint.size = Vector2(600, 24)
+	var noise: AudioStreamPlayer = _add(ds, AudioStreamPlayer.new(), "Static")
+	noise.bus = &"UI" # (no stream: a real recording assets/audio/recorded/radio_static…, if any)
+	ds.visible = false
+
+
 func _build_hud(theme: Theme) -> Node:
 	var hud := CanvasLayer.new()
 	hud.name = "HUD"
@@ -1398,49 +1498,7 @@ func _build_hud(theme: Theme) -> Node:
 	arty_l.add_theme_constant_override("outline_size", 6)
 	arty_l.visible = false
 
-	# After each cleared wave: the front report as a TELEGRAM – a sheet of paper near the top,
-	# typewriter letters (FreeMono Bold) typed out one by one by the HUD.
 	hud.set("front_reports", load("res://resources/front_reports.tres"))
-	var tele_font: Font = load("res://assets/fonts/FreeMonoBold.ttf")
-	var ink := Color(0.16, 0.12, 0.09)
-	var fr: PanelContainer = _add(hud, PanelContainer.new(), "FrontReport")
-	fr.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	fr.offset_left = -350
-	fr.offset_right = 350
-	fr.offset_top = 128 # below the wave panel
-	fr.offset_bottom = 128
-	fr.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	fr.pivot_offset = Vector2(350, 110)
-	fr.rotation = deg_to_rad(-0.8) # laid down a little crooked
-	var paper := _flat(Color(0.93, 0.88, 0.74, 0.97), Color(0.55, 0.45, 0.3, 0.9), 1, 2)
-	paper.content_margin_left = 30
-	paper.content_margin_right = 30
-	paper.content_margin_top = 16
-	paper.content_margin_bottom = 20
-	paper.shadow_color = Color(0, 0, 0, 0.35)
-	paper.shadow_size = 8
-	paper.shadow_offset = Vector2(3, 4)
-	fr.add_theme_stylebox_override("panel", paper)
-	var fr_v: VBoxContainer = _add(fr, VBoxContainer.new(), "VBox")
-	fr_v.add_theme_constant_override("separation", 6)
-	var head := _label(fr_v, "Header", "S Ä H K Ö S A N O M A", 26, HORIZONTAL_ALIGNMENT_CENTER, ink)
-	var rule: ColorRect = _add(fr_v, ColorRect.new(), "Rule")
-	rule.color = Color(ink, 0.7)
-	rule.custom_minimum_size = Vector2(0, 2)
-	var fr_d := _label(fr_v, "Date", "21.12.1939", 20, HORIZONTAL_ALIGNMENT_RIGHT, ink)
-	var fr_t := _label(fr_v, "Text", "", 19, HORIZONTAL_ALIGNMENT_LEFT, ink)
-	fr_t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	fr_t.custom_minimum_size = Vector2(640, 0)
-	for l: Label in [head, fr_d, fr_t]:
-		l.add_theme_font_override("font", tele_font)
-		l.add_theme_constant_override("outline_size", 0)
-		# Letters appear one by one, but the lines are laid out for the whole text from the start.
-		l.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	fr_t.add_theme_constant_override("line_spacing", 2)
-	var tick_snd: AudioStreamPlayer = _add(fr, AudioStreamPlayer.new(), "TypeSound")
-	tick_snd.bus = &"UI" # (no stream: a real recording assets/audio/recorded/telegraph…, if any)
-	tick_snd.volume_db = -6.0
-	fr.visible = false
 
 	# Death screen.
 	var ds: Control = _add(hud, Control.new(), "DeathScreen")
@@ -1460,6 +1518,8 @@ func _build_hud(theme: Theme) -> Node:
 	rl.offset_right = 300
 	rl.offset_top = 16
 	rl.offset_bottom = 56
+
+	_build_day_screen(hud)
 
 	# (no HitSound: the generated hit tick was removed – owner's wish)
 	var hurt: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HurtSound")
@@ -1844,12 +1904,6 @@ func _build_settings_menu(theme: Theme) -> Node:
 	br.text = ""
 	br.button_pressed = true
 	_label(grid, "BreathHint", "", 14)
-
-	_label(grid, "FrontReportsLabel", "Front reports", 18)
-	var frp: CheckButton = _add(grid, CheckButton.new(), "FrontReports")
-	frp.text = ""
-	frp.button_pressed = false
-	_label(grid, "FrontReportsHint", "telegram after each wave", 14, HORIZONTAL_ALIGNMENT_LEFT, Color(0.8, 0.84, 0.9))
 
 	_label(grid, "FullscreenLabel", "Fullscreen", 18)
 	var fs: CheckButton = _add(grid, CheckButton.new(), "Fullscreen")

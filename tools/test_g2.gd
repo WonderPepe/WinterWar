@@ -319,45 +319,60 @@ func run() -> void:
 	check(reports.get_report(9)[0] == "31.12.1939" and reports.get_report(10)[1].ends_with("Tilanne rintamalla on vakaa.\""),
 			"Hard: wave 9 → 31.12.1939, wave 10 → 01.01.1940")
 	check(reports.get_report(11).is_empty(), "no report after wave 11 (none written)")
-	check(not hud.report_panel.visible, "no report while a wave is on")
-	var fresh: Node = load("res://autoload/settings.gd").new()
-	check(fresh.get("show_front_reports") == false, "front reports are off by default")
-	fresh.free()
-	var saved_setting: bool = Settings.show_front_reports
-	Settings.show_front_reports = false
+	check(reports.photos.size() == 10 and reports.get_photo(1) != null and reports.get_photo(7).get_height() > reports.get_photo(7).get_width(),
+			"a photo for every day (day 7 is the upright one)")
+	check(DayScreen.long_date("21.12.1939") == "21. joulukuuta 1939" and DayScreen.long_date("01.01.1940") == "1. tammikuuta 1940",
+			"dates written out in Finnish")
+	var day: DayScreen = hud.day_screen
+	check(not day.is_open and not day.visible, "no day screen while a wave is on")
+	check(not Settings.has_method("set_show_front_reports"), "front reports always on (no setting)")
+	# The countdown to the next wave waits while the day screen is open (host).
+	var saved_phase: int = spawner._phase
+	var saved_timer: float = spawner._timer
+	spawner._phase = WaveSpawner.Phase.WAITING
+	spawner._timer = 50.0
 	director.waves_cleared = 1
-	await seconds(0.6)
-	check(not hud.report_panel.visible, "setting off: no telegram after a wave")
-	Settings.show_front_reports = true
-	hud._last_cleared = 0
-	director.waves_cleared = 0
-	await frames(2)
-	director.waves_cleared = 1
-	await seconds(0.6)
-	check(hud.report_panel.visible and hud.report_date.text == "21.12.1939" and hud.report_text.text.begins_with("\"Täällä Kannaksen rintama."),
-			"wave 1 cleared: report of 21.12.1939")
+	await seconds(0.4)
+	check(day.is_open and day.visible and day.date_label.text == "21. joulukuuta 1939" and day.tele_date.text == "21.12.1939"
+			and day.tele_text.text.begins_with("\"Täällä Kannaksen rintama."), "wave 1 cleared: the day screen for 21.12.1939")
+	check(day.photo.texture != null and day.frame.visible, "…with its photo")
+	check(spawner.hold, "the next wave's countdown waits")
+	var held_at: float = spawner._timer
 	await seconds(1.0)
-	check(hud.report_text.visible_characters > 0 and hud.report_text.visible_characters < hud.report_text.text.length(),
-			"telegram types itself out letter by letter (%d / %d after ~1.6 s)" % [hud.report_text.visible_characters, hud.report_text.text.length()])
-	await seconds(7.5)
-	check(hud.report_text.visible_characters >= hud.report_text.text.length() and hud.report_panel.visible, "…and is complete after ~8 s, still shown to read")
+	check(absf(spawner._timer - held_at) < 0.001, "countdown held (%.2f s)" % spawner._timer)
+	check(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"SFX")) < -15.0, "battle sounds turned down behind the screen")
+	await seconds(day.type_start + 1.6 - day._t)
+	check(day.tele_text.visible_characters > 0 and day.tele_text.visible_characters < day.tele_text.text.length(),
+			"telegram types itself out letter by letter (%d / %d)" % [day.tele_text.visible_characters, day.tele_text.text.length()])
+	var press := InputEventAction.new()
+	press.action = &"jump"
+	press.pressed = true
+	Input.parse_input_event(press)
+	await seconds(1.6)
+	check(not day.is_open and not day.visible and not spawner.hold, "Space closes the day screen and releases the countdown")
+	check(absf(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"SFX"))) < 0.01, "battle sounds back to normal")
+	await seconds(0.5)
+	check(spawner._timer < 49.8, "countdown runs again")
+	spawner._phase = saved_phase
+	spawner._timer = saved_timer
 	director.waves_cleared = 2
-	await seconds(0.6)
-	check(hud.report_date.text == "22.12.1939" and hud.report_text.text.contains("vihollispanssareita"), "wave 2 cleared: report of 22.12.1939")
+	await seconds(0.4)
+	check(day.is_open and day.tele_date.text == "22.12.1939" and day.tele_text.text.contains("vihollispanssareita"), "wave 2 cleared: 22.12.1939")
 	spawner.wave_number += 1
-	await seconds(1.0)
-	check(not hud.report_panel.visible, "the report goes away when the next wave starts")
+	await seconds(1.6)
+	check(not day.is_open, "the day screen goes away when the next wave starts")
+	director.waves_cleared = 3
+	await seconds(0.3)
+	check(day.is_open, "wave 3 cleared: day screen")
 	director.waves_cleared = director.waves_to_win
 	director.end_match(MatchDirector.Result.VICTORY)
 	await seconds(0.5)
-	check(hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("28.12.1939"),
-			"victory on Normal: the end screen shows the report of 28.12.1939")
+	check(not day.is_open and hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("28.12.1939"),
+			"victory on Normal: no day screen, the end screen shows the report of 28.12.1939")
 	get_tree().paused = false
-	Settings.show_front_reports = saved_setting
 	var menu: Control = load("res://ui/settings_menu.tscn").instantiate()
 	add_child(menu)
-	var toggle := menu.get_node_or_null("Panel/VBox/Grid/FrontReports") as CheckButton
-	check(toggle != null, "Settings menu has a 'Front reports' switch")
+	check(menu.get_node_or_null("Panel/VBox/Grid/FrontReports") == null, "no 'Front reports' switch in Settings any more")
 	menu.queue_free()
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])

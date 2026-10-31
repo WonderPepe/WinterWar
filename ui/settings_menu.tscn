@@ -3,7 +3,7 @@
 [ext_resource type="Theme" path="res://ui/winter_theme.tres" id="1_xutny"]
 [ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="2_a6yft"]
 
-[node name="SettingsMenu" type="Control" unique_id=1640641636]
+[node name="SettingsMenu" type="Control" unique_id=381883459]
 layout_mode = 3
 anchors_preset = 0
 anchor_right = 1.0
@@ -11,7 +11,7 @@ anchor_bottom = 1.0
 theme = ExtResource("1_xutny")
 script = ExtResource("2_a6yft")
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=1630820504]
+[node name="Panel" type="PanelContainer" parent="." unique_id=1581084699]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -20,11 +20,11 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=595651687]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=1216580417]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="Panel/VBox" unique_id=1465273090]
+[node name="Title" type="Label" parent="Panel/VBox" unique_id=1905530560]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -33,13 +33,13 @@ theme_override_constants/outline_size = 6
 text = "SETTINGS"
 horizontal_alignment = 1
 
-[node name="Grid" type="GridContainer" parent="Panel/VBox" unique_id=832059109]
+[node name="Grid" type="GridContainer" parent="Panel/VBox" unique_id=512389574]
 layout_mode = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 12
 columns = 3
 
-[node name="QualityLabel" type="Label" parent="Panel/VBox/Grid" unique_id=211176011]
+[node name="QualityLabel" type="Label" parent="Panel/VBox/Grid" unique_id=172400070]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -47,18 +47,18 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Graphics quality"
 
-[node name="Quality" type="OptionButton" parent="Panel/VBox/Grid" unique_id=815940802]
+[node name="Quality" type="OptionButton" parent="Panel/VBox/Grid" unique_id=1084463005]
 custom_minimum_size = Vector2(240, 40)
 layout_mode = 2
 
-[node name="QualityHint" type="Label" parent="Panel/VBox/Grid" unique_id=1520657910]
+[node name="QualityHint" type="Label" parent="Panel/VBox/Grid" unique_id=534282557]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 
-[node name="SensitivityLabel" type="Label" parent="Panel/VBox/Grid" unique_id=984145620]
+[node name="SensitivityLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1292709381]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -66,7 +66,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Mouse sensitivity"
 
-[node name="Sensitivity" type="HSlider" parent="Panel/VBox/Grid" unique_id=59834931]
+[node name="Sensitivity" type="HSlider" parent="Panel/VBox/Grid" unique_id=1122125391]
 custom_minimum_size = Vector2(240, 32)
 layout_mode = 2
 min_value = 0.25
@@ -74,7 +74,7 @@ max_value = 3.0
 step = 0.05
 value = 1.0
 
-[node name="SensitivityValue" type="Label" parent="Panel/VBox/Grid" unique_id=1031061748]
+[node name="SensitivityValue" type="Label" parent="Panel/VBox/Grid" unique_id=1673600465]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -82,7 +82,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "1.00×"
 
-[node name="VolumeLabel" type="Label" parent="Panel/VBox/Grid" unique_id=88538363]
+[node name="VolumeLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1996710648]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -90,12 +90,12 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Volume"
 
-[node name="Volume" type="HSlider" parent="Panel/VBox/Grid" unique_id=630277593]
+[node name="Volume" type="HSlider" parent="Panel/VBox/Grid" unique_id=1825415130]
 custom_minimum_size = Vector2(240, 32)
 layout_mode = 2
 value = 80.0
 
-[node name="VolumeValue" type="Label" parent="Panel/VBox/Grid" unique_id=2073623303]
+[node name="VolumeValue" type="Label" parent="Panel/VBox/Grid" unique_id=1932304429]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -103,7 +103,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "80 %"
 
-[node name="AmbienceLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1332761765]
+[node name="AmbienceLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1063146972]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -111,12 +111,12 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Wind and battle"
 
-[node name="Ambience" type="HSlider" parent="Panel/VBox/Grid" unique_id=1268159046]
+[node name="Ambience" type="HSlider" parent="Panel/VBox/Grid" unique_id=1343180607]
 custom_minimum_size = Vector2(240, 32)
 layout_mode = 2
 value = 70.0
 
-[node name="AmbienceValue" type="Label" parent="Panel/VBox/Grid" unique_id=1678635840]
+[node name="AmbienceValue" type="Label" parent="Panel/VBox/Grid" unique_id=1097097822]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -124,7 +124,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "70 %"
 
-[node name="BreathLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1207561309]
+[node name="BreathLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1858549333]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -132,37 +132,18 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Breath vapour"
 
-[node name="Breath" type="CheckButton" parent="Panel/VBox/Grid" unique_id=2011291705]
+[node name="Breath" type="CheckButton" parent="Panel/VBox/Grid" unique_id=2145507695]
 layout_mode = 2
 button_pressed = true
 
-[node name="BreathHint" type="Label" parent="Panel/VBox/Grid" unique_id=1595174081]
+[node name="BreathHint" type="Label" parent="Panel/VBox/Grid" unique_id=2007409198]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 
-[node name="FrontReportsLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1662978827]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 3
-text = "Front reports"
-
-[node name="FrontReports" type="CheckButton" parent="Panel/VBox/Grid" unique_id=160323593]
-layout_mode = 2
-
-[node name="FrontReportsHint" type="Label" parent="Panel/VBox/Grid" unique_id=660100838]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 3
-text = "telegram after each wave"
-
-[node name="FullscreenLabel" type="Label" parent="Panel/VBox/Grid" unique_id=756386333]
+[node name="FullscreenLabel" type="Label" parent="Panel/VBox/Grid" unique_id=379004437]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -170,17 +151,17 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Fullscreen"
 
-[node name="Fullscreen" type="CheckButton" parent="Panel/VBox/Grid" unique_id=1187419050]
+[node name="Fullscreen" type="CheckButton" parent="Panel/VBox/Grid" unique_id=957337024]
 layout_mode = 2
 
-[node name="FullscreenHint" type="Label" parent="Panel/VBox/Grid" unique_id=170572627]
+[node name="FullscreenHint" type="Label" parent="Panel/VBox/Grid" unique_id=1383686374]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 
-[node name="Note" type="Label" parent="Panel/VBox" unique_id=1849832098]
+[node name="Note" type="Label" parent="Panel/VBox" unique_id=1946204983]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -189,7 +170,7 @@ theme_override_constants/outline_size = 3
 text = "Low: no shadows, shorter view, less snow - best for older laptops and browsers."
 horizontal_alignment = 1
 
-[node name="BackButton" type="Button" parent="Panel/VBox" unique_id=941567593]
+[node name="BackButton" type="Button" parent="Panel/VBox" unique_id=138458048]
 custom_minimum_size = Vector2(240, 44)
 layout_mode = 2
 size_flags_horizontal = 4

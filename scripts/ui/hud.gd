@@ -7,9 +7,7 @@ extends CanvasLayer
 
 @export var damage_flash_time: float = 0.6
 @export var wave_banner_time: float = 2.5
-@export var front_reports: FrontReports ## Shown one by one after each cleared wave.
-@export var report_time: float = 10.0 ## Seconds a front report stays up after it is typed out (it also goes when the next wave starts).
-@export var type_speed: float = 28.0 ## Telegram letters per second.
+@export var front_reports: FrontReports ## The day screen shows them one by one after each cleared wave.
 
 var _player: Player
 var _last_health: int = 100
@@ -18,9 +16,6 @@ var _last_wave: int = 0
 var _banner_left: float = 0.0
 var _death_time: float = -1.0
 var _last_cleared: int = 0
-var _report_left: float = 0.0
-var _report_total: float = 1.0
-var _typed: float = 0.0 # letters of the telegram typed so far (date first, then the text)
 
 @onready var crosshair: Crosshair = $Crosshair
 @onready var hit_marker: HitMarker = $HitMarker
@@ -49,10 +44,7 @@ var _typed: float = 0.0 # letters of the telegram typed so far (date first, then
 @onready var banner_sub: Label = $WaveBannerSub
 @onready var bandage_label: Label = $Vitals/Bandages
 @onready var end_screen: EndScreen = $EndScreen
-@onready var report_panel: Control = $FrontReport
-@onready var report_date: Label = $FrontReport/VBox/Date
-@onready var report_text: Label = $FrontReport/VBox/Text
-@onready var type_sound: AudioStreamPlayer = $FrontReport/TypeSound
+@onready var day_screen: DayScreen = $DayScreen
 @onready var artillery_label: Label = $ArtilleryWarning
 
 var _artillery: ArtilleryBarrage
@@ -69,7 +61,6 @@ func _ready() -> void:
 	wave_banner.modulate.a = 0.0
 	banner_sub.modulate.a = 0.0
 	death_screen.visible = false
-	report_panel.visible = false
 
 
 func _process(delta: float) -> void:
@@ -85,7 +76,8 @@ func _process(delta: float) -> void:
 	_update_artillery()
 	_update_death()
 	if _director and _director.is_over() and not end_screen.visible:
-		end_screen.open(_director, _player, front_reports if Settings.show_front_reports else null)
+		day_screen.close_now()
+		end_screen.open(_director, _player, front_reports)
 	_flash = maxf(_flash - delta / damage_flash_time, 0.0)
 	damage_flash.modulate.a = _flash
 
@@ -201,11 +193,11 @@ func _update_waves(delta: float) -> void:
 	next_wave_label.visible = next > 0.0
 	next_wave_label.text = "Next wave in %d s" % ceili(next)
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
-	_update_front_report(delta)
+	_update_day_screen()
 	# Big "WAVE n" banner when a new wave starts.
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
-		_report_left = minf(_report_left, 0.6) # the report makes way for the new wave
+		day_screen.close() # the day screen makes way for the new wave
 		wave_banner.text = "WAVE %d" % _last_wave
 		banner_sub.text = ""
 		if _last_wave == 1 and total > 0:
@@ -254,41 +246,14 @@ func _show_artillery(text: String, color: Color, alpha: float) -> void:
 	artillery_label.modulate.a = alpha
 
 
-## A wave has been cleared: show the next front report (in order: wave 1 → the first one).
-func _update_front_report(delta: float) -> void:
+## A wave has been cleared: a new day – the day screen with the photo and front report
+## (in order: wave 1 → the first report). Not after the last wave: the end screen takes over.
+func _update_day_screen() -> void:
 	var cleared: int = _director.waves_cleared if _director else 0
 	if cleared > _last_cleared:
 		_last_cleared = cleared
-		# Only if switched on in Settings ("Front reports", off by default).
-		var report: PackedStringArray = front_reports.get_report(cleared) if front_reports and Settings.show_front_reports else PackedStringArray()
-		if report.size() == 2:
-			report_date.text = report[0]
-			report_text.text = report[1]
-			_typed = 0.0
-			_report_total = (report[0].length() + report[1].length()) / type_speed + report_time
-			_report_left = _report_total
-			var clatter: AudioStream = RecordedSounds.pick("telegraph")
-			if clatter:
-				type_sound.stream = clatter
-				type_sound.play()
-	_report_left = maxf(_report_left - delta, 0.0)
-	report_panel.visible = _report_left > 0.0 and not end_screen.visible
-	report_panel.modulate.a = clampf(_report_left / 0.6, 0.0, 1.0) * clampf((_report_total - _report_left) / 0.3, 0.0, 1.0)
-	_type_telegram(delta)
-
-
-## The telegram types itself out letter by letter: first the date, then the message.
-func _type_telegram(delta: float) -> void:
-	var date_len: int = report_date.text.length()
-	var total: int = date_len + report_text.text.length()
-	_typed = minf(_typed + delta * type_speed, float(total))
-	var n: int = int(_typed)
-	report_date.visible_characters = mini(n, date_len)
-	report_text.visible_characters = maxi(n - date_len, 0)
-	if n >= total and type_sound.playing:
-		type_sound.stop()
-	if not report_panel.visible and type_sound.playing:
-		type_sound.stop()
+		if not _director.is_over():
+			day_screen.open(cleared, front_reports)
 
 
 func _show_message(text: String) -> void:
