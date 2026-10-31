@@ -145,6 +145,14 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - Numbers: `resources/enemies/soviet_officer.tres`, `soviet_mg_gunner.tres` (and the rifleman's
   "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
 
+## Background sounds
+- Once per battle, at a random moment in the middle of a random wave (not the first or the
+  last), an old propeller plane flies over you – the sound comes from one direction, passes
+  overhead and goes away. Recording: YleArkisto, CC-BY 4.0 (see Credits).
+- More can be added: put the file in `assets/audio/background/`, add it to `sounds` (and the
+  second when it is loudest to `overhead_at`) on `Game/BackgroundSounds` – in
+  `tools/build_scenes.gd`, `_build_game()`.
+
 ## Front reports
 - **Off by default:** switch them on in the menu → Settings → "Front reports" (saved).
 - After every cleared wave a front report for that day arrives as a telegram ("SÄHKÖSANOMA" on

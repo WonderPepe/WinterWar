@@ -14,6 +14,11 @@ the game; the models are otherwise unchanged.
 - "Machine Gun Maxim" by jezusek
   https://sketchfab.com/3d-models/machine-gun-maxim-c3be4e0b9ddc4297a8356852b21bdc37
 
+## Sounds (Creative Commons Attribution 4.0)
+- "Lentokone, potkurikone, syöksy, ylilento / An old aeroplane, old propeller aircraft, Viima,
+  a 1939 model training plane, approaching, diving over low" by YleArkisto
+  https://freesound.org/s/254511/ – shortened and made mono for the game.
+
 ## Font
 - "FreeMono Bold" from GNU FreeFont (https://savannah.gnu.org/projects/freefont/), used for the
   front-report telegrams. GNU GPL v3 with the font exception – see

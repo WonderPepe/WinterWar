@@ -31,6 +31,7 @@ func run() -> void:
 		[ResourceLoader.exists("res://assets/audio/officer_whistle_placeholder.wav"), "G2: whistle sound in the export"],
 		[(load("res://resources/front_reports.tres") as FrontReports).texts.size() == 10, "front reports in the export"],
 		[load("res://assets/fonts/FreeMonoBold.ttf") is Font, "telegram font in the export"],
+		[(load("res://assets/audio/background/plane_flyover_viima.ogg") as AudioStream).get_length() > 35.0, "plane fly-over sound in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

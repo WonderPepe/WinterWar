@@ -577,6 +577,13 @@ func _build_game() -> Node:
 	])
 	var dusk: Node = _add(g, Node.new(), "Dusk")
 	dusk.set_script(load("res://scripts/game/dusk.gd"))
+	# Background sounds: each flies over once per battle (a plane: YleArkisto, CC-BY 4.0).
+	var bg: Node = _add(g, Node.new(), "BackgroundSounds")
+	bg.set_script(load("res://scripts/game/background_sounds.gd"))
+	var bg_sounds: Array[AudioStream] = [load("res://assets/audio/background/plane_flyover_viima.ogg")]
+	bg.set("sounds", bg_sounds)
+	var bg_over: Array[float] = [10.9] # the plane is loudest (right overhead) 10.9 s into the file
+	bg.set("overhead_at", bg_over)
 
 	_add(g, load("res://ui/hud.tscn").instantiate(), "HUD")
 	_add(g, load("res://ui/pause_menu.tscn").instantiate(), "PauseMenu")

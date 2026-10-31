@@ -352,6 +352,18 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `tools/test_g2.gd`, `tools/soak_g2.gd [waves]` (defender bot firing near misses, 3× speed),
   `tools/shots_g2.gd` (poses; needs xvfb). `check_web_pack.gd` checks the wave lists survive export.
 
+## Background sounds – how it is built
+- `BackgroundSounds` (Game/BackgroundSounds, `scripts/game/background_sounds.gd`): `sounds` +
+  `overhead_at` (seconds into the file when it is loudest). Host picks, at wave 1, a wave
+  between 2 and waves_to_win−1 and a moment 15–60 s into it (only while enemies are alive), then
+  `play_flyover.rpc(index, heading, side_m)`; every computer spawns an AudioStreamPlayer3D
+  around its own camera, 80 m up, moving at 50 m/s so it passes overhead at `overhead_at`.
+  `unit_size` 120 and no attenuation filter / doppler (the recording has its own approach),
+  bus SFX (not Ambience: that one is muffled in the trench).
+- Plane: `assets/audio/background/plane_flyover_viima.ogg` from Freesound 254511 (YleArkisto,
+  CC-BY 4.0; credited) – trimmed 1.5 s + 39.3 s, mono, -3 dB + limiter (the stereo mix clipped),
+  fades. Original WAV in `assets_source/` (git-ignored). `tools/test_background.gd`.
+
 ## Front reports – how it is built
 - `FrontReports` resource (`scripts/game/front_reports.gd`, `resources/front_reports.tres`, written
   by the builder from `FRONT_REPORTS`): `dates` + `texts` (PackedStringArray, default
@@ -429,7 +441,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`,
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
