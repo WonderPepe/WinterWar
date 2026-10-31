@@ -41,6 +41,5 @@ func open(director: MatchDirector, player: Player) -> void:
 
 
 func _on_play_again() -> void:
-	get_tree().paused = false
 	NetworkManager.start_single_player()
-	get_tree().change_scene_to_file(GAME_SCENE)
+	LoadingScreen.go(get_tree(), GAME_SCENE)

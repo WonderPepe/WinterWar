@@ -57,10 +57,10 @@ func _ready() -> void:
 func _on_single_player() -> void:
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
-	get_tree().change_scene_to_file(GAME_SCENE)
+	LoadingScreen.go(get_tree(), GAME_SCENE) # with a progress bar
 
 
 func _on_benchmark() -> void:
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
-	get_tree().change_scene_to_file(BENCHMARK_SCENE)
+	LoadingScreen.go(get_tree(), BENCHMARK_SCENE)

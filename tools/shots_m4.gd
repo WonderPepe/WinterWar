@@ -19,6 +19,10 @@ func run() -> void:
 	await wait(30)
 	await snap("m4_1_main_menu.png")
 	get_tree().current_scene.get_node("Center/VBox/SinglePlayerButton").pressed.emit()
+	for i in 100: # through the loading screen
+		await get_tree().create_timer(0.1).timeout
+		if get_tree().current_scene and get_tree().current_scene.name == "Game" and get_tree().root.get_node_or_null("LoadingScreen") == null:
+			break
 	await wait(20)
 	var pm: Node = get_tree().current_scene.get_node("PauseMenu")
 	pm.open()

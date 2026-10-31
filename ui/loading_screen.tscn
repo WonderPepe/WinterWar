@@ -1,0 +1,105 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/loading_screen.gd" id="1_1kfex"]
+[ext_resource type="Theme" path="res://ui/winter_theme.tres" id="2_e66os"]
+
+[sub_resource type="Gradient" id="Gradient_to6u5"]
+colors = PackedColorArray(0.13, 0.16, 0.21, 1, 0.36, 0.41, 0.49, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_gyf4x"]
+gradient = SubResource("Gradient_to6u5")
+width = 4
+height = 128
+fill_to = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o3r17"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0.45)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.25)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w0ar3"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.4, 0.56, 0.76, 0.95)
+border_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="LoadingScreen" type="CanvasLayer" unique_id=2139602289]
+script = ExtResource("1_1kfex")
+
+[node name="Root" type="Control" parent="." unique_id=844103051]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("2_e66os")
+
+[node name="Background" type="TextureRect" parent="Root" unique_id=825227334]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = SubResource("GradientTexture2D_gyf4x")
+expand_mode = 1
+
+[node name="Center" type="CenterContainer" parent="Root" unique_id=1373431951]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center" unique_id=131043926]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Root/Center/VBox" unique_id=1390237235]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 8
+text = "WINTER WAR: SUMMA"
+horizontal_alignment = 1
+
+[node name="Status" type="Label" parent="Root/Center/VBox" unique_id=515281942]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.9, 0.93, 0.97, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+text = "Loading the battle..."
+horizontal_alignment = 1
+
+[node name="Bar" type="ProgressBar" parent="Root/Center/VBox" unique_id=293755431]
+custom_minimum_size = Vector2(560, 22)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_o3r17")
+theme_override_styles/fill = SubResource("StyleBoxFlat_w0ar3")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+
+[node name="Tip" type="Label" parent="Root/Center/VBox" unique_id=852878441]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0.85, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+horizontal_alignment = 1
+autowrap_mode = 3

@@ -31,6 +31,7 @@ func _initialize() -> void:
 	_save(_build_settings_menu(theme), "res://ui/settings_menu.tscn")
 	_save(_build_pause_menu(theme), "res://ui/pause_menu.tscn")
 	_save(_build_main_menu(theme), "res://ui/main_menu.tscn")
+	_save(_build_loading_screen(theme), "res://ui/loading_screen.tscn")
 	_save(_build_game(), "res://scenes/game.tscn")
 	_save(_build_benchmark(), "res://scenes/benchmark.tscn")
 	print("ALL SCENES BUILT")
@@ -1354,6 +1355,47 @@ func _build_pause_menu(theme: Theme) -> Node:
 	var sm: Control = _add(root, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
 	sm.visible = false
 	return pm
+
+
+## Loading screen with a progress bar (main menu → battle). Same look as the main menu.
+func _build_loading_screen(theme: Theme) -> Node:
+	var ls := CanvasLayer.new()
+	ls.name = "LoadingScreen"
+	ls.set_script(load("res://scripts/ui/loading_screen.gd"))
+	var root: Control = _add(ls, Control.new(), "Root")
+	root.theme = theme
+	_full_rect(root)
+	var bg: TextureRect = _add(root, TextureRect.new(), "Background")
+	_full_rect(bg)
+	var g := Gradient.new()
+	g.set_color(0, Color(0.13, 0.16, 0.21))
+	g.set_color(1, Color(0.36, 0.41, 0.49))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill_from = Vector2(0, 0)
+	gt.fill_to = Vector2(0, 1)
+	gt.width = 4
+	gt.height = 128
+	bg.texture = gt
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	var center: CenterContainer = _add(root, CenterContainer.new(), "Center")
+	_full_rect(center)
+	var vb: VBoxContainer = _add(center, VBoxContainer.new(), "VBox")
+	vb.add_theme_constant_override("separation", 14)
+	_label(vb, "Title", "WINTER WAR: SUMMA", 44, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(vb, "Status", "Loading the battle...", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(0.9, 0.93, 0.97))
+	var bar := _bar(vb, "Bar", Color(0.4, 0.56, 0.76, 0.95), Vector2(560, 22))
+	bar.show_percentage = true
+	bar.add_theme_font_size_override("font_size", 14)
+	bar.add_theme_color_override("font_color", Color(1, 1, 1))
+	bar.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	bar.add_theme_constant_override("outline_size", 4)
+	bar.value = 0
+	var tip := _label(vb, "Tip", "", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.85, 0.92))
+	tip.custom_minimum_size = Vector2(560, 0)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return ls
 
 
 func _build_main_menu(theme: Theme) -> Node:

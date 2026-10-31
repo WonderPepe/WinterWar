@@ -29,8 +29,19 @@ func run() -> void:
 	var vb := get_tree().current_scene.get_node("Center/VBox")
 	check(vb.get_node("HostCoopButton").disabled and vb.get_node("JoinCoopButton").disabled, "co-op buttons are greyed out")
 	vb.get_node("SinglePlayerButton").pressed.emit()
-	await seconds(0.5)
+	await seconds(0.3)
+	var loading := get_tree().root.get_node_or_null("LoadingScreen")
+	check(loading != null and (loading.get_node("Root/Center/VBox/Bar") as ProgressBar) != null, "loading screen with a progress bar")
+	for i in 100: # wait until the game has been loaded
+		if get_tree().current_scene and get_tree().current_scene.name == "Game":
+			break
+		await seconds(0.1)
 	check(get_tree().current_scene.name == "Game", "Single Player starts the game")
+	for i in 50:
+		if get_tree().root.get_node_or_null("LoadingScreen") == null:
+			break
+		await seconds(0.1)
+	check(get_tree().root.get_node_or_null("LoadingScreen") == null, "loading screen goes away when the game is ready")
 	var game: Game = get_tree().current_scene
 	var pause_menu: Node = game.get_node("PauseMenu")
 	await seconds(0.7) # headless: the mouse can't be captured, so the pause menu opens itself

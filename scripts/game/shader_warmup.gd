@@ -1,3 +1,4 @@
+class_name ShaderWarmup
 extends CanvasLayer
 ## Removes the "first shot stutter".
 ##
@@ -8,11 +9,15 @@ extends CanvasLayer
 
 @export var frames: int = 10 ## How many frames to keep the effects on screen.
 
+## 0..1 while warming up (shown by the LoadingScreen's progress bar).
+var progress: float = 0.0
+
 var _cover: ColorRect
 var _temp: Array[Node] = []
 
 
 func _ready() -> void:
+	add_to_group("shader_warmup")
 	layer = 50
 	_cover = ColorRect.new()
 	_cover.color = Color(0.13, 0.16, 0.21) # same as the loading screen
@@ -71,6 +76,7 @@ func _warm_up() -> void:
 	_temp.append(maxim_model)
 
 	for i in frames:
+		progress = float(i + 1) / frames
 		await get_tree().process_frame
 
 	# Clean up: hide everything again and show the real game.

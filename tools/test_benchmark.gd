@@ -7,7 +7,10 @@ func _ready() -> void:
 	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
 	await get_tree().create_timer(0.5).timeout
 	get_tree().current_scene.get_node("Center/VBox/BenchmarkButton").pressed.emit()
-	await get_tree().create_timer(1.0).timeout
+	for i in 100: # through the loading screen
+		await get_tree().create_timer(0.1).timeout
+		if get_tree().current_scene and get_tree().current_scene.name == "Benchmark":
+			break
 	var ok: bool = get_tree().current_scene.name == "Benchmark"
 	print(("PASS" if ok else "FAIL") + "  benchmark scene started")
 	await get_tree().create_timer(63.0).timeout
@@ -15,5 +18,6 @@ func _ready() -> void:
 	var enemies: int = get_tree().get_nodes_in_group("enemies").size()
 	print(("PASS" if enemies >= 16 else "FAIL") + "  %d soldiers spawned" % enemies)
 	print(("PASS" if bench._results_text != "" else "FAIL") + "  results screen shown")
+	print(("PASS" if get_tree().root.get_node_or_null("LoadingScreen") == null else "FAIL") + "  loading screen gone")
 	print("RESULT: done")
 	get_tree().quit()
