@@ -13,3 +13,6 @@
 
 # Raw asset downloads (processed copies go to assets/)
 /assets_source/
+
+# Release builds (zips to upload to itch.io) – rebuilt from a git tag when needed
+/releases/

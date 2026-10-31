@@ -1468,7 +1468,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	back.custom_minimum_size = Vector2(200, 44)
 	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-	var ver := _label(mm, "Version", "Prototype · G1", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+	var ver := _label(mm, "Version", "Prototype", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
 	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.offset_left = -300
 	ver.offset_top = -34

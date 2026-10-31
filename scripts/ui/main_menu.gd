@@ -20,12 +20,15 @@ static var start_pressed_msec: int = 0
 @onready var menu_box: Control = $Center
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 @onready var difficulty_option: OptionButton = $Center/VBox/DifficultyRow/DifficultyOption
+@onready var version_label: Label = $Version
 
 
 func _ready() -> void:
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	quit_button.visible = not OS.has_feature("web") # a browser tab can't be "quit"
+	# The version number comes from Project Settings → Application → Config → Version.
+	version_label.text = "Prototype · v%s" % ProjectSettings.get_setting("application/config/version", "?")
 	single_button.pressed.connect(_on_single_player)
 	difficulty_option.select(clampi(Settings.difficulty, 0, difficulty_option.item_count - 1))
 	difficulty_option.item_selected.connect(Settings.set_difficulty)

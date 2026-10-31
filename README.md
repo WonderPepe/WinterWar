@@ -175,6 +175,10 @@ Enemies walk on a pre-baked navigation mesh (`levels/test_level_navmesh.res`).
 If you change the level (terrain, trench, trees), open `levels/test_level.tscn`,
 select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 
+## Releases
+The playable browser version is published on itch.io; development goes on here in the meantime.
+How to make a new release: see `RELEASES.md`.
+
 ## Milestones
 - [x] M1: project setup, input map, test level, player movement
 - [x] M2: weapons and shooting

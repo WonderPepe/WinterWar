@@ -11,6 +11,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Russia so Finnish NLS data does not cover it), peer-to-peer co-op (WebRTC) for 2–4 players.
 
 ## Working with the owner
+- **Privacy:** never write the owner's real name, e-mail or other personal details into any
+  project file, comment, commit message or build. Commits in this repo use the pseudonym
+  `WonderPepe` (repo-local git config). The public version is published under a pseudonym.
 - Total beginner with coding and with Godot: explain important concepts briefly, in plain words.
 - Before writing code for a milestone: show a short plan + node tree and **wait for approval**.
 - Work in milestones; stop after each so he can test in Godot. Give exact test steps.
@@ -34,6 +37,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   markers, closer ADS, Maxim sights / belt-feed animation / heat, steam, overheating).
 - [x] G1 a real battle (MatchDirector win/lose, ASSAULT into the trench, ammo crates, bandages,
   dusk, end screen, Easy/Normal/Hard).
+- [x] Release v0.1.0: first playable browser version for itch.io (see RELEASES.md: version in
+  setup_project.gd, zip of export/web in git-ignored releases/, annotated git tag per release).
 - Next: G2 "pressure" (approved plan): artillery barrages, enemy suppression + prone, field cover
   (rocks, wire, craters, cover points), officer with whistle, DP-27 MG teams, wave composition list.
   New sounds go through RecordedSounds names (explosion…, shell_whistle…, officer_whistle…,
@@ -54,7 +59,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 7. Finnish comrades: AI riflemen in the trench (later replaced by co-op players).
 8. Co-op over WebRTC (needs a small signaling server) with a lobby code.
 9. Real sound recordings (CC0) to replace the generated ones; shouts; menu music.
-10. Options: field of view, key rebinding, gamepad; itch.io release page.
+10. Options: field of view, key rebinding, gamepad.
 11. Lahti-Saloranta (slot 3) if a usable model turns up, or built from shapes.
 
 ## Multiplayer-ready architecture (mandatory)
