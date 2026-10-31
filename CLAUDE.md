@@ -26,15 +26,27 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   this file is the memory between chats – keep it up to date at the end of every milestone.
 - Setup used so far (Cowork, cloud workspace + the owner's computer):
   - Godot 4.7.2 Linux binary (official release) + Web export templates in
-    `~/.local/share/godot/export_templates/4.7.2.stable/`; xvfb for screenshots / GL tests;
-    Python Playwright (Chromium, SwiftShader) for `tools/web_smoke_test.py`.
+	`~/.local/share/godot/export_templates/4.7.2.stable/`; xvfb for screenshots / GL tests;
+	Python Playwright (Chromium, SwiftShader) for `tools/web_smoke_test.py`.
   - Work on a copy of the project in the cloud workspace (run the builder, tests, exports there),
-    then deliver changed files as a zip → copy into the folder → unzip → `git status`.
+	then deliver changed files as a zip → copy into the folder → unzip → `git status`.
   - Scene files rebuilt by `build_scenes.gd` get new random `unique_id`s: restore files whose only
-    change is `unique_id` lines (`git show HEAD:file > file`) – but NEVER binary files
-    (`git diff --numstat` shows `-`), or the new baked meshes / navmesh are lost.
+	change is `unique_id` lines (`git show HEAD:file > file`) – but NEVER binary files
+	(`git diff --numstat` shows `-`), or the new baked meshes / navmesh are lost.
   - Commit on the owner's computer (repo-local git identity `WonderPepe`); the owner pushes with
     GitHub Desktop. Releases: see RELEASES.md (only when the owner asks for one).
+  - Fastest way to get the project into the cloud: `git bundle create "Claude outputs/repo.bundle"
+    --all` on the owner's computer → stage it → `git clone` it in the cloud. Godot 4.7.2 + export
+    templates download from github.com/godotengine/godot/releases (4.7.2-stable). freesound.org
+    is NOT reachable from the cloud workspace – the owner downloads sounds into `assets_source/`.
+  - Git in the owner's folder needs delete permission (git removes its own .lock / tmp_obj files):
+    ask for it once per chat (device_request_delete_permission) before committing, otherwise a
+    `.git/HEAD.lock` is left behind and the next git command fails. `git fsck` there reports
+    "unable to mmap … Invalid argument" – a quirk of the folder mount, the objects are fine.
+  - Commits made in the cloud copy are scratch only (never pushed). A stop hook may ask to re-author
+    them as "Claude" – don't: the repo's commits use the owner's pseudonym `WonderPepe` (owner's
+    privacy rule above).
+  - Clean up your own temporary files in `Claude outputs/` (bundles, staged copies) at the end.
 
 ## Milestones
 - [x] M1 project setup, input map, test level, player movement
@@ -68,9 +80,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   with whistle, DP-27 MG teams, wave composition list (needed to send officers/MG teams).
   Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was
   skipped for now – still open, see development ideas.
-- [x] Front reports: after each cleared wave the HUD shows the owner's Finnish front report for
-  that day (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for Hard's waves 9–10; in
-  order, wave n → report n), ~16 s or until the next wave starts; the victory screen shows the
+- [x] Front reports: after each cleared wave the owner's Finnish front report for that day
+  (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for Hard's waves 9–10; in order,
+  wave n → report n) – now shown on the day screen (see below); the victory screen shows the
   report of the last day held. Texts are the owner's own – never reword them.
 - [x] v0.1.3 aiming fixes (players: "ADS ends for a moment and comes back"), merged by hand later:
   Maxim new belt no longer ends ADS (hand-weapon reloads only); Maxim ADS camera follows only
@@ -84,6 +96,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Enter continues. Front reports are ALWAYS shown now (the Settings switch was removed – owner).
   Owner's choices: same lighting as before (dusk over the whole battle; weather/day-night later),
   no spoken voice for now (later: the owner may record one sentence per day himself).
+  Day-screen texts are Finnish ("PÄIVÄ n", "22. joulukuuta 1939", "[Välilyönti] Jatka",
+  "Kuva: SA-kuva"); the in-game HUD stays English ("WAVE n COMPLETED").
   Radio static: recommended CC0 Freesound 199438 "Radio Fuzz for Old Radio Broadcast"
   (martinimeniscus) – the cloud workspace can't reach freesound.org, so the owner downloads it
   into `assets_source/`; then trim/convert it to `assets/audio/recorded/radio_static.ogg`.
@@ -498,7 +512,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`, `shots_drum.gd`,
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd [days…]` (day screen: completed banner, title, typing, read), `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`, `shots_drum.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
