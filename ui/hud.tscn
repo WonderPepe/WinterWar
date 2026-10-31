@@ -6,7 +6,6 @@
 [ext_resource type="Script" path="res://scripts/ui/damage_indicator.gd" id="4_b00kl"]
 [ext_resource type="Script" path="res://scripts/ui/hit_marker.gd" id="5_so1yu"]
 [ext_resource type="FontFile" path="res://assets/fonts/FreeMonoBold.ttf" id="6_65xic"]
-[ext_resource type="AudioStream" path="res://assets/audio/hit_tick.wav" id="7_mp5xd"]
 [ext_resource type="Theme" path="res://ui/winter_theme.tres" id="8_u6vop"]
 [ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="9_xtm2r"]
 
@@ -523,11 +522,6 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 text = "Respawning in 5..."
 horizontal_alignment = 1
-
-[node name="HitSound" type="AudioStreamPlayer" parent="." unique_id=1158472457]
-stream = ExtResource("7_mp5xd")
-volume_db = -8.0
-bus = &"UI"
 
 [node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=1179399304]
 volume_db = -4.0

@@ -42,7 +42,6 @@ var _typed: float = 0.0 # letters of the telegram typed so far (date first, then
 @onready var wave_banner: Label = $WaveBanner
 @onready var death_screen: Control = $DeathScreen
 @onready var respawn_label: Label = $DeathScreen/Respawn
-@onready var hit_sound: AudioStreamPlayer = $HitSound
 @onready var interact_prompt: Label = $InteractPrompt
 @onready var damage_indicator: DamageIndicator = $DamageIndicator
 @onready var hurt_sound: AudioStreamPlayer = $HurtSound
@@ -118,9 +117,7 @@ func _on_health_changed(new_health: int) -> void:
 
 
 func _on_hit_confirmed(killed: bool) -> void:
-	hit_marker.show_hit(killed)
-	hit_sound.pitch_scale = 0.75 if killed else 1.0
-	hit_sound.play()
+	hit_marker.show_hit(killed) # (no sound: the owner removed the generated hit tick)
 
 
 func _update_vitals() -> void:

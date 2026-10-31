@@ -52,7 +52,9 @@ n = int(0.15 * SR)
 save("empty_click.wav", click(n, 0.0, 3000, 0.02))
 n = int(0.08 * SR)
 t = np.arange(n) / SR
-save("hit_tick.wav", np.sin(2*np.pi*1800*t) * np.exp(-t / 0.015) + click(n, 0.0, 3200, 0.01, 0.3))
+# (hit_tick.wav removed: the owner didn't want a hit sound. Still generated, not saved,
+#  to keep the random numbers the same.)
+_ = (np.sin(2*np.pi*1800*t) * np.exp(-t / 0.015) + click(n, 0.0, 3200, 0.01, 0.3))
 # Maxim (added in W1): heavy rifle cartridge, short tail so fast fire doesn't turn to mush.
 save("maxim_shot.wav", gunshot(0.45, 0.009, 0.07, 48, 0.12, 0.28))
 n = int(2.0 * SR)

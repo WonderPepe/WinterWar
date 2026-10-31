@@ -92,6 +92,36 @@ func run() -> void:
 	check(vm.reload_hand > 0.5, "a hand goes to the pouch when reloading")
 	await seconds(2.0)
 
+	# Suomi drum: the left hand holds it; a reload pulls it out, drops it, puts a new one in.
+	wc.current_slot = 1
+	await seconds(0.6)
+	var svm: ViewModel = wc._view_models[1]
+	var drum: Node3D = svm._magazine
+	check(drum != null and drum.find_child("SuomiKP31_Drum", true, false) != null, "Suomi drum is a movable part")
+	var drum_rest: Vector3 = drum.global_position
+	var palm_l: Vector3 = wc.get_hand_grips()[1].origin
+	check(palm_l.distance_to(drum_rest) < 0.09 and palm_l.y < drum_rest.y, "left hand under the drum (%.3f m from its centre)" % palm_l.distance_to(drum_rest))
+	var dropped_before: int = ViewModel._dropped_magazines.size()
+	svm.play_reload(3.0)
+	await seconds(0.65) # ~0.22 of the reload: being pulled out
+	var off_hand: float = (svm.model.global_transform * (svm._left_hand_on_magazine(svm.magazine_progress) * svm._magazine_in_hand)).origin.distance_to(drum.global_position)
+	check(svm.magazine_progress > 0.15 and off_hand < 0.005, "the drum moves with the left hand")
+	check(drum.position.distance_to(svm._magazine_rest.origin) > 0.06, "the drum is pulled out of the gun")
+	await seconds(0.45) # ~0.37: dropped, hand on the way to the pouch
+	check(not drum.visible, "the old drum has left the hand")
+	var dropped_now: int = ViewModel._dropped_magazines.size()
+	check(dropped_now == dropped_before + 1 or dropped_now == ViewModel.MAX_DROPPED_MAGAZINES, "the old drum is dropped")
+	var body: RigidBody3D = ViewModel._dropped_magazines[-1] as RigidBody3D
+	var y0: float = body.global_position.y
+	await seconds(0.9) # ~0.67: the new drum comes up to the gun
+	check(drum.visible, "a new drum in the hand")
+	check(body.global_position.y < y0 - 0.2, "the dropped drum falls (%.2f m)" % (y0 - body.global_position.y))
+	await seconds(1.3)
+	check(svm.magazine_progress < 0.0 and drum.position.distance_to(svm._magazine_rest.origin) < 0.001, "new drum seated in the gun")
+	check(hand_error(false, wc.get_hand_grips()[1]) < 0.01, "left hand back on the drum")
+	wc.current_slot = 0
+	await seconds(0.6)
+
 	# Dead: no arms.
 	p.take_damage(1000.0, -1, p.global_position, Vector3.UP)
 	await frames(3)

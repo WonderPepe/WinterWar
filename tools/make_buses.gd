@@ -4,7 +4,7 @@ extends SceneTree
 ## Master
 ##  ├── SFX       guns, footsteps, impacts – with an outdoor echo (reverb)
 ##  ├── Ambience  wind and the distant battle – low-pass filter (muffled in the trench/bunker)
-##  └── UI        menu and HUD sounds (hit tick)
+##  └── UI        menu and HUD sounds
 
 func _initialize() -> void:
 	while AudioServer.bus_count > 1:

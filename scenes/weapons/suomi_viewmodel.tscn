@@ -18,6 +18,9 @@ bolt_part_names = PackedStringArray()
 hidden_part_names = PackedStringArray("SuomiKP31_Magazine", "9mm_Case")
 ads_eye_distance = 0.35
 hip_offset = Vector3(0, -0.02, -0.08)
+magazine_part_name = "SuomiKP31_Drum"
+reload_offset = Vector3(-0.1, -0.02, 0)
+reload_rotation_deg = Vector3(15, 10, -60)
 
 [node name="Model" type="Node3D" parent="." unique_id=706135388]
 
@@ -50,5 +53,5 @@ transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.301
 gizmo_extents = 0.03
 
 [node name="GripL" type="Marker3D" parent="Model" unique_id=69216]
-transform = Transform3D(-0.20388064, -0.649189, 0.7327935, 0.9540568, -0.29962572, -1.4901161e-08, 0.21956378, 0.69912666, 0.6804511, 0, -0.01, -0.21)
+transform = Transform3D(0.267588, -0.788382, 0.55394, 0.963423, 0.210235, -0.166182, 0.0145572, 0.578147, 0.815803, -0.023, -0.121, -0.145)
 gizmo_extents = 0.03

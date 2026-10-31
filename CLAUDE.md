@@ -82,7 +82,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
    points that soldiers bound between); MG fire suppressing the player (screen effect).
 1. (done in W2) Maxim sights/belt/heat. Still open: better Maxim sound, water can + hose.
 2. (done in W2) First-person arms. Still open: arms for co-op players' third-person bodies
-   (players are capsules now), reload animations that really move clips/drums.
+   (players are capsules now), a Mosin reload that really moves the stripper clip (the Suomi
+   drum change is done).
 3. Real Summa terrain from the owner's maps + Copernicus DEM; real trench line, the big concrete
    bunkers (e.g. Sj5 "Millionaire"), anti-tank rocks, barbed wire, shell craters.
 4. Soviet attack variety: tanks (T-26/T-28) with infantry behind them, artillery barrages
@@ -226,7 +227,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   make_sounds.py still runs those generators without saving (keeps the random numbers the same).
   The generated Mosin bolt click (bolt_cycle.wav) was removed too (owner): `WeaponData.get_cycle_sound()`
   = `cycle_sound` if set, else a recording `bolt_<recording_name>…`, else silent.
-  Placeholder sounds that remain: shots, empty click, hit tick, ambience, cracks, steam.
+  The hit tick (hit_tick.wav, HUD HitSound) was removed too (owner) – hits only show the marker.
+  Placeholder sounds that remain: shots, empty click, ambience, cracks, steam.
 - The shooting-range practice targets were removed from the level (owner); navmesh re-baked.
   `scenes/props/target_dummy.tscn` stays only for tests (test_m2 / test_w1 / shots_m2 place their own).
 - Breath vapour: faint (alpha ~0.1), below the line of sight; Settings `show_breath` (menu
@@ -268,6 +270,14 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   above `steam_heat`. Owner side: `_can_fire_now` never fires while overheated (click instead).
 - Mounted ADS moves the CAMERA to `Pivot/SightEye` (camera.position in Head space × aim
   amount); `_update_view` resets it to zero off the gun.
+- Suomi drum (owner's wish: the left hand went through the drum): `GripL` is UNDER the drum (palm up
+  on its rim). `ViewModel.magazine_part_name` ("SuomiKP31_Drum") moves the part into a runtime
+  `Model/Magazine` node at its centre. Reload = `magazine_progress` 0..1 (tween_method over the
+  reload time; key times `MAG_STEPS`): pull down `magazine_pull_m` with the hand → drop (a
+  RigidBody3D copy, layer 0 / mask 1, local only, max 4, freed after 15 s) → pouch → new drum
+  comes back with the hand → pushed in. The left hand comes from `_left_hand_on_magazine()` (Model
+  space) so hand and drum always agree. Per-gun `reload_offset` / `reload_rotation_deg` (Suomi
+  lifts and rolls the gun −60° so the change is in view). `tools/shots_drum.gd`, checks in test_w2.
 - `tools/shots_w2.gd [prefix] [side]` (the "side" option adds a camera beside the player to
   check the grips), `tools/test_w2.gd`.
 
@@ -465,7 +475,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`,
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`, `shots_drum.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier

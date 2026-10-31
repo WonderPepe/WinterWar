@@ -731,8 +731,15 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 	r[0].set("hidden_part_names", PackedStringArray(["SuomiKP31_Magazine", "9mm_Case"]))
 	r[0].set("ads_eye_distance", 0.35) # (W1: 0.40)
 	r[0].set("hip_offset", Vector3(0.0, -0.02, -0.08))
+	# The drum: the left hand holds it, and a reload pulls it out, drops it and puts in a new
+	# one. The gun is lifted and rolled to the left while reloading so you can see it happen.
+	r[0].set("magazine_part_name", "SuomiKP31_Drum")
+	r[0].set("reload_offset", Vector3(-0.1, -0.02, 0.0))
+	r[0].set("reload_rotation_deg", Vector3(15.0, 10.0, -60.0))
 	_grip(model, "GripR", Vector3(0.022, -0.04, 0.1), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
-	_grip(model, "GripL", Vector3(0.0, -0.01, -0.21), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
+	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077), palm up against
+	# its rim, fingers forward-right around it.
+	_grip(model, "GripL", Vector3(-0.023, -0.121, -0.145), Vector3(0.75, -0.2, -0.55), Vector3(0.3, 1, 0), false)
 	return r[0]
 
 
@@ -1454,10 +1461,7 @@ func _build_hud(theme: Theme) -> Node:
 	rl.offset_top = 16
 	rl.offset_bottom = 56
 
-	var tick: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HitSound")
-	tick.stream = load("res://assets/audio/hit_tick.wav")
-	tick.volume_db = -8.0
-	tick.bus = &"UI"
+	# (no HitSound: the generated hit tick was removed – owner's wish)
 	var hurt: AudioStreamPlayer = _add(hud, AudioStreamPlayer.new(), "HurtSound")
 	# (no stream: HUD picks a real recording, assets/audio/recorded/hurt…)
 	hurt.volume_db = -4.0
