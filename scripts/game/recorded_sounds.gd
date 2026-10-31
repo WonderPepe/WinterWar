@@ -9,6 +9,7 @@ extends RefCounted
 ##   hurt…          you get hit (several files = a random one each time)
 ##   officer_whistle…  a Soviet officer's whistle (G2)
 ##   dp27…          one DP-27 machine-gun shot (G2)
+##   telegraph…     typewriter clatter while a front-report telegram types itself out
 ## Example: hurt_1.ogg, hurt_2.ogg, hurt_3.ogg, reload_mosin.ogg.
 ## Missing files = silence (better than a bad placeholder). See the README in the folder.
 

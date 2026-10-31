@@ -1361,27 +1361,48 @@ func _build_hud(theme: Theme) -> Node:
 	sub.offset_top = -90
 	sub.offset_bottom = -56
 
-	# After each cleared wave: the front report (date + text), on a dark panel near the top.
+	# After each cleared wave: the front report as a TELEGRAM – a sheet of paper near the top,
+	# typewriter letters (FreeMono Bold) typed out one by one by the HUD.
 	hud.set("front_reports", load("res://resources/front_reports.tres"))
+	var tele_font: Font = load("res://assets/fonts/FreeMonoBold.ttf")
+	var ink := Color(0.16, 0.12, 0.09)
 	var fr: PanelContainer = _add(hud, PanelContainer.new(), "FrontReport")
 	fr.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	fr.offset_left = -360
-	fr.offset_right = 360
+	fr.offset_left = -350
+	fr.offset_right = 350
 	fr.offset_top = 128 # below the wave panel
 	fr.offset_bottom = 128
 	fr.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	var fr_style := _flat(Color(0.05, 0.06, 0.08, 0.72), Color(0.75, 0.68, 0.5, 0.6), 1, 4)
-	fr_style.content_margin_left = 22
-	fr_style.content_margin_right = 22
-	fr_style.content_margin_top = 14
-	fr_style.content_margin_bottom = 16
-	fr.add_theme_stylebox_override("panel", fr_style)
+	fr.pivot_offset = Vector2(350, 110)
+	fr.rotation = deg_to_rad(-0.8) # laid down a little crooked
+	var paper := _flat(Color(0.93, 0.88, 0.74, 0.97), Color(0.55, 0.45, 0.3, 0.9), 1, 2)
+	paper.content_margin_left = 30
+	paper.content_margin_right = 30
+	paper.content_margin_top = 16
+	paper.content_margin_bottom = 20
+	paper.shadow_color = Color(0, 0, 0, 0.35)
+	paper.shadow_size = 8
+	paper.shadow_offset = Vector2(3, 4)
+	fr.add_theme_stylebox_override("panel", paper)
 	var fr_v: VBoxContainer = _add(fr, VBoxContainer.new(), "VBox")
-	fr_v.add_theme_constant_override("separation", 8)
-	_label(fr_v, "Date", "21.12.1939", 26, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.9, 0.7))
-	var fr_t := _label(fr_v, "Text", "", 19, HORIZONTAL_ALIGNMENT_CENTER, Color(0.93, 0.95, 0.98))
+	fr_v.add_theme_constant_override("separation", 6)
+	var head := _label(fr_v, "Header", "S Ä H K Ö S A N O M A", 26, HORIZONTAL_ALIGNMENT_CENTER, ink)
+	var rule: ColorRect = _add(fr_v, ColorRect.new(), "Rule")
+	rule.color = Color(ink, 0.7)
+	rule.custom_minimum_size = Vector2(0, 2)
+	var fr_d := _label(fr_v, "Date", "21.12.1939", 20, HORIZONTAL_ALIGNMENT_RIGHT, ink)
+	var fr_t := _label(fr_v, "Text", "", 19, HORIZONTAL_ALIGNMENT_LEFT, ink)
 	fr_t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	fr_t.custom_minimum_size = Vector2(676, 0)
+	fr_t.custom_minimum_size = Vector2(640, 0)
+	for l: Label in [head, fr_d, fr_t]:
+		l.add_theme_font_override("font", tele_font)
+		l.add_theme_constant_override("outline_size", 0)
+		# Letters appear one by one, but the lines are laid out for the whole text from the start.
+		l.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+	fr_t.add_theme_constant_override("line_spacing", 2)
+	var tick_snd: AudioStreamPlayer = _add(fr, AudioStreamPlayer.new(), "TypeSound")
+	tick_snd.bus = &"UI" # (no stream: a real recording assets/audio/recorded/telegraph…, if any)
+	tick_snd.volume_db = -6.0
 	fr.visible = false
 
 	# Death screen.
@@ -1430,6 +1451,7 @@ func _build_hud(theme: Theme) -> Node:
 	es_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	# Victory: the front report of the last day held.
 	var es_r := _label(es_v, "Report", "", 17, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.75))
+	es_r.add_theme_font_override("font", load("res://assets/fonts/FreeMonoBold.ttf"))
 	es_r.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	es_r.custom_minimum_size = Vector2(560, 0)
 	_label(es_v, "Stats", "", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.95, 0.96, 0.98))

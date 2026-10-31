@@ -146,11 +146,14 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
 
 ## Front reports
-- After every cleared wave a front report for that day appears at the top of the screen
+- After every cleared wave a front report for that day arrives as a telegram ("SÄHKÖSANOMA" on
+  a sheet of paper, typewriter letters typed out one by one) at the top of the screen
   (21.12.1939 after wave 1, 22.12.1939 after wave 2, … 28.12.1939 after wave 8). When you win,
   the end screen shows the report of the last day.
 - The texts are in `resources/front_reports.tres` (Inspector: `dates` and `texts`, in pairs).
   There are 10: waves 9 and 10 (Hard only) get 31.12.1939 and 01.01.1940.
+- Typing speed and reading time: `type_speed` / `report_time` on the HUD. A typewriter or
+  teleprinter recording `assets/audio/recorded/telegraph….ogg` plays while it types (silent without).
 
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,

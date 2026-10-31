@@ -352,6 +352,12 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `FrontReports` resource (`scripts/game/front_reports.gd`, `resources/front_reports.tres`, written
   by the builder from `FRONT_REPORTS`): `dates` + `texts` (PackedStringArray, default
   `PackedStringArray()` because of the export bug). `get_report(wave)` → [date, text] or empty.
+- Looks like a telegram (owner's wish): paper-coloured panel (StyleBoxFlat + shadow, rotated
+  -0.8°), header "S Ä H K Ö S A N O M A", date right, text in `assets/fonts/FreeMonoBold.ttf`
+  (GNU FreeFont, GPL + font exception; licence file next to it, CREDITS.md). The HUD types it
+  out with `visible_characters` (date first, then text; `type_speed` 28 letters/s; labels use
+  `VC_CHARS_AFTER_SHAPING` so the lines don't re-wrap while typing), then `report_time` 10 s to
+  read. Optional `RecordedSounds "telegraph"` clatter while typing.
 - HUD `front_reports` export + `FrontReport` panel (top centre, below the wave panel). It watches
   the synced `MatchDirector.waves_cleared`, so co-op clients see it too (no RPC). Hidden while the
   end screen is up; `EndScreen.open(director, player, reports)` shows the last day on victory.

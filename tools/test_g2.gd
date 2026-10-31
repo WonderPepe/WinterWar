@@ -324,6 +324,11 @@ func run() -> void:
 	await seconds(0.6)
 	check(hud.report_panel.visible and hud.report_date.text == "21.12.1939" and hud.report_text.text.begins_with("\"Täällä Kannaksen rintama."),
 			"wave 1 cleared: report of 21.12.1939")
+	await seconds(1.0)
+	check(hud.report_text.visible_characters > 0 and hud.report_text.visible_characters < hud.report_text.text.length(),
+			"telegram types itself out letter by letter (%d / %d after ~1.6 s)" % [hud.report_text.visible_characters, hud.report_text.text.length()])
+	await seconds(7.5)
+	check(hud.report_text.visible_characters >= hud.report_text.text.length() and hud.report_panel.visible, "…and is complete after ~8 s, still shown to read")
 	director.waves_cleared = 2
 	await seconds(0.6)
 	check(hud.report_date.text == "22.12.1939" and hud.report_text.text.contains("vihollispanssareita"), "wave 2 cleared: report of 22.12.1939")

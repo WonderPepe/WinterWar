@@ -8,7 +8,8 @@ extends CanvasLayer
 @export var damage_flash_time: float = 0.6
 @export var wave_banner_time: float = 2.5
 @export var front_reports: FrontReports ## Shown one by one after each cleared wave.
-@export var report_time: float = 16.0 ## Seconds a front report stays up (it also goes when the next wave starts).
+@export var report_time: float = 10.0 ## Seconds a front report stays up after it is typed out (it also goes when the next wave starts).
+@export var type_speed: float = 28.0 ## Telegram letters per second.
 
 var _player: Player
 var _last_health: int = 100
@@ -18,6 +19,8 @@ var _banner_left: float = 0.0
 var _death_time: float = -1.0
 var _last_cleared: int = 0
 var _report_left: float = 0.0
+var _report_total: float = 1.0
+var _typed: float = 0.0 # letters of the telegram typed so far (date first, then the text)
 
 @onready var crosshair: Crosshair = $Crosshair
 @onready var hit_marker: HitMarker = $HitMarker
@@ -50,6 +53,7 @@ var _report_left: float = 0.0
 @onready var report_panel: Control = $FrontReport
 @onready var report_date: Label = $FrontReport/VBox/Date
 @onready var report_text: Label = $FrontReport/VBox/Text
+@onready var type_sound: AudioStreamPlayer = $FrontReport/TypeSound
 
 var _director: MatchDirector
 var _message: String = ""
@@ -224,10 +228,31 @@ func _update_front_report(delta: float) -> void:
 		if report.size() == 2:
 			report_date.text = report[0]
 			report_text.text = report[1]
-			_report_left = report_time
+			_typed = 0.0
+			_report_total = (report[0].length() + report[1].length()) / type_speed + report_time
+			_report_left = _report_total
+			var clatter: AudioStream = RecordedSounds.pick("telegraph")
+			if clatter:
+				type_sound.stream = clatter
+				type_sound.play()
 	_report_left = maxf(_report_left - delta, 0.0)
 	report_panel.visible = _report_left > 0.0 and not end_screen.visible
-	report_panel.modulate.a = clampf(_report_left / 0.6, 0.0, 1.0) * clampf((report_time - _report_left) / 0.4, 0.0, 1.0)
+	report_panel.modulate.a = clampf(_report_left / 0.6, 0.0, 1.0) * clampf((_report_total - _report_left) / 0.3, 0.0, 1.0)
+	_type_telegram(delta)
+
+
+## The telegram types itself out letter by letter: first the date, then the message.
+func _type_telegram(delta: float) -> void:
+	var date_len: int = report_date.text.length()
+	var total: int = date_len + report_text.text.length()
+	_typed = minf(_typed + delta * type_speed, float(total))
+	var n: int = int(_typed)
+	report_date.visible_characters = mini(n, date_len)
+	report_text.visible_characters = maxi(n - date_len, 0)
+	if n >= total and type_sound.playing:
+		type_sound.stop()
+	if not report_panel.visible and type_sound.playing:
+		type_sound.stop()
 
 
 func _show_message(text: String) -> void:

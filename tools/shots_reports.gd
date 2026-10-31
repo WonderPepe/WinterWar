@@ -14,7 +14,9 @@ func _ready() -> void:
 	get_tree().get_first_node_in_group("wave_spawner").set_process(false)
 	var director: MatchDirector = get_tree().get_first_node_in_group("match_director")
 	director.waves_cleared = 2
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(3.0).timeout
+	await _shot("report_typing")
+	await get_tree().create_timer(6.0).timeout
 	await _shot("report_wave2")
 	director.waves_cleared = director.waves_to_win
 	director.end_match(MatchDirector.Result.VICTORY)

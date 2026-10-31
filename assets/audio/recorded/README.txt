@@ -7,6 +7,8 @@ Real sound recordings for the game (used automatically, by file name):
                     the game picks one at random each time
   officer_whistle...  a Soviet officer's whistle (G2; a generated placeholder is used until then)
   dp27...           one DP-27 machine-gun shot (G2; the Maxim placeholder, pitched up, until then)
+  telegraph...      teleprinter / typewriter clatter while a front-report telegram types itself out
+                    (stops when the text is finished; silent if there is none)
 
 .ogg is best (small). Keep each file short and trimmed (no silence at the start).
 Good free sources:
