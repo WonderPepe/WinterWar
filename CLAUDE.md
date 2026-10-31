@@ -37,8 +37,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   markers, closer ADS, Maxim sights / belt-feed animation / heat, steam, overheating).
 - [x] G1 a real battle (MatchDirector win/lose, ASSAULT into the trench, ammo crates, bandages,
   dusk, end screen, Easy/Normal/Hard).
-- [x] Release v0.1.0: first playable browser version for itch.io (see RELEASES.md: version in
-  setup_project.gd, zip of export/web in git-ignored releases/, annotated git tag per release).
+- [x] Release v0.1.0: first playable browser version, GitHub Pages from `docs/` on main
+  (https://wonderpepe.github.io/WinterWar/). See RELEASES.md: version in setup_project.gd, copy
+  export/web into docs/ (keep .nojekyll + .gdignore), zip in git-ignored releases/, git tag per
+  release. Only replace docs/ when the owner wants a new public release.
 - Next: G2 "pressure" (approved plan): artillery barrages, enemy suppression + prone, field cover
   (rocks, wire, craters, cover points), officer with whistle, DP-27 MG teams, wave composition list.
   New sounds go through RecordedSounds names (explosion…, shell_whistle…, officer_whistle…,

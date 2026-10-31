@@ -175,9 +175,10 @@ Enemies walk on a pre-baked navigation mesh (`levels/test_level_navmesh.res`).
 If you change the level (terrain, trench, trees), open `levels/test_level.tscn`,
 select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 
-## Releases
-The playable browser version is published on itch.io; development goes on here in the meantime.
-How to make a new release: see `RELEASES.md`.
+## Play in the browser
+**https://wonderpepe.github.io/WinterWar/** – the latest released version (desktop browser with
+mouse and keyboard; Chrome, Edge or Firefox). Development goes on here in the meantime;
+how a new version is released: see `RELEASES.md`.
 
 ## Milestones
 - [x] M1: project setup, input map, test level, player movement

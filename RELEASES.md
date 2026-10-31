@@ -1,7 +1,10 @@
 # Releases – the playable browser version
 
-Players play a **released version** on itch.io. Development continues in this repository; the
-public version only changes when a new release is uploaded.
+**Play:** https://wonderpepe.github.io/WinterWar/
+
+The game people play is the released build in the `docs/` folder, served by GitHub Pages
+(Settings → Pages → Deploy from a branch → `main`, folder `/docs`). Development goes on in the
+rest of the repository; the public game only changes when `docs/` is replaced with a new release.
 
 ## How a release works
 1. Finish and test a milestone (all tests pass, it plays well).
@@ -9,22 +12,17 @@ public version only changes when a new release is uploaded.
    run it, and add a line to the list below.
 3. Export the web build: `godot --headless --path . --export-release "Web" export/web/index.html`
    (or in the editor: Project → Export → Web → Export Project).
-4. Zip the **contents** of `export/web/` (index.html must be at the top of the zip, not inside a
-   folder) as `releases/WinterWarSumma-v<version>-web.zip`. The `releases/` folder is not in git.
-5. Commit, then tag the commit with the version (`v0.2.0`) so this exact version can always be
-   rebuilt: in GitHub Desktop, History → right-click the commit → Create Tag.
-6. Upload the zip on the itch.io page (Edit game → Uploads), tick "This file will be played in the
-   browser", and delete or hide the previous web upload. Players get the new version immediately.
+4. Replace the files in `docs/` with the new `export/web/` files (keep `docs/.nojekyll` and
+   `docs/.gdignore`). Also keep a zip in `releases/WinterWarSumma-v<version>-web.zip`
+   (not in git – it can be uploaded to itch.io too).
+5. Commit ("Release v0.2.0"), tag the commit (`v0.2.0`, in GitHub Desktop: History → right-click
+   the commit → Create Tag) and **Push origin**. About a minute later the link plays the new version.
 
-## itch.io page settings (first time)
-- Kind of project: **HTML**. Upload the zip, tick "This file will be played in the browser".
-- Embed options: viewport **1280 × 720**, tick **Fullscreen button**, "Click to launch in
-  fullscreen" optional. "SharedArrayBuffer support" is **not** needed (the game is exported
-  without threads).
-- Visibility: **Draft** while testing (only you can open it), later **Restricted** (people with the
-  link / a password) or **Public**.
-- Use a pseudonym account; the game itself contains no personal information.
-- Credits: the page description must name the 3D model authors (see `CREDITS.md`, CC-BY 4.0).
+Notes:
+- `docs/.nojekyll` tells GitHub Pages to serve the files as they are.
+- `docs/.gdignore` keeps the Godot editor from importing the exported files.
+- The game is exported without threads, so no special web-server headers are needed.
+- The 3D models are CC-BY 4.0: their authors are credited in the game (Credits) and in `CREDITS.md`.
 
 ## Versions
 | Version | Content |
