@@ -312,5 +312,28 @@ func run() -> void:
 			"wave 4 spawns %d riflemen + %d officer + %d gun team (got R%d O%d G%d, %d helpers)" % [w4.riflemen, w4.officers, w4.mg_teams, kinds[0], kinds[1], kinds[2], teamed])
 	check(spawner.alive_count == w4.total_soldiers(), "alive count %d = wave size" % spawner.alive_count)
 
+	# --- Front reports after each cleared wave ---
+	var reports: FrontReports = load("res://resources/front_reports.tres")
+	check(reports.dates.size() == 8 and reports.texts.size() == 8 and reports.dates[0] == "21.12.1939" and reports.dates[7] == "28.12.1939",
+			"8 front reports, 21.12.1939 … 28.12.1939")
+	check(reports.get_report(9).is_empty(), "no report after wave 9 (none written)")
+	check(not hud.report_panel.visible, "no report while a wave is on")
+	director.waves_cleared = 1
+	await seconds(0.6)
+	check(hud.report_panel.visible and hud.report_date.text == "21.12.1939" and hud.report_text.text.begins_with("\"Täällä Kannaksen rintama."),
+			"wave 1 cleared: report of 21.12.1939")
+	director.waves_cleared = 2
+	await seconds(0.6)
+	check(hud.report_date.text == "22.12.1939" and hud.report_text.text.contains("vihollispanssareita"), "wave 2 cleared: report of 22.12.1939")
+	spawner.wave_number += 1
+	await seconds(1.0)
+	check(not hud.report_panel.visible, "the report goes away when the next wave starts")
+	director.waves_cleared = director.waves_to_win
+	director.end_match(MatchDirector.Result.VICTORY)
+	await seconds(0.5)
+	check(hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("28.12.1939"),
+			"victory on Normal: the end screen shows the report of 28.12.1939")
+	get_tree().paused = false
+
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

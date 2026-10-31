@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="FrontReports" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/front_reports.gd" id="1_1nw3b"]
+
+[resource]
+script = ExtResource("1_1nw3b")
+dates = PackedStringArray("21.12.1939", "22.12.1939", "23.12.1939", "24.12.1939", "25.12.1939", "26.12.1939", "27.12.1939", "28.12.1939")
+texts = PackedStringArray("\"Täällä Kannaksen rintama. Vihollinen on päivän aikana jatkanut hyökkäyksiään Summan suunnalla. Puolustusasemamme ovat kestäneet raskaan tykistötulen. Tilanne on hallinnassa.\"", "\"Täällä Kannaksen rintama. Vihollinen on jälleen yrittänyt murtaa asemamme Summan lohkolla. Hyökkäys on torjuttu. Useita vihollispanssareita on tuhottu esteisiin ja korsujen tuleen. Miehistön taistelutahto on hyvä.\"", "\"Rintamatiedotus. Summassa on kulunut päivä ankarissa taisteluissa. Vihollinen jatkaa tykistökeskityksiä, mutta asemamme pitävät. Joukkomme ovat aiheuttaneet hyökkääjälle raskaita tappioita.\"", "\"Jouluaatto Kannaksella. Vihollisen toiminta on ollut vilkasta koko päivän. Puolustajat viettävät pyhää asemissaan. Mieliala joukkojen keskuudessa on luja.\"", "\"Joulupäivä Summassa. Taistelut jatkuvat. Puolustajat viettävät joulua asemissaan. Vihollisen yritykset edetä Viipurin suuntaan on pysäytetty.\"", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\"", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\"", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\"")

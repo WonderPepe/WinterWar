@@ -18,6 +18,7 @@ func _initialize() -> void:
 	_save(_build_target_dummy(mats), "res://scenes/props/target_dummy.tscn")
 	_make_enemy_data()
 	_make_difficulty_data()
+	_make_front_reports()
 	DirAccess.make_dir_recursive_absolute("res://scenes/props")
 	_save(_build_ammo_crate(mats), "res://scenes/props/ammo_crate.tscn")
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
@@ -1011,6 +1012,31 @@ func _make_difficulty_data() -> void:
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
 
+## After each cleared wave the HUD shows the next front report (the owner's texts).
+const FRONT_REPORTS := [
+	["21.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on päivän aikana jatkanut hyökkäyksiään Summan suunnalla. Puolustusasemamme ovat kestäneet raskaan tykistötulen. Tilanne on hallinnassa.\""],
+	["22.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on jälleen yrittänyt murtaa asemamme Summan lohkolla. Hyökkäys on torjuttu. Useita vihollispanssareita on tuhottu esteisiin ja korsujen tuleen. Miehistön taistelutahto on hyvä.\""],
+	["23.12.1939", "\"Rintamatiedotus. Summassa on kulunut päivä ankarissa taisteluissa. Vihollinen jatkaa tykistökeskityksiä, mutta asemamme pitävät. Joukkomme ovat aiheuttaneet hyökkääjälle raskaita tappioita.\""],
+	["24.12.1939", "\"Jouluaatto Kannaksella. Vihollisen toiminta on ollut vilkasta koko päivän. Puolustajat viettävät pyhää asemissaan. Mieliala joukkojen keskuudessa on luja.\""],
+	["25.12.1939", "\"Joulupäivä Summassa. Taistelut jatkuvat. Puolustajat viettävät joulua asemissaan. Vihollisen yritykset edetä Viipurin suuntaan on pysäytetty.\""],
+	["26.12.1939", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\""],
+	["27.12.1939", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\""],
+	["28.12.1939", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\""],
+]
+
+
+func _make_front_reports() -> void:
+	var r := FrontReports.new()
+	var dates := PackedStringArray()
+	var texts := PackedStringArray()
+	for f: Array in FRONT_REPORTS:
+		dates.append(f[0])
+		texts.append(f[1])
+	r.dates = dates
+	r.texts = texts
+	ResourceSaver.save(r, "res://resources/front_reports.tres")
+
+
 ## G1: two ammo boxes with a first-aid tin on top (F = refill spare ammo and bandages).
 func _build_ammo_crate(mats: Dictionary) -> Node:
 	var c := StaticBody3D.new()
@@ -1333,6 +1359,29 @@ func _build_hud(theme: Theme) -> Node:
 	sub.offset_top = -90
 	sub.offset_bottom = -56
 
+	# After each cleared wave: the front report (date + text), on a dark panel near the top.
+	hud.set("front_reports", load("res://resources/front_reports.tres"))
+	var fr: PanelContainer = _add(hud, PanelContainer.new(), "FrontReport")
+	fr.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	fr.offset_left = -360
+	fr.offset_right = 360
+	fr.offset_top = 128 # below the wave panel
+	fr.offset_bottom = 128
+	fr.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	var fr_style := _flat(Color(0.05, 0.06, 0.08, 0.72), Color(0.75, 0.68, 0.5, 0.6), 1, 4)
+	fr_style.content_margin_left = 22
+	fr_style.content_margin_right = 22
+	fr_style.content_margin_top = 14
+	fr_style.content_margin_bottom = 16
+	fr.add_theme_stylebox_override("panel", fr_style)
+	var fr_v: VBoxContainer = _add(fr, VBoxContainer.new(), "VBox")
+	fr_v.add_theme_constant_override("separation", 8)
+	_label(fr_v, "Date", "21.12.1939", 26, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.9, 0.7))
+	var fr_t := _label(fr_v, "Text", "", 19, HORIZONTAL_ALIGNMENT_CENTER, Color(0.93, 0.95, 0.98))
+	fr_t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fr_t.custom_minimum_size = Vector2(676, 0)
+	fr.visible = false
+
 	# Death screen.
 	var ds: Control = _add(hud, Control.new(), "DeathScreen")
 	_full_rect(ds)
@@ -1377,6 +1426,10 @@ func _build_hud(theme: Theme) -> Node:
 	_label(es_v, "Title", "THE LINE HELD", 46, HORIZONTAL_ALIGNMENT_CENTER)
 	var es_sub := _label(es_v, "Subtitle", "", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
 	es_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Victory: the front report of the last day held.
+	var es_r := _label(es_v, "Report", "", 17, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.75))
+	es_r.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	es_r.custom_minimum_size = Vector2(560, 0)
 	_label(es_v, "Stats", "", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.95, 0.96, 0.98))
 	var es_b: HBoxContainer = _add(es_v, HBoxContainer.new(), "Buttons")
 	es_b.alignment = BoxContainer.ALIGNMENT_CENTER

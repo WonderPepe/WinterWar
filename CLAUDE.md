@@ -68,6 +68,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   with whistle, DP-27 MG teams, wave composition list (needed to send officers/MG teams).
   Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was
   skipped for now – still open, see development ideas.
+- [x] Front reports: after each cleared wave the HUD shows the owner's Finnish front report for
+  that day (21.12.1939 … 28.12.1939, in order; wave n → report n), ~16 s or until the next wave
+  starts; the victory screen shows the report of the last day held. Texts are the owner's own –
+  never reword them. Only 8 exist: Hard waves 9–10 show none (ask the owner for more texts).
 - Open: `Claude outputs/v013_update.zip` (v0.1.3 aiming fixes) was made in an earlier chat but
   never applied/committed (it was built from an older CLAUDE.md – merge by hand, don't unzip
   over the project). Ask the owner before applying.
@@ -344,6 +348,15 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `tools/test_g2.gd`, `tools/soak_g2.gd [waves]` (defender bot firing near misses, 3× speed),
   `tools/shots_g2.gd` (poses; needs xvfb). `check_web_pack.gd` checks the wave lists survive export.
 
+## Front reports – how it is built
+- `FrontReports` resource (`scripts/game/front_reports.gd`, `resources/front_reports.tres`, written
+  by the builder from `FRONT_REPORTS`): `dates` + `texts` (PackedStringArray, default
+  `PackedStringArray()` because of the export bug). `get_report(wave)` → [date, text] or empty.
+- HUD `front_reports` export + `FrontReport` panel (top centre, below the wave panel). It watches
+  the synced `MatchDirector.waves_cleared`, so co-op clients see it too (no RPC). Hidden while the
+  end screen is up; `EndScreen.open(director, player, reports)` shows the last day on victory.
+- `tools/shots_reports.gd` (screenshots), checks in `test_g2.gd` and `check_web_pack.gd`.
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -404,7 +417,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`,
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier

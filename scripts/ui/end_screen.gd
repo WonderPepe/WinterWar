@@ -8,6 +8,7 @@ const GAME_SCENE: String = "res://scenes/game.tscn"
 @onready var title: Label = $Center/Panel/VBox/Title
 @onready var subtitle: Label = $Center/Panel/VBox/Subtitle
 @onready var stats: Label = $Center/Panel/VBox/Stats
+@onready var report: Label = $Center/Panel/VBox/Report
 @onready var again_button: Button = $Center/Panel/VBox/Buttons/PlayAgainButton
 @onready var menu_button: Button = $Center/Panel/VBox/Buttons/MainMenuButton
 
@@ -19,12 +20,17 @@ func _ready() -> void:
 	menu_button.pressed.connect(NetworkManager.leave_game)
 
 
-func open(director: MatchDirector, player: Player) -> void:
+func open(director: MatchDirector, player: Player, reports: FrontReports = null) -> void:
 	var won: bool = director.result == MatchDirector.Result.VICTORY
 	title.text = "THE LINE HELD" if won else "THE LINE IS BROKEN"
 	title.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0) if won else Color(1.0, 0.55, 0.45))
 	subtitle.text = ("Dusk falls over Summa. The attack has failed." if won
 			else "The Soviets are in the trench. The position is lost.")
+	# Victory: the front report of the last day held (if there is one for it).
+	var r: PackedStringArray = reports.get_report(director.waves_cleared) if reports and won else PackedStringArray()
+	report.visible = r.size() == 2
+	if report.visible:
+		report.text = "%s\n%s" % [r[0], r[1]]
 	var shots: int = player.weapons.shots_fired
 	var accuracy: int = roundi(100.0 * player.weapons.shots_hit / shots) if shots > 0 else 0
 	var minutes: int = int(director.match_time) / 60

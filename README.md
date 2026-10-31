@@ -145,6 +145,13 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - Numbers: `resources/enemies/soviet_officer.tres`, `soviet_mg_gunner.tres` (and the rifleman's
   "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
 
+## Front reports
+- After every cleared wave a front report for that day appears at the top of the screen
+  (21.12.1939 after wave 1, 22.12.1939 after wave 2, … 28.12.1939 after wave 8). When you win,
+  the end screen shows the report of the last day.
+- The texts are in `resources/front_reports.tres` (Inspector: `dates` and `texts`, in pairs).
+  There are 8 – on Hard, waves 9 and 10 have none until more are added.
+
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,
   boots, Mosin with bayonet – one mesh with a skeleton, so each soldier is a single draw call.

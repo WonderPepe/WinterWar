@@ -7,6 +7,8 @@ extends CanvasLayer
 
 @export var damage_flash_time: float = 0.6
 @export var wave_banner_time: float = 2.5
+@export var front_reports: FrontReports ## Shown one by one after each cleared wave.
+@export var report_time: float = 16.0 ## Seconds a front report stays up (it also goes when the next wave starts).
 
 var _player: Player
 var _last_health: int = 100
@@ -14,6 +16,8 @@ var _flash: float = 0.0
 var _last_wave: int = 0
 var _banner_left: float = 0.0
 var _death_time: float = -1.0
+var _last_cleared: int = 0
+var _report_left: float = 0.0
 
 @onready var crosshair: Crosshair = $Crosshair
 @onready var hit_marker: HitMarker = $HitMarker
@@ -43,6 +47,9 @@ var _death_time: float = -1.0
 @onready var banner_sub: Label = $WaveBannerSub
 @onready var bandage_label: Label = $Vitals/Bandages
 @onready var end_screen: EndScreen = $EndScreen
+@onready var report_panel: Control = $FrontReport
+@onready var report_date: Label = $FrontReport/VBox/Date
+@onready var report_text: Label = $FrontReport/VBox/Text
 
 var _director: MatchDirector
 var _message: String = ""
@@ -54,6 +61,7 @@ func _ready() -> void:
 	wave_banner.modulate.a = 0.0
 	banner_sub.modulate.a = 0.0
 	death_screen.visible = false
+	report_panel.visible = false
 
 
 func _process(delta: float) -> void:
@@ -68,7 +76,7 @@ func _process(delta: float) -> void:
 	_update_waves(delta)
 	_update_death()
 	if _director and _director.is_over() and not end_screen.visible:
-		end_screen.open(_director, _player)
+		end_screen.open(_director, _player, front_reports)
 	_flash = maxf(_flash - delta / damage_flash_time, 0.0)
 	damage_flash.modulate.a = _flash
 
@@ -186,9 +194,11 @@ func _update_waves(delta: float) -> void:
 	next_wave_label.visible = next > 0.0
 	next_wave_label.text = "Next wave in %d s" % ceili(next)
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
+	_update_front_report(delta)
 	# Big "WAVE n" banner when a new wave starts.
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
+		_report_left = minf(_report_left, 0.6) # the report makes way for the new wave
 		wave_banner.text = "WAVE %d" % _last_wave
 		banner_sub.text = ""
 		if _last_wave == 1 and total > 0:
@@ -203,6 +213,21 @@ func _update_waves(delta: float) -> void:
 	_banner_left = maxf(_banner_left - delta, 0.0)
 	wave_banner.modulate.a = clampf(_banner_left / 0.6, 0.0, 1.0) # fades out in the last 0.6 s
 	banner_sub.modulate.a = wave_banner.modulate.a
+
+
+## A wave has been cleared: show the next front report (in order: wave 1 → the first one).
+func _update_front_report(delta: float) -> void:
+	var cleared: int = _director.waves_cleared if _director else 0
+	if cleared > _last_cleared:
+		_last_cleared = cleared
+		var report: PackedStringArray = front_reports.get_report(cleared) if front_reports else PackedStringArray()
+		if report.size() == 2:
+			report_date.text = report[0]
+			report_text.text = report[1]
+			_report_left = report_time
+	_report_left = maxf(_report_left - delta, 0.0)
+	report_panel.visible = _report_left > 0.0 and not end_screen.visible
+	report_panel.modulate.a = clampf(_report_left / 0.6, 0.0, 1.0) * clampf((report_time - _report_left) / 0.4, 0.0, 1.0)
 
 
 func _show_message(text: String) -> void:
