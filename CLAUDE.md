@@ -45,6 +45,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   threaded load request + progress bar, then instantiates the game itself, stays on top
   (CanvasLayer 60, PROCESS_MODE_ALWAYS) until `ShaderWarmup` (group `shader_warmup`, `progress`)
   is done. Menu, benchmark and "Play again" go through it; tests wait for `current_scene`.
+- [x] v0.1.2: in the browser the mouse can only be locked after a click, so the loading screen
+  ends with "CLICK TO START THE BATTLE" (pauses single player, locks the mouse in `_input` on the
+  click) instead of the old paused pause menu. PauseMenu stays closed while `LoadingScreen` exists.
+  Benchmark: `LoadingScreen.go(tree, scene, false)` (no click).
 - Next: G2 "pressure" (approved plan): artillery barrages, enemy suppression + prone, field cover
   (rocks, wire, craters, cover points), officer with whistle, DP-27 MG teams, wave composition list.
   New sounds go through RecordedSounds names (explosion…, shell_whistle…, officer_whistle…,

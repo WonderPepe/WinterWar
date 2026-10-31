@@ -63,4 +63,4 @@ func _on_single_player() -> void:
 func _on_benchmark() -> void:
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
-	LoadingScreen.go(get_tree(), BENCHMARK_SCENE)
+	LoadingScreen.go(get_tree(), BENCHMARK_SCENE, false) # the benchmark runs on its own

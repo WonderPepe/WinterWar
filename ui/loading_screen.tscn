@@ -40,33 +40,37 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="LoadingScreen" type="CanvasLayer" unique_id=2139602289]
+[node name="LoadingScreen" type="CanvasLayer" unique_id=1167478083]
 script = ExtResource("1_1kfex")
 
-[node name="Root" type="Control" parent="." unique_id=844103051]
+[node name="Root" type="Control" parent="." unique_id=2130581465]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 theme = ExtResource("2_e66os")
 
-[node name="Background" type="TextureRect" parent="Root" unique_id=825227334]
+[node name="Background" type="TextureRect" parent="Root" unique_id=789083485]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 texture = SubResource("GradientTexture2D_gyf4x")
 expand_mode = 1
 
-[node name="Center" type="CenterContainer" parent="Root" unique_id=1373431951]
+[node name="Center" type="CenterContainer" parent="Root" unique_id=170271274]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="Root/Center" unique_id=131043926]
+[node name="VBox" type="VBoxContainer" parent="Root/Center" unique_id=419785235]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="Root/Center/VBox" unique_id=1390237235]
+[node name="Title" type="Label" parent="Root/Center/VBox" unique_id=1598187144]
 layout_mode = 2
 theme_override_font_sizes/font_size = 44
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -75,7 +79,7 @@ theme_override_constants/outline_size = 8
 text = "WINTER WAR: SUMMA"
 horizontal_alignment = 1
 
-[node name="Status" type="Label" parent="Root/Center/VBox" unique_id=515281942]
+[node name="Status" type="Label" parent="Root/Center/VBox" unique_id=1562505277]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.9, 0.93, 0.97, 1)
@@ -84,9 +88,10 @@ theme_override_constants/outline_size = 4
 text = "Loading the battle..."
 horizontal_alignment = 1
 
-[node name="Bar" type="ProgressBar" parent="Root/Center/VBox" unique_id=293755431]
+[node name="Bar" type="ProgressBar" parent="Root/Center/VBox" unique_id=1454426249]
 custom_minimum_size = Vector2(560, 22)
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_o3r17")
 theme_override_styles/fill = SubResource("StyleBoxFlat_w0ar3")
 theme_override_font_sizes/font_size = 14
@@ -94,7 +99,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 4
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 
-[node name="Tip" type="Label" parent="Root/Center/VBox" unique_id=852878441]
+[node name="Tip" type="Label" parent="Root/Center/VBox" unique_id=1644930097]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -103,3 +108,13 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="ClickToStart" type="Label" parent="Root/Center/VBox" unique_id=691068991]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(1, 0.93, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 6
+text = "CLICK TO START THE BATTLE"
+horizontal_alignment = 1

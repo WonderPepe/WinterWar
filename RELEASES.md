@@ -27,5 +27,6 @@ Notes:
 ## Versions
 | Version | Content |
 |---|---|
+| 0.1.2 | Browser: "Click to start the battle" at the end of loading instead of the pause menu. |
 | 0.1.1 | Loading screen with a progress bar and tips between the main menu and the battle. |
 | 0.1.0 | First public test: Mosin, Suomi, Maxim with overheating; Soviet waves; hold the trench until dusk (Easy / Normal / Hard); ammo crates, bandages; snow-camo arms. |

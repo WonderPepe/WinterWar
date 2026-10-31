@@ -1395,6 +1395,11 @@ func _build_loading_screen(theme: Theme) -> Node:
 	var tip := _label(vb, "Tip", "", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.85, 0.92))
 	tip.custom_minimum_size = Vector2(560, 0)
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Browser only: one click locks the mouse to the game and starts the battle.
+	var start := _label(vb, "ClickToStart", "CLICK TO START THE BATTLE", 30, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.93, 0.75))
+	start.visible = false
+	for c in ls.find_children("*", "Control", true, false):
+		(c as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE # the click is read in _input
 	return ls
 
 

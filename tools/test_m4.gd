@@ -37,6 +37,18 @@ func run() -> void:
 			break
 		await seconds(0.1)
 	check(get_tree().current_scene.name == "Game", "Single Player starts the game")
+	for i in 50: # headless: the mouse can't be locked, so it asks for a click (like a browser)
+		var ls := get_tree().root.get_node_or_null("LoadingScreen") as LoadingScreen
+		if ls and ls._waiting_for_click:
+			break
+		await seconds(0.1)
+	var ls_wait := get_tree().root.get_node_or_null("LoadingScreen") as LoadingScreen
+	check(ls_wait != null and ls_wait.start_label.visible and not get_tree().root.get_node("Game/PauseMenu").is_open,
+		"browser: 'click to start' instead of the pause menu")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	Input.parse_input_event(click)
 	for i in 50:
 		if get_tree().root.get_node_or_null("LoadingScreen") == null:
 			break

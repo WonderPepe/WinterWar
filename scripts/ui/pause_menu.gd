@@ -36,12 +36,17 @@ func _process(_delta: float) -> void:
 	# Mouse got released (browser Esc, alt-tab, or never captured yet)? Show the menu.
 	if _match_over():
 		return # the end screen has the mouse now
+	if get_tree().root.has_node("LoadingScreen"):
+		# The loading screen asks for the first click itself ("Click to start the battle").
+		_ignore_until = _now() + RECAPTURE_GRACE
+		return
 	if not is_open and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and _now() > _ignore_until:
 		open()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause") and not settings_menu.visible and not _match_over():
+	if event.is_action_pressed("pause") and not settings_menu.visible and not _match_over() \
+			and not get_tree().root.has_node("LoadingScreen"):
 		if is_open:
 			resume()
 		else:
