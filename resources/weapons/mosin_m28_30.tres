@@ -1,15 +1,14 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
-[ext_resource type="AudioStream" path="res://assets/audio/bolt_cycle.wav" id="1_nsm2r"]
-[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="2_2rw24"]
-[ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="3_op7oy"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="4_spg1l"]
-[ext_resource type="PackedScene" path="res://scenes/weapons/mosin_viewmodel.tscn" id="5_p2urx"]
+[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="1_5cqku"]
+[ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="2_nsm2r"]
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="3_2rw24"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/mosin_viewmodel.tscn" id="4_op7oy"]
 
 [resource]
-script = ExtResource("4_spg1l")
+script = ExtResource("3_2rw24")
 display_name = "Mosin-Nagant M/28-30"
-view_model = ExtResource("5_p2urx")
+view_model = ExtResource("4_op7oy")
 fire_mode = 0
 bolt_cycle_time = 1.25
 damage = 100.0
@@ -32,7 +31,6 @@ kick_rotation_deg = 8.0
 ads_fov = 45.0
 ads_time = 0.3
 ads_sensitivity_multiplier = 0.5
-fire_sound = ExtResource("3_op7oy")
-cycle_sound = ExtResource("1_nsm2r")
+fire_sound = ExtResource("2_nsm2r")
 recording_name = "mosin"
-empty_sound = ExtResource("2_2rw24")
+empty_sound = ExtResource("1_5cqku")

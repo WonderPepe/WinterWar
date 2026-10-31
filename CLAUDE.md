@@ -224,7 +224,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   name prefix from `assets/audio/recorded/` (`reload_<WeaponData.recording_name>…`, `hurt…`);
   `WeaponData.get_reload_sound()` = `reload_sound` if set, else a recording, else null (silent).
   make_sounds.py still runs those generators without saving (keeps the random numbers the same).
-  Placeholder sounds that remain: shots, bolt cycle, empty click, hit tick, ambience, cracks, steam.
+  The generated Mosin bolt click (bolt_cycle.wav) was removed too (owner): `WeaponData.get_cycle_sound()`
+  = `cycle_sound` if set, else a recording `bolt_<recording_name>…`, else silent.
+  Placeholder sounds that remain: shots, empty click, hit tick, ambience, cracks, steam.
+- The shooting-range practice targets were removed from the level (owner); navmesh re-baked.
+  `scenes/props/target_dummy.tscn` stays only for tests (test_m2 / test_w1 / shots_m2 place their own).
 - Breath vapour: faint (alpha ~0.1), below the line of sight; Settings `show_breath` (menu
   "Breath vapour") switches it off for you and the soldiers. Maxim smoke: thin, pushed out of
   the slit.

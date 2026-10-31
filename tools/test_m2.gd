@@ -24,8 +24,22 @@ func aim_at(point: Vector3) -> void:
 	p.input.look_yaw = atan2(-d.x, -d.z)
 	p.input.look_pitch = atan2(d.y, Vector2(d.x, d.z).length())
 
+## The practice targets are no longer in the level: the test sets up its own, at the old spots.
+const TARGETS := {"Target_25m": Vector3(32, 0, 36), "Target_50m": Vector3(26, 0, 11), "Target_100m": Vector3(16, 0, -39)}
+
 func target(n: String) -> TargetDummy:
-	return get_tree().root.get_node("Game/Level/ShootingRange/" + n)
+	var level: Node = get_tree().root.get_node("Game/Level")
+	var t := level.get_node_or_null("TestRange/" + n) as TargetDummy
+	if t == null:
+		if level.get_node_or_null("TestRange") == null:
+			var r := Node3D.new()
+			r.name = "TestRange"
+			level.add_child(r)
+		t = load("res://scenes/props/target_dummy.tscn").instantiate()
+		t.name = n
+		t.position = TARGETS[n] # (the target puts itself on the ground when it is added)
+		level.get_node("TestRange").add_child(t)
+	return t
 
 func torso(t: TargetDummy) -> Vector3:
 	return t.get_node("Body/Torso").global_position
@@ -49,6 +63,9 @@ func run() -> void:
 	check(wc.get_current_weapon().display_name.begins_with("Mosin"), "starts with Mosin")
 	check(wc.get_mag_ammo() == 5 and wc.get_reserve_ammo() == 30, "Mosin ammo 5/30")
 	check(wc.holder.visible, "weapon holder visible for local player")
+	check(get_tree().root.get_node_or_null("Game/Level/ShootingRange") == null, "no practice targets in the level")
+	check(wc.loadout[0].cycle_sound == null and (wc.loadout[0].get_cycle_sound() == null or not RecordedSounds.get_sounds("bolt_mosin").is_empty()),
+			"Mosin bolt: no generated sound (only a real recording, if one is added)")
 
 	# --- Mosin: aimed shot at 25 m target ---
 	var t25 := target("Target_25m")

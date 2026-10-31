@@ -3,6 +3,7 @@ Real sound recordings for the game (used automatically, by file name):
   reload_mosin...   reloading the Mosin-Nagant (stripper clip pushed into the magazine)
   reload_suomi...   changing the Suomi's drum magazine
   reload_maxim...   loading a new cloth belt into the Maxim
+  bolt_mosin...     working the Mosin's bolt after each shot (open - back - forward - close)
   hurt...           you get hit - put 3-5 different ones (hurt_1.ogg, hurt_2.ogg, ...),
                     the game picks one at random each time
   officer_whistle...  a Soviet officer's whistle (G2; a generated placeholder is used until then)

@@ -41,7 +41,9 @@ def gunshot(dur, crack_decay, boom_decay, boom_hz, tail_decay, bright):
 save("mosin_shot.wav", gunshot(1.3, 0.012, 0.12, 55, 0.35, 0.25))
 save("suomi_shot.wav", gunshot(0.35, 0.006, 0.05, 80, 0.07, 0.35))
 n = int(0.6 * SR)
-save("bolt_cycle.wav", click(n, 0.0, 2400, 0.03) + click(n, 0.12, 1700, 0.05, 0.7) + click(n, 0.33, 2000, 0.05, 0.8) + click(n, 0.45, 2600, 0.03))
+# (bolt_cycle.wav removed: the owner didn't want it – a real recording goes in
+# assets/audio/recorded/bolt_mosin…. Still generated, not saved, to keep the random numbers the same.)
+_ = click(n, 0.0, 2400, 0.03) + click(n, 0.12, 1700, 0.05, 0.7) + click(n, 0.33, 2000, 0.05, 0.8) + click(n, 0.45, 2600, 0.03)
 n = int(1.2 * SR)
 # (reload.wav removed: sounded bad – real recordings go in assets/audio/recorded/. The call
 #  stays so the random numbers below come out the same.)

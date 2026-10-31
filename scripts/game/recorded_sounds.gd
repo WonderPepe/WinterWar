@@ -6,6 +6,7 @@ extends RefCounted
 ##   reload_mosin…  reloading the Mosin (stripper clip)
 ##   reload_suomi…  changing the Suomi's drum
 ##   reload_maxim…  a new belt in the Maxim
+##   bolt_mosin…    working the Mosin's bolt after a shot
 ##   hurt…          you get hit (several files = a random one each time)
 ##   officer_whistle…  a Soviet officer's whistle (G2)
 ##   dp27…          one DP-27 machine-gun shot (G2)

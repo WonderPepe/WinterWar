@@ -29,7 +29,10 @@ func run() -> void:
 	p.input.set_process(false)
 	for vm in p.weapons._view_models:
 		vm.flash_duration = 5.0 # keep the flash visible for the slow software renderer
-	var t25: Node3D = get_tree().root.get_node("Game/Level/ShootingRange/Target_25m")
+	# The practice targets are no longer in the level: put one at the old 25 m spot.
+	var t25: Node3D = load("res://scenes/props/target_dummy.tscn").instantiate()
+	t25.position = Vector3(32, 0, 36)
+	get_tree().root.get_node("Game/Level").add_child(t25)
 	var torso: Vector3 = t25.get_node("Body/Torso").global_position
 	p.global_position = Vector3(28, -1.4, 59.5)
 	await wait(40)

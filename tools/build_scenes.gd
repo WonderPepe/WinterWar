@@ -449,15 +449,7 @@ func _build_level(mats: Dictionary) -> Node:
 		z.set("size", zone_data[i][1])
 		z.set("drift_material", mats.drift)
 
-	# --- Shooting range: practice targets at known distances from the trench ---
-	var range_root: Node3D = _add(root, Node3D.new(), "ShootingRange")
-	range_root.add_to_group("navigation_source", true)
-	var dummy_scene: PackedScene = load("res://scenes/props/target_dummy.tscn")
-	for t in [[25, Vector3(32, 0, 36)], [50, Vector3(26, 0, 11)], [100, Vector3(16, 0, -39)], [150, Vector3(6, 0, -89)]]:
-		var d: Node3D = dummy_scene.instantiate()
-		_add(range_root, d, "Target_%dm" % t[0])
-		d.position = t[1]
-		d.set("label_text", "%d m" % t[0])
+	# (The shooting-range practice targets were removed – owner. target_dummy.tscn stays for tests.)
 
 	# --- Navigation map for the enemies (baked from the nodes in group "navigation_source") ---
 	var nav: NavigationRegion3D = _add(root, NavigationRegion3D.new(), "Navigation")
@@ -748,7 +740,7 @@ func _make_weapon_data() -> void:
 	mosin.ads_move_multiplier = 0.6
 	mosin.ads_sensitivity_multiplier = 0.5
 	mosin.fire_sound = load(a + "mosin_shot.wav")
-	mosin.cycle_sound = load(a + "bolt_cycle.wav")
+	# (no cycle_sound: the generated bolt click was removed – owner. Real recording: bolt_mosin…)
 	mosin.recording_name = "mosin" # reload sound: assets/audio/recorded/reload_mosin… (if any)
 	mosin.empty_sound = load(a + "empty_click.wav")
 	ResourceSaver.save(mosin, "res://resources/weapons/mosin_m28_30.tres")
