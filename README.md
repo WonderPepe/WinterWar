@@ -150,7 +150,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   (21.12.1939 after wave 1, 22.12.1939 after wave 2, … 28.12.1939 after wave 8). When you win,
   the end screen shows the report of the last day.
 - The texts are in `resources/front_reports.tres` (Inspector: `dates` and `texts`, in pairs).
-  There are 8 – on Hard, waves 9 and 10 have none until more are added.
+  There are 10: waves 9 and 10 (Hard only) get 31.12.1939 and 01.01.1940.
 
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,

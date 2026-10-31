@@ -29,7 +29,7 @@ func run() -> void:
 		[(load("res://resources/enemies/soviet_officer.tres") as EnemyData).kind == EnemyData.Kind.OFFICER, "G2: officer data in the export"],
 		[ResourceLoader.exists("res://scenes/enemies/soviet_mg_gunner.tscn"), "G2: machine-gunner scene in the export"],
 		[ResourceLoader.exists("res://assets/audio/officer_whistle_placeholder.wav"), "G2: whistle sound in the export"],
-		[(load("res://resources/front_reports.tres") as FrontReports).texts.size() == 8, "front reports in the export"],
+		[(load("res://resources/front_reports.tres") as FrontReports).texts.size() == 10, "front reports in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

@@ -69,9 +69,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was
   skipped for now – still open, see development ideas.
 - [x] Front reports: after each cleared wave the HUD shows the owner's Finnish front report for
-  that day (21.12.1939 … 28.12.1939, in order; wave n → report n), ~16 s or until the next wave
-  starts; the victory screen shows the report of the last day held. Texts are the owner's own –
-  never reword them. Only 8 exist: Hard waves 9–10 show none (ask the owner for more texts).
+  that day (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for Hard's waves 9–10; in
+  order, wave n → report n), ~16 s or until the next wave starts; the victory screen shows the
+  report of the last day held. Texts are the owner's own – never reword them.
 - Open: `Claude outputs/v013_update.zip` (v0.1.3 aiming fixes) was made in an earlier chat but
   never applied/committed (it was built from an older CLAUDE.md – merge by hand, don't unzip
   over the project). Ask the owner before applying.

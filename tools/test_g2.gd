@@ -314,9 +314,11 @@ func run() -> void:
 
 	# --- Front reports after each cleared wave ---
 	var reports: FrontReports = load("res://resources/front_reports.tres")
-	check(reports.dates.size() == 8 and reports.texts.size() == 8 and reports.dates[0] == "21.12.1939" and reports.dates[7] == "28.12.1939",
-			"8 front reports, 21.12.1939 … 28.12.1939")
-	check(reports.get_report(9).is_empty(), "no report after wave 9 (none written)")
+	check(reports.dates.size() == 10 and reports.texts.size() == 10 and reports.dates[0] == "21.12.1939" and reports.dates[7] == "28.12.1939" and reports.dates[9] == "01.01.1940",
+			"10 front reports, 21.12.1939 … 01.01.1940")
+	check(reports.get_report(9)[0] == "31.12.1939" and reports.get_report(10)[1].ends_with("Tilanne rintamalla on vakaa.\""),
+			"Hard: wave 9 → 31.12.1939, wave 10 → 01.01.1940")
+	check(reports.get_report(11).is_empty(), "no report after wave 11 (none written)")
 	check(not hud.report_panel.visible, "no report while a wave is on")
 	director.waves_cleared = 1
 	await seconds(0.6)

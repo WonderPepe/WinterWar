@@ -1022,6 +1022,8 @@ const FRONT_REPORTS := [
 	["26.12.1939", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\""],
 	["27.12.1939", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\""],
 	["28.12.1939", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\""],
+	["31.12.1939", "\"Vuoden viimeinen päivä Kannaksella. Summan puolustajat ovat torjuneet vihollisen hyökkäyksiä jo viikkojen ajan. Asemat pitävät edelleen. Uuteen vuoteen siirrytään valppaina ja taistelutahto korkeana.\""],
+	["01.01.1940", "\"Täällä Kannaksen rintama. Uusi vuosi on alkanut vihollisen tykistötulella Summan lohkolla. Puolustajat ovat kuitenkin säilyttäneet asemansa. Tilanne rintamalla on vakaa.\""],
 ]
 
 
