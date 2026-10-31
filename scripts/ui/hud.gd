@@ -80,7 +80,7 @@ func _process(delta: float) -> void:
 	_update_waves(delta)
 	_update_death()
 	if _director and _director.is_over() and not end_screen.visible:
-		end_screen.open(_director, _player, front_reports)
+		end_screen.open(_director, _player, front_reports if Settings.show_front_reports else null)
 	_flash = maxf(_flash - delta / damage_flash_time, 0.0)
 	damage_flash.modulate.a = _flash
 
@@ -224,7 +224,8 @@ func _update_front_report(delta: float) -> void:
 	var cleared: int = _director.waves_cleared if _director else 0
 	if cleared > _last_cleared:
 		_last_cleared = cleared
-		var report: PackedStringArray = front_reports.get_report(cleared) if front_reports else PackedStringArray()
+		# Only if switched on in Settings ("Front reports", off by default).
+		var report: PackedStringArray = front_reports.get_report(cleared) if front_reports and Settings.show_front_reports else PackedStringArray()
 		if report.size() == 2:
 			report_date.text = report[0]
 			report_text.text = report[1]

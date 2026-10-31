@@ -320,6 +320,18 @@ func run() -> void:
 			"Hard: wave 9 → 31.12.1939, wave 10 → 01.01.1940")
 	check(reports.get_report(11).is_empty(), "no report after wave 11 (none written)")
 	check(not hud.report_panel.visible, "no report while a wave is on")
+	var fresh: Node = load("res://autoload/settings.gd").new()
+	check(fresh.get("show_front_reports") == false, "front reports are off by default")
+	fresh.free()
+	var saved_setting: bool = Settings.show_front_reports
+	Settings.show_front_reports = false
+	director.waves_cleared = 1
+	await seconds(0.6)
+	check(not hud.report_panel.visible, "setting off: no telegram after a wave")
+	Settings.show_front_reports = true
+	hud._last_cleared = 0
+	director.waves_cleared = 0
+	await frames(2)
 	director.waves_cleared = 1
 	await seconds(0.6)
 	check(hud.report_panel.visible and hud.report_date.text == "21.12.1939" and hud.report_text.text.begins_with("\"Täällä Kannaksen rintama."),
@@ -341,6 +353,12 @@ func run() -> void:
 	check(hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("28.12.1939"),
 			"victory on Normal: the end screen shows the report of 28.12.1939")
 	get_tree().paused = false
+	Settings.show_front_reports = saved_setting
+	var menu: Control = load("res://ui/settings_menu.tscn").instantiate()
+	add_child(menu)
+	var toggle := menu.get_node_or_null("Panel/VBox/Grid/FrontReports") as CheckButton
+	check(toggle != null, "Settings menu has a 'Front reports' switch")
+	menu.queue_free()
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

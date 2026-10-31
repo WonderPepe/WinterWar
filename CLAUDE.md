@@ -352,6 +352,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `FrontReports` resource (`scripts/game/front_reports.gd`, `resources/front_reports.tres`, written
   by the builder from `FRONT_REPORTS`): `dates` + `texts` (PackedStringArray, default
   `PackedStringArray()` because of the export bug). `get_report(wave)` → [date, text] or empty.
+- **Off by default** (owner's wish): `Settings.show_front_reports` (saved in "game"), switch
+  "Front reports" in the Settings menu. Off = no telegram and no report on the end screen.
 - Looks like a telegram (owner's wish): paper-coloured panel (StyleBoxFlat + shadow, rotated
   -0.8°), header "S Ä H K Ö S A N O M A", date right, text in `assets/fonts/FreeMonoBold.ttf`
   (GNU FreeFont, GPL + font exception; licence file next to it, CREDITS.md). The HUD types it

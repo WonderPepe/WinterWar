@@ -1811,6 +1811,12 @@ func _build_settings_menu(theme: Theme) -> Node:
 	br.button_pressed = true
 	_label(grid, "BreathHint", "", 14)
 
+	_label(grid, "FrontReportsLabel", "Front reports", 18)
+	var frp: CheckButton = _add(grid, CheckButton.new(), "FrontReports")
+	frp.text = ""
+	frp.button_pressed = false
+	_label(grid, "FrontReportsHint", "telegram after each wave", 14, HORIZONTAL_ALIGNMENT_LEFT, Color(0.8, 0.84, 0.9))
+
 	_label(grid, "FullscreenLabel", "Fullscreen", 18)
 	var fs: CheckButton = _add(grid, CheckButton.new(), "Fullscreen")
 	fs.text = ""

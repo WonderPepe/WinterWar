@@ -146,6 +146,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
 
 ## Front reports
+- **Off by default:** switch them on in the menu → Settings → "Front reports" (saved).
 - After every cleared wave a front report for that day arrives as a telegram ("SÄHKÖSANOMA" on
   a sheet of paper, typewriter letters typed out one by one) at the top of the screen
   (21.12.1939 after wave 1, 22.12.1939 after wave 2, … 28.12.1939 after wave 8). When you win,
