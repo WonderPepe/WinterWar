@@ -43,3 +43,9 @@ extends Resource
 @export var shots_per_stop: int = 2 ## ...then kneel and fire this many shots...
 @export var stop_time_min: float = 4.0 ## ...staying kneeling for at most this long
 @export var stop_time_max: float = 7.0 ## (moves on early when the shots are done).
+
+@export_group("Assault on the trench")
+@export var assault_hold_min: float = 6.0 ## Seconds spent firing from the jump-off point in front of the trench...
+@export var assault_hold_max: float = 14.0 ## ...before rushing the trench and jumping in.
+@export var trench_fire_interval_min: float = 1.4 ## Faster shooting at close range inside the trench.
+@export var trench_fire_interval_max: float = 2.4

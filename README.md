@@ -14,7 +14,8 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 | Fire / aim down sights | Left mouse / right mouse (on the Maxim: look through its sights) |
 | Reload | R |
 | Mosin-Nagant / Suomi | 1 / 2 |
-| Use / leave the Maxim (in the bunker) | F |
+| Use / leave the Maxim (in the bunker), take from an ammo crate | F |
+| Bandage (heals 50, 2 per life) | B |
 | Pause menu | Esc |
 | Debug: god mode / enemy state labels / debug text | F1 / F2 / F3 |
 
@@ -104,6 +105,24 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   - the heat numbers are in `maxim_m09_21.tres` (Heat group): `heat_per_shot`, `cooling_rate`, …;
   - the right hand feeds the new belt when you press R.
 
+## The battle (G1)
+- **Goal:** hold the line until dusk – clear all waves (Easy 6 / Normal 8 / Hard 10) and you win.
+- **Losing:** if too many Soviets are inside your trench at the same time (Easy 6 / Normal 4 /
+  Hard 3), the line is broken. The HUD warns "SOVIETS IN THE TRENCH: x / y".
+- **The assault:** soldiers advance to a jump-off point in front of the trench, fire from there
+  for a while, then rush, jump into the trench and fight inside it.
+- **Supplies:** two ammo crates (a niche in the trench next to the first spawn point, and the
+  bunker): **F** refills spare ammo and bandages. **B** = bandage (+50 health, 3 s, no shooting).
+  Everyone is patched up to full health when a wave is cleared.
+- **Dusk:** after every cleared wave the sun sinks and the light turns to evening.
+- **End screen:** victory / defeat with waves held, kills, deaths, hit percentage, time;
+  Play again or Main menu.
+- **Difficulty:** chosen in the main menu (saved). The numbers are in
+  `resources/difficulty/easy.tres`, `normal.tres`, `hard.tres` – open them in the Inspector.
+- Scripts: `scripts/game/match_director.gd` (rules), `scripts/game/dusk.gd`,
+  `scripts/world/ammo_crate.gd`, `scripts/ui/end_screen.gd`; the enemy's new ASSAULT state is in
+  `scripts/enemies/enemy.gd`.
+
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,
   boots, Mosin with bayonet – one mesh with a skeleton, so each soldier is a single draw call.
@@ -165,4 +184,5 @@ select the **Navigation** node and click **Bake NavigationMesh** in the toolbar.
 - [x] P1: graphics – clear freezing day: sky, snow, log walls, spruce forest
 - [x] W1: real Mosin and Suomi models, Maxim in the bunker (Lahti-Saloranta later, if a model turns up)
 - [x] P2: effects, sound, soldiers
+- [x] G1: a real battle – win/lose, trench assault, ammo crates, bandages, dusk, end screen, difficulty
 - [x] W2: first-person arms (snow camo, mittens), aiming closer, Maxim sights / belt feed / steam / overheating

@@ -39,11 +39,20 @@ var _death_time: float = -1.0
 @onready var interact_prompt: Label = $InteractPrompt
 @onready var damage_indicator: DamageIndicator = $DamageIndicator
 @onready var hurt_sound: AudioStreamPlayer = $HurtSound
+@onready var trench_label: Label = $WavePanel/TrenchAlert
+@onready var banner_sub: Label = $WaveBannerSub
+@onready var bandage_label: Label = $Vitals/Bandages
+@onready var end_screen: EndScreen = $EndScreen
+
+var _director: MatchDirector
+var _message: String = ""
+var _message_until: float = 0.0
 
 
 func _ready() -> void:
 	damage_flash.modulate.a = 0.0
 	wave_banner.modulate.a = 0.0
+	banner_sub.modulate.a = 0.0
 	death_screen.visible = false
 
 
@@ -52,10 +61,14 @@ func _process(delta: float) -> void:
 		_find_local_player()
 		if _player == null:
 			return
+	if _director == null or not is_instance_valid(_director):
+		_director = get_tree().get_first_node_in_group("match_director") as MatchDirector
 	_update_vitals()
 	_update_weapon()
 	_update_waves(delta)
 	_update_death()
+	if _director and _director.is_over() and not end_screen.visible:
+		end_screen.open(_director, _player)
 	_flash = maxf(_flash - delta / damage_flash_time, 0.0)
 	damage_flash.modulate.a = _flash
 
@@ -69,6 +82,7 @@ func _find_local_player() -> void:
 			p.health_changed.connect(_on_health_changed)
 			p.weapons.hit_confirmed.connect(_on_hit_confirmed)
 			p.hurt_from.connect(damage_indicator.add_hit)
+			p.resupplied.connect(_show_message.bind("Ammo and bandages refilled"))
 			damage_indicator.set_player(p)
 			return
 
@@ -97,6 +111,10 @@ func _update_vitals() -> void:
 	health_value.text = str(_player.health)
 	stamina_bar.max_value = _player.max_stamina
 	stamina_bar.value = _player.stamina
+	if _player.is_bandaging:
+		bandage_label.text = "Bandaging... %d %%" % roundi(_player.get_bandage_progress() * 100.0)
+	else:
+		bandage_label.text = "Bandages: %d   [B]" % _player.bandages
 
 
 func _update_weapon() -> void:
@@ -116,9 +134,17 @@ func _update_weapon() -> void:
 		interact_prompt.text = ""
 	elif gun:
 		interact_prompt.text = "[F] Leave the gun    [R] New belt"
+	elif Time.get_ticks_msec() / 1000.0 < _message_until:
+		interact_prompt.text = _message
 	else:
 		var usable := _player.find_usable_gun()
-		interact_prompt.text = "[F] Use %s" % usable.data.display_name if usable else ""
+		var crate := _player.find_ammo_crate() if usable == null else null
+		if usable:
+			interact_prompt.text = "[F] Use %s" % usable.data.display_name
+		elif crate:
+			interact_prompt.text = "[F] Take ammunition and bandages"
+		else:
+			interact_prompt.text = ""
 	crosshair.visible = not weapons.is_aiming and not _player.is_dead
 	crosshair.spread_deg = weapons.get_current_spread_deg()
 	crosshair.fov_deg = _player.camera.fov
@@ -142,7 +168,19 @@ func _update_waves(delta: float) -> void:
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	if waves == null:
 		return
-	wave_label.text = "WAVE %d" % waves.wave_number if waves.wave_number > 0 else "Get ready"
+	var total: int = _director.waves_to_win if _director else 0
+	if waves.wave_number <= 0:
+		wave_label.text = "Get ready"
+	elif total > 0:
+		wave_label.text = "WAVE %d / %d" % [waves.wave_number, total]
+	else:
+		wave_label.text = "WAVE %d" % waves.wave_number
+	# Soviets inside the trench: the line breaks when there are too many at once.
+	var inside: int = _director.in_trench if _director else 0
+	trench_label.visible = inside > 0
+	if inside > 0:
+		trench_label.text = "SOVIETS IN THE TRENCH: %d / %d" % [inside, _director.trench_limit]
+		trench_label.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / 110.0)
 	enemies_label.text = "Enemies: %d" % waves.alive_count
 	var next: float = waves.get_time_to_next_wave()
 	next_wave_label.visible = next > 0.0
@@ -152,9 +190,20 @@ func _update_waves(delta: float) -> void:
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
 		wave_banner.text = "WAVE %d" % _last_wave
-		_banner_left = wave_banner_time
+		banner_sub.text = ""
+		if _last_wave == 1 and total > 0:
+			banner_sub.text = "Hold the line until dusk – %d waves" % total
+		elif total > 0 and _last_wave == total:
+			banner_sub.text = "The last wave – hold on!"
+		_banner_left = wave_banner_time + (1.5 if banner_sub.text != "" else 0.0)
 	_banner_left = maxf(_banner_left - delta, 0.0)
 	wave_banner.modulate.a = clampf(_banner_left / 0.6, 0.0, 1.0) # fades out in the last 0.6 s
+	banner_sub.modulate.a = wave_banner.modulate.a
+
+
+func _show_message(text: String) -> void:
+	_message = text
+	_message_until = Time.get_ticks_msec() / 1000.0 + 2.0
 
 
 func _update_death() -> void:

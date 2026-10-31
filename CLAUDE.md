@@ -32,7 +32,12 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   drift, audio buses, ambience, footsteps, bullet cracks, damage indicator, hit flinch).
 - [x] W2 arms + Maxim polish (first-person arms with snow-camo sleeves and mittens on grip
   markers, closer ADS, Maxim sights / belt-feed animation / heat, steam, overheating).
-- Next: the owner picks from "Development ideas" below.
+- [x] G1 a real battle (MatchDirector win/lose, ASSAULT into the trench, ammo crates, bandages,
+  dusk, end screen, Easy/Normal/Hard).
+- Next: G2 "pressure" (approved plan): artillery barrages, enemy suppression + prone, field cover
+  (rocks, wire, craters, cover points), officer with whistle, DP-27 MG teams, wave composition list.
+  New sounds go through RecordedSounds names (explosion…, shell_whistle…, officer_whistle…,
+  dp27…) with simple placeholders.
 
 ## Development ideas (not yet approved)
 1. (done in W2) Maxim sights/belt/heat. Still open: better Maxim sound, water can + hose.
@@ -82,7 +87,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Damage interface: `take_damage(amount: float, attacker_id: int, hit_position: Vector3,
   hit_normal: Vector3) -> bool` (returns true if the hit killed). Enemies use attacker_id -1.
 - Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
-  `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`.
+  `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`, `match_director`, `ammo_crates`,
+  `trench_entry`.
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers.
 - Surface metadata `surface` = `snow` (default) / `wood` / `earthwork` / `cloth`; meta
   `attach_holes` makes bullet holes stick to moving targets.
@@ -221,6 +227,40 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `tools/shots_w2.gd [prefix] [side]` (the "side" option adds a camera beside the player to
   check the grips), `tools/test_w2.gd`.
 
+## The battle (G1) – how it is built
+- `MatchDirector` (Game/MatchDirector, group `match_director`, synced by MatchSync with
+  `delta_interval = 0.25`): host applies `DifficultyData` (`Settings.difficulty`, chosen in the
+  main menu) to WaveSpawner (`base_enemies`, `enemies_added_per_wave`, `max_waves`),
+  `Game.respawn_time` and `Enemy.spread_multiplier` (static). Counts living enemies with
+  `is_in_trench()` (y < -0.85 and z > 48) 4×/s → `in_trench`; ≥ `trench_limit` → DEFEAT.
+  `wave_cleared(n)` → heal all players, n ≥ `waves_to_win` → VICTORY. `end_match()` stops the
+  spawner (`active = false`) and `freeze()`s enemies. HUD opens `EndScreen` when `is_over()`;
+  single player pauses the tree; PauseMenu stays closed while the match is over.
+  The benchmark disables the director (`set_process(false)`, `max_waves = 0`, spread 1.0).
+- Enemy `State.ASSAULT` (added at the END of the enum – it is synced as a number): PATROL/ALERT/
+  ATTACK at the attack point → `_hold_at_goal()` for `assault_hold_min…max` s → `_begin_assault()`
+  picks the nearest `trench_entry` NavigationLink3D (one per zigzag leg, ground → floor, one-way;
+  the navmesh already had the trench floor as its own island) → runs there, the link makes the path
+  drop into the trench → `_trench_fight()`: nearest living player, shoot when in sight (no spotting
+  delay, `trench_fire_interval_*`), else follow the navmesh. Stuck > 1 s → step aside (landed on
+  someone). `hear_noise` / `take_damage` don't pull an assaulting soldier out of ASSAULT.
+- Navmesh vertices sit ~0.4 m above the surface: the trench floor shows up at y ≈ -1.0, not -1.4.
+- Ammo crates: `scenes/props/ammo_crate.tscn` (group `ammo_crates`): one in a CSG niche
+  (`AmmoNiche`, `_ammo_niche()` in the builder) next to the first spawn, one in the bunker.
+  F (Player `_handle_mounted_gun`): a usable gun wins, else the nearest crate → `resupply()` →
+  `refill_reserve()` + bandages, `notify_resupplied` RPC → HUD message.
+- Bandages: Player `bandages` / `is_bandaging` (StateSync), `request_bandage` (B) on PlayerInput;
+  WeaponController can't fire/aim while bandaging and lowers the gun.
+- StateSync now also syncs `is_dead`, `kills`, `deaths` (were missing – would have broken co-op),
+  WeaponSync `shots_fired` / `shots_hit` (end-screen statistics, counted in `resolve_shot`).
+- `DuskLight` (Game/Dusk) duplicates the Environment, Sky and sky ShaderMaterial at start
+  (never edit the saved resources at runtime – they are cached across "Play again"), then lerps
+  sun pitch/yaw/colour/energy, ambient, fog colour and sky colours by `waves_cleared/waves_to_win`,
+  `transition_time` s per wave, only re-applying when it changed > 0.004 (sky re-draws are costly).
+- `tools/test_g1.gd`, `tools/soak_g1.gd` (real waves at 3× speed vs a god-mode player: with nobody
+  shooting, wave 1 breaks the line after ~2.5 min), `tools/shots_g1.gd`.
+- Measured (G1, xvfb): ~177 draw calls average (crates add a few).
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -280,7 +320,8 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
 - Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
-  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `_model_shots.gd` (renders imported
+  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
+  `soak_g1.gd`, `shots_g1.gd`, `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),

@@ -51,7 +51,13 @@ func _ready() -> void:
 	_player.input.set_process(false)   # the route drives the "input", not the keyboard
 	_player.set_physics_process(false) # we place the player directly
 	_player.input.request_switch(1)    # Suomi: more shots, more effects
+	# The benchmark is not a battle: no winning/losing, normal enemy aim, endless waves.
+	var director := get_tree().get_first_node_in_group("match_director") as MatchDirector
+	if director:
+		director.set_process(false)
+	Enemy.spread_multiplier = 1.0
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
+	waves.max_waves = 0
 	waves.first_wave_delay = 0.0
 	waves._timer = 0.0
 	waves.base_enemies = enemy_count

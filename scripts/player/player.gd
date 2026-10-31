@@ -10,6 +10,7 @@ extends CharacterBody3D
 signal health_changed(new_health: int)
 signal stamina_changed(new_stamina: float)
 signal died(player: Player)   ## Emitted on the host when health reaches 0.
+signal resupplied ## Emitted on the player's own computer after taking from an ammo crate.
 signal respawned(player: Player)
 signal hurt_from(source: Vector3) ## On the player's own computer: where a hit came from.
 
@@ -39,6 +40,11 @@ signal hurt_from(source: Vector3) ## On the player's own computer: where a hit c
 @export_group("Health")
 @export var max_health: int = 100
 
+@export_group("Bandages")
+@export var max_bandages: int = 2 ## Per life; the ammo crates give new ones.
+@export var bandage_heal: int = 50
+@export var bandage_time: float = 3.0 ## Seconds; no shooting meanwhile.
+
 # --- Synced from the host to everyone by StateSync ---
 var health: int = 100:
 	set(value):
@@ -56,6 +62,10 @@ var is_dead: bool = false:
 var kills: int = 0
 var deaths: int = 0
 var mounted_gun_path: NodePath = NodePath() ## The mounted gun we are using (empty = none).
+var bandages: int = 2
+var is_bandaging: bool = false
+
+var _bandage_timer: float = 0.0
 
 var _deep_snow_count: int = 0 # how many deep-snow zones we are standing in
 var _regen_timer: float = 0.0
@@ -81,6 +91,7 @@ func _ready() -> void:
 	collision.shape = collision.shape.duplicate() # each player needs its own capsule to resize
 	health = max_health
 	stamina = max_stamina
+	bandages = max_bandages
 	var local: bool = is_local_player()
 	camera.current = local
 	body_mesh.visible = not local          # don't see your own body from inside
@@ -103,6 +114,25 @@ func get_mounted_gun() -> MountedGun:
 	if mounted_gun_path.is_empty():
 		return null
 	return get_node_or_null(mounted_gun_path) as MountedGun
+
+
+## The nearest ammo crate within reach, or null (also used by the HUD prompt).
+func find_ammo_crate() -> AmmoCrate:
+	var best: AmmoCrate = null
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("ammo_crates"):
+		var crate := node as AmmoCrate
+		var dist: float = global_position.distance_to(crate.global_position)
+		if dist <= crate.use_distance and dist < best_dist:
+			best = crate
+			best_dist = dist
+	return best
+
+
+## Host: add health (bandage, or patched up between waves).
+func heal(amount: int) -> void:
+	if multiplayer.is_server() and not is_dead:
+		health = mini(health + amount, max_health)
 
 
 ## The nearest free mounted gun within reach, or null (also used by the HUD prompt).
@@ -147,8 +177,10 @@ func _physics_process(delta: float) -> void:
 			velocity.y -= _gravity * delta
 		input.consume_jump()
 		input.consume_interact()
+		input.consume_bandage()
 		move_and_slide()
 		return
+	_update_bandage(delta)
 	if _handle_mounted_gun():
 		return
 	_update_crouch_state()
@@ -158,7 +190,26 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
-## Host: F uses or leaves a mounted gun. While on the gun the player stays at its seat.
+## Host: B starts a bandage; after `bandage_time` seconds it heals. No shooting meanwhile.
+func _update_bandage(delta: float) -> void:
+	if input.consume_bandage() and not is_bandaging and bandages > 0 and health < max_health:
+		is_bandaging = true
+		_bandage_timer = bandage_time
+	if is_bandaging:
+		_bandage_timer -= delta
+		if _bandage_timer <= 0.0:
+			is_bandaging = false
+			bandages -= 1
+			heal(bandage_heal)
+
+
+## How far a bandage is (0..1), for the HUD (only exact on the host; fine for a progress bar).
+func get_bandage_progress() -> float:
+	return 1.0 - clampf(_bandage_timer / bandage_time, 0.0, 1.0) if is_bandaging else 0.0
+
+
+## Host: F uses or leaves a mounted gun, or takes ammo from a crate.
+## While on the gun the player stays at its seat.
 ## Returns true while mounted (then normal movement is skipped).
 func _handle_mounted_gun() -> bool:
 	var gun := get_mounted_gun()
@@ -170,6 +221,10 @@ func _handle_mounted_gun() -> bool:
 		if usable:
 			usable.mount(self)
 			gun = usable
+		else:
+			var crate := find_ammo_crate()
+			if crate:
+				crate.resupply(self)
 	if gun == null:
 		return false
 	global_position = gun.seat.global_position
@@ -255,10 +310,17 @@ func take_damage(amount: float, _attacker_id: int, _hit_position: Vector3, _hit_
 	health = maxi(health - roundi(amount), 0)
 	if health > 0:
 		return false
+	is_bandaging = false
 	deaths += 1
 	is_dead = true
 	died.emit(self) # the Game starts the respawn timer
 	return true
+
+
+## The host tells the player's computer that a crate refilled ammo and bandages (HUD message).
+@rpc("authority", "call_local", "reliable")
+func notify_resupplied() -> void:
+	resupplied.emit()
 
 
 ## The host tells the hit player's computer where the shot came from (damage indicator).
@@ -280,6 +342,8 @@ func respawn(at: Transform3D) -> void:
 	stamina = max_stamina
 	is_crouching = false
 	is_sprinting = false
+	is_bandaging = false
+	bandages = max_bandages
 	weapons.refill_ammo()
 	is_dead = false
 	input.set_look.rpc_id(get_peer_id(), at.basis.get_euler().y, 0.0) # the owner controls the view

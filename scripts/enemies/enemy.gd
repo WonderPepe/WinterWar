@@ -2,14 +2,22 @@ class_name Enemy
 extends CharacterBody3D
 ## A Soviet rifleman, controlled by a simple "state machine".
 ##
-## The soldier is always in exactly ONE state (Idle, Patrol, Alert, Attack, Dead).
+## The soldier is always in exactly ONE state (Idle, Patrol, Alert, Attack, Dead, Assault).
+## Assault (G1): after firing for a while from his jump-off point in front of the trench, he
+## rushes the trench, jumps in (NavigationLink3D "trench entries") and fights inside it.
 ## Each state has its own behaviour and rules for switching to another state.
 ## All thinking, moving and shooting happens on the HOST only; other computers just
 ## receive the position, facing and state through StateSync.
 
 signal died(enemy: Enemy)
 
-enum State { IDLE, PATROL, ALERT, ATTACK, DEAD }
+enum State { IDLE, PATROL, ALERT, ATTACK, DEAD, ASSAULT } # (new states go at the end: synced as numbers)
+
+const TRENCH_FLOOR_BELOW: float = -0.85 ## Below this height (and behind z = 48) = inside the trench.
+const TRENCH_FRONT_Z: float = 48.0
+
+## Set by the MatchDirector from the difficulty: < 1 = better aim.
+static var spread_multiplier: float = 1.0
 
 static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
 
@@ -46,6 +54,12 @@ var _attack_phase_time: float = 0.0
 var _attack_phase_length: float = 0.0 # how long the current advance / firing stop lasts
 var _shots_this_stop: int = 0
 var _deep_snow_count: int = 0
+var _hold_time: float = 0.0         # time spent at the jump-off point
+var _assault_after: float = 10.0
+var _entry_point: Vector3           # where we land in the trench
+var _retarget_timer: float = 0.0
+var _stuck_time: float = 0.0
+var _last_rush_pos: Vector3
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
@@ -64,6 +78,7 @@ func _ready() -> void:
 	collision.shape = collision.shape.duplicate() # each soldier resizes its own capsule
 	health = data.max_health
 	_idle_time = _rng.randf_range(1.0, 3.0)
+	_assault_after = _rng.randf_range(data.assault_hold_min, data.assault_hold_max)
 	_update_visuals()
 
 
@@ -86,16 +101,20 @@ func _physics_process(delta: float) -> void:
 		State.PATROL:
 			if _move_to(attack_point, data.walk_speed):
 				_face_towards(attack_point + Vector3(0, 0, 30), delta) # hold and watch the trench
+				_hold_at_goal(delta)
 			else:
 				_face_towards(global_position + velocity, delta)
 		State.ALERT:
 			# Advance (hurrying) while looking towards the noise.
-			_move_to(attack_point, data.hurry_speed)
+			if _move_to(attack_point, data.hurry_speed):
+				_hold_at_goal(delta)
 			_face_towards(_noise_position, delta)
-			if _state_time > data.alert_duration:
+			if state == State.ALERT and _state_time > data.alert_duration:
 				state = State.PATROL
 		State.ATTACK:
 			_attack(delta)
+		State.ASSAULT:
+			_assault(delta)
 
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -104,6 +123,12 @@ func _physics_process(delta: float) -> void:
 
 # ------------------------------------------------------------------ senses
 func _update_senses(dt: float) -> void:
+	if state == State.ASSAULT:
+		# In the final rush there is no careful spotting: in the trench, anyone in sight is shot at.
+		_can_see_target = is_in_trench() and _target != null and is_instance_valid(_target) \
+				and not _target.is_dead and global_position.distance_to(_target.global_position) < 60.0 \
+				and (_has_line_of_sight(_target.head.global_position) or _has_line_of_sight(_chest_of(_target)))
+		return
 	var seen: Player = _find_visible_player()
 	if seen != null:
 		var distance: float = eyes.global_position.distance_to(seen.head.global_position)
@@ -166,7 +191,7 @@ func _chest_of(p: Player) -> Vector3:
 ## Called (through the "enemies" group) whenever a shot is fired.
 ## `source` is where the sound came from, `interest` is where to look.
 func hear_noise(source: Vector3, interest: Vector3, radius: float) -> void:
-	if not multiplayer.is_server() or state == State.DEAD or state == State.ATTACK:
+	if not multiplayer.is_server() or state == State.DEAD or state == State.ATTACK or state == State.ASSAULT:
 		return
 	if global_position.distance_to(source) > radius:
 		return
@@ -208,6 +233,10 @@ func _attack(delta: float) -> void:
 	# Firing stop: kneel, aim, shoot.
 	_stop()
 	is_kneeling = true
+	if at_goal:
+		_hold_at_goal(delta)
+		if state != State.ATTACK:
+			return
 	_face_towards(_last_known_position, delta)
 	if _can_see_target:
 		_aim_time += delta
@@ -238,6 +267,7 @@ func _shoot() -> void:
 	if _target.get_speed() > 1.0:
 		spread += data.moving_target_spread_deg
 	spread *= lerpf(1.0, data.best_aim_multiplier, clampf(_aim_time / data.full_aim_time, 0.0, 1.0))
+	spread *= spread_multiplier
 	if _shots_at_target == 0:
 		spread *= data.first_shot_multiplier
 	_shots_at_target += 1
@@ -320,7 +350,12 @@ func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_n
 	for node in get_tree().get_nodes_in_group("players"):
 		if (node as Player).get_peer_id() == attacker_id:
 			attacker = node
-	if attacker and state != State.ATTACK:
+	if attacker and state == State.ASSAULT:
+		if not is_in_trench():
+			pass # still rushing: keep running
+		elif _target == null or not is_instance_valid(_target) or _target.is_dead:
+			_set_target(attacker)
+	elif attacker and state != State.ATTACK:
 		_spot_progress = 1.0
 		_last_known_position = attacker.global_position
 		_start_attack(attacker)
@@ -334,6 +369,120 @@ func _die() -> void:
 	state = State.DEAD
 	died.emit(self)
 	get_tree().create_timer(corpse_time).timeout.connect(queue_free)
+
+
+# ------------------------------------------------------------------ assault on the trench
+## True while this soldier is down inside the Finnish trench (counts towards "the line is broken").
+func is_in_trench() -> bool:
+	return global_position.y < TRENCH_FLOOR_BELOW and global_position.z > TRENCH_FRONT_Z
+
+
+## At the jump-off point in front of the trench: fire for a while, then rush in.
+func _hold_at_goal(delta: float) -> void:
+	_hold_time += delta
+	if _hold_time >= _assault_after:
+		_begin_assault()
+
+
+func _begin_assault() -> void:
+	_entry_point = _pick_trench_entry()
+	is_kneeling = false
+	_aim_time = 0.0
+	state = State.ASSAULT
+
+
+## The landing point of the nearest trench entry (NavigationLink3D in group "trench_entry").
+func _pick_trench_entry() -> Vector3:
+	var best: Vector3 = global_position + Vector3(0, 0, 15)
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("trench_entry"):
+		var link := node as NavigationLink3D
+		var start: Vector3 = link.global_transform * link.start_position
+		var dist: float = global_position.distance_to(start)
+		if dist < best_dist:
+			best_dist = dist
+			best = link.global_transform * link.end_position
+	return best
+
+
+func _assault(delta: float) -> void:
+	if not is_in_trench():
+		# The rush: run (bayonet first) to the trench edge and jump down.
+		is_kneeling = false
+		var arrived: bool = _move_to(_entry_point, data.hurry_speed)
+		if arrived or _state_time > 25.0:
+			# At the edge (or stuck): step straight towards the landing point and drop in.
+			var to_entry: Vector3 = _entry_point - global_position
+			to_entry.y = 0.0
+			var dir: Vector3 = to_entry.normalized() if to_entry.length() > 0.05 else Vector3.BACK
+			velocity.x = dir.x * data.hurry_speed
+			velocity.z = dir.z * data.hurry_speed
+		# Not getting anywhere (e.g. landed on someone's shoulders)? Step aside.
+		_stuck_time = _stuck_time + delta if global_position.distance_to(_last_rush_pos) < 0.02 else 0.0
+		_last_rush_pos = global_position
+		if _stuck_time > 1.0:
+			var side := Vector3(_rng.randf_range(-1.0, 1.0), 0.0, _rng.randf_range(-1.0, 1.0)).normalized()
+			velocity.x = side.x * data.hurry_speed
+			velocity.z = side.z * data.hurry_speed
+			if _stuck_time > 1.6:
+				_stuck_time = 0.0
+		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+		return
+	_trench_fight(delta)
+
+
+## Inside the trench: go for the nearest Finn; shoot whenever he is in sight.
+func _trench_fight(delta: float) -> void:
+	_retarget_timer -= delta
+	if _retarget_timer <= 0.0 or _target == null or not is_instance_valid(_target) or _target.is_dead:
+		_retarget_timer = 1.0
+		var nearest: Player = _nearest_player()
+		if nearest != _target:
+			_set_target(nearest)
+	if _target == null:
+		_stop()
+		return
+	if _can_see_target:
+		_stop()
+		is_kneeling = false
+		_face_towards(_target.global_position, delta)
+		_aim_time += delta
+		var now: float = Time.get_ticks_msec() / 1000.0
+		if _aim_time >= _reaction_delay and now >= _next_shot_time:
+			_shoot()
+			_next_shot_time = now + _rng.randf_range(data.trench_fire_interval_min, data.trench_fire_interval_max)
+	else:
+		_aim_time = 0.0
+		_move_to(_target.global_position, data.hurry_speed)
+		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+
+
+func _set_target(p: Player) -> void:
+	_target = p
+	_shots_at_target = 0
+	_aim_time = 0.0
+	_reaction_delay = _rng.randf_range(data.reaction_time_min, data.reaction_time_max) * 0.5
+
+
+func _nearest_player() -> Player:
+	var best: Player = null
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("players"):
+		var p := node as Player
+		if p.is_dead:
+			continue
+		var dist: float = global_position.distance_to(p.global_position)
+		if dist < best_dist:
+			best = p
+			best_dist = dist
+	return best
+
+
+## Host: the battle is over – stand still.
+func freeze() -> void:
+	_stop()
+	velocity = Vector3.ZERO
+	set_physics_process(false)
 
 
 # ------------------------------------------------------------------ movement helpers

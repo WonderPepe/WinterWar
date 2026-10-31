@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/ammo_crate.gd" id="1_cvdmc"]
+[ext_resource type="Material" path="res://resources/materials/crate_wood.tres" id="2_rfh2c"]
+[ext_resource type="Material" path="res://resources/materials/first_aid_white.tres" id="3_xr3c3"]
+[ext_resource type="Material" path="res://resources/materials/first_aid_red.tres" id="4_wsa33"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_uym0g"]
+material = ExtResource("2_rfh2c")
+size = Vector3(0.74, 0.3, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jku2b"]
+material = ExtResource("2_rfh2c")
+size = Vector3(0.74, 0.3, 0.42)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jr5ph"]
+material = ExtResource("3_xr3c3")
+size = Vector3(0.26, 0.11, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_squkw"]
+material = ExtResource("4_wsa33")
+size = Vector3(0.13, 0.004, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lp5wc"]
+material = ExtResource("4_wsa33")
+size = Vector3(0.04, 0.004, 0.13)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a5pv7"]
+size = Vector3(0.78, 0.72, 0.46)
+
+[node name="AmmoCrate" type="StaticBody3D" unique_id=1682676280]
+script = ExtResource("1_cvdmc")
+metadata/surface = "wood"
+
+[node name="BoxLower" type="MeshInstance3D" parent="." unique_id=1068378602]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_uym0g")
+
+[node name="BoxUpper" type="MeshInstance3D" parent="." unique_id=1752960742]
+transform = Transform3D(0.99280864, 0, 0.119712204, 0, 1, 0, -0.119712204, 0, 0.99280864, 0.03, 0.455, -0.01)
+mesh = SubResource("BoxMesh_jku2b")
+
+[node name="FirstAidTin" type="MeshInstance3D" parent="." unique_id=114095452]
+transform = Transform3D(0.9800666, 0, -0.19866933, 0, 1, 0, 0.19866933, 0, 0.9800666, -0.12, 0.665, 0)
+mesh = SubResource("BoxMesh_jr5ph")
+
+[node name="Cross" type="MeshInstance3D" parent="FirstAidTin" unique_id=2060197893]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.056, 0)
+mesh = SubResource("BoxMesh_squkw")
+
+[node name="Bar" type="MeshInstance3D" parent="FirstAidTin/Cross" unique_id=890041368]
+mesh = SubResource("BoxMesh_lp5wc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=424871471]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+shape = SubResource("BoxShape3D_a5pv7")

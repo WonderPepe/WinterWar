@@ -23,6 +23,10 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 @export var time_between_waves: float = 20.0
 @export var max_alive: int = 16 ## Performance limit for the web version.
 @export var spawn_spread_m: float = 5.0 ## Random offset around each spawn point.
+@export var max_waves: int = 0 ## Stop after this many waves (0 = endless). Set by the MatchDirector.
+
+## False = no more waves (the battle is over).
+var active: bool = true
 
 # --- Synced to everyone by WaveSync (for the HUD) ---
 var wave_number: int = 0
@@ -42,7 +46,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not multiplayer.is_server():
+	if not multiplayer.is_server() or not active:
 		return
 	_timer -= delta
 	match _phase:
@@ -57,9 +61,11 @@ func _process(delta: float) -> void:
 				_phase = Phase.FIGHTING
 		Phase.FIGHTING:
 			if alive_count <= 0:
-				wave_cleared.emit(wave_number)
 				_phase = Phase.WAITING
 				_timer = time_between_waves
+				if max_waves > 0 and wave_number >= max_waves:
+					active = false # that was the last one
+				wave_cleared.emit(wave_number)
 
 
 ## Seconds until the next wave starts (0 while a wave is running).

@@ -17,6 +17,9 @@ func _initialize() -> void:
 	_make_weapon_data()
 	_save(_build_target_dummy(mats), "res://scenes/props/target_dummy.tscn")
 	_make_enemy_data()
+	_make_difficulty_data()
+	DirAccess.make_dir_recursive_absolute("res://scenes/props")
+	_save(_build_ammo_crate(mats), "res://scenes/props/ammo_crate.tscn")
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
 	_save(_build_maxim(mats), "res://scenes/weapons/maxim_mg.tscn")
@@ -24,7 +27,7 @@ func _initialize() -> void:
 	_save(_build_level(mats), "res://levels/test_level.tscn")
 	DirAccess.make_dir_recursive_absolute("res://ui")
 	var theme := _make_theme()
-	_save(_build_hud(), "res://ui/hud.tscn")
+	_save(_build_hud(theme), "res://ui/hud.tscn")
 	_save(_build_settings_menu(theme), "res://ui/settings_menu.tscn")
 	_save(_build_pause_menu(theme), "res://ui/pause_menu.tscn")
 	_save(_build_main_menu(theme), "res://ui/main_menu.tscn")
@@ -99,6 +102,9 @@ func _make_materials() -> Dictionary:
 		"target_wood": _mat("target_wood.tres", Color(0.55, 0.42, 0.28)),
 		"target_cloth": _mat("target_soviet_cloth.tres", Color(0.3, 0.28, 0.2)),
 		"muzzle_flash": _flash_mat("muzzle_flash.tres"),
+		"crate_wood": _mat("crate_wood.tres", Color(0.33, 0.34, 0.26), 0.85),
+		"tin_white": _mat("first_aid_white.tres", Color(0.86, 0.86, 0.82), 0.5),
+		"cross_red": _mat("first_aid_red.tres", Color(0.62, 0.07, 0.06), 0.6),
 	}
 
 
@@ -218,6 +224,8 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:mag_ammo", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:reserve_ammo", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:is_reloading", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:shots_fired", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:shots_hit", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
 	# Footsteps, breath vapour and drifting snow (made in code by player_fx.gd).
@@ -281,6 +289,11 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:is_sprinting", true, ON_CHANGE],
 		[".:god_mode", true, ON_CHANGE],
 		[".:mounted_gun_path", true, ON_CHANGE],
+		[".:is_dead", true, ON_CHANGE],
+		[".:kills", true, ON_CHANGE],
+		[".:deaths", true, ON_CHANGE],
+		[".:bandages", true, ON_CHANGE],
+		[".:is_bandaging", true, ON_CHANGE],
 	])
 	return p
 
@@ -296,6 +309,17 @@ const DEPTH := 1.4
 
 func _zig_point(i: int) -> Vector2:
 	return Vector2(ZIG_X[i], ZIG_FRONT_Z if i % 2 == 0 else ZIG_REAR_Z)
+
+
+## G1: the ammo niche in the rear wall of the trench leg x = -40 … -20 (next to the first
+## player spawn). Returns [crate centre (x, z), yaw, rear direction].
+func _ammo_niche() -> Array:
+	var a := _zig_point(3)
+	var b := _zig_point(4)
+	var dir := (b - a).normalized()
+	var rear := Vector2(-dir.y, dir.x)
+	var mid := (a + b) / 2.0
+	return [mid + rear * (TRENCH_WIDTH / 2.0 + 0.42), atan2(-(b - a).y, (b - a).x), rear]
 
 
 func _csg_box(parent: Node, n: String, size: Vector3, pos: Vector3, mat: Material,
@@ -460,6 +484,32 @@ func _build_level(mats: Dictionary) -> Node:
 		m.position = Vector3(-84 + i * 24, 0, 38 + (i % 2) * 4)
 		m.add_to_group("attack_point", true)
 
+	# --- G1: ammo crates (one in a niche of the trench, one in the bunker) ---
+	var crate_scene: PackedScene = load("res://scenes/props/ammo_crate.tscn")
+	var niche: Array = _ammo_niche()
+	var crate1: Node3D = _add(root, crate_scene.instantiate(), "AmmoCrateTrench")
+	crate1.position = Vector3(niche[0].x, -DEPTH, niche[0].y)
+	crate1.rotation.y = niche[1]
+	var crate2: Node3D = _add(root, crate_scene.instantiate(), "AmmoCrateBunker")
+	crate2.position = Vector3(1.75, -DEPTH, 68.35)
+
+	# --- G1: trench entries: where the Soviets jump down into the trench (one per zigzag leg).
+	# A NavigationLink3D joins the walkable ground in front to the trench floor.
+	var entries: Node3D = _add(root, Node3D.new(), "TrenchEntries")
+	for i in ZIG_X.size() - 1:
+		var a := _zig_point(i)
+		var b := _zig_point(i + 1)
+		var dir := (b - a).normalized()
+		var rear := Vector2(-dir.y, dir.x) # points back (+z), away from the enemy
+		var mid := (a + b) / 2.0
+		var link: NavigationLink3D = _add(entries, NavigationLink3D.new(), "Entry%d" % (i + 1))
+		var start := mid - rear * (TRENCH_WIDTH / 2.0 + 1.3)
+		var land := mid - rear * 0.1
+		link.start_position = Vector3(start.x, 0.0, start.y)
+		link.end_position = Vector3(land.x, -DEPTH, land.y)
+		link.bidirectional = false
+		link.add_to_group("trench_entry", true)
+
 	# --- Player spawn points inside the trench (facing the enemy, -z) ---
 	var spawns: Node3D = _add(root, Node3D.new(), "PlayerSpawnPoints")
 	for i in 4:
@@ -505,6 +555,25 @@ func _build_game() -> Node:
 		[".:wave_number", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:alive_count", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
+
+	# G1: the rules of the battle (difficulty, victory, defeat) and the evening light.
+	var director: Node = _add(g, Node.new(), "MatchDirector")
+	director.set_script(load("res://scripts/game/match_director.gd"))
+	var diffs: Array[DifficultyData] = []
+	for n in ["easy", "normal", "hard"]:
+		diffs.append(load("res://resources/difficulty/%s.tres" % n))
+	director.set("difficulties", diffs)
+	var match_sync: MultiplayerSynchronizer = _add(director, MultiplayerSynchronizer.new(), "MatchSync")
+	match_sync.root_path = NodePath("..")
+	match_sync.delta_interval = 0.25
+	var OC := SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
+	match_sync.replication_config = _sync_config([
+		[".:difficulty", true, OC], [".:waves_to_win", true, OC], [".:trench_limit", true, OC],
+		[".:in_trench", true, OC], [".:waves_cleared", true, OC], [".:result", true, OC],
+		[".:match_time", true, OC],
+	])
+	var dusk: Node = _add(g, Node.new(), "Dusk")
+	dusk.set_script(load("res://scripts/game/dusk.gd"))
 
 	_add(g, load("res://ui/hud.tscn").instantiate(), "HUD")
 	_add(g, load("res://ui/pause_menu.tscn").instantiate(), "PauseMenu")
@@ -900,6 +969,44 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 
 
 # ---------------------------------------------------------------- enemies
+## G1: Easy / Normal / Hard (resources/difficulty/*.tres – tune them in the Inspector).
+func _make_difficulty_data() -> void:
+	DirAccess.make_dir_recursive_absolute("res://resources/difficulty")
+	# name, waves to win, trench limit, wave 1 size, added per wave, enemy spread ×, respawn s
+	for d in [["Easy", 6, 6, 5, 1, 1.4, 5.0], ["Normal", 8, 4, 6, 2, 1.0, 5.0], ["Hard", 10, 3, 8, 2, 0.75, 10.0]]:
+		var r := DifficultyData.new()
+		r.display_name = d[0]
+		r.waves_to_win = d[1]
+		r.trench_limit = d[2]
+		r.base_enemies = d[3]
+		r.enemies_added_per_wave = d[4]
+		r.enemy_spread_multiplier = d[5]
+		r.respawn_time = d[6]
+		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
+
+
+## G1: two ammo boxes with a first-aid tin on top (F = refill spare ammo and bandages).
+func _build_ammo_crate(mats: Dictionary) -> Node:
+	var c := StaticBody3D.new()
+	c.name = "AmmoCrate"
+	c.set_script(load("res://scripts/world/ammo_crate.gd"))
+	c.collision_layer = 0b1
+	c.set_meta("surface", "wood")
+	_part(c, "BoxLower", _box(Vector3(0.74, 0.3, 0.42)), Vector3(0, 0.15, 0), mats.crate_wood)
+	_part(c, "BoxUpper", _box(Vector3(0.74, 0.3, 0.42)), Vector3(0.03, 0.455, -0.01), mats.crate_wood, Vector3(0, 0.12, 0))
+	_part(c, "FirstAidTin", _box(Vector3(0.26, 0.11, 0.18)), Vector3(-0.12, 0.665, 0.0), mats.tin_white, Vector3(0, -0.2, 0))
+	var cross: MeshInstance3D = _part(c.get_node("FirstAidTin"), "Cross", _box(Vector3(0.13, 0.004, 0.04)), Vector3(0, 0.056, 0), mats.cross_red)
+	_part(cross, "Bar", _box(Vector3(0.04, 0.004, 0.13)), Vector3.ZERO, mats.cross_red)
+	for mi in c.find_children("*", "MeshInstance3D", true, false):
+		(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	var cs: CollisionShape3D = _add(c, CollisionShape3D.new(), "CollisionShape3D")
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(0.78, 0.72, 0.46)
+	cs.shape = shape
+	cs.position = Vector3(0, 0.36, 0)
+	return c
+
+
 func _make_enemy_data() -> void:
 	DirAccess.make_dir_recursive_absolute("res://resources/enemies")
 	var d := EnemyData.new() # defaults from enemy_data.gd
@@ -1052,7 +1159,7 @@ func _bar(parent: Node, n: String, fill: Color, min_size: Vector2) -> ProgressBa
 	return b
 
 
-func _build_hud() -> Node:
+func _build_hud(theme: Theme) -> Node:
 	var hud := CanvasLayer.new()
 	hud.name = "HUD"
 	hud.set_script(load("res://scripts/ui/hud.gd"))
@@ -1089,7 +1196,7 @@ func _build_hud() -> Node:
 	var vitals: VBoxContainer = _add(hud, VBoxContainer.new(), "Vitals")
 	vitals.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	vitals.offset_left = 24
-	vitals.offset_top = -78
+	vitals.offset_top = -100
 	vitals.offset_right = 304
 	vitals.offset_bottom = -24
 	vitals.add_theme_constant_override("separation", 6)
@@ -1099,6 +1206,8 @@ func _build_hud() -> Node:
 	_full_rect(hv)
 	hv.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_bar(vitals, "StaminaBar", Color(0.78, 0.87, 0.96, 0.9), Vector2(280, 7))
+	var bandages := _label(vitals, "Bandages", "Bandages: 2   [B]", 14, HORIZONTAL_ALIGNMENT_LEFT, Color(0.95, 0.88, 0.86))
+	vitals.move_child(bandages, 0)
 
 	# Bottom right: weapon and ammo.
 	var wp: VBoxContainer = _add(hud, VBoxContainer.new(), "WeaponPanel")
@@ -1129,12 +1238,14 @@ func _build_hud() -> Node:
 	wv.offset_left = -220
 	wv.offset_right = 220
 	wv.offset_top = 14
-	wv.offset_bottom = 120
+	wv.offset_bottom = 150
 	wv.add_theme_constant_override("separation", 0)
 	_label(wv, "Wave", "Get ready", 24, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(wv, "Enemies", "Enemies: 0", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
 	_label(wv, "NextWave", "", 16, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.85, 0.5))
 	_label(wv, "Score", "Kills 0   Deaths 0", 14, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
+	var alert := _label(wv, "TrenchAlert", "", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.42, 0.32))
+	alert.visible = false
 
 	# Centre, below the crosshair: "[F] Use Maxim".
 	var prompt := _label(hud, "InteractPrompt", "", 17, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.7))
@@ -1150,6 +1261,12 @@ func _build_hud() -> Node:
 	banner.offset_right = 300
 	banner.offset_top = -170
 	banner.offset_bottom = -90
+	var sub := _label(hud, "WaveBannerSub", "", 24, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.75))
+	sub.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	sub.offset_left = -400
+	sub.offset_right = 400
+	sub.offset_top = -90
+	sub.offset_bottom = -56
 
 	# Death screen.
 	var ds: Control = _add(hud, Control.new(), "DeathScreen")
@@ -1178,7 +1295,36 @@ func _build_hud() -> Node:
 	# (no stream: HUD picks a real recording, assets/audio/recorded/hurt…)
 	hurt.volume_db = -4.0
 	hurt.bus = &"UI"
+	# G1: end of the battle (victory / defeat) with statistics.
+	var es: Control = _add(hud, Control.new(), "EndScreen")
+	es.set_script(load("res://scripts/ui/end_screen.gd"))
+	es.theme = theme
+	_full_rect(es)
+	var es_dim: ColorRect = _add(es, ColorRect.new(), "Dim")
+	es_dim.color = Color(0.03, 0.04, 0.07, 0.62)
+	_full_rect(es_dim)
+	var es_c: CenterContainer = _add(es, CenterContainer.new(), "Center")
+	_full_rect(es_c)
+	var es_p: PanelContainer = _add(es_c, PanelContainer.new(), "Panel")
+	var es_v: VBoxContainer = _add(es_p, VBoxContainer.new(), "VBox")
+	es_v.add_theme_constant_override("separation", 14)
+	es_v.custom_minimum_size = Vector2(560, 0)
+	_label(es_v, "Title", "THE LINE HELD", 46, HORIZONTAL_ALIGNMENT_CENTER)
+	var es_sub := _label(es_v, "Subtitle", "", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
+	es_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_label(es_v, "Stats", "", 18, HORIZONTAL_ALIGNMENT_CENTER, Color(0.95, 0.96, 0.98))
+	var es_b: HBoxContainer = _add(es_v, HBoxContainer.new(), "Buttons")
+	es_b.alignment = BoxContainer.ALIGNMENT_CENTER
+	es_b.add_theme_constant_override("separation", 16)
+	for b in [["PlayAgainButton", "Play again"], ["MainMenuButton", "Main menu"]]:
+		var btn: Button = _add(es_b, Button.new(), b[0])
+		btn.text = b[1]
+		btn.custom_minimum_size = Vector2(200, 44)
 	_ignore_mouse(hud) # the HUD must never catch the mouse (see the M2 mouse-look bug)
+	# ...except the end screen, which is used with the mouse.
+	es.mouse_filter = Control.MOUSE_FILTER_STOP
+	for btn in es_b.get_children():
+		(btn as Control).mouse_filter = Control.MOUSE_FILTER_STOP
 	return hud
 
 
@@ -1288,6 +1434,18 @@ func _build_main_menu(theme: Theme) -> Node:
 		btn.tooltip_text = b[2]
 		btn.custom_minimum_size = Vector2(340, 44)
 		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	# G1: difficulty for single player (saved in Settings).
+	var row: HBoxContainer = _add(vb, HBoxContainer.new(), "DifficultyRow")
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	_label(row, "Label", "Difficulty", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.92, 0.94, 0.97))
+	var opt: OptionButton = _add(row, OptionButton.new(), "DifficultyOption")
+	for n in ["Easy", "Normal", "Hard"]:
+		opt.add_item(n)
+	opt.select(1)
+	opt.custom_minimum_size = Vector2(200, 40)
+	opt.tooltip_text = "Easy: 6 waves, the line breaks at 6 Soviets in the trench.\nNormal: 8 waves, 4 in the trench.\nHard: 10 waves, 3 in the trench, better enemy aim."
+	vb.move_child(row, vb.get_node("SinglePlayerButton").get_index())
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
 
@@ -1310,7 +1468,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	back.custom_minimum_size = Vector2(200, 44)
 	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-	var ver := _label(mm, "Version", "Prototype · P2", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
+	var ver := _label(mm, "Version", "Prototype · G1", 14, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.2, 0.24, 0.3))
 	ver.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	ver.offset_left = -300
 	ver.offset_top = -34
@@ -1361,6 +1519,12 @@ func _build_trench_source(mats: Dictionary) -> Node:
 			top_center - normal * 0.3, mats.snow, CSGShape3D.OPERATION_UNION, Vector3(-slope, 0, 0))
 		_csg_box(trench, "ExitLanding_x%d" % x, Vector3(1.6, 0.4, 2.0), Vector3(x, -0.15, 70.4),
 			mats.snow)
+
+	# G1: a niche in the rear wall for the ammo crate.
+	var niche: Array = _ammo_niche()
+	var niche_c: Vector2 = niche[0] + (niche[2] as Vector2) * 0.05
+	_csg_box(trench, "AmmoNiche", Vector3(1.6, 3.6, 1.0), Vector3(niche_c.x, -0.8, niche_c.y), mats.trench_wall, SUB,
+		Vector3(0, niche[1], 0))
 
 	# Bunker room dug into the slab behind the trench at x = 0.
 	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.1), Vector3(0, -1.29, 66.95), mats.bunker_log, SUB)

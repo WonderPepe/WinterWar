@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DifficultyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_hlras"]
+
+[resource]
+script = ExtResource("1_hlras")
+display_name = "Easy"
+waves_to_win = 6
+trench_limit = 6
+base_enemies = 5
+enemies_added_per_wave = 1
+enemy_spread_multiplier = 1.4

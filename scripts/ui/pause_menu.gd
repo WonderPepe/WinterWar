@@ -34,12 +34,14 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	# Mouse got released (browser Esc, alt-tab, or never captured yet)? Show the menu.
+	if _match_over():
+		return # the end screen has the mouse now
 	if not is_open and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and _now() > _ignore_until:
 		open()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause") and not settings_menu.visible:
+	if event.is_action_pressed("pause") and not settings_menu.visible and not _match_over():
 		if is_open:
 			resume()
 		else:
@@ -68,6 +70,11 @@ func _close() -> void:
 	settings_menu.visible = false
 	panel.visible = true
 	get_tree().paused = false
+
+
+func _match_over() -> bool:
+	var director := get_tree().get_first_node_in_group("match_director") as MatchDirector
+	return director != null and director.is_over()
 
 
 func _now() -> float:

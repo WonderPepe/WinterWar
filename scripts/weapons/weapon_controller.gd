@@ -32,6 +32,10 @@ var is_reloading: bool = false:
 
 var is_aiming: bool = false
 
+# --- Statistics for the end screen (host counts, WeaponSync shares) ---
+var shots_fired: int = 0
+var shots_hit: int = 0 ## Hits on Soviet soldiers.
+
 var _aim_t: float = 0.0           # 0 = hip, 1 = fully aimed
 var _next_fire_time: float = 0.0  # owner: when the trigger may fire again
 var _trigger_ready: bool = true   # owner: semi/bolt need the button released between shots
@@ -130,7 +134,7 @@ func _process(delta: float) -> void:
 		return
 	if multiplayer.is_server():
 		_host_process(delta, w)
-	is_aiming = input.aim_held and not is_reloading_now() and not player.is_sprinting
+	is_aiming = input.aim_held and not is_reloading_now() and not player.is_sprinting and not player.is_bandaging
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
 	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null
 	if player.is_local_player():
@@ -164,7 +168,8 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 
 
 func _can_fire_now() -> bool:
-	return _now() >= _next_fire_time and not is_reloading_now() and not player.is_sprinting and not player.is_dead
+	return _now() >= _next_fire_time and not is_reloading_now() and not player.is_sprinting and not player.is_dead \
+			and not player.is_bandaging
 
 
 func _fire(w: WeaponData) -> void:
@@ -242,6 +247,9 @@ func _update_view(delta: float, w: WeaponData) -> void:
 		var bob: float = 0.012 * (1.0 - aim_smooth * 0.8)
 		target += Vector3(cos(_bob_time * 0.5) * bob, absf(sin(_bob_time * 0.5)) * -bob, 0.0)
 
+	if player.is_bandaging:
+		target += Vector3(0.05, -0.28, 0.08) # gun lowered while the hands are busy
+
 	if wall_check.is_colliding():
 		var dist: float = camera.global_position.distance_to(wall_check.get_collision_point())
 		target.z += clampf(wall_check_distance - dist, 0.0, 0.35)
@@ -279,6 +287,14 @@ func _host_process(delta: float, w: WeaponData) -> void:
 		_reload_timer -= delta
 		if _reload_timer <= 0.0:
 			_finish_reload(get_current_weapon())
+
+
+## Host only: spare ammo back to the starting amount (ammo crate). Magazines stay as they are.
+func refill_reserve() -> void:
+	var reserves := PackedInt32Array()
+	for w in loadout:
+		reserves.append(w.starting_reserve)
+	reserve_ammo = reserves
 
 
 ## Host only: full magazines and starting spare ammo (used when respawning).
@@ -337,9 +353,12 @@ func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: A
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction.normalized() * w.max_range_m, shot_collision_mask)
 	query.exclude = [player.get_rid()] + exclude
 	var hit: Dictionary = player.get_world_3d().direct_space_state.intersect_ray(query)
+	shots_fired += 1
 	if not hit.is_empty():
 		var collider: Node = hit.collider
 		var target := _find_damageable(collider)
+		if target is Enemy and (target as Enemy).state != Enemy.State.DEAD:
+			shots_hit += 1
 		if target and (friendly_fire or not target is Player):
 			var killed: bool = target.take_damage(w.damage_at(origin.distance_to(hit.position)), shooter, hit.position, hit.normal)
 			if killed and target is Enemy:

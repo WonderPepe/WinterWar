@@ -19,6 +19,7 @@ static var start_pressed_msec: int = 0
 @onready var credits_back: Button = $Credits/Panel/VBox/BackButton
 @onready var menu_box: Control = $Center
 @onready var settings_menu: SettingsMenu = $SettingsMenu
+@onready var difficulty_option: OptionButton = $Center/VBox/DifficultyRow/DifficultyOption
 
 
 func _ready() -> void:
@@ -26,6 +27,8 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	quit_button.visible = not OS.has_feature("web") # a browser tab can't be "quit"
 	single_button.pressed.connect(_on_single_player)
+	difficulty_option.select(clampi(Settings.difficulty, 0, difficulty_option.item_count - 1))
+	difficulty_option.item_selected.connect(Settings.set_difficulty)
 	benchmark_button.pressed.connect(_on_benchmark)
 	settings_button.pressed.connect(func() -> void:
 		menu_box.visible = false

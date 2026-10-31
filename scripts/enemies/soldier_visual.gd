@@ -152,7 +152,7 @@ func _pose(delta: float) -> void:
 	var dead: bool = state == Enemy.State.DEAD
 	var moving: bool = _speed > 0.4 and not dead
 	var kneel: bool = _enemy.is_kneeling and not moving and not dead
-	var attacking: bool = state == Enemy.State.ATTACK or state == Enemy.State.ALERT
+	var attacking: bool = state == Enemy.State.ATTACK or state == Enemy.State.ALERT or state == Enemy.State.ASSAULT
 
 	# Targets for this frame.
 	var t := {}
