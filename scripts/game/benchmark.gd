@@ -58,6 +58,7 @@ func _ready() -> void:
 	Enemy.spread_multiplier = 1.0
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	waves.max_waves = 0
+	waves.wave_list = [] # G2: riflemen only, so results stay comparable with earlier versions
 	waves.first_wave_delay = 0.0
 	waves._timer = 0.0
 	waves.base_enemies = enemy_count

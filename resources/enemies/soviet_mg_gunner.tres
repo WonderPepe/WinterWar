@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="AudioStream" path="res://assets/audio/maxim_shot.wav" id="1_qvbgh"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="2_cxewy"]
+
+[resource]
+script = ExtResource("2_cxewy")
+display_name = "Soviet machine-gunner (DP-27)"
+kind = 2
+fire_sound = ExtResource("1_qvbgh")
+fire_sound_recording = "dp27"
+fire_sound_pitch = 1.12
+walk_speed = 2.2
+hurry_speed = 3.0
+damage = 30.0
+reaction_time_min = 1.0
+reaction_time_max = 1.8
+shot_noise_radius_m = 200.0
+base_spread_deg = 1.6
+moving_target_spread_deg = 1.0
+first_shot_multiplier = 1.5
+full_aim_time = 3.0
+nerve = 0.85

@@ -123,6 +123,28 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   `scripts/world/ammo_crate.gd`, `scripts/ui/end_screen.gd`; the enemy's new ASSAULT state is in
   `scripts/enemies/enemy.gd`.
 
+## Pressure (G2)
+- **Suppression:** your bullets flying close past a Soviet soldier pin him down. A near miss
+  with the Mosin (within about a metre) throws him flat; Suomi and Maxim bursts pin him for good.
+  Lying flat he doesn't advance, aims worse and fires more slowly; fully pinned he doesn't fire
+  at all and doesn't rush the trench. It wears off a few seconds after the fire stops – and
+  nobody lies there for ever: when the fire eases he jumps up and dashes forward.
+- **Officer** (peaked cap, belts, map case, pistol – from wave 2): the soldiers around him are
+  steadier. When they are pinned he blows his **whistle** and they get back up; at the jump-off
+  point his whistle sends the whole group into the trench together. His pistol only reaches
+  ~45 m. Shoot him and the soldiers around him hesitate (easier to pin, slower to rush).
+- **DP-27 machine-gun team** (from wave 3): a gunner with the DP-27 (flat pan magazine on top,
+  bipod) and a helper. They stop further back (~90 m from the trench) or as soon as the gunner
+  sees you within ~170 m, lie down and the gunner fires bursts of 4–9 rounds; a new 47-round
+  pan takes 3.5 s with the helper next to him, 6 s alone. They never rush the trench. Kill the
+  gunner and the helper carries on as a rifleman.
+- **Wave list:** every difficulty has a list of waves (riflemen, officers, MG teams) in
+  `resources/difficulty/*.tres` → `waves`. The banner at the start of a wave says what is coming.
+- Sounds: put `officer_whistle….ogg` and `dp27….ogg` into `assets/audio/recorded/` and they
+  replace the placeholders (generated whistle; the Maxim sound, pitched up, for the DP-27).
+- Numbers: `resources/enemies/soviet_officer.tres`, `soviet_mg_gunner.tres` (and the rifleman's
+  "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
+
 ## Effects, sound and soldiers (P2)
 - **Soviet soldiers** are built in code (`scripts/enemies/soldier_mesh.gd`): greatcoat, budenovka,
   boots, Mosin with bayonet – one mesh with a skeleton, so each soldier is a single draw call.
@@ -191,3 +213,4 @@ how a new version is released: see `RELEASES.md`.
 - [x] P2: effects, sound, soldiers
 - [x] G1: a real battle – win/lose, trench assault, ammo crates, bandages, dusk, end screen, difficulty
 - [x] W2: first-person arms (snow camo, mittens), aiming closer, Maxim sights / belt feed / steam / overheating
+- [x] G2: pressure – suppression and going prone, officers with whistles, DP-27 machine-gun teams, wave list

@@ -1,12 +1,44 @@
 [gd_resource type="Resource" script_class="DifficultyData" format=3]
 
-[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_hlras"]
+[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_lj5b6"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_data.gd" id="2_18yfv"]
+
+[sub_resource type="Resource" id="Resource_q08x5"]
+script = ExtResource("2_18yfv")
+riflemen = 5
+
+[sub_resource type="Resource" id="Resource_0rhfp"]
+script = ExtResource("2_18yfv")
+officers = 1
+
+[sub_resource type="Resource" id="Resource_qn7c5"]
+script = ExtResource("2_18yfv")
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_d6xwc"]
+script = ExtResource("2_18yfv")
+riflemen = 7
+officers = 1
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_k7plk"]
+script = ExtResource("2_18yfv")
+riflemen = 8
+officers = 1
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_3rpb4"]
+script = ExtResource("2_18yfv")
+riflemen = 8
+officers = 2
+mg_teams = 1
 
 [resource]
-script = ExtResource("1_hlras")
+script = ExtResource("1_lj5b6")
 display_name = "Easy"
 waves_to_win = 6
 trench_limit = 6
 base_enemies = 5
 enemies_added_per_wave = 1
+waves = Array[ExtResource("2_18yfv")]([SubResource("Resource_q08x5"), SubResource("Resource_0rhfp"), SubResource("Resource_qn7c5"), SubResource("Resource_d6xwc"), SubResource("Resource_k7plk"), SubResource("Resource_3rpb4")])
 enemy_spread_multiplier = 1.4

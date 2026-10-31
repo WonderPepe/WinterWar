@@ -366,6 +366,9 @@ func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: A
 			confirm_hit.rpc_id(shooter, killed)
 		var attach: NodePath = collider.get_path() if collider.has_meta("attach_holes") else NodePath()
 		show_impact.rpc(hit.position, hit.normal, ImpactEffects.surface_of(collider, hit.normal), attach)
+	# G2: soldiers the bullet flew close past duck (suppression).
+	var bullet_end: Vector3 = hit.position if not hit.is_empty() else origin + direction.normalized() * w.max_range_m
+	get_tree().call_group("enemies", "bullet_near", origin, bullet_end, w.suppression)
 	# Enemies within earshot hear the shot and look towards it.
 	get_tree().call_group("enemies", "hear_noise", origin, origin, w.noise_radius_m)
 

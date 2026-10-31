@@ -19,6 +19,7 @@ enum FireMode { BOLT_ACTION, SEMI_AUTO, FULL_AUTO }
 @export var falloff_end_m: float = 300.0   ## ...and reaches its minimum here.
 @export_range(0.0, 1.0) var min_damage_multiplier: float = 0.5
 @export var noise_radius_m: float = 120.0 ## Enemies within this distance hear the shot.
+@export var suppression: float = 0.25 ## How much one bullet passing close pins a soldier down (0–1).
 
 @export_group("Ammo")
 @export var magazine_size: int = 10

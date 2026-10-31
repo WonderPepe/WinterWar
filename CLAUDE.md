@@ -64,12 +64,18 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   ends with "CLICK TO START THE BATTLE" (pauses single player, locks the mouse in `_input` on the
   click) instead of the old paused pause menu. PauseMenu stays closed while `LoadingScreen` exists.
   Benchmark: `LoadingScreen.go(tree, scene, false)` (no click).
-- Next: G2 "pressure" (approved plan): artillery barrages, enemy suppression + prone, field cover
-  (rocks, wire, craters, cover points), officer with whistle, DP-27 MG teams, wave composition list.
-  New sounds go through RecordedSounds names (explosion…, shell_whistle…, officer_whistle…,
-  dp27…) with simple placeholders.
+- [x] G2 "pressure" (owner chose parts 1, 3, 4 of the plan): enemy suppression + prone, officer
+  with whistle, DP-27 MG teams, wave composition list (needed to send officers/MG teams).
+  Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was
+  skipped for now – still open, see development ideas.
+- Open: `Claude outputs/v013_update.zip` (v0.1.3 aiming fixes) was made in an earlier chat but
+  never applied/committed (it was built from an older CLAUDE.md – merge by hand, don't unzip
+  over the project). Ask the owner before applying.
 
 ## Development ideas (not yet approved)
+0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
+   TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
+   points that soldiers bound between); MG fire suppressing the player (screen effect).
 1. (done in W2) Maxim sights/belt/heat. Still open: better Maxim sound, water can + hose.
 2. (done in W2) First-person arms. Still open: arms for co-op players' third-person bodies
    (players are capsules now), reload animations that really move clips/drums.
@@ -291,6 +297,53 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   shooting, wave 1 breaks the line after ~2.5 min), `tools/shots_g1.gd`.
 - Measured (G1, xvfb): ~177 draw calls average (crates add a few).
 
+## Pressure (G2) – how it is built
+- Three enemy scenes (all `enemy.gd`, `MultiplayerSpawner` lists all three): `soviet_rifleman`,
+  `soviet_officer`, `soviet_mg_gunner`. `EnemyData.kind` (RIFLEMAN / OFFICER / MG_GUNNER) picks the
+  body: `SoldierMesh.get_mesh(kind)` (cached per kind; officer = peaked cap, strap, holster, map
+  case, TT pistol; gunner = DP-27 on the rifle bone) and `SoldierMesh.muzzle_for(kind)`.
+  `EnemyData.fire_sound` (+ pitch) / `fire_sound_recording` ("dp27") override the scene's shot sound.
+- **G2 timers use the soldier's own game clock** (`_clock += delta`, `_now()`), not
+  `Time.get_ticks_msec()` (the older shot timers still do) – so tests at `Engine.time_scale` work.
+- Suppression (host only, not synced): `WeaponController.resolve_shot` calls
+  `call_group("enemies", "bullet_near", origin, end, w.suppression)` (WeaponData `suppression`:
+  Mosin 0.45, Suomi 0.16, Maxim 0.3). Gain falls off with distance (`suppression_radius_m` 3 m),
+  × `nerve`, × 0.6 near a living officer, × 0.5 for 4 s after a whistle, × 1.6 while leaderless;
+  ignored near the shooter (< 4 m) and in the trench fight. Wounds add `wounded_suppression`.
+  Recovers `suppression_recovery`/s after `recovery_delay`. ≥ `prone_threshold` (0.35) → prone,
+  < half of it → up again; ≥ `pinned_threshold` (0.8) → no firing, aim resets. Spread and shot
+  interval scale with suppression. Prone + not pinned for `_prone_patience` (6–10 s) → a 3–5 s dash
+  (`_dash_until`), otherwise a lone soldier lay pinned for ever in the soak test.
+- `is_prone` is synced (StateSync, ON_CHANGE). Prone: capsule rotated to lie along the body
+  (height 1.7, centre y 0.3, z -0.15), eyes at (0, 0.5, -0.7). `_move_to()` refuses to move while
+  prone; `_hold_at_goal` doesn't count while prone (no rush). Killed while prone: no fall tween.
+- SoldierVisual prone pose: hips at y 0.2 pitched -1.45 rad, chest up 0.3, head up 0.75; the weapon
+  target is worked out in SKELETON space (right shoulder + offset, level) and converted into spine
+  space with the target hips/spine transforms. Officer: pistol held out / down by his side; left hand
+  to the mouth while `_whistle` > 0 (`play_whistle`). Gunner prone: left hand on the butt.
+- Officer: `_officer_think` (senses tick) whistles when a comrade within `rally_radius_m` is prone
+  (cooldown 9–15 s) → `rally()`; also when he first goes to ATTACK. At his jump-off point
+  `_order_assault()` whistles and sends everyone within 1.4 × radius who `can_join_assault()`.
+  Death → `lose_leader()` on comrades within 1.5 × radius (+8 s before the rush, more suppression).
+  Pistol only within `max_fire_distance_m` (45 m). `play_whistle` RPC (reliable) plays
+  `RecordedSounds.pick("officer_whistle")` or `assets/audio/officer_whistle_placeholder.wav`
+  (`tools/make_whistle.py`, own RNG – make_sounds.py untouched).
+- MG team: the spawner links `gunner.mg_assistant` / `helper.mg_gunner` (host-only references; the
+  helper is a rifleman scene). Gun goal = attack point − `mg_position_back_m` (35 m) in z. Gunner
+  `_deploy()`s at his goal or when he sees a target ≤ `mg_deploy_range_m`; deployed → own branch
+  `_mg_deployed()` in `_physics_process` (bursts `mg_burst_min…max` at `mg_shot_interval`, pause,
+  47-round pan, reload 3.5 s helped / 6 s alone). Deploying moves the helper's attack point next to
+  the gun; the helper lies down there (`_deployed`) and never assaults while the gunner lives;
+  gunner dead → `_gunner_lost()` → helper goes to his `home_point` as a normal rifleman.
+  Enemy smoke puffs at most every 0.25 s (bursts).
+- Waves: `WaveData` (riflemen, officers, mg_teams); `DifficultyData.waves` (builder `WAVE_LISTS`);
+  `MatchDirector` copies it to `WaveSpawner.wave_list` (empty = old riflemen formula; the
+  benchmark empties it). `_make_groups()`: rifle groups, officers in the middle of groups, MG
+  teams after every second group; a group only spawns when it fits under `max_alive`.
+  WaveSync also syncs `wave_riflemen/officers/mg_teams`; the HUD banner shows `WaveData.describe()`.
+- `tools/test_g2.gd`, `tools/soak_g2.gd [waves]` (defender bot firing near misses, 3× speed),
+  `tools/shots_g2.gd` (poses; needs xvfb). `check_web_pack.gd` checks the wave lists survive export.
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -351,7 +404,8 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `_model_shots.gd` (renders imported
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`,
+  `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),

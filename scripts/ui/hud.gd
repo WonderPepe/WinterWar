@@ -195,6 +195,10 @@ func _update_waves(delta: float) -> void:
 			banner_sub.text = "Hold the line until dusk – %d waves" % total
 		elif total > 0 and _last_wave == total:
 			banner_sub.text = "The last wave – hold on!"
+		# G2: what is coming (only worth saying once officers or machine guns join in).
+		if waves.wave_officers > 0 or waves.wave_mg_teams > 0:
+			var comp: String = WaveData.describe(waves.wave_riflemen, waves.wave_officers, waves.wave_mg_teams)
+			banner_sub.text = comp if banner_sub.text == "" else banner_sub.text + "\n" + comp
 		_banner_left = wave_banner_time + (1.5 if banner_sub.text != "" else 0.0)
 	_banner_left = maxf(_banner_left - delta, 0.0)
 	wave_banner.modulate.a = clampf(_banner_left / 0.6, 0.0, 1.0) # fades out in the last 0.6 s

@@ -21,6 +21,8 @@ func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute("res://scenes/props")
 	_save(_build_ammo_crate(mats), "res://scenes/props/ammo_crate.tscn")
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
+	_save(_build_enemy(mats, "soviet_officer", "SovietOfficer"), "res://scenes/enemies/soviet_officer.tscn")
+	_save(_build_enemy(mats, "soviet_mg_gunner", "SovietMGGunner"), "res://scenes/enemies/soviet_mg_gunner.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
 	_save(_build_maxim(mats), "res://scenes/weapons/maxim_mg.tscn")
 	_save(_build_trench_source(mats), TRENCH_SOURCE)
@@ -546,15 +548,22 @@ func _build_game() -> Node:
 	var enemy_spawner: MultiplayerSpawner = _add(g, MultiplayerSpawner.new(), "EnemySpawner")
 	enemy_spawner.spawn_path = NodePath("../Enemies")
 	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_rifleman.tscn")
+	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_officer.tscn")
+	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_mg_gunner.tscn")
 	var waves: Node = _add(g, Node.new(), "WaveSpawner")
 	waves.set_script(load("res://scripts/enemies/wave_spawner.gd"))
 	waves.set("enemy_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))
+	waves.set("officer_scene", load("res://scenes/enemies/soviet_officer.tscn"))
+	waves.set("mg_gunner_scene", load("res://scenes/enemies/soviet_mg_gunner.tscn"))
 	waves.set("enemies_root", enemies)
 	var wave_sync: MultiplayerSynchronizer = _add(waves, MultiplayerSynchronizer.new(), "WaveSync")
 	wave_sync.root_path = NodePath("..")
 	wave_sync.replication_config = _sync_config([
 		[".:wave_number", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:alive_count", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:wave_riflemen", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:wave_officers", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:wave_mg_teams", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
 	# G1: the rules of the battle (difficulty, victory, defeat) and the evening light.
@@ -720,6 +729,7 @@ func _make_weapon_data() -> void:
 	mosin.falloff_end_m = 800.0
 	mosin.min_damage_multiplier = 0.7
 	mosin.noise_radius_m = 150.0
+	mosin.suppression = 0.45
 	mosin.magazine_size = 5
 	mosin.starting_reserve = 30
 	mosin.reload_time = 3.0
@@ -753,6 +763,7 @@ func _make_weapon_data() -> void:
 	suomi.falloff_end_m = 200.0
 	suomi.min_damage_multiplier = 0.5
 	suomi.noise_radius_m = 100.0
+	suomi.suppression = 0.16
 	suomi.magazine_size = 70
 	suomi.starting_reserve = 140
 	suomi.reload_time = 4.5
@@ -787,6 +798,7 @@ func _make_weapon_data() -> void:
 	maxim.falloff_end_m = 1000.0
 	maxim.min_damage_multiplier = 0.8
 	maxim.noise_radius_m = 250.0
+	maxim.suppression = 0.3
 	maxim.magazine_size = 250 # one cloth belt
 	maxim.starting_reserve = 0
 	maxim.reload_time = 6.0
@@ -971,6 +983,15 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 
 # ---------------------------------------------------------------- enemies
 ## G1: Easy / Normal / Hard (resources/difficulty/*.tres – tune them in the Inspector).
+## G2: what each wave is made of, per difficulty: [riflemen, officers, machine-gun teams].
+const WAVE_LISTS := {
+	"Easy": [[5, 0, 0], [6, 1, 0], [6, 0, 1], [7, 1, 1], [8, 1, 1], [8, 2, 1]],
+	"Normal": [[6, 0, 0], [7, 1, 0], [7, 0, 1], [8, 1, 1], [9, 1, 1], [9, 2, 1], [10, 1, 2], [10, 2, 2]],
+	"Hard": [[8, 0, 0], [9, 1, 0], [9, 1, 1], [10, 1, 1], [11, 2, 1], [11, 1, 2], [12, 2, 2], [13, 2, 2],
+		[14, 2, 2], [15, 3, 3]],
+}
+
+
 func _make_difficulty_data() -> void:
 	DirAccess.make_dir_recursive_absolute("res://resources/difficulty")
 	# name, waves to win, trench limit, wave 1 size, added per wave, enemy spread ×, respawn s
@@ -983,6 +1004,10 @@ func _make_difficulty_data() -> void:
 		r.enemies_added_per_wave = d[4]
 		r.enemy_spread_multiplier = d[5]
 		r.respawn_time = d[6]
+		var waves: Array[WaveData] = []
+		for w: Array in WAVE_LISTS[d[0]]:
+			waves.append(WaveData.new().make(w[0], w[1], w[2]))
+		r.waves = waves
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
 
@@ -1013,13 +1038,51 @@ func _make_enemy_data() -> void:
 	var d := EnemyData.new() # defaults from enemy_data.gd
 	ResourceSaver.save(d, "res://resources/enemies/soviet_rifleman.tres")
 
+	# G2: the officer – TT pistol (only close up), steadier, whistles his men forward.
+	var o := EnemyData.new()
+	o.display_name = "Soviet officer"
+	o.kind = EnemyData.Kind.OFFICER
+	o.fire_sound = load("res://assets/audio/suomi_shot.wav")
+	o.fire_sound_pitch = 1.3
+	o.damage = 25.0
+	o.max_fire_distance_m = 45.0
+	o.fire_interval_min = 1.0
+	o.fire_interval_max = 1.8
+	o.trench_fire_interval_min = 0.8
+	o.trench_fire_interval_max = 1.4
+	o.base_spread_deg = 3.0
+	o.spread_per_100m_deg = 6.0
+	o.nerve = 0.7
+	ResourceSaver.save(o, "res://resources/enemies/soviet_officer.tres")
 
-func _build_enemy(mats: Dictionary) -> Node:
+	# G2: DP-27 gunner – lies down within range and fires bursts; never rushes the trench.
+	var g := EnemyData.new()
+	g.display_name = "Soviet machine-gunner (DP-27)"
+	g.kind = EnemyData.Kind.MG_GUNNER
+	g.fire_sound = load("res://assets/audio/maxim_shot.wav") # placeholder until a dp27… recording
+	g.fire_sound_pitch = 1.12
+	g.fire_sound_recording = "dp27"
+	g.walk_speed = 2.2
+	g.hurry_speed = 3.0
+	g.damage = 30.0
+	g.base_spread_deg = 1.6
+	g.spread_per_100m_deg = 1.0
+	g.moving_target_spread_deg = 1.0
+	g.first_shot_multiplier = 1.5
+	g.full_aim_time = 3.0
+	g.reaction_time_min = 1.0
+	g.reaction_time_max = 1.8
+	g.shot_noise_radius_m = 200.0
+	g.nerve = 0.85
+	ResourceSaver.save(g, "res://resources/enemies/soviet_mg_gunner.tres")
+
+
+func _build_enemy(mats: Dictionary, data_name := "soviet_rifleman", node_name := "SovietRifleman") -> Node:
 	DirAccess.make_dir_recursive_absolute("res://scenes/enemies")
 	var e := CharacterBody3D.new()
-	e.name = "SovietRifleman"
+	e.name = node_name
 	e.set_script(load("res://scripts/enemies/enemy.gd"))
-	e.set("data", load("res://resources/enemies/soviet_rifleman.tres"))
+	e.set("data", load("res://resources/enemies/%s.tres" % data_name))
 	e.collision_layer = 0b100   # layer 3: enemies
 	e.collision_mask = 0b011    # world + players (soldiers pass through each other)
 	e.floor_max_angle = deg_to_rad(46.0)
@@ -1078,6 +1141,7 @@ func _build_enemy(mats: Dictionary) -> Node:
 		[".:rotation", true, ALWAYS],
 		[".:state", true, ON_CHANGE],
 		[".:is_kneeling", true, ON_CHANGE],
+		[".:is_prone", true, ON_CHANGE],
 		[".:health", true, ON_CHANGE],
 	])
 	return e

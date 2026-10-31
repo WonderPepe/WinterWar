@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy.gd" id="1_4dapy"]
+[ext_resource type="Resource" path="res://resources/enemies/soviet_mg_gunner.tres" id="2_le608"]
+[ext_resource type="Script" path="res://scripts/enemies/soldier_visual.gd" id="3_af7m1"]
+[ext_resource type="Material" path="res://resources/materials/soldier.tres" id="4_1q581"]
+[ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="5_6rr1w"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5au3s"]
+radius = 0.33
+height = 1.8
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_x7j7f"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:state")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+properties/3/path = NodePath(".:is_kneeling")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath(".:is_prone")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:health")
+properties/5/spawn = true
+properties/5/replication_mode = 2
+
+[node name="SovietMGGunner" type="CharacterBody3D" unique_id=1355656420]
+collision_layer = 4
+collision_mask = 3
+floor_max_angle = 0.80285144
+floor_snap_length = 0.4
+script = ExtResource("1_4dapy")
+data = ExtResource("2_le608")
+metadata/surface = "cloth"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1098429773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_5au3s")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1004145552]
+script = ExtResource("3_af7m1")
+material = ExtResource("4_1q581")
+
+[node name="Eyes" type="Marker3D" parent="." unique_id=2016442877]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.1)
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=440913514]
+target_desired_distance = 1.5
+height = 2.0
+
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1036241384]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+stream = ExtResource("5_6rr1w")
+volume_db = -2.0
+unit_size = 30.0
+max_polyphony = 2
+bus = &"SFX"
+attenuation_filter_cutoff_hz = 2500.0
+attenuation_filter_db = -30.0
+
+[node name="DebugLabel" type="Label3D" parent="." unique_id=2087566594]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+visible = false
+pixel_size = 0.0012
+billboard = 1
+no_depth_test = true
+fixed_size = true
+outline_size = 8
+
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=775733481]
+replication_config = SubResource("SceneReplicationConfig_x7j7f")

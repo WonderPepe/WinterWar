@@ -42,6 +42,7 @@ func _ready() -> void:
 	trench_limit = d.trench_limit
 	spawner.base_enemies = d.base_enemies
 	spawner.enemies_added_per_wave = d.enemies_added_per_wave
+	spawner.wave_list = d.waves
 	spawner.max_waves = d.waves_to_win
 	Enemy.spread_multiplier = d.enemy_spread_multiplier
 	var game := get_parent() as Game

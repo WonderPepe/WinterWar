@@ -7,6 +7,8 @@ extends RefCounted
 ##   reload_suomi…  changing the Suomi's drum
 ##   reload_maxim…  a new belt in the Maxim
 ##   hurt…          you get hit (several files = a random one each time)
+##   officer_whistle…  a Soviet officer's whistle (G2)
+##   dp27…          one DP-27 machine-gun shot (G2)
 ## Example: hurt_1.ogg, hurt_2.ogg, hurt_3.ogg, reload_mosin.ogg.
 ## Missing files = silence (better than a bad placeholder). See the README in the folder.
 

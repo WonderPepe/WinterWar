@@ -3,8 +3,14 @@ extends Resource
 ## All the numbers that describe one enemy type. Each type is a .tres file in
 ## resources/enemies/ - open it in the Inspector to tune it, no code needed.
 
+enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
+
 @export var display_name: String = "Soviet rifleman"
+@export var kind: Kind = Kind.RIFLEMAN ## Decides his body/weapon and some behaviour (G2).
 @export var max_health: float = 100.0
+@export var fire_sound: AudioStream ## His shot (placeholder until a real recording exists).
+@export var fire_sound_recording: String = "" ## e.g. "dp27": uses assets/audio/recorded/dp27… if present.
+@export var fire_sound_pitch: float = 1.0
 
 @export_group("Movement")
 @export var walk_speed: float = 2.5 ## Advancing across the snow.
@@ -28,6 +34,7 @@ extends Resource
 @export var fire_interval_max: float = 4.0
 @export var shot_range_m: float = 300.0
 @export var shot_noise_radius_m: float = 150.0 ## Other soldiers within this distance hear the shot.
+@export var max_fire_distance_m: float = 1000.0 ## Doesn't shoot at targets further away (officer's pistol).
 
 @export_group("Accuracy (degrees)")
 @export var base_spread_deg: float = 2.0
@@ -49,3 +56,36 @@ extends Resource
 @export var assault_hold_max: float = 14.0 ## ...before rushing the trench and jumping in.
 @export var trench_fire_interval_min: float = 1.4 ## Faster shooting at close range inside the trench.
 @export var trench_fire_interval_max: float = 2.4
+
+@export_group("Suppression (G2)")
+## Player bullets passing this close (metres) make him duck: the closer, the more.
+@export var suppression_radius_m: float = 3.0
+@export var nerve: float = 1.0 ## Multiplies the suppression he gets (< 1 = steadier).
+@export var suppression_recovery: float = 0.22 ## Suppression lost per second.
+@export var recovery_delay: float = 1.2 ## Seconds after the last close bullet before he starts to recover.
+@export_range(0.0, 1.0) var prone_threshold: float = 0.35 ## Above this he throws himself flat and stops advancing.
+@export_range(0.0, 1.0) var pinned_threshold: float = 0.8 ## Above this he keeps his head down and doesn't shoot.
+@export var suppressed_spread_multiplier: float = 2.5 ## Aim at full suppression is this much worse.
+@export var suppressed_fire_interval_multiplier: float = 1.8 ## ...and he shoots this much more slowly.
+@export var wounded_suppression: float = 0.45 ## Added when he is hit but survives.
+
+@export_group("Officer (G2)")
+@export var rally_radius_m: float = 25.0 ## Soldiers this close to a living officer are steadier.
+@export var rally_nerve_multiplier: float = 0.6 ## Their suppression is multiplied by this.
+@export var whistle_cooldown_min: float = 9.0 ## Seconds between two whistles...
+@export var whistle_cooldown_max: float = 15.0
+@export var whistle_rally: float = 0.5 ## A whistle takes this much suppression off the soldiers around him.
+@export var leaderless_time: float = 15.0 ## His death makes the soldiers around him hesitate this long:
+@export var leaderless_nerve_multiplier: float = 1.6 ## easier to pin down...
+@export var leaderless_extra_hold: float = 8.0 ## ...and slower to rush the trench.
+
+@export_group("Machine gun (G2)")
+@export var mg_deploy_range_m: float = 170.0 ## Lies down and opens fire when a target is this close.
+@export var mg_magazine: int = 47 ## Rounds in a DP-27 pan.
+@export var mg_shot_interval: float = 0.11 ## Seconds between rounds in a burst (~550 rounds/min).
+@export var mg_burst_min: int = 4
+@export var mg_burst_max: int = 9
+@export var mg_burst_pause_min: float = 0.7 ## Pause between bursts.
+@export var mg_burst_pause_max: float = 1.6
+@export var mg_reload_time: float = 6.0 ## Changing the pan alone...
+@export var mg_reload_time_assisted: float = 3.5 ## ...and with his helper next to him.

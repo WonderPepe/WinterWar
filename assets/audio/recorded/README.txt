@@ -5,6 +5,8 @@ Real sound recordings for the game (used automatically, by file name):
   reload_maxim...   loading a new cloth belt into the Maxim
   hurt...           you get hit - put 3-5 different ones (hurt_1.ogg, hurt_2.ogg, ...),
                     the game picks one at random each time
+  officer_whistle...  a Soviet officer's whistle (G2; a generated placeholder is used until then)
+  dp27...           one DP-27 machine-gun shot (G2; the Maxim placeholder, pitched up, until then)
 
 .ogg is best (small). Keep each file short and trimmed (no silence at the start).
 Good free sources:

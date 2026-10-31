@@ -1,34 +1,45 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_264po"]
-[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_1kice"]
-[ext_resource type="Script" path="res://scripts/game/shader_warmup.gd" id="3_5newe"]
-[ext_resource type="Script" path="res://scripts/game/ambience.gd" id="4_37s47"]
-[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="5_bt5mj"]
-[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="6_e1j6l"]
-[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="7_pl11u"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="8_bhx41"]
-[ext_resource type="Script" path="res://scripts/game/match_director.gd" id="9_qnb83"]
-[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="10_sww3w"]
-[ext_resource type="Resource" path="res://resources/difficulty/easy.tres" id="11_suyxu"]
-[ext_resource type="Resource" path="res://resources/difficulty/normal.tres" id="12_sgl2t"]
-[ext_resource type="Resource" path="res://resources/difficulty/hard.tres" id="13_qouja"]
-[ext_resource type="Script" path="res://scripts/game/dusk.gd" id="14_wljb1"]
-[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="15_v2yb1"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="16_js0lu"]
-[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="17_gxtfn"]
-[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="18_twgab"]
-[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="19_02fa5"]
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_5newe"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_37s47"]
+[ext_resource type="Script" path="res://scripts/game/shader_warmup.gd" id="3_bt5mj"]
+[ext_resource type="Script" path="res://scripts/game/ambience.gd" id="4_e1j6l"]
+[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="5_pl11u"]
+[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="6_bhx41"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="7_qnb83"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="8_sww3w"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_officer.tscn" id="9_suyxu"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_mg_gunner.tscn" id="10_sgl2t"]
+[ext_resource type="Script" path="res://scripts/game/match_director.gd" id="11_qouja"]
+[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="12_wljb1"]
+[ext_resource type="Resource" path="res://resources/difficulty/easy.tres" id="13_v2yb1"]
+[ext_resource type="Resource" path="res://resources/difficulty/normal.tres" id="14_js0lu"]
+[ext_resource type="Resource" path="res://resources/difficulty/hard.tres" id="15_gxtfn"]
+[ext_resource type="Script" path="res://scripts/game/dusk.gd" id="16_twgab"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="17_02fa5"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="18_nepv3"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="19_7025r"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="20_m4url"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="21_8ool0"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nepv3"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pr1ej"]
 properties/0/path = NodePath(".:wave_number")
 properties/0/spawn = true
 properties/0/replication_mode = 2
 properties/1/path = NodePath(".:alive_count")
 properties/1/spawn = true
 properties/1/replication_mode = 2
+properties/2/path = NodePath(".:wave_riflemen")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+properties/3/path = NodePath(".:wave_officers")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath(".:wave_mg_teams")
+properties/4/spawn = true
+properties/4/replication_mode = 2
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_7025r"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_05nbr"]
 properties/0/path = NodePath(".:difficulty")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -51,65 +62,67 @@ properties/6/path = NodePath(".:match_time")
 properties/6/spawn = true
 properties/6/replication_mode = 2
 
-[node name="Game" type="Node3D" unique_id=407994115 node_paths=PackedStringArray("players_root")]
-script = ExtResource("1_264po")
+[node name="Game" type="Node3D" unique_id=976244968 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_5newe")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=406807101 instance=ExtResource("2_1kice")]
+[node name="Level" type="Node3D" parent="." unique_id=1234192055 instance=ExtResource("2_37s47")]
 
-[node name="Players" type="Node3D" parent="." unique_id=95378673]
+[node name="Players" type="Node3D" parent="." unique_id=998852949]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1301130891]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=831336762]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1835828208]
-script = ExtResource("3_5newe")
+[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1211308035]
+script = ExtResource("3_bt5mj")
 
-[node name="Ambience" type="Node" parent="." unique_id=1263477516]
-script = ExtResource("4_37s47")
+[node name="Ambience" type="Node" parent="." unique_id=1398827285]
+script = ExtResource("4_e1j6l")
 
-[node name="QualityApplier" type="Node" parent="." unique_id=1210117839]
-script = ExtResource("5_bt5mj")
+[node name="QualityApplier" type="Node" parent="." unique_id=2116657384]
+script = ExtResource("5_pl11u")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=701695082]
-script = ExtResource("6_e1j6l")
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=1571404905]
+script = ExtResource("6_bhx41")
 
-[node name="Enemies" type="Node3D" parent="." unique_id=119259866]
+[node name="Enemies" type="Node3D" parent="." unique_id=719951713]
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=163299754]
-_spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn")
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=611306487]
+_spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn", "res://scenes/enemies/soviet_officer.tscn", "res://scenes/enemies/soviet_mg_gunner.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="WaveSpawner" type="Node" parent="." unique_id=1788739588 node_paths=PackedStringArray("enemies_root")]
-script = ExtResource("7_pl11u")
-enemy_scene = ExtResource("8_bhx41")
+[node name="WaveSpawner" type="Node" parent="." unique_id=274592280 node_paths=PackedStringArray("enemies_root")]
+script = ExtResource("7_qnb83")
+enemy_scene = ExtResource("8_sww3w")
+officer_scene = ExtResource("9_suyxu")
+mg_gunner_scene = ExtResource("10_sgl2t")
 enemies_root = NodePath("../Enemies")
 
-[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=1481357103]
-replication_config = SubResource("SceneReplicationConfig_nepv3")
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=941631503]
+replication_config = SubResource("SceneReplicationConfig_pr1ej")
 
-[node name="MatchDirector" type="Node" parent="." unique_id=1014394054]
-script = ExtResource("9_qnb83")
-difficulties = Array[ExtResource("10_sww3w")]([ExtResource("11_suyxu"), ExtResource("12_sgl2t"), ExtResource("13_qouja")])
+[node name="MatchDirector" type="Node" parent="." unique_id=536957720]
+script = ExtResource("11_qouja")
+difficulties = Array[ExtResource("12_wljb1")]([ExtResource("13_v2yb1"), ExtResource("14_js0lu"), ExtResource("15_gxtfn")])
 
-[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=1842244927]
+[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=279885514]
 delta_interval = 0.25
-replication_config = SubResource("SceneReplicationConfig_7025r")
+replication_config = SubResource("SceneReplicationConfig_05nbr")
 
-[node name="Dusk" type="Node" parent="." unique_id=230189518]
-script = ExtResource("14_wljb1")
+[node name="Dusk" type="Node" parent="." unique_id=218667341]
+script = ExtResource("16_twgab")
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=2002134503 instance=ExtResource("15_v2yb1")]
-script = ExtResource("16_js0lu")
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1467804703 instance=ExtResource("17_02fa5")]
+script = ExtResource("18_nepv3")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1199464927 instance=ExtResource("17_gxtfn")]
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=88926572 instance=ExtResource("19_7025r")]
 layer = 20
-script = ExtResource("18_twgab")
+script = ExtResource("20_m4url")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1608959166]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1288747220]
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=180776823]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=980567548]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0
@@ -117,4 +130,4 @@ offset_bottom = 10.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-script = ExtResource("19_02fa5")
+script = ExtResource("21_8ool0")

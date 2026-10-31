@@ -17,6 +17,7 @@ const B := SoldierMesh.Bone
 @export var stride_m: float = 0.8 ## Distance per step.
 @export var effects_distance: float = 30.0 ## Footsteps and breath only when you are this close.
 @export var material: ShaderMaterial ## soldier.gdshader; each soldier gets his own copy (coat tint).
+@export var kind: EnemyData.Kind = EnemyData.Kind.RIFLEMAN ## Used when there is no Enemy parent (warm-up, screenshots).
 
 var muzzle: Marker3D ## Where his shots come from (follows the rifle).
 
@@ -37,6 +38,7 @@ var _rot: Dictionary = {} # bone -> current Quaternion (smoothed)
 var _rifle_pos: Vector3
 var _rifle_rot: Quaternion = Quaternion.IDENTITY
 var _hips_y: float = 0.95
+var _whistle: float = 0.0 # officer: > 0 while the whistle is at his mouth
 var _rng := RandomNumberGenerator.new()
 
 # Coats were not all the same colour: grey-brown, greener, darker.
@@ -47,13 +49,15 @@ const COAT_TINTS: Array[Color] = [Color(1, 1, 1), Color(0.92, 0.97, 0.9), Color(
 func _ready() -> void:
 	_rng.randomize()
 	_enemy = get_parent() as Enemy
+	if _enemy and _enemy.data:
+		kind = _enemy.data.kind
 	_skeleton = Skeleton3D.new()
 	_skeleton.name = "Skeleton"
 	add_child(_skeleton)
 	SoldierMesh.setup_skeleton(_skeleton)
 	_mesh = MeshInstance3D.new()
 	_mesh.name = "Body"
-	_mesh.mesh = SoldierMesh.get_mesh()
+	_mesh.mesh = SoldierMesh.get_mesh(kind)
 	_skeleton.add_child(_mesh)
 	_mesh.skeleton = NodePath("..")
 	if material:
@@ -68,7 +72,7 @@ func _ready() -> void:
 	attach.bone_name = SoldierMesh.BONE_NAMES[B.RIFLE]
 	muzzle = Marker3D.new()
 	muzzle.name = "Muzzle"
-	muzzle.position = SoldierMesh.MUZZLE
+	muzzle.position = SoldierMesh.muzzle_for(kind)
 	attach.add_child(muzzle)
 
 	for i in SoldierMesh.BONE_NAMES.size():
@@ -99,6 +103,11 @@ func play_hit() -> void:
 	_hit = 1.0
 
 
+## Officer: whistle to the mouth for a moment.
+func play_whistle() -> void:
+	_whistle = 1.4
+
+
 func _process(delta: float) -> void:
 	if _enemy == null:
 		return # e.g. used by the shader warm-up: just stand there
@@ -121,6 +130,7 @@ func _process(delta: float) -> void:
 			_breath_timer = _rng.randf_range(2.0, 3.5) if _speed < 2.5 else _rng.randf_range(1.0, 1.6)
 	_kick = move_toward(_kick, 0.0, delta * 6.0)
 	_hit = move_toward(_hit, 0.0, delta * 3.0)
+	_whistle = maxf(_whistle - delta, 0.0)
 	var dead: bool = _enemy.state == Enemy.State.DEAD
 	if dead and not _was_dead and near and not _step_sounds.is_empty():
 		# The thud of the body falling into the snow.
@@ -150,15 +160,27 @@ func _play_step() -> void:
 func _pose(delta: float) -> void:
 	var state: Enemy.State = _enemy.state
 	var dead: bool = state == Enemy.State.DEAD
-	var moving: bool = _speed > 0.4 and not dead
-	var kneel: bool = _enemy.is_kneeling and not moving and not dead
+	var prone: bool = _enemy.is_prone # lying flat (also stays flat when killed lying down)
+	var moving: bool = _speed > 0.4 and not dead and not prone
+	var kneel: bool = _enemy.is_kneeling and not moving and not dead and not prone
 	var attacking: bool = state == Enemy.State.ATTACK or state == Enemy.State.ALERT or state == Enemy.State.ASSAULT
 
 	# Targets for this frame.
 	var t := {}
 	var hips_y: float = 0.95
 	var lean: float = 0.0 # forward lean of the upper body (radians)
-	if dead:
+	var head_extra: float = 0.0
+	if prone:
+		# Flat on the snow: the whole body tips forward at the hips, chest a little up, legs apart.
+		hips_y = PRONE_HIPS_Y
+		t[B.HIPS] = _x(PRONE_HIPS_PITCH)
+		t[B.THIGH_L] = Quaternion(Vector3.BACK, -0.14)
+		t[B.THIGH_R] = Quaternion(Vector3.BACK, 0.14)
+		t[B.SHIN_L] = _x(-0.12)
+		t[B.SHIN_R] = _x(-0.25)
+		lean = -PRONE_CHEST_UP if not dead else 0.0
+		head_extra = 0.75 if not dead else 0.1 # look ahead, not into the snow
+	elif dead:
 		pass # limp: everything goes back to straight, the Enemy tips the whole body over
 	elif kneel:
 		# Left foot forward, right knee on the snow.
@@ -178,13 +200,40 @@ func _pose(delta: float) -> void:
 		hips_y = 0.95 - 0.02 + absf(cos(_phase)) * 0.025
 		lean = 0.05 + _speed * 0.05
 	t[B.SPINE] = _x(-lean + _hit * 0.35) # negative = top of the body forward; a hit pushes it back
-	t[B.HIPS] = Quaternion.IDENTITY
-	t[B.HEAD] = _x(lean * 0.6 + (0.08 if kneel else 0.0)) # keep looking ahead
+	if not prone:
+		t[B.HIPS] = Quaternion.IDENTITY
+	t[B.HEAD] = _x(lean * 0.6 + (0.08 if kneel else 0.0) + head_extra) # keep looking ahead
 
 	# Where the rifle is (relative to the chest).
 	var rifle_pos: Vector3
 	var rifle_rot: Quaternion
-	if dead:
+	var officer: bool = kind == EnemyData.Kind.OFFICER
+	if prone:
+		# Lying down: the weapon points straight ahead, level, butt in the right shoulder
+		# (killed: it lies on its side in the snow next to him).
+		# Worked out in skeleton space, then turned into chest (spine) space.
+		var spine_xf: Transform3D = Transform3D(Basis(t[B.HIPS]), Vector3(0, hips_y, 0)) \
+				* Transform3D(Basis(t[B.SPINE]), SoldierMesh.BONE_REST[B.SPINE])
+		var shoulder: Vector3 = spine_xf * SoldierMesh.BONE_REST[B.UPPER_ARM_R]
+		var offset := Vector3(-0.12, 0.04, -0.38)
+		if officer:
+			offset = Vector3(-0.1, 0.02, -0.48)
+		elif kind == EnemyData.Kind.MG_GUNNER:
+			offset = Vector3(-0.13, -0.02, -0.4) # the bipod stands in the snow
+		var weapon_xf := Transform3D(Basis.IDENTITY, shoulder + offset)
+		if dead:
+			weapon_xf = Transform3D(Basis.from_euler(Vector3(0.0, 0.45, 1.5)), Vector3(0.38, 0.05, -0.45))
+		var local: Transform3D = spine_xf.affine_inverse() * weapon_xf
+		rifle_pos = local.origin
+		rifle_rot = local.basis.get_rotation_quaternion()
+	elif officer and not dead:
+		if attacking and not moving:
+			rifle_pos = Vector3(0.17, 0.44, -0.52) # pistol held out at arm's length
+			rifle_rot = Quaternion.IDENTITY
+		else:
+			rifle_pos = Vector3(0.24, 0.02, -0.18) # pistol down by his side
+			rifle_rot = _x(-0.9)
+	elif dead:
 		rifle_pos = Vector3(0.25, -0.3, -0.1)
 		rifle_rot = Quaternion.from_euler(Vector3(0.3, 0.0, 1.2))
 	elif attacking and not moving:
@@ -217,7 +266,17 @@ func _pose(delta: float) -> void:
 	var rifle_xf := Transform3D(Basis(_rifle_rot), _rifle_pos)
 	var grip: Vector3 = rifle_xf * Vector3(0.0, -0.05, 0.12)
 	var fore_end: Vector3 = rifle_xf * Vector3(0.0, -0.03, -0.3)
-	if dead:
+	if officer:
+		grip = rifle_xf * Vector3(0.0, -0.035, 0.035)
+		# Left hand: free (a little forward), or the whistle at his mouth.
+		fore_end = Vector3(-0.2, 0.05, -0.12) if not prone else rifle_xf * Vector3(-0.08, -0.06, 0.15)
+		if _whistle > 0.0 and not dead:
+			fore_end = SoldierMesh.BONE_REST[B.HEAD] + Vector3(-0.02, 0.12, -0.13)
+	elif kind == EnemyData.Kind.MG_GUNNER:
+		grip = rifle_xf * Vector3(0.0, -0.08, 0.1)
+		# Lying behind the DP: left hand holds the butt; otherwise under the shroud.
+		fore_end = rifle_xf * (Vector3(0.0, -0.06, 0.24) if prone else Vector3(0.0, -0.025, -0.2))
+	if dead and not prone:
 		grip = SoldierMesh.BONE_REST[B.UPPER_ARM_R] + Vector3(0.05, -0.55, 0.0)
 		fore_end = SoldierMesh.BONE_REST[B.UPPER_ARM_L] + Vector3(-0.05, -0.55, 0.0)
 	_reach(B.UPPER_ARM_R, B.FOREARM_R, grip, Vector3(0.5, -1.0, 0.4))
@@ -243,6 +302,11 @@ func _reach(upper: int, fore: int, target: Vector3, pole: Vector3) -> void:
 	var fore_q := upper_q.inverse() * Quaternion(Vector3.DOWN, (hand - elbow).normalized())
 	_skeleton.set_bone_pose_rotation(upper, upper_q)
 	_skeleton.set_bone_pose_rotation(fore, fore_q)
+
+
+const PRONE_HIPS_Y: float = 0.2
+const PRONE_HIPS_PITCH: float = -1.45 ## Whole body tipped forward (radians).
+const PRONE_CHEST_UP: float = 0.3 ## Chest lifted off the snow (radians).
 
 
 func _x(angle: float) -> Quaternion:

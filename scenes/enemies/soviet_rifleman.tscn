@@ -23,11 +23,14 @@ properties/2/replication_mode = 2
 properties/3/path = NodePath(".:is_kneeling")
 properties/3/spawn = true
 properties/3/replication_mode = 2
-properties/4/path = NodePath(".:health")
+properties/4/path = NodePath(".:is_prone")
 properties/4/spawn = true
 properties/4/replication_mode = 2
+properties/5/path = NodePath(".:health")
+properties/5/spawn = true
+properties/5/replication_mode = 2
 
-[node name="SovietRifleman" type="CharacterBody3D" unique_id=396383552]
+[node name="SovietRifleman" type="CharacterBody3D" unique_id=1569883167]
 collision_layer = 4
 collision_mask = 3
 floor_max_angle = 0.80285144
@@ -36,22 +39,22 @@ script = ExtResource("1_llyfj")
 data = ExtResource("2_0f3yq")
 metadata/surface = "cloth"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=650270018]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=765900227]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_qrnq5")
 
-[node name="Visual" type="Node3D" parent="." unique_id=1742705315]
+[node name="Visual" type="Node3D" parent="." unique_id=961675266]
 script = ExtResource("3_1qay1")
 material = ExtResource("4_1i86x")
 
-[node name="Eyes" type="Marker3D" parent="." unique_id=1991232580]
+[node name="Eyes" type="Marker3D" parent="." unique_id=428435295]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.1)
 
-[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1780664926]
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=133521601]
 target_desired_distance = 1.5
 height = 2.0
 
-[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1921381040]
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=320974138]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 stream = ExtResource("5_kvoyh")
 volume_db = -2.0
@@ -61,7 +64,7 @@ bus = &"SFX"
 attenuation_filter_cutoff_hz = 2500.0
 attenuation_filter_db = -30.0
 
-[node name="DebugLabel" type="Label3D" parent="." unique_id=1133574845]
+[node name="DebugLabel" type="Label3D" parent="." unique_id=126262165]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
 visible = false
 pixel_size = 0.0012
@@ -70,5 +73,5 @@ no_depth_test = true
 fixed_size = true
 outline_size = 8
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=1519553344]
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=313287076]
 replication_config = SubResource("SceneReplicationConfig_16w8m")

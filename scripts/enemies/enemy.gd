@@ -6,10 +6,14 @@ extends CharacterBody3D
 ## Assault (G1): after firing for a while from his jump-off point in front of the trench, he
 ## rushes the trench, jumps in (NavigationLink3D "trench entries") and fights inside it.
 ## Each state has its own behaviour and rules for switching to another state.
+## G2 "pressure": bullets flying close make him duck (suppression) and throw himself flat
+## (prone); an officer steadies the soldiers around him and sends them forward with his
+## whistle; a DP-27 gunner lies down and fires bursts, with a helper next to him.
 ## All thinking, moving and shooting happens on the HOST only; other computers just
 ## receive the position, facing and state through StateSync.
 
 signal died(enemy: Enemy)
+signal whistled ## An officer blew his whistle (host).
 
 enum State { IDLE, PATROL, ALERT, ATTACK, DEAD, ASSAULT } # (new states go at the end: synced as numbers)
 
@@ -30,10 +34,21 @@ var state: State = State.IDLE:
 	set = _set_state
 var is_kneeling: bool = false:
 	set = _set_kneeling
+var is_prone: bool = false: ## Lying flat (suppressed, or a machine-gun team in position).
+	set = _set_prone
 var health: float = 100.0
 
 ## Set by the WaveSpawner: the place in front of the trench this soldier advances to.
 var attack_point: Vector3 = Vector3.ZERO
+
+# --- G2, host only ---
+## 0 = calm … 1 = can't lift his head. Close bullets raise it, it wears off by itself.
+var suppression: float = 0.0
+var mg_gunner: Enemy = null    ## Machine-gun helper: the gunner he stays with.
+var mg_assistant: Enemy = null ## Machine-gunner: his helper.
+var home_point: Vector3        ## Helper: where he goes on his own if the gunner falls.
+var mg_ammo: int = 0           ## Machine-gunner: rounds left in the pan.
+var whistle_count: int = 0     ## Officer: how many times he has whistled (tests, statistics).
 
 # --- Host-only memory ---
 var _state_time: float = 0.0
@@ -60,6 +75,22 @@ var _entry_point: Vector3           # where we land in the trench
 var _retarget_timer: float = 0.0
 var _stuck_time: float = 0.0
 var _last_rush_pos: Vector3
+var _deployed: bool = false        # MG team lying in position (stays flat, doesn't advance)
+var _last_close_bullet: float = -100.0
+var _rallied_until: float = -100.0
+var _leaderless_until: float = -100.0
+var _officer_near: bool = false
+var _whistle_timer: float = 0.0
+var _mg_burst_left: int = 0
+var _mg_next_round: float = 0.0
+var _mg_reload_until: float = 0.0
+var _whistle_audio: AudioStreamPlayer3D
+var _last_smoke: float = 0.0
+var _clock: float = 0.0             # game seconds since he appeared
+var _mg_next_burst: float = 0.0
+var _prone_since: float = 0.0
+var _prone_patience: float = 8.0
+var _dash_until: float = -100.0     # up and running for a few seconds despite the fire
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
@@ -79,10 +110,41 @@ func _ready() -> void:
 	health = data.max_health
 	_idle_time = _rng.randf_range(1.0, 3.0)
 	_assault_after = _rng.randf_range(data.assault_hold_min, data.assault_hold_max)
+	_whistle_timer = _rng.randf_range(0.0, 3.0)
+	mg_ammo = data.mg_magazine
+	_setup_sounds()
 	_update_visuals()
 
 
+func _setup_sounds() -> void:
+	# A real recording if there is one (e.g. assets/audio/recorded/dp27…), else the placeholder.
+	var recorded: AudioStream = RecordedSounds.pick(data.fire_sound_recording) if data.fire_sound_recording != "" else null
+	if recorded:
+		shot_audio.stream = recorded
+	elif data.fire_sound:
+		shot_audio.stream = data.fire_sound
+		shot_audio.pitch_scale = data.fire_sound_pitch
+	if data.kind == EnemyData.Kind.MG_GUNNER:
+		shot_audio.max_polyphony = 4
+	if data.kind == EnemyData.Kind.OFFICER:
+		_whistle_audio = AudioStreamPlayer3D.new()
+		_whistle_audio.name = "WhistleAudio"
+		_whistle_audio.bus = &"SFX"
+		_whistle_audio.unit_size = 25.0
+		_whistle_audio.position = Vector3(0, 1.6, 0)
+		_whistle_audio.attenuation_filter_cutoff_hz = 4000.0
+		_whistle_audio.attenuation_filter_db = -18.0
+		add_child(_whistle_audio)
+
+
+## G2 timers run on game time (this soldier's own clock), so they also work in slow motion
+## or sped-up tests.
+func _now() -> float:
+	return _clock
+
+
 func _physics_process(delta: float) -> void:
+	_clock += delta
 	if not multiplayer.is_server() or state == State.DEAD:
 		return
 	_state_time += delta
@@ -92,6 +154,12 @@ func _physics_process(delta: float) -> void:
 		var interval: float = 0.2 + _rng.randf() * 0.05
 		_update_senses(interval)
 		_sense_timer = interval
+	_update_suppression(delta)
+
+	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER:
+		_mg_deployed(delta) # in position: no walking, only bursts
+		_fall_and_slide(delta)
+		return
 
 	match state:
 		State.IDLE:
@@ -115,7 +183,10 @@ func _physics_process(delta: float) -> void:
 			_attack(delta)
 		State.ASSAULT:
 			_assault(delta)
+	_fall_and_slide(delta)
 
+
+func _fall_and_slide(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
 	move_and_slide()
@@ -123,6 +194,9 @@ func _physics_process(delta: float) -> void:
 
 # ------------------------------------------------------------------ senses
 func _update_senses(dt: float) -> void:
+	_officer_near = _find_officer_near() != null
+	if data.kind == EnemyData.Kind.OFFICER:
+		_officer_think(dt)
 	if state == State.ASSAULT:
 		# In the final rush there is no careful spotting: in the trench, anyone in sight is shot at.
 		_can_see_target = is_in_trench() and _target != null and is_instance_valid(_target) \
@@ -210,12 +284,18 @@ func _start_attack(target: Player) -> void:
 	_reaction_delay = _rng.randf_range(data.reaction_time_min, data.reaction_time_max)
 	_begin_firing_stop()
 	state = State.ATTACK
+	if data.kind == EnemyData.Kind.OFFICER and _whistle_timer <= 2.0:
+		_blow_whistle() # "Forward!" – the soldiers around him pick themselves up
+		_rally_nearby()
 
 
 func _attack(delta: float) -> void:
 	if _target == null or not is_instance_valid(_target) or _target.is_dead:
 		_target = null
 		state = State.PATROL
+		return
+	if data.kind == EnemyData.Kind.MG_GUNNER:
+		_mg_attack(delta)
 		return
 	_attack_phase_time += delta
 	var at_goal: bool = global_position.distance_to(attack_point) < 3.0
@@ -238,13 +318,15 @@ func _attack(delta: float) -> void:
 		if state != State.ATTACK:
 			return
 	_face_towards(_last_known_position, delta)
-	if _can_see_target:
+	if _can_see_target and not is_pinned() and _in_fire_range():
 		_aim_time += delta
 		var now: float = Time.get_ticks_msec() / 1000.0
 		if _aim_time >= _reaction_delay and now >= _next_shot_time:
 			_shoot()
-			_next_shot_time = now + _rng.randf_range(data.fire_interval_min, data.fire_interval_max)
+			_next_shot_time = now + _rng.randf_range(data.fire_interval_min, data.fire_interval_max) * _fire_interval_factor()
 			_shots_this_stop += 1
+	elif is_pinned():
+		_aim_time = 0.0 # head down: has to aim again afterwards
 	# Done firing (or waited long enough without a clear shot)? Advance again.
 	if not at_goal and (_shots_this_stop >= data.shots_per_stop or _attack_phase_time > _attack_phase_length):
 		_attack_moving = true
@@ -268,6 +350,7 @@ func _shoot() -> void:
 		spread += data.moving_target_spread_deg
 	spread *= lerpf(1.0, data.best_aim_multiplier, clampf(_aim_time / data.full_aim_time, 0.0, 1.0))
 	spread *= spread_multiplier
+	spread *= lerpf(1.0, data.suppressed_spread_multiplier, suppression)
 	if _shots_at_target == 0:
 		spread *= data.first_shot_multiplier
 	_shots_at_target += 1
@@ -316,7 +399,10 @@ func show_shot_effects(hit_position: Vector3, hit_normal: Vector3, surface: Stri
 	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
 	if effects:
 		effects.spawn_flash(muzzle.global_position)
-		effects.spawn_smoke(muzzle.global_position, -muzzle.global_basis.z)
+		var t: float = Time.get_ticks_msec() / 1000.0
+		if t - _last_smoke > 0.25: # a burst makes one puff, not one per round
+			_last_smoke = t
+			effects.spawn_smoke(muzzle.global_position, -muzzle.global_basis.z)
 		if surface != "":
 			effects.spawn_impact(hit_position, hit_normal, surface)
 
@@ -345,6 +431,7 @@ func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_n
 		_die()
 		return true
 	show_hit.rpc()
+	add_suppression(data.wounded_suppression)
 	# Wounded: react towards whoever shot us.
 	var attacker: Player = null
 	for node in get_tree().get_nodes_in_group("players"):
@@ -367,6 +454,7 @@ func _die() -> void:
 	velocity = Vector3.ZERO
 	is_kneeling = false
 	state = State.DEAD
+	_on_death_g2()
 	died.emit(self)
 	get_tree().create_timer(corpse_time).timeout.connect(queue_free)
 
@@ -379,12 +467,31 @@ func is_in_trench() -> bool:
 
 ## At the jump-off point in front of the trench: fire for a while, then rush in.
 func _hold_at_goal(delta: float) -> void:
+	if data.kind == EnemyData.Kind.MG_GUNNER:
+		_deploy() # the gun team never rushes the trench: it covers the others
+		return
+	if is_instance_valid(mg_gunner):
+		if mg_gunner._deployed and not _deployed:
+			_deployed = true # lie down next to the gun
+		return
+	if is_prone:
+		return # pinned down: no rush until he can lift his head again
 	_hold_time += delta
 	if _hold_time >= _assault_after:
-		_begin_assault()
+		if data.kind == EnemyData.Kind.OFFICER:
+			_order_assault()
+		else:
+			_begin_assault()
+
+
+## True if this soldier may be sent into the trench by an officer.
+func can_join_assault() -> bool:
+	return state in [State.PATROL, State.ALERT, State.ATTACK] and data.kind != EnemyData.Kind.MG_GUNNER \
+			and not is_instance_valid(mg_gunner) and not is_pinned()
 
 
 func _begin_assault() -> void:
+	_deployed = false
 	_entry_point = _pick_trench_entry()
 	is_kneeling = false
 	_aim_time = 0.0
@@ -407,6 +514,10 @@ func _pick_trench_entry() -> Vector3:
 
 func _assault(delta: float) -> void:
 	if not is_in_trench():
+		if is_prone:
+			_stop() # thrown flat by fire during the rush: up again when it eases
+			_face_towards(_entry_point, delta)
+			return
 		# The rush: run (bayonet first) to the trench edge and jump down.
 		is_kneeling = false
 		var arrived: bool = _move_to(_entry_point, data.hurry_speed)
@@ -448,7 +559,7 @@ func _trench_fight(delta: float) -> void:
 		_face_towards(_target.global_position, delta)
 		_aim_time += delta
 		var now: float = Time.get_ticks_msec() / 1000.0
-		if _aim_time >= _reaction_delay and now >= _next_shot_time:
+		if _aim_time >= _reaction_delay and now >= _next_shot_time and _in_fire_range():
 			_shoot()
 			_next_shot_time = now + _rng.randf_range(data.trench_fire_interval_min, data.trench_fire_interval_max)
 	else:
@@ -485,9 +596,258 @@ func freeze() -> void:
 	set_physics_process(false)
 
 
+# ------------------------------------------------------------------ G2: suppression
+## Host: a player's bullet flew from `from` to `to` (called for every shot, through the
+## "enemies" group). The closer it passed, the more it pins him down.
+func bullet_near(from: Vector3, to: Vector3, strength: float) -> void:
+	if not multiplayer.is_server() or state == State.DEAD or strength <= 0.0:
+		return
+	var centre: Vector3 = global_position + Vector3.UP * (0.35 if is_prone else (0.8 if is_kneeling else 1.1))
+	var closest: Vector3 = Geometry3D.get_closest_point_to_segment(centre, from, to)
+	if closest.distance_to(from) < 4.0:
+		return # right next to the shooter: that's a fight, not suppressing fire
+	var distance: float = closest.distance_to(centre)
+	if distance > data.suppression_radius_m:
+		return
+	add_suppression(strength * (1.0 - 0.7 * distance / data.suppression_radius_m))
+
+
+## Host: makes him more suppressed (less if an officer is near, more without a leader).
+func add_suppression(amount: float) -> void:
+	if state == State.DEAD or (state == State.ASSAULT and is_in_trench()):
+		return # in the trench it's hand-to-hand: nobody ducks any more
+	var now: float = _now()
+	amount *= data.nerve
+	if _officer_near:
+		amount *= _officer_data_value("rally_nerve_multiplier", 0.6)
+	if now < _rallied_until:
+		amount *= 0.5
+	if now < _leaderless_until:
+		amount *= data.leaderless_nerve_multiplier
+	suppression = clampf(suppression + amount, 0.0, 1.0)
+	_last_close_bullet = now
+
+
+func is_pinned() -> bool:
+	return suppression >= data.pinned_threshold
+
+
+func _fire_interval_factor() -> float:
+	return lerpf(1.0, data.suppressed_fire_interval_multiplier, suppression)
+
+
+func _in_fire_range() -> bool:
+	return _target != null and is_instance_valid(_target) \
+			and global_position.distance_to(_target.global_position) <= data.max_fire_distance_m
+
+
+func _update_suppression(delta: float) -> void:
+	if _now() - _last_close_bullet > data.recovery_delay:
+		suppression = maxf(suppression - data.suppression_recovery * delta, 0.0)
+	var now: float = _now()
+	var prone: bool = is_prone
+	if _deployed:
+		prone = true
+	elif state == State.ASSAULT and is_in_trench():
+		prone = false
+	elif now < _dash_until and not is_pinned():
+		prone = false # making a dash for it
+	elif suppression >= data.prone_threshold:
+		prone = true
+	elif suppression < data.prone_threshold * 0.5:
+		prone = false # (in between: stays as he is, so he doesn't bob up and down)
+	if prone and not is_prone:
+		_prone_since = now
+	is_prone = prone
+	# Nobody lies in the snow for ever: once the fire lets up a little (not pinned), he jumps
+	# up and dashes forward for a few seconds, then drops again if it is still hot.
+	if is_prone and not _deployed and not is_pinned() and now - _prone_since > _prone_patience:
+		_dash_until = now + _rng.randf_range(3.0, 5.0)
+		_prone_patience = _rng.randf_range(6.0, 10.0)
+		is_prone = false
+
+
+# ------------------------------------------------------------------ G2: officer
+## The nearest living officer whose rally radius reaches us (or null).
+func _find_officer_near() -> Enemy:
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e == null or e == self or e.state == State.DEAD or e.data.kind != EnemyData.Kind.OFFICER:
+			continue
+		if global_position.distance_to(e.global_position) <= e.data.rally_radius_m:
+			return e
+	return null
+
+
+func _officer_data_value(property: String, fallback: float) -> float:
+	var officer: Enemy = _find_officer_near()
+	return officer.data.get(property) if officer else fallback
+
+
+## Living soldiers within `radius` m of this one (not counting himself).
+func _comrades_within(radius: float) -> Array[Enemy]:
+	var list: Array[Enemy] = []
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e and e != self and e.state != State.DEAD and global_position.distance_to(e.global_position) <= radius:
+			list.append(e)
+	return list
+
+
+## Officer (host, ~5×/s): when his men are pinned down, he whistles them back up.
+func _officer_think(dt: float) -> void:
+	_whistle_timer -= dt
+	if _whistle_timer > 0.0 or state == State.DEAD or is_in_trench():
+		return
+	for e in _comrades_within(data.rally_radius_m):
+		if e.suppression >= e.data.prone_threshold:
+			_blow_whistle()
+			_rally_nearby()
+			return
+
+
+func _rally_nearby() -> void:
+	for e in _comrades_within(data.rally_radius_m):
+		e.rally(data.whistle_rally)
+
+
+## Host: an officer's whistle – shake off some suppression and get up.
+func rally(amount: float) -> void:
+	suppression = maxf(suppression - amount, 0.0)
+	_rallied_until = _now() + 4.0
+
+
+## Officer at his jump-off point: whistle, and everyone around him rushes the trench together.
+func _order_assault() -> void:
+	_blow_whistle()
+	for e in _comrades_within(data.rally_radius_m * 1.4):
+		if e.can_join_assault():
+			e.rally(1.0)
+			e._begin_assault()
+	_begin_assault()
+
+
+func _blow_whistle() -> void:
+	_whistle_timer = _rng.randf_range(data.whistle_cooldown_min, data.whistle_cooldown_max)
+	whistle_count += 1
+	whistled.emit()
+	play_whistle.rpc()
+
+
+## The whistle on every computer: the sound, and his hand goes to his mouth.
+@rpc("authority", "call_local", "reliable")
+func play_whistle() -> void:
+	visual.play_whistle()
+	if _whistle_audio:
+		var stream: AudioStream = RecordedSounds.pick("officer_whistle")
+		_whistle_audio.stream = stream if stream else load("res://assets/audio/officer_whistle_placeholder.wav")
+		_whistle_audio.pitch_scale = _rng.randf_range(0.97, 1.03)
+		_whistle_audio.play()
+
+
+## Host: our officer has fallen – hesitate for a while.
+func lose_leader(time: float, extra_hold: float) -> void:
+	_leaderless_until = _now() + time
+	_assault_after += extra_hold
+
+
+## Host: what a death means for the others (officer → hesitation, MG team → the other one).
+func _on_death_g2() -> void:
+	if data.kind == EnemyData.Kind.OFFICER:
+		for e in _comrades_within(data.rally_radius_m * 1.5):
+			e.lose_leader(data.leaderless_time, data.leaderless_extra_hold)
+	if is_instance_valid(mg_assistant):
+		mg_assistant._gunner_lost()
+	if is_instance_valid(mg_gunner):
+		mg_gunner.mg_assistant = null
+	mg_assistant = null
+	mg_gunner = null
+
+
+# ------------------------------------------------------------------ G2: machine-gun team
+## Gunner: lie down here and set up the gun. His helper comes to lie next to him.
+func _deploy() -> void:
+	if _deployed:
+		return
+	_deployed = true
+	_stop()
+	is_kneeling = false
+	if is_instance_valid(mg_assistant):
+		var spot: Vector3 = global_position + global_basis.x * 1.3 + global_basis.z * 0.5
+		var terrain := get_tree().get_first_node_in_group("terrain") as TerrainGenerator
+		if terrain:
+			spot.y = terrain.get_height(spot.x, spot.z)
+		mg_assistant.attack_point = spot
+		mg_assistant._deployed = false
+
+
+## Helper: the gunner is dead – carry on as an ordinary rifleman.
+func _gunner_lost() -> void:
+	mg_gunner = null
+	_deployed = false
+	attack_point = home_point
+	_hold_time = 0.0
+
+
+## Gunner in the ATTACK state but not yet in position: get close enough, then go down.
+func _mg_attack(delta: float) -> void:
+	var dist: float = global_position.distance_to(_target.global_position)
+	if (_can_see_target and dist <= data.mg_deploy_range_m) or global_position.distance_to(attack_point) < 3.0:
+		_deploy()
+		return
+	_move_to(attack_point, data.walk_speed)
+	_face_towards(_last_known_position, delta)
+
+
+## Gunner in position: bursts at whoever he can see, pauses, new pan when empty.
+func _mg_deployed(delta: float) -> void:
+	_stop()
+	var has_target: bool = _target != null and is_instance_valid(_target) and not _target.is_dead
+	if state == State.ATTACK and has_target:
+		_face_towards(_last_known_position, delta)
+	elif state == State.ALERT:
+		_face_towards(_noise_position, delta)
+	else:
+		_face_towards(global_position + Vector3(0, 0, 30), delta) # watch the trench
+	var now: float = _now()
+	if now < _mg_reload_until:
+		return
+	if mg_ammo <= 0:
+		# Changing the pan: quicker with the helper lying next to him.
+		var helped: bool = is_instance_valid(mg_assistant) and mg_assistant.global_position.distance_to(global_position) < 4.0
+		_mg_reload_until = now + (data.mg_reload_time_assisted if helped else data.mg_reload_time)
+		mg_ammo = data.mg_magazine
+		_mg_burst_left = 0
+		return
+	if is_pinned() or state != State.ATTACK or not has_target or not _can_see_target or not _in_fire_range():
+		_mg_burst_left = 0
+		_aim_time = 0.0 if is_pinned() else _aim_time
+		return
+	_aim_time += delta
+	if _aim_time < _reaction_delay:
+		return
+	if _mg_burst_left <= 0 and now >= _mg_next_burst:
+		_mg_burst_left = _rng.randi_range(data.mg_burst_min, data.mg_burst_max)
+	if _mg_burst_left > 0 and now >= _mg_next_round:
+		_shoot()
+		mg_ammo -= 1
+		_mg_burst_left -= 1
+		_mg_next_round = now + data.mg_shot_interval
+		if _mg_burst_left <= 0 or mg_ammo <= 0:
+			_mg_burst_left = 0
+			_mg_next_burst = now + _rng.randf_range(data.mg_burst_pause_min, data.mg_burst_pause_max) * _fire_interval_factor()
+
+
+func is_deployed() -> bool:
+	return _deployed
+
+
 # ------------------------------------------------------------------ movement helpers
 ## Walks along the navigation path. Returns true when the destination is reached.
 func _move_to(destination: Vector3, speed: float) -> bool:
+	if is_prone:
+		_stop() # lying flat: nobody walks
+		return global_position.distance_to(destination) < 3.0 and nav_agent.is_navigation_finished()
 	if nav_agent.target_position.distance_to(destination) > 0.5:
 		nav_agent.target_position = destination
 	if nav_agent.is_navigation_finished():
@@ -535,6 +895,14 @@ func _set_state(value: State) -> void:
 		_update_visuals()
 
 
+func _set_prone(value: bool) -> void:
+	if value == is_prone:
+		return
+	is_prone = value
+	if is_node_ready():
+		_update_visuals()
+
+
 func _set_kneeling(value: bool) -> void:
 	if value == is_kneeling:
 		return
@@ -546,13 +914,16 @@ func _set_kneeling(value: bool) -> void:
 func _process(_delta: float) -> void:
 	debug_label.visible = show_debug_labels and state != State.DEAD
 	if debug_label.visible:
-		debug_label.text = "%s  %d hp" % [State.keys()[state], int(health)]
+		debug_label.text = "%s %s  %d hp%s%s" % [EnemyData.Kind.keys()[data.kind].substr(0, 3), State.keys()[state], int(health),
+				"  sup %.2f" % suppression if suppression > 0.01 else "", "  PRONE" if is_prone else ""]
 
 
 func _update_visuals() -> void:
 	var capsule := collision.shape as CapsuleShape3D
 	if state == State.DEAD:
 		collision.set_deferred("disabled", true) # bullets and players pass through bodies
+		if is_prone:
+			return # already lying in the snow: the visual just goes limp
 		# Fall: backwards most of the time, sometimes forwards, a little twisted. Chosen from the
 		# soldier's name so every computer shows the same fall.
 		var h: int = absi(hash(str(name)))
@@ -561,6 +932,16 @@ func _update_visuals() -> void:
 		tween.tween_property(visual, "rotation:x", fall_x, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		tween.tween_property(visual, "rotation:y", ((h / 10) % 9 - 4) * 0.1, 0.55)
 		return
+	if is_prone:
+		# Lying flat: the capsule lies along the body (head forward), eyes just above the snow.
+		capsule.height = 1.7
+		collision.rotation.x = PI / 2.0
+		collision.position = Vector3(0.0, 0.3, -0.15)
+		eyes.position = Vector3(0.0, 0.5, -0.7)
+		return
+	collision.rotation.x = 0.0
+	collision.position.z = 0.0
+	eyes.position.z = -0.1
 	# Kneeling makes the soldier smaller (harder to hit) and lowers his eyes.
 	var height: float = 1.2 if is_kneeling else 1.8
 	capsule.height = height

@@ -24,6 +24,11 @@ func run() -> void:
 		[vm.get_node_or_null("Model/GripR") != null and vm.get_node_or_null("Model/Bolt/BoltGrip") != null, "W2: hand grip points in the export"],
 		[gun.get("_belt_anim") != null and gun.get("_turn_pivot") != null, "W2: Maxim belt animation re-pointed in the export"],
 		[ResourceLoader.exists("res://assets/audio/steam_hiss.wav"), "W2: steam sound in the export"],
+		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves.size() == 8, "G2: wave list kept in the export"],
+		[(load("res://resources/difficulty/hard.tres") as DifficultyData).waves[9].mg_teams == 3, "G2: wave list values kept in the export"],
+		[(load("res://resources/enemies/soviet_officer.tres") as EnemyData).kind == EnemyData.Kind.OFFICER, "G2: officer data in the export"],
+		[ResourceLoader.exists("res://scenes/enemies/soviet_mg_gunner.tscn"), "G2: machine-gunner scene in the export"],
+		[ResourceLoader.exists("res://assets/audio/officer_whistle_placeholder.wav"), "G2: whistle sound in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

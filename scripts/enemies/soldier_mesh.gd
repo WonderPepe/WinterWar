@@ -1,6 +1,8 @@
 class_name SoldierMesh
 extends RefCounted
 ## Builds the low-poly Soviet soldier (greatcoat, budenovka, boots, Mosin with bayonet) in code.
+## G2 variants (EnemyData.Kind): the officer (peaked cap, belts, map case, TT pistol) and the
+## machine-gunner (DP-27 with its flat pan magazine and bipod) – same skeleton, own mesh each.
 ##
 ## Everything is ONE mesh with a skeleton ("skinning"): each vertex belongs to a bone
 ## (hips, spine, head, arms, legs, rifle). Moving the bones moves the body parts, and the
@@ -26,6 +28,8 @@ const BONE_REST: Array[Vector3] = [
 const ARM_UPPER: float = 0.29
 const ARM_LOWER: float = 0.31 # forearm + hand
 const MUZZLE: Vector3 = Vector3(0, 0.02, -0.78) ## In rifle-bone space.
+const MUZZLE_PISTOL: Vector3 = Vector3(0, 0.012, -0.12)
+const MUZZLE_DP27: Vector3 = Vector3(0, 0.012, -0.82)
 
 const COAT := Color(0.43, 0.4, 0.32, 1.0)
 const COAT_DARK := Color(0.34, 0.32, 0.25, 1.0)
@@ -38,8 +42,21 @@ const BOOT := Color(0.1, 0.09, 0.08, 0.0)
 const WOOD := Color(0.36, 0.22, 0.12, 0.0)
 const METAL := Color(0.12, 0.12, 0.13, 0.0)
 const SNOW := Color(0.9, 0.93, 0.98, 0.0)
+const CAP := Color(0.36, 0.36, 0.27, 0.5)
+const CAP_BAND := Color(0.5, 0.1, 0.13, 0.0)
+const LEATHER := Color(0.3, 0.19, 0.11, 0.0)
 
-static var _cached: ArrayMesh
+static var _cached: Dictionary = {} # EnemyData.Kind -> ArrayMesh
+
+
+## Where the shots come from, in rifle-bone space, for each kind of soldier.
+static func muzzle_for(kind: int) -> Vector3:
+	match kind:
+		EnemyData.Kind.OFFICER:
+			return MUZZLE_PISTOL
+		EnemyData.Kind.MG_GUNNER:
+			return MUZZLE_DP27
+	return MUZZLE
 
 
 ## Global (skeleton-space) rest position of a bone.
@@ -63,10 +80,10 @@ static func setup_skeleton(skeleton: Skeleton3D) -> void:
 	skeleton.reset_bone_poses()
 
 
-static func get_mesh() -> ArrayMesh:
-	if _cached == null:
-		_cached = _build()
-	return _cached
+static func get_mesh(kind: int = 0) -> ArrayMesh:
+	if not _cached.has(kind):
+		_cached[kind] = _build(kind)
+	return _cached[kind]
 
 
 # ------------------------------------------------------------------ building
@@ -74,7 +91,8 @@ static var _st: SurfaceTool
 static var _bone_fn: Callable # Vector3 -> [PackedInt32Array, PackedFloat32Array]
 
 
-static func _build() -> ArrayMesh:
+static func _build(kind: int = 0) -> ArrayMesh:
+	var officer: bool = kind == EnemyData.Kind.OFFICER
 	_st = SurfaceTool.new()
 	_st.set_skin_weight_count(SurfaceTool.SKIN_4_WEIGHTS)
 	_st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -89,9 +107,15 @@ static func _build() -> ArrayMesh:
 	_box(Vector3(0.1, 1.02, -0.13), Vector3(0.08, 0.07, 0.05), BELT)
 	_box(Vector3(-0.13, 1.445, 0.0), Vector3(0.11, 0.02, 0.13), SNOW)
 	_box(Vector3(0.13, 1.445, 0.0), Vector3(0.11, 0.02, 0.13), SNOW)
-	# Rolled blanket over the left shoulder (Soviet "skatka").
-	_frustum(Vector3(-0.17, 1.47, -0.1), Vector3(0.12, 1.08, -0.14), 0.045, 0.045, 6, COAT_DARK)
-	_frustum(Vector3(-0.17, 1.47, 0.1), Vector3(0.12, 1.08, 0.14), 0.045, 0.045, 6, COAT_DARK)
+	if officer:
+		# Shoulder strap across the chest, and the map case on the left hip.
+		_box(Vector3(0.0, 1.24, -0.155), Vector3(0.035, 0.46, 0.012), LEATHER, Vector3(0, 0, -0.62))
+		_box(Vector3(0.0, 1.24, 0.155), Vector3(0.035, 0.46, 0.012), LEATHER, Vector3(0, 0, 0.62))
+		_box(Vector3(0.12, 1.02, -0.13), Vector3(0.07, 0.08, 0.05), LEATHER) # pistol holster
+	else:
+		# Rolled blanket over the left shoulder (Soviet "skatka").
+		_frustum(Vector3(-0.17, 1.47, -0.1), Vector3(0.12, 1.08, -0.14), 0.045, 0.045, 6, COAT_DARK)
+		_frustum(Vector3(-0.17, 1.47, 0.1), Vector3(0.12, 1.08, 0.14), 0.045, 0.045, 6, COAT_DARK)
 
 	# --- Greatcoat skirt: moves with the hips, the lower part follows the legs a little ---
 	_bone_fn = func(p: Vector3) -> Array:
@@ -101,17 +125,29 @@ static func _build() -> ArrayMesh:
 			PackedFloat32Array([1.0 - leg, leg * (1.0 - side), leg * side, 0.0])]
 	_frustum(Vector3(0, 0.98, 0), Vector3(0, 0.36, 0), 0.18, 0.29, 10, COAT, 0.8)
 	_bone_fn = Callable()
+	if officer:
+		_use_bone(Bone.HIPS)
+		_box(Vector3(-0.2, 0.8, -0.02), Vector3(0.04, 0.2, 0.23), LEATHER) # map case
 
 	# --- Head: neck, face, budenovka (pointed cloth helmet) with star, peak and neck flap ---
 	_use_bone(Bone.HEAD)
 	_frustum(Vector3(0, 1.46, 0), Vector3(0, 1.55, 0), 0.05, 0.05, 6, SKIN)
 	_sphere(Vector3(0, 1.62, -0.01), Vector3(0.1, 0.11, 0.105), 8, 5, SKIN)
-	_frustum(Vector3(0, 1.66, 0), Vector3(0, 1.86, 0.01), 0.118, 0.014, 8, HAT)
-	_frustum(Vector3(0, 1.645, 0), Vector3(0, 1.665, 0), 0.115, 0.118, 8, HAT)
-	_box(Vector3(0, 1.66, -0.115), Vector3(0.15, 0.014, 0.07), HAT)
-	_box(Vector3(0, 1.595, 0.095), Vector3(0.2, 0.12, 0.02), HAT)
-	_box(Vector3(0, 1.735, -0.105), Vector3(0.035, 0.035, 0.012), STAR)
-	_frustum(Vector3(0, 1.82, 0.006), Vector3(0, 1.865, 0.01), 0.03, 0.012, 6, SNOW)
+	if officer:
+		# Peaked cap: band, wide flat crown, black peak, star – easy to pick out.
+		_frustum(Vector3(0, 1.655, 0), Vector3(0, 1.705, 0), 0.108, 0.11, 10, CAP_BAND)
+		_frustum(Vector3(0, 1.705, 0.005), Vector3(0, 1.765, 0.0), 0.11, 0.142, 10, CAP)
+		_frustum(Vector3(0, 1.765, 0.0), Vector3(0, 1.775, 0.0), 0.142, 0.13, 10, CAP)
+		_box(Vector3(0, 1.665, -0.13), Vector3(0.16, 0.012, 0.07), BOOT, Vector3(0.25, 0, 0))
+		_box(Vector3(0, 1.685, -0.111), Vector3(0.03, 0.03, 0.01), STAR)
+		_box(Vector3(0, 1.778, 0.01), Vector3(0.16, 0.012, 0.14), SNOW)
+	else:
+		_frustum(Vector3(0, 1.66, 0), Vector3(0, 1.86, 0.01), 0.118, 0.014, 8, HAT)
+		_frustum(Vector3(0, 1.645, 0), Vector3(0, 1.665, 0), 0.115, 0.118, 8, HAT)
+		_box(Vector3(0, 1.66, -0.115), Vector3(0.15, 0.014, 0.07), HAT)
+		_box(Vector3(0, 1.595, 0.095), Vector3(0.2, 0.12, 0.02), HAT)
+		_box(Vector3(0, 1.735, -0.105), Vector3(0.035, 0.035, 0.012), STAR)
+		_frustum(Vector3(0, 1.82, 0.006), Vector3(0, 1.865, 0.01), 0.03, 0.012, 6, SNOW)
 
 	# --- Arms: sleeve (upper), sleeve + cuff + hand (lower) ---
 	for side in [-1.0, 1.0]:
@@ -138,9 +174,24 @@ static func _build() -> ArrayMesh:
 		_frustum(knee + Vector3(0, 0.02, 0), Vector3(knee.x, 0.06, 0), 0.063, 0.052, 6, BOOT)
 		_box(Vector3(knee.x, 0.04, -0.05), Vector3(0.09, 0.08, 0.25), BOOT)
 
-	# --- Mosin rifle with the long spike bayonet ---
 	_use_bone(Bone.RIFLE)
 	var r := rest_global(Bone.RIFLE)
+	if officer:
+		# --- TT pistol (the rifle bone is "the weapon" bone) ---
+		_box(r + Vector3(0, -0.035, 0.035), Vector3(0.028, 0.085, 0.034), METAL, Vector3(-0.25, 0, 0))
+		_box(r + Vector3(0, 0.012, -0.035), Vector3(0.026, 0.032, 0.17), METAL)
+	elif kind == EnemyData.Kind.MG_GUNNER:
+		_build_dp27(r)
+	else:
+		_build_mosin(r)
+
+	var mesh := _st.commit()
+	_st = null
+	return mesh
+
+
+## Mosin rifle with the long spike bayonet.
+static func _build_mosin(r: Vector3) -> void:
 	_box(r + Vector3(0, -0.03, 0.25), Vector3(0.045, 0.1, 0.34), WOOD)
 	_box(r + Vector3(0, 0.0, -0.2), Vector3(0.04, 0.045, 0.62), WOOD)
 	_frustum(r + Vector3(0, 0.02, 0.06), r + Vector3(0, 0.02, -0.78), 0.012, 0.011, 5, METAL)
@@ -148,9 +199,20 @@ static func _build() -> ArrayMesh:
 	_box(r + Vector3(0.04, 0.02, 0.1), Vector3(0.05, 0.012, 0.012), METAL) # bolt handle
 	_frustum(r + Vector3(0.012, 0.0, -0.74), r + Vector3(0.012, 0.0, -1.2), 0.007, 0.002, 4, METAL)
 
-	var mesh := _st.commit()
-	_st = null
-	return mesh
+
+## DP-27 light machine gun: wooden butt, receiver, perforated barrel shroud, cone flash
+## hider, the flat round pan magazine on top and the bipod.
+static func _build_dp27(r: Vector3) -> void:
+	_box(r + Vector3(0, -0.035, 0.27), Vector3(0.045, 0.1, 0.3), WOOD)          # butt
+	_box(r + Vector3(0, -0.06, 0.1), Vector3(0.035, 0.08, 0.06), WOOD)          # grip
+	_box(r + Vector3(0, 0.0, 0.02), Vector3(0.05, 0.065, 0.24), METAL)          # receiver
+	_frustum(r + Vector3(0, 0.012, -0.1), r + Vector3(0, 0.012, -0.6), 0.025, 0.025, 8, METAL) # shroud
+	_frustum(r + Vector3(0, 0.012, -0.6), r + Vector3(0, 0.012, -0.74), 0.01, 0.01, 5, METAL)  # barrel
+	_frustum(r + Vector3(0, 0.012, -0.83), r + Vector3(0, 0.012, -0.73), 0.024, 0.012, 6, METAL) # flash hider
+	_frustum(r + Vector3(0, 0.035, 0.0), r + Vector3(0, 0.055, 0.0), 0.13, 0.13, 14, METAL)    # pan
+	_frustum(r + Vector3(0, 0.055, 0.0), r + Vector3(0, 0.068, 0.0), 0.05, 0.05, 8, METAL)     # pan centre
+	for side in [-1.0, 1.0]:
+		_frustum(r + Vector3(0.0, 0.0, -0.52), r + Vector3(side * 0.12, -0.3, -0.64), 0.008, 0.008, 4, METAL)
 
 
 # ------------------------------------------------------------------ shared building blocks
@@ -246,8 +308,9 @@ static func _frustum(a: Vector3, b: Vector3, ra: float, rb: float, sides: int, c
 		_tri(tip, ring[i], ring[i + 1], cap_n, cap_n, cap_n, col)
 
 
-static func _box(center: Vector3, size: Vector3, col: Color) -> void:
+static func _box(center: Vector3, size: Vector3, col: Color, rot := Vector3.ZERO) -> void:
 	var h: Vector3 = size / 2.0
+	var b := Basis.from_euler(rot)
 	for axis in 3:
 		for sgn in [-1.0, 1.0]:
 			var n := Vector3.ZERO
@@ -256,9 +319,10 @@ static func _box(center: Vector3, size: Vector3, col: Color) -> void:
 			t[(axis + 1) % 3] = 1.0
 			var bt := Vector3.ZERO
 			bt[(axis + 2) % 3] = 1.0
-			var c: Vector3 = center + n * h[axis]
-			var tu: Vector3 = t * h[(axis + 1) % 3]
-			var tv: Vector3 = bt * h[(axis + 2) % 3]
+			var c: Vector3 = center + b * (n * h[axis])
+			var tu: Vector3 = b * (t * h[(axis + 1) % 3])
+			var tv: Vector3 = b * (bt * h[(axis + 2) % 3])
+			n = b * n
 			_tri(c - tu - tv, c + tu - tv, c + tu + tv, n, n, n, col)
 			_tri(c - tu - tv, c + tu + tv, c - tu + tv, n, n, n, col)
 

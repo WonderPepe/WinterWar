@@ -1,12 +1,71 @@
 [gd_resource type="Resource" script_class="DifficultyData" format=3]
 
-[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_k6kuj"]
+[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_n06nw"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_data.gd" id="2_itd1v"]
+
+[sub_resource type="Resource" id="Resource_whkac"]
+script = ExtResource("2_itd1v")
+riflemen = 8
+
+[sub_resource type="Resource" id="Resource_0wnbe"]
+script = ExtResource("2_itd1v")
+riflemen = 9
+officers = 1
+
+[sub_resource type="Resource" id="Resource_y3fim"]
+script = ExtResource("2_itd1v")
+riflemen = 9
+officers = 1
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_ui65m"]
+script = ExtResource("2_itd1v")
+riflemen = 10
+officers = 1
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_yg04g"]
+script = ExtResource("2_itd1v")
+riflemen = 11
+officers = 2
+mg_teams = 1
+
+[sub_resource type="Resource" id="Resource_635u7"]
+script = ExtResource("2_itd1v")
+riflemen = 11
+officers = 1
+mg_teams = 2
+
+[sub_resource type="Resource" id="Resource_13fyy"]
+script = ExtResource("2_itd1v")
+riflemen = 12
+officers = 2
+mg_teams = 2
+
+[sub_resource type="Resource" id="Resource_i7a6e"]
+script = ExtResource("2_itd1v")
+riflemen = 13
+officers = 2
+mg_teams = 2
+
+[sub_resource type="Resource" id="Resource_q1018"]
+script = ExtResource("2_itd1v")
+riflemen = 14
+officers = 2
+mg_teams = 2
+
+[sub_resource type="Resource" id="Resource_hl4xt"]
+script = ExtResource("2_itd1v")
+riflemen = 15
+officers = 3
+mg_teams = 3
 
 [resource]
-script = ExtResource("1_k6kuj")
+script = ExtResource("1_n06nw")
 display_name = "Hard"
 waves_to_win = 10
 trench_limit = 3
 base_enemies = 8
+waves = Array[ExtResource("2_itd1v")]([SubResource("Resource_whkac"), SubResource("Resource_0wnbe"), SubResource("Resource_y3fim"), SubResource("Resource_ui65m"), SubResource("Resource_yg04g"), SubResource("Resource_635u7"), SubResource("Resource_13fyy"), SubResource("Resource_i7a6e"), SubResource("Resource_q1018"), SubResource("Resource_hl4xt")])
 enemy_spread_multiplier = 0.75
 respawn_time = 10.0
