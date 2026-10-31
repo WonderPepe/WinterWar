@@ -10,6 +10,7 @@ extends Control
 
 signal closed
 
+@export var intro_delay: float = 2.5 ## Seconds of "WAVE n COMPLETED" (HUD banner) before the fade to black.
 @export var type_speed: float = 28.0 ## Telegram letters per second.
 @export var type_start: float = 3.0 ## Seconds after opening when the telegram starts typing.
 @export var read_time: float = 7.0 ## Seconds to read after the telegram is typed out.
@@ -68,18 +69,12 @@ func open(cleared_wave: int, reports: FrontReports) -> bool:
 	tele_text.text = r[1]
 	_set_photo(reports.get_photo(cleared_wave))
 	_typed = 0.0
-	_t = 0.0
+	_t = -intro_delay # negative = the battlefield is still visible (the HUD shows "WAVE n COMPLETED")
 	_closing = -1.0
 	_total = type_start + (r[0].length() + r[1].length()) / type_speed + read_time
 	is_open = true
 	visible = true
 	_update(0.0)
-	# Radio static (a real recording: assets/audio/recorded/radio_static…). None = silence.
-	var noise: AudioStream = RecordedSounds.pick("radio_static")
-	if noise:
-		static_player.stream = noise
-		static_player.volume_db = -60.0
-		static_player.play()
 	_set_hold(true)
 	return true
 
@@ -143,7 +138,10 @@ func _input(event: InputEvent) -> void:
 
 
 func _update(delta: float) -> void:
+	var was_before_fade: bool = _t < 0.0
 	_t += delta
+	if was_before_fade and _t >= 0.0 and _closing < 0.0:
+		_start_static()
 	if _closing < 0.0 and _t >= _total:
 		close()
 	var shown: float = 1.0
@@ -185,6 +183,15 @@ func _type(delta: float) -> void:
 	tele_text.visible_characters = maxi(n - date_len, 0)
 	if was_typing and n >= total and type_sound.playing:
 		type_sound.stop()
+
+
+## Radio static (a real recording: assets/audio/recorded/radio_static…). None = silence.
+func _start_static() -> void:
+	var noise: AudioStream = RecordedSounds.pick("radio_static")
+	if noise:
+		static_player.stream = noise
+		static_player.volume_db = -60.0
+		static_player.play()
 
 
 ## Static fades in quickly, stays, and fades out at the end of `static_time`.

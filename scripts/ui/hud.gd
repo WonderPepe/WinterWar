@@ -253,6 +253,10 @@ func _update_day_screen() -> void:
 	if cleared > _last_cleared:
 		_last_cleared = cleared
 		if not _director.is_over():
+			# "WAVE n COMPLETED" over the battlefield first; the day screen fades in after it.
+			wave_banner.text = "WAVE %d COMPLETED" % cleared
+			banner_sub.text = ""
+			_banner_left = day_screen.intro_delay
 			day_screen.open(cleared, front_reports)
 
 

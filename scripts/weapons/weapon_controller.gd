@@ -197,7 +197,7 @@ func _fire(w: WeaponData) -> void:
 	_play(shot_audio, w.fire_sound)
 	_spawn_smoke((vm.get_node("Model/Muzzle") as Node3D).global_position, -camera.global_basis.z, true)
 	if w.fire_mode == WeaponData.FireMode.BOLT_ACTION and rounds_before > 1:
-		vm.play_bolt_cycle(w.bolt_cycle_time, is_aiming)
+		vm.play_bolt_cycle(w.bolt_cycle_time)
 		get_tree().create_timer(w.bolt_cycle_time * 0.25).timeout.connect(_play.bind(mech_audio, w.get_cycle_sound()))
 	_add_recoil(w)
 

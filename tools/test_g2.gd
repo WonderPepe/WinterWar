@@ -336,10 +336,13 @@ func run() -> void:
 	check(day.is_open and day.visible and day.date_label.text == "21. joulukuuta 1939" and day.tele_date.text == "21.12.1939"
 			and day.tele_text.text.begins_with("\"Täällä Kannaksen rintama."), "wave 1 cleared: the day screen for 21.12.1939")
 	check(day.photo.texture != null and day.frame.visible, "…with its photo")
+	check(hud.wave_banner.text == "WAVE 1 COMPLETED" and hud.wave_banner.modulate.a > 0.9 and day.black.color.a < 0.01,
+			"first 'WAVE 1 COMPLETED' over the battlefield (screen not dark yet)")
 	check(spawner.hold, "the next wave's countdown waits")
 	var held_at: float = spawner._timer
-	await seconds(1.0)
+	await seconds(day.intro_delay + 1.2 - day._t - day.intro_delay)
 	check(absf(spawner._timer - held_at) < 0.001, "countdown held (%.2f s)" % spawner._timer)
+	check(day.black.color.a > 0.99 and hud.wave_banner.modulate.a < 0.01, "then the fade to black, banner gone")
 	check(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"SFX")) < -15.0, "battle sounds turned down behind the screen")
 	await seconds(day.type_start + 1.6 - day._t)
 	check(day.tele_text.visible_characters > 0 and day.tele_text.visible_characters < day.tele_text.text.length(),

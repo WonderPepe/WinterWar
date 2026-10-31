@@ -75,9 +75,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] v0.1.3 aiming fixes (players: "ADS ends for a moment and comes back"), merged by hand later:
   Maxim new belt no longer ends ADS (hand-weapon reloads only); Maxim ADS camera follows only
   `sight_kick_share` 0.25 of the recoil push (`MountedGun.get_sight_eye_position()`); recoil
-  recovery brings back only the applied kick (no downward drag at the elevation limit); aimed
-  Mosin bolt cycle keeps the hand below the knob (`ViewModel.bolt_hand_low`, 6° tilt).
-- [x] Day screen ("a new day" after each wave, owner's design): black screen, SA-kuva photo as an
+  recovery brings back only the applied kick (no downward drag at the elevation limit). The aimed
+  Mosin bolt-cycle change (hand below the knob, 6° tilt) was REVERTED on the owner's request –
+  the bolt cycle is the original one (−20° tilt, hand on the knob) whether aiming or not.
+- [x] Day screen ("a new day" after each wave, owner's design): "WAVE n COMPLETED" banner over the
+  battlefield first (`intro_delay` 2.5 s), then black screen, SA-kuva photo as an
   old print, Finnish date title, the telegram types out, optional radio static for 5 s, Space /
   Enter continues. Front reports are ALWAYS shown now (the Settings switch was removed – owner).
   Owner's choices: same lighting as before (dusk over the whole battle; weather/day-night later),
@@ -422,7 +424,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `DayScreen` (HUD/DayScreen, `scripts/ui/day_screen.gd`, built by `_build_day_screen()`): HUD
   `_update_day_screen()` watches the synced `MatchDirector.waves_cleared` (co-op clients too, no RPC)
   and calls `open(wave, reports)`; not after the last wave (end screen takes over, `close_now()`).
-  Timeline: black 0–1 s, photo 1–2.2 s, title ~2 s, telegram types from `type_start` 3 s at
+  Timeline: `_t` starts at −`intro_delay` (2.5 s: HUD wave banner "WAVE n COMPLETED", screen still
+  clear, countdown already held; static starts at `_t` = 0), black 0–1 s, photo 1–2.2 s, title ~2 s, telegram types from `type_start` 3 s at
   `type_speed` 28/s, then `read_time` 7 s; photo zooms `zoom` 6 % over the screen; Space (jump) /
   Enter after `skip_after` 1.5 s; a new wave starting also closes it. Not paused: SFX + Ambience
   buses are ducked `duck_db` −20 dB (Ambience keeps Settings' formula). Host: `WaveSpawner.hold`

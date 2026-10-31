@@ -23,7 +23,9 @@ func _ready() -> void:
 	var day: DayScreen = get_tree().get_first_node_in_group("game").get_node("HUD/DayScreen")
 	for d in days:
 		director.waves_cleared = d
-		await get_tree().create_timer(2.2).timeout
+		await get_tree().create_timer(1.0).timeout
+		await _shot("day%d_completed" % d)
+		await get_tree().create_timer(day.intro_delay + 2.2 - day._t - day.intro_delay).timeout
 		await _shot("day%d_title" % d)
 		await get_tree().create_timer(2.5).timeout
 		await _shot("day%d_typing" % d)
