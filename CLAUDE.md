@@ -21,6 +21,21 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   ("Push origin"). Check `git status` before writing files – never overwrite his own edits.
 - If something can't be done well in the web export, say so and suggest an alternative.
 
+## Starting a new chat (how Claude sessions work on this project)
+- Each milestone gets its own chat. The owner connects this folder and says what to do;
+  this file is the memory between chats – keep it up to date at the end of every milestone.
+- Setup used so far (Cowork, cloud workspace + the owner's computer):
+  - Godot 4.7.2 Linux binary (official release) + Web export templates in
+    `~/.local/share/godot/export_templates/4.7.2.stable/`; xvfb for screenshots / GL tests;
+    Python Playwright (Chromium, SwiftShader) for `tools/web_smoke_test.py`.
+  - Work on a copy of the project in the cloud workspace (run the builder, tests, exports there),
+    then deliver changed files as a zip → copy into the folder → unzip → `git status`.
+  - Scene files rebuilt by `build_scenes.gd` get new random `unique_id`s: restore files whose only
+    change is `unique_id` lines (`git show HEAD:file > file`) – but NEVER binary files
+    (`git diff --numstat` shows `-`), or the new baked meshes / navmesh are lost.
+  - Commit on the owner's computer (repo-local git identity `WonderPepe`); the owner pushes with
+    GitHub Desktop. Releases: see RELEASES.md (only when the owner asks for one).
+
 ## Milestones
 - [x] M1 project setup, input map, test level, player movement
 - [x] M2 weapons and shooting
