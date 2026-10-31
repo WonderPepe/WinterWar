@@ -72,6 +72,7 @@ var _regen_timer: float = 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 @onready var input: PlayerInput = $PlayerInput
+var _shake: float = 0.0 # camera shake (artillery), local
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var collision: CollisionShape3D = $CollisionShape3D
@@ -152,6 +153,11 @@ func is_in_deep_snow() -> bool:
 	return _deep_snow_count > 0
 
 
+## The ground shakes (a shell landed): 0..~1.5, local camera only.
+func add_shake(amount: float) -> void:
+	_shake = clampf(maxf(_shake, amount), 0.0, 1.5)
+
+
 func get_speed() -> float:
 	return Vector2(velocity.x, velocity.z).length()
 
@@ -163,6 +169,10 @@ func _process(delta: float) -> void:
 	_update_crouch_shape(delta)
 	# Death camera: sink to the ground and tilt the head sideways.
 	head.rotation.z = move_toward(head.rotation.z, 0.5 if is_dead else 0.0, delta * 2.0)
+	# Shaking ground (artillery): the camera jolts a little, then settles.
+	_shake = maxf(_shake - delta * 1.8, 0.0)
+	var amp: float = _shake * _shake * 0.035
+	camera.rotation = Vector3(randf_range(-amp, amp), randf_range(-amp, amp) * 0.6, randf_range(-amp, amp) * 0.8)
 
 
 func _physics_process(delta: float) -> void:

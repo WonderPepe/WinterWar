@@ -7,12 +7,14 @@ extends Resource
 @export var riflemen: int = 6
 @export var officers: int = 0 ## Each one goes with a group of riflemen and whistles them forward.
 @export var mg_teams: int = 0 ## DP-27 teams: a gunner and his helper (2 soldiers each).
+@export var barrage: bool = false ## Artillery shells the trench first while this wave moves up.
 
 
-func make(r: int, o: int, m: int) -> WaveData:
+func make(r: int, o: int, m: int, b: bool = false) -> WaveData:
 	riflemen = r
 	officers = o
 	mg_teams = m
+	barrage = b
 	return self
 
 

@@ -125,11 +125,11 @@ shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 8
 shadow_offset = Vector2(3, 4)
 
-[node name="HUD" type="CanvasLayer" unique_id=719438778]
+[node name="HUD" type="CanvasLayer" unique_id=98779071]
 script = ExtResource("1_spcu4")
 front_reports = ExtResource("2_ff8ar")
 
-[node name="Crosshair" type="Control" parent="." unique_id=595784205]
+[node name="Crosshair" type="Control" parent="." unique_id=1291764234]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -137,7 +137,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("3_m0eg6")
 
-[node name="DamageIndicator" type="Control" parent="." unique_id=1734507704]
+[node name="DamageIndicator" type="Control" parent="." unique_id=405020034]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -145,7 +145,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("4_b00kl")
 
-[node name="HitMarker" type="Control" parent="." unique_id=1777467231]
+[node name="HitMarker" type="Control" parent="." unique_id=917645476]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -153,7 +153,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("5_so1yu")
 
-[node name="DamageFlash" type="TextureRect" parent="." unique_id=1790276516]
+[node name="DamageFlash" type="TextureRect" parent="." unique_id=1115029593]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -161,7 +161,7 @@ mouse_filter = 2
 texture = SubResource("GradientTexture2D_6mpex")
 expand_mode = 1
 
-[node name="Vitals" type="VBoxContainer" parent="." unique_id=370384555]
+[node name="Vitals" type="VBoxContainer" parent="." unique_id=1778012847]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -172,7 +172,7 @@ offset_bottom = -24.0
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Bandages" type="Label" parent="Vitals" unique_id=616020713]
+[node name="Bandages" type="Label" parent="Vitals" unique_id=1688761356]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.95, 0.88, 0.86, 1)
@@ -180,7 +180,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "Bandages: 2   [B]"
 
-[node name="HealthTitle" type="Label" parent="Vitals" unique_id=376288606]
+[node name="HealthTitle" type="Label" parent="Vitals" unique_id=84967996]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -188,7 +188,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 text = "HEALTH"
 
-[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=876769863]
+[node name="HealthBar" type="ProgressBar" parent="Vitals" unique_id=1132262851]
 custom_minimum_size = Vector2(280, 24)
 layout_mode = 2
 mouse_filter = 2
@@ -197,7 +197,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_x3e77")
 value = 100.0
 show_percentage = false
 
-[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=633924790]
+[node name="Value" type="Label" parent="Vitals/HealthBar" unique_id=1353517865]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -209,7 +209,7 @@ text = "100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=735229487]
+[node name="StaminaBar" type="ProgressBar" parent="Vitals" unique_id=48193748]
 custom_minimum_size = Vector2(280, 7)
 layout_mode = 2
 mouse_filter = 2
@@ -218,7 +218,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_3ju8l")
 value = 100.0
 show_percentage = false
 
-[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=1464847858]
+[node name="WeaponPanel" type="VBoxContainer" parent="." unique_id=245586456]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -232,7 +232,7 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 2
 
-[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=77050499]
+[node name="Reloading" type="Label" parent="WeaponPanel" unique_id=242462279]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.8, 0.35, 1)
@@ -241,7 +241,7 @@ theme_override_constants/outline_size = 3
 text = "RELOADING"
 horizontal_alignment = 2
 
-[node name="Overheated" type="Label" parent="WeaponPanel" unique_id=1912449902]
+[node name="Overheated" type="Label" parent="WeaponPanel" unique_id=1602767916]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(1, 0.45, 0.3, 1)
@@ -250,7 +250,7 @@ theme_override_constants/outline_size = 3
 text = "OVERHEATED"
 horizontal_alignment = 2
 
-[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=2087423722]
+[node name="WeaponName" type="Label" parent="WeaponPanel" unique_id=758523602]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -259,7 +259,7 @@ theme_override_constants/outline_size = 3
 text = "Weapon"
 horizontal_alignment = 2
 
-[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=89852111]
+[node name="Ammo" type="Label" parent="WeaponPanel" unique_id=292761567]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -268,12 +268,12 @@ theme_override_constants/outline_size = 7
 text = "0 / 0"
 horizontal_alignment = 2
 
-[node name="HeatRow" type="HBoxContainer" parent="WeaponPanel" unique_id=822028365]
+[node name="HeatRow" type="HBoxContainer" parent="WeaponPanel" unique_id=1701332731]
 layout_mode = 2
 mouse_filter = 2
 alignment = 2
 
-[node name="HeatTitle" type="Label" parent="WeaponPanel/HeatRow" unique_id=1542226985]
+[node name="HeatTitle" type="Label" parent="WeaponPanel/HeatRow" unique_id=265967204]
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
@@ -282,7 +282,7 @@ theme_override_constants/outline_size = 3
 text = "HEAT"
 horizontal_alignment = 2
 
-[node name="HeatBar" type="ProgressBar" parent="WeaponPanel/HeatRow" unique_id=100356431]
+[node name="HeatBar" type="ProgressBar" parent="WeaponPanel/HeatRow" unique_id=739044381]
 custom_minimum_size = Vector2(180, 8)
 layout_mode = 2
 size_flags_vertical = 4
@@ -293,7 +293,7 @@ max_value = 1.0
 step = 0.0
 show_percentage = false
 
-[node name="WavePanel" type="VBoxContainer" parent="." unique_id=293278804]
+[node name="WavePanel" type="VBoxContainer" parent="." unique_id=1668517153]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -304,7 +304,7 @@ offset_bottom = 150.0
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="Wave" type="Label" parent="WavePanel" unique_id=76280417]
+[node name="Wave" type="Label" parent="WavePanel" unique_id=1031520484]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -313,7 +313,7 @@ theme_override_constants/outline_size = 4
 text = "Get ready"
 horizontal_alignment = 1
 
-[node name="Enemies" type="Label" parent="WavePanel" unique_id=591812142]
+[node name="Enemies" type="Label" parent="WavePanel" unique_id=789976416]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -322,7 +322,7 @@ theme_override_constants/outline_size = 3
 text = "Enemies: 0"
 horizontal_alignment = 1
 
-[node name="NextWave" type="Label" parent="WavePanel" unique_id=2091304885]
+[node name="NextWave" type="Label" parent="WavePanel" unique_id=1639745354]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 0.85, 0.5, 1)
@@ -330,7 +330,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="Score" type="Label" parent="WavePanel" unique_id=222332090]
+[node name="Score" type="Label" parent="WavePanel" unique_id=340574642]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -339,7 +339,7 @@ theme_override_constants/outline_size = 3
 text = "Kills 0   Deaths 0"
 horizontal_alignment = 1
 
-[node name="TrenchAlert" type="Label" parent="WavePanel" unique_id=725787469]
+[node name="TrenchAlert" type="Label" parent="WavePanel" unique_id=411670935]
 visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
@@ -348,7 +348,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 horizontal_alignment = 1
 
-[node name="InteractPrompt" type="Label" parent="." unique_id=143442153]
+[node name="InteractPrompt" type="Label" parent="." unique_id=2094602402]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -364,7 +364,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="WaveBanner" type="Label" parent="." unique_id=1445669905]
+[node name="WaveBanner" type="Label" parent="." unique_id=493886425]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -381,7 +381,7 @@ theme_override_constants/outline_size = 12
 text = "WAVE 1"
 horizontal_alignment = 1
 
-[node name="WaveBannerSub" type="Label" parent="." unique_id=403848858]
+[node name="WaveBannerSub" type="Label" parent="." unique_id=1392746004]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -397,7 +397,22 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 4
 horizontal_alignment = 1
 
-[node name="FrontReport" type="PanelContainer" parent="." unique_id=1446637499]
+[node name="ArtilleryWarning" type="Label" parent="." unique_id=110310707]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -450.0
+offset_top = 128.0
+offset_right = 450.0
+offset_bottom = 172.0
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(1, 0.45, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 6
+horizontal_alignment = 1
+
+[node name="FrontReport" type="PanelContainer" parent="." unique_id=408006606]
 visible = false
 anchors_preset = 5
 anchor_left = 0.5
@@ -412,12 +427,12 @@ pivot_offset = Vector2(350, 110)
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_5jwjf")
 
-[node name="VBox" type="VBoxContainer" parent="FrontReport" unique_id=1394218585]
+[node name="VBox" type="VBoxContainer" parent="FrontReport" unique_id=204161475]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Header" type="Label" parent="FrontReport/VBox" unique_id=1632934938]
+[node name="Header" type="Label" parent="FrontReport/VBox" unique_id=1584604933]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_65xic")
 theme_override_font_sizes/font_size = 26
@@ -428,13 +443,13 @@ text = "S Ä H K Ö S A N O M A"
 horizontal_alignment = 1
 visible_characters_behavior = 1
 
-[node name="Rule" type="ColorRect" parent="FrontReport/VBox" unique_id=198813537]
+[node name="Rule" type="ColorRect" parent="FrontReport/VBox" unique_id=1626621492]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
 mouse_filter = 2
 color = Color(0.16, 0.12, 0.09, 0.7)
 
-[node name="Date" type="Label" parent="FrontReport/VBox" unique_id=1328997673]
+[node name="Date" type="Label" parent="FrontReport/VBox" unique_id=968322443]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_65xic")
 theme_override_font_sizes/font_size = 20
@@ -445,7 +460,7 @@ text = "21.12.1939"
 horizontal_alignment = 2
 visible_characters_behavior = 1
 
-[node name="Text" type="Label" parent="FrontReport/VBox" unique_id=350716575]
+[node name="Text" type="Label" parent="FrontReport/VBox" unique_id=359386079]
 custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
 theme_override_constants/line_spacing = 2
@@ -457,25 +472,25 @@ theme_override_constants/outline_size = 0
 autowrap_mode = 3
 visible_characters_behavior = 1
 
-[node name="TypeSound" type="AudioStreamPlayer" parent="FrontReport" unique_id=414233234]
+[node name="TypeSound" type="AudioStreamPlayer" parent="FrontReport" unique_id=1839929550]
 volume_db = -6.0
 bus = &"UI"
 
-[node name="DeathScreen" type="Control" parent="." unique_id=257067707]
+[node name="DeathScreen" type="Control" parent="." unique_id=809866248]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=1796284070]
+[node name="Dim" type="ColorRect" parent="DeathScreen" unique_id=1933474429]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0.08, 0, 0, 0.55)
 
-[node name="YouDied" type="Label" parent="DeathScreen" unique_id=848506854]
+[node name="YouDied" type="Label" parent="DeathScreen" unique_id=741243320]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -492,7 +507,7 @@ theme_override_constants/outline_size = 12
 text = "YOU DIED"
 horizontal_alignment = 1
 
-[node name="Respawn" type="Label" parent="DeathScreen" unique_id=30682739]
+[node name="Respawn" type="Label" parent="DeathScreen" unique_id=312761543]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -509,16 +524,16 @@ theme_override_constants/outline_size = 4
 text = "Respawning in 5..."
 horizontal_alignment = 1
 
-[node name="HitSound" type="AudioStreamPlayer" parent="." unique_id=252871325]
+[node name="HitSound" type="AudioStreamPlayer" parent="." unique_id=1158472457]
 stream = ExtResource("7_mp5xd")
 volume_db = -8.0
 bus = &"UI"
 
-[node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=1877086192]
+[node name="HurtSound" type="AudioStreamPlayer" parent="." unique_id=1179399304]
 volume_db = -4.0
 bus = &"UI"
 
-[node name="EndScreen" type="Control" parent="." unique_id=559729809]
+[node name="EndScreen" type="Control" parent="." unique_id=1094985978]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -526,30 +541,30 @@ anchor_bottom = 1.0
 theme = ExtResource("8_u6vop")
 script = ExtResource("9_xtm2r")
 
-[node name="Dim" type="ColorRect" parent="EndScreen" unique_id=479918401]
+[node name="Dim" type="ColorRect" parent="EndScreen" unique_id=289208466]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0.03, 0.04, 0.07, 0.62)
 
-[node name="Center" type="CenterContainer" parent="EndScreen" unique_id=1964093530]
+[node name="Center" type="CenterContainer" parent="EndScreen" unique_id=13449897]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="EndScreen/Center" unique_id=255969585]
+[node name="Panel" type="PanelContainer" parent="EndScreen/Center" unique_id=1843905617]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="EndScreen/Center/Panel" unique_id=272701826]
+[node name="VBox" type="VBoxContainer" parent="EndScreen/Center/Panel" unique_id=1383102443]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=44927364]
+[node name="Title" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=831666258]
 layout_mode = 2
 theme_override_font_sizes/font_size = 46
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -558,7 +573,7 @@ theme_override_constants/outline_size = 9
 text = "THE LINE HELD"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=331239481]
+[node name="Subtitle" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=42658614]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -567,7 +582,7 @@ theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Report" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=728856948]
+[node name="Report" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=84143441]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_65xic")
@@ -578,7 +593,7 @@ theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Stats" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=310303866]
+[node name="Stats" type="Label" parent="EndScreen/Center/Panel/VBox" unique_id=328407624]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.95, 0.96, 0.98, 1)
@@ -586,18 +601,18 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 horizontal_alignment = 1
 
-[node name="Buttons" type="HBoxContainer" parent="EndScreen/Center/Panel/VBox" unique_id=1588352403]
+[node name="Buttons" type="HBoxContainer" parent="EndScreen/Center/Panel/VBox" unique_id=689989072]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="PlayAgainButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=1555590956]
+[node name="PlayAgainButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=915694192]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 text = "Play again"
 
-[node name="MainMenuButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=1699933378]
+[node name="MainMenuButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=479574273]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 text = "Main menu"

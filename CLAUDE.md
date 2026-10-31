@@ -352,6 +352,30 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `tools/test_g2.gd`, `tools/soak_g2.gd [waves]` (defender bot firing near misses, 3× speed),
   `tools/shots_g2.gd` (poses; needs xvfb). `check_web_pack.gd` checks the wave lists survive export.
 
+## Artillery barrage – how it is built
+- `ArtilleryBarrage` (Game/ArtilleryBarrage, `scripts/game/artillery_barrage.gd`, group
+  `artillery`). Host: `WaveSpawner.wave_started` → `get_composition(n).barrage` → `start()`:
+  WARNING (`warning_time` 4 s) → FIRING (length of the recording) → `_finish()`. Phases are set
+  on every computer by RPCs (`begin_warning/begin_firing/end_barrage`); the 2D recording plays
+  on every computer (SFX bus). Old G2 plan: artillery was dropped then, added now on request.
+- Shells: `shell_times` / `shell_strengths` (builder `BARRAGE_SHELLS`, 47 bangs found in the
+  recording with a Python onset detector). Host picks the spot (`_pick_landing`: `aimed_share`
+  near exposed players, else `lerp(far_m, near_m, strength)` from a random player; inside
+  `zone_min/max`, never in `trench_rect`), damages exposed players (`is_covered()`: y < -0.5,
+  48 < z < 76, |x| < 108 → trench/bunker/Maxim are safe), then `explode.rpc(pos, strength)`.
+- Visuals per blast (pool of 6): flash quad + OmniLight (0.18 s), earth clods, dark plume, snow
+  cloud, smoke (all `ImpactEffects.web_fallback`), scorch quads (pool 30) fade out
+  `scorch_fade_time` after the end. Camera shake: `Player.add_shake()` → `camera.rotation`
+  jitter in `Player._process` (local only; nothing else sets camera.rotation).
+- The wave meanwhile: `Enemy.barrage_hold_z` (static, host) = `hold_z` (0) while it lasts:
+  `_move_to` clamps the destination z to `hold_z + _hold_offset` (−8…0) and hurries;
+  `_hold_at_goal` only kneels (no assault). End → INF, every living officer `signal_advance()`
+  (whistle + rally). Barrage waves always have an officer (builder `WAVE_LISTS` 4th value).
+- HUD `ArtilleryWarning` label (top centre): warning / "stay down" or "GET INTO THE TRENCH!" /
+  "The barrage lifts". `tools/test_artillery.gd`, `tools/shots_artillery.gd`.
+- Sound: Freesound 486086 "Artillery Barrage" by Mozfoo (explosion by Steveygos93), CC-BY 4.0;
+  mono, −4 dB + limiter, 1.3 s fade. Original WAV in `assets_source/`.
+
 ## Background sounds – how it is built
 - `BackgroundSounds` (Game/BackgroundSounds, `scripts/game/background_sounds.gd`): `sounds` +
   `overhead_at` (seconds into the file when it is loudest). Host picks, at wave 1, a wave
@@ -441,7 +465,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
   `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
-  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`,
+  `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd`, `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier

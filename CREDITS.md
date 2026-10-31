@@ -19,6 +19,9 @@ the game; the models are otherwise unchanged.
   a 1939 model training plane, approaching, diving over low" by YleArkisto
   https://freesound.org/s/254511/ – shortened and made mono for the game.
 
+- "Artillery Barrage" by Mozfoo, made from an explosion by Steveygos93
+  https://freesound.org/s/486086/ – made mono and a little quieter for the game.
+
 ## Font
 - "FreeMono Bold" from GNU FreeFont (https://savannah.gnu.org/projects/freefont/), used for the
   front-report telegrams. GNU GPL v3 with the font exception – see

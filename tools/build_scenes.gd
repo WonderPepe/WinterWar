@@ -516,6 +516,19 @@ func _build_level(mats: Dictionary) -> Node:
 
 
 # ---------------------------------------------------------------- game
+## The bangs in assets/audio/artillery/barrage.ogg: [seconds], [loudness 0..1] (found with a
+## simple onset detector in Python when the sound was converted).
+const BARRAGE_SHELLS := [
+	[0.98, 1.65, 2.14, 2.60, 3.84, 4.41, 4.78, 5.15, 5.68, 6.30, 7.36, 7.95, 8.66, 9.03, 9.59, 10.05,
+	10.54, 10.98, 11.42, 11.84, 12.24, 12.69, 13.10, 13.73, 14.21, 14.78, 15.24, 15.71, 16.14, 16.53,
+	16.97, 17.44, 18.49, 19.17, 19.57, 19.97, 20.82, 21.41, 22.06, 22.43, 22.88, 23.29, 23.68, 24.18,
+	24.56, 24.94, 25.51],
+	[0.18, 0.27, 0.24, 0.19, 0.14, 0.30, 0.59, 0.35, 0.52, 0.38, 0.41, 0.30, 0.57, 0.40, 0.22, 0.17,
+	0.17, 0.12, 0.16, 0.19, 0.25, 0.19, 0.31, 0.22, 0.28, 0.58, 0.31, 0.16, 0.14, 0.25, 0.93, 0.64,
+	0.40, 0.46, 0.36, 0.98, 0.65, 1.00, 0.89, 0.53, 0.28, 0.32, 0.25, 0.21, 0.14, 0.17, 0.16],
+]
+
+
 func _build_game() -> Node:
 	var g := Node3D.new()
 	g.name = "Game"
@@ -577,6 +590,13 @@ func _build_game() -> Node:
 	])
 	var dusk: Node = _add(g, Node.new(), "Dusk")
 	dusk.set_script(load("res://scripts/game/dusk.gd"))
+	# Artillery barrage before some waves (WaveData.barrage). Recording: "Artillery Barrage" by
+	# Mozfoo (original explosion by Steveygos93), CC-BY 4.0. A shell lands at every bang in it.
+	var arty: Node3D = _add(g, Node3D.new(), "ArtilleryBarrage")
+	arty.set_script(load("res://scripts/game/artillery_barrage.gd"))
+	arty.set("sound", load("res://assets/audio/artillery/barrage.ogg"))
+	arty.set("shell_times", PackedFloat32Array(BARRAGE_SHELLS[0]))
+	arty.set("shell_strengths", PackedFloat32Array(BARRAGE_SHELLS[1]))
 	# Background sounds: each flies over once per battle (a plane: YleArkisto, CC-BY 4.0).
 	var bg: Node = _add(g, Node.new(), "BackgroundSounds")
 	bg.set_script(load("res://scripts/game/background_sounds.gd"))
@@ -983,12 +1003,13 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 
 # ---------------------------------------------------------------- enemies
 ## G1: Easy / Normal / Hard (resources/difficulty/*.tres – tune them in the Inspector).
-## G2: what each wave is made of, per difficulty: [riflemen, officers, machine-gun teams].
+## G2: what each wave is made of, per difficulty: [riflemen, officers, machine-gun teams,
+## artillery barrage first (1/0)]. Barrage waves have an officer (he whistles when it lifts).
 const WAVE_LISTS := {
-	"Easy": [[5, 0, 0], [6, 1, 0], [6, 0, 1], [7, 1, 1], [8, 1, 1], [8, 2, 1]],
-	"Normal": [[6, 0, 0], [7, 1, 0], [7, 0, 1], [8, 1, 1], [9, 1, 1], [9, 2, 1], [10, 1, 2], [10, 2, 2]],
-	"Hard": [[8, 0, 0], [9, 1, 0], [9, 1, 1], [10, 1, 1], [11, 2, 1], [11, 1, 2], [12, 2, 2], [13, 2, 2],
-		[14, 2, 2], [15, 3, 3]],
+	"Easy": [[5, 0, 0, 0], [6, 1, 0, 0], [6, 0, 1, 0], [7, 1, 1, 1], [8, 1, 1, 0], [8, 2, 1, 1]],
+	"Normal": [[6, 0, 0, 0], [7, 1, 0, 0], [7, 0, 1, 0], [8, 1, 1, 1], [9, 1, 1, 0], [9, 2, 1, 1], [10, 1, 2, 0], [10, 2, 2, 1]],
+	"Hard": [[8, 0, 0, 0], [9, 1, 0, 0], [9, 1, 1, 1], [10, 1, 1, 0], [11, 2, 1, 1], [11, 1, 2, 0], [12, 2, 2, 1], [13, 2, 2, 0],
+		[14, 2, 2, 1], [15, 3, 3, 0]],
 }
 
 
@@ -1006,7 +1027,7 @@ func _make_difficulty_data() -> void:
 		r.respawn_time = d[6]
 		var waves: Array[WaveData] = []
 		for w: Array in WAVE_LISTS[d[0]]:
-			waves.append(WaveData.new().make(w[0], w[1], w[2]))
+			waves.append(WaveData.new().make(w[0], w[1], w[2], w[3] == 1))
 		r.waves = waves
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
@@ -1359,6 +1380,16 @@ func _build_hud(theme: Theme) -> Node:
 	sub.offset_right = 400
 	sub.offset_top = -90
 	sub.offset_bottom = -56
+
+	# Artillery: "ARTILLERY! GET DOWN INTO THE TRENCH!" (top centre, read by hud.gd).
+	var arty_l := _label(hud, "ArtilleryWarning", "", 30, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.45, 0.3))
+	arty_l.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	arty_l.offset_left = -450
+	arty_l.offset_right = 450
+	arty_l.offset_top = 128
+	arty_l.offset_bottom = 172
+	arty_l.add_theme_constant_override("outline_size", 6)
+	arty_l.visible = false
 
 	# After each cleared wave: the front report as a TELEGRAM – a sheet of paper near the top,
 	# typewriter letters (FreeMono Bold) typed out one by one by the HUD.

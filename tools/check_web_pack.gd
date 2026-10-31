@@ -32,6 +32,8 @@ func run() -> void:
 		[(load("res://resources/front_reports.tres") as FrontReports).texts.size() == 10, "front reports in the export"],
 		[load("res://assets/fonts/FreeMonoBold.ttf") is Font, "telegram font in the export"],
 		[(load("res://assets/audio/background/plane_flyover_viima.ogg") as AudioStream).get_length() > 35.0, "plane fly-over sound in the export"],
+		[(load("res://assets/audio/artillery/barrage.ogg") as AudioStream).get_length() > 27.0, "artillery barrage sound in the export"],
+		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves[3].barrage, "barrage flags kept in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

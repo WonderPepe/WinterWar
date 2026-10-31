@@ -17,6 +17,7 @@ script = ExtResource("2_itd1v")
 riflemen = 9
 officers = 1
 mg_teams = 1
+barrage = true
 
 [sub_resource type="Resource" id="Resource_ui65m"]
 script = ExtResource("2_itd1v")
@@ -29,6 +30,7 @@ script = ExtResource("2_itd1v")
 riflemen = 11
 officers = 2
 mg_teams = 1
+barrage = true
 
 [sub_resource type="Resource" id="Resource_635u7"]
 script = ExtResource("2_itd1v")
@@ -41,6 +43,7 @@ script = ExtResource("2_itd1v")
 riflemen = 12
 officers = 2
 mg_teams = 2
+barrage = true
 
 [sub_resource type="Resource" id="Resource_i7a6e"]
 script = ExtResource("2_itd1v")
@@ -53,6 +56,7 @@ script = ExtResource("2_itd1v")
 riflemen = 14
 officers = 2
 mg_teams = 2
+barrage = true
 
 [sub_resource type="Resource" id="Resource_hl4xt"]
 script = ExtResource("2_itd1v")

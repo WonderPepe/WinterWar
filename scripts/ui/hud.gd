@@ -54,6 +54,11 @@ var _typed: float = 0.0 # letters of the telegram typed so far (date first, then
 @onready var report_date: Label = $FrontReport/VBox/Date
 @onready var report_text: Label = $FrontReport/VBox/Text
 @onready var type_sound: AudioStreamPlayer = $FrontReport/TypeSound
+@onready var artillery_label: Label = $ArtilleryWarning
+
+var _artillery: ArtilleryBarrage
+var _was_barrage: bool = false
+var _lifted_until: float = 0.0
 
 var _director: MatchDirector
 var _message: String = ""
@@ -78,6 +83,7 @@ func _process(delta: float) -> void:
 	_update_vitals()
 	_update_weapon()
 	_update_waves(delta)
+	_update_artillery()
 	_update_death()
 	if _director and _director.is_over() and not end_screen.visible:
 		end_screen.open(_director, _player, front_reports if Settings.show_front_reports else null)
@@ -217,6 +223,38 @@ func _update_waves(delta: float) -> void:
 	_banner_left = maxf(_banner_left - delta, 0.0)
 	wave_banner.modulate.a = clampf(_banner_left / 0.6, 0.0, 1.0) # fades out in the last 0.6 s
 	banner_sub.modulate.a = wave_banner.modulate.a
+
+
+## Artillery: warning, "stay in the trench" while it lasts, "the barrage lifts" at the end.
+func _update_artillery() -> void:
+	if _artillery == null or not is_instance_valid(_artillery):
+		_artillery = get_tree().get_first_node_in_group("artillery") as ArtilleryBarrage
+		if _artillery == null:
+			artillery_label.visible = false
+			return
+	var now: float = Time.get_ticks_msec() / 1000.0
+	var blink: float = 0.6 + 0.4 * sin(now * 9.0)
+	if _artillery.phase == ArtilleryBarrage.Phase.WARNING:
+		_show_artillery("ARTILLERY! GET DOWN INTO THE TRENCH!", Color(1.0, 0.45, 0.3), blink)
+	elif _artillery.phase == ArtilleryBarrage.Phase.FIRING:
+		if ArtilleryBarrage.is_covered(_player) or _player.is_dead:
+			_show_artillery("Artillery barrage – stay down", Color(1.0, 0.85, 0.7), 0.75)
+		else:
+			_show_artillery("GET INTO THE TRENCH!", Color(1.0, 0.35, 0.25), blink)
+	elif _was_barrage:
+		_lifted_until = now + 3.0
+	elif now < _lifted_until:
+		_show_artillery("The barrage lifts", Color(0.92, 0.95, 1.0), clampf(_lifted_until - now, 0.0, 1.0))
+	else:
+		artillery_label.visible = false
+	_was_barrage = _artillery.is_active()
+
+
+func _show_artillery(text: String, color: Color, alpha: float) -> void:
+	artillery_label.visible = not end_screen.visible
+	artillery_label.text = text
+	artillery_label.add_theme_color_override("font_color", color)
+	artillery_label.modulate.a = alpha
 
 
 ## A wave has been cleared: show the next front report (in order: wave 1 → the first one).

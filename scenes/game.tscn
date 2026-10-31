@@ -1,31 +1,33 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_e1j6l"]
-[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_pl11u"]
-[ext_resource type="Script" path="res://scripts/game/shader_warmup.gd" id="3_bhx41"]
-[ext_resource type="Script" path="res://scripts/game/ambience.gd" id="4_qnb83"]
-[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="5_sww3w"]
-[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="6_suyxu"]
-[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="7_sgl2t"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="8_qouja"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_officer.tscn" id="9_wljb1"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_mg_gunner.tscn" id="10_v2yb1"]
-[ext_resource type="Script" path="res://scripts/game/match_director.gd" id="11_js0lu"]
-[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="12_gxtfn"]
-[ext_resource type="Resource" path="res://resources/difficulty/easy.tres" id="13_twgab"]
-[ext_resource type="Resource" path="res://resources/difficulty/normal.tres" id="14_02fa5"]
-[ext_resource type="Resource" path="res://resources/difficulty/hard.tres" id="15_nepv3"]
-[ext_resource type="Script" path="res://scripts/game/dusk.gd" id="16_7025r"]
-[ext_resource type="Script" path="res://scripts/game/background_sounds.gd" id="17_m4url"]
-[ext_resource type="AudioStream" path="res://assets/audio/background/plane_flyover_viima.ogg" id="18_8ool0"]
-[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="19_pr1ej"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="20_05nbr"]
-[ext_resource type="Resource" path="res://resources/front_reports.tres" id="21_0sl42"]
-[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="22_oaba0"]
-[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="23_458eo"]
-[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="24_h3rex"]
+[ext_resource type="Script" path="res://scripts/game/game.gd" id="1_bhx41"]
+[ext_resource type="PackedScene" path="res://levels/test_level.tscn" id="2_qnb83"]
+[ext_resource type="Script" path="res://scripts/game/shader_warmup.gd" id="3_sww3w"]
+[ext_resource type="Script" path="res://scripts/game/ambience.gd" id="4_suyxu"]
+[ext_resource type="Script" path="res://scripts/game/quality_applier.gd" id="5_sgl2t"]
+[ext_resource type="Script" path="res://scripts/weapons/impact_effects.gd" id="6_qouja"]
+[ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="7_wljb1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="8_v2yb1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_officer.tscn" id="9_js0lu"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/soviet_mg_gunner.tscn" id="10_gxtfn"]
+[ext_resource type="Script" path="res://scripts/game/match_director.gd" id="11_twgab"]
+[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="12_02fa5"]
+[ext_resource type="Resource" path="res://resources/difficulty/easy.tres" id="13_nepv3"]
+[ext_resource type="Resource" path="res://resources/difficulty/normal.tres" id="14_7025r"]
+[ext_resource type="Resource" path="res://resources/difficulty/hard.tres" id="15_m4url"]
+[ext_resource type="Script" path="res://scripts/game/dusk.gd" id="16_8ool0"]
+[ext_resource type="Script" path="res://scripts/game/artillery_barrage.gd" id="17_pr1ej"]
+[ext_resource type="AudioStream" path="res://assets/audio/artillery/barrage.ogg" id="18_05nbr"]
+[ext_resource type="Script" path="res://scripts/game/background_sounds.gd" id="19_0sl42"]
+[ext_resource type="AudioStream" path="res://assets/audio/background/plane_flyover_viima.ogg" id="20_oaba0"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="21_458eo"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="22_h3rex"]
+[ext_resource type="Resource" path="res://resources/front_reports.tres" id="23_fedci"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="24_8qswn"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="25_rm0al"]
+[ext_resource type="Script" path="res://scripts/game/debug_overlay.gd" id="26_i4re6"]
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fedci"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pf7vy"]
 properties/0/path = NodePath(".:wave_number")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -42,7 +44,7 @@ properties/4/path = NodePath(".:wave_mg_teams")
 properties/4/spawn = true
 properties/4/replication_mode = 2
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_8qswn"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_o8ni1"]
 properties/0/path = NodePath(".:difficulty")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -65,73 +67,79 @@ properties/6/path = NodePath(".:match_time")
 properties/6/spawn = true
 properties/6/replication_mode = 2
 
-[node name="Game" type="Node3D" unique_id=444917349 node_paths=PackedStringArray("players_root")]
-script = ExtResource("1_e1j6l")
+[node name="Game" type="Node3D" unique_id=1251505909 node_paths=PackedStringArray("players_root")]
+script = ExtResource("1_bhx41")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=298248617 instance=ExtResource("2_pl11u")]
+[node name="Level" type="Node3D" parent="." unique_id=765049598 instance=ExtResource("2_qnb83")]
 
-[node name="Players" type="Node3D" parent="." unique_id=771267466]
+[node name="Players" type="Node3D" parent="." unique_id=1449780728]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1787330842]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=522728847]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1459215276]
-script = ExtResource("3_bhx41")
+[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1892128616]
+script = ExtResource("3_sww3w")
 
-[node name="Ambience" type="Node" parent="." unique_id=1552633498]
-script = ExtResource("4_qnb83")
+[node name="Ambience" type="Node" parent="." unique_id=1588885643]
+script = ExtResource("4_suyxu")
 
-[node name="QualityApplier" type="Node" parent="." unique_id=1068424947]
-script = ExtResource("5_sww3w")
+[node name="QualityApplier" type="Node" parent="." unique_id=1824918171]
+script = ExtResource("5_sgl2t")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=1097809708]
-script = ExtResource("6_suyxu")
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=376047780]
+script = ExtResource("6_qouja")
 
-[node name="Enemies" type="Node3D" parent="." unique_id=1745850373]
+[node name="Enemies" type="Node3D" parent="." unique_id=617432372]
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1080528369]
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1007558533]
 _spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn", "res://scenes/enemies/soviet_officer.tscn", "res://scenes/enemies/soviet_mg_gunner.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="WaveSpawner" type="Node" parent="." unique_id=1030514113 node_paths=PackedStringArray("enemies_root")]
-script = ExtResource("7_sgl2t")
-enemy_scene = ExtResource("8_qouja")
-officer_scene = ExtResource("9_wljb1")
-mg_gunner_scene = ExtResource("10_v2yb1")
+[node name="WaveSpawner" type="Node" parent="." unique_id=777825536 node_paths=PackedStringArray("enemies_root")]
+script = ExtResource("7_wljb1")
+enemy_scene = ExtResource("8_v2yb1")
+officer_scene = ExtResource("9_js0lu")
+mg_gunner_scene = ExtResource("10_gxtfn")
 enemies_root = NodePath("../Enemies")
 
-[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=843470826]
-replication_config = SubResource("SceneReplicationConfig_fedci")
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=493296886]
+replication_config = SubResource("SceneReplicationConfig_pf7vy")
 
-[node name="MatchDirector" type="Node" parent="." unique_id=509279431]
-script = ExtResource("11_js0lu")
-difficulties = Array[ExtResource("12_gxtfn")]([ExtResource("13_twgab"), ExtResource("14_02fa5"), ExtResource("15_nepv3")])
+[node name="MatchDirector" type="Node" parent="." unique_id=2133966098]
+script = ExtResource("11_twgab")
+difficulties = Array[ExtResource("12_02fa5")]([ExtResource("13_nepv3"), ExtResource("14_7025r"), ExtResource("15_m4url")])
 
-[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=148121942]
+[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=778110422]
 delta_interval = 0.25
-replication_config = SubResource("SceneReplicationConfig_8qswn")
+replication_config = SubResource("SceneReplicationConfig_o8ni1")
 
-[node name="Dusk" type="Node" parent="." unique_id=1294997645]
-script = ExtResource("16_7025r")
+[node name="Dusk" type="Node" parent="." unique_id=1021602813]
+script = ExtResource("16_8ool0")
 
-[node name="BackgroundSounds" type="Node" parent="." unique_id=1413886705]
-script = ExtResource("17_m4url")
-sounds = Array[AudioStream]([ExtResource("18_8ool0")])
+[node name="ArtilleryBarrage" type="Node3D" parent="." unique_id=656783892]
+script = ExtResource("17_pr1ej")
+sound = ExtResource("18_05nbr")
+shell_times = PackedFloat32Array(0.98, 1.65, 2.14, 2.6, 3.84, 4.41, 4.78, 5.15, 5.68, 6.3, 7.36, 7.95, 8.66, 9.03, 9.59, 10.05, 10.54, 10.98, 11.42, 11.84, 12.24, 12.69, 13.1, 13.73, 14.21, 14.78, 15.24, 15.71, 16.14, 16.53, 16.97, 17.44, 18.49, 19.17, 19.57, 19.97, 20.82, 21.41, 22.06, 22.43, 22.88, 23.29, 23.68, 24.18, 24.56, 24.94, 25.51)
+shell_strengths = PackedFloat32Array(0.18, 0.27, 0.24, 0.19, 0.14, 0.3, 0.59, 0.35, 0.52, 0.38, 0.41, 0.3, 0.57, 0.4, 0.22, 0.17, 0.17, 0.12, 0.16, 0.19, 0.25, 0.19, 0.31, 0.22, 0.28, 0.58, 0.31, 0.16, 0.14, 0.25, 0.93, 0.64, 0.4, 0.46, 0.36, 0.98, 0.65, 1, 0.89, 0.53, 0.28, 0.32, 0.25, 0.21, 0.14, 0.17, 0.16)
+
+[node name="BackgroundSounds" type="Node" parent="." unique_id=339525079]
+script = ExtResource("19_0sl42")
+sounds = Array[AudioStream]([ExtResource("20_oaba0")])
 overhead_at = Array[float]([10.9])
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=414845717 instance=ExtResource("19_pr1ej")]
-script = ExtResource("20_05nbr")
-front_reports = ExtResource("21_0sl42")
+[node name="HUD" type="CanvasLayer" parent="." unique_id=98779071 instance=ExtResource("21_458eo")]
+script = ExtResource("22_h3rex")
+front_reports = ExtResource("23_fedci")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=570503796 instance=ExtResource("22_oaba0")]
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1041487625 instance=ExtResource("24_8qswn")]
 layer = 20
-script = ExtResource("23_458eo")
+script = ExtResource("25_rm0al")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=2093216439]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1508804218]
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=972807907]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=621921577]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0
@@ -139,4 +147,4 @@ offset_bottom = 10.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-script = ExtResource("24_h3rex")
+script = ExtResource("26_i4re6")

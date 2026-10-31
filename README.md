@@ -145,6 +145,19 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - Numbers: `resources/enemies/soviet_officer.tres`, `soviet_mg_gunner.tres` (and the rifleman's
   "Suppression" group); the weapons' `suppression` value in `resources/weapons/*.tres`.
 
+## Artillery barrage
+- Before some waves (Normal: 4, 6, 8 · Easy: 4, 6 · Hard: 3, 5, 7, 9) the Soviet artillery
+  shells the line: "ARTILLERY! GET DOWN INTO THE TRENCH!", then ~28 s of shelling.
+- **In the trench or the bunker you are safe.** Out in the open a shell within ~12 m hurts you,
+  within ~3.5 m kills you – and many shells are aimed at anyone standing in the open.
+- A shell lands at every bang you hear in the recording (louder bang = closer): flash, earth and
+  snow thrown up, smoke, a dark mark in the snow (fades afterwards), and the ground shakes.
+- Meanwhile that wave's Soviets hurry forward behind the shells, but stop about 50 m in front of
+  the trench. When the barrage lifts, the officers blow their whistles and the attack goes on.
+- Which waves: `barrage` in the wave lists (`resources/difficulty/*.tres`). Numbers (how close
+  the Soviets may come, damage, …) on `Game/ArtilleryBarrage`.
+- Sound: "Artillery Barrage" by Mozfoo (explosion by Steveygos93), CC-BY 4.0 – see Credits.
+
 ## Background sounds
 - Once per battle, at a random moment in the middle of a random wave (not the first or the
   last), an old propeller plane flies over you – the sound comes from one direction, passes

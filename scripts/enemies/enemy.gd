@@ -22,6 +22,9 @@ const TRENCH_FRONT_Z: float = 48.0
 
 ## Set by the MatchDirector from the difficulty: < 1 = better aim.
 static var spread_multiplier: float = 1.0
+## Host: while an artillery barrage falls on the trench, nobody comes closer than this z
+## (INF = no barrage). They hurry up to it, wait there, and go on when it lifts.
+static var barrage_hold_z: float = INF
 
 static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
 
@@ -91,6 +94,7 @@ var _mg_next_burst: float = 0.0
 var _prone_since: float = 0.0
 var _prone_patience: float = 8.0
 var _dash_until: float = -100.0     # up and running for a few seconds despite the fire
+var _hold_offset: float = 0.0       # each soldier waits for the barrage at a slightly different line
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
@@ -111,6 +115,7 @@ func _ready() -> void:
 	_idle_time = _rng.randf_range(1.0, 3.0)
 	_assault_after = _rng.randf_range(data.assault_hold_min, data.assault_hold_max)
 	_whistle_timer = _rng.randf_range(0.0, 3.0)
+	_hold_offset = _rng.randf_range(-8.0, 0.0)
 	mg_ammo = data.mg_magazine
 	_setup_sounds()
 	_update_visuals()
@@ -470,6 +475,9 @@ func _hold_at_goal(delta: float) -> void:
 	if data.kind == EnemyData.Kind.MG_GUNNER:
 		_deploy() # the gun team never rushes the trench: it covers the others
 		return
+	if barrage_hold_z < INF:
+		is_kneeling = true # waiting for the barrage to lift – no rush now
+		return
 	if is_instance_valid(mg_gunner):
 		if mg_gunner._deployed and not _deployed:
 			_deployed = true # lie down next to the gun
@@ -727,6 +735,12 @@ func _order_assault() -> void:
 	_begin_assault()
 
 
+## Host: the barrage has lifted – the officer whistles and his men get up and go.
+func signal_advance() -> void:
+	_blow_whistle()
+	_rally_nearby()
+
+
 func _blow_whistle() -> void:
 	_whistle_timer = _rng.randf_range(data.whistle_cooldown_min, data.whistle_cooldown_max)
 	whistle_count += 1
@@ -848,6 +862,10 @@ func _move_to(destination: Vector3, speed: float) -> bool:
 	if is_prone:
 		_stop() # lying flat: nobody walks
 		return global_position.distance_to(destination) < 3.0 and nav_agent.is_navigation_finished()
+	if barrage_hold_z < INF and not is_in_trench():
+		# Our own guns are shelling the trench: hurry forward behind the shells, but stop short.
+		destination.z = minf(destination.z, barrage_hold_z + _hold_offset)
+		speed = maxf(speed, data.hurry_speed)
 	if nav_agent.target_position.distance_to(destination) > 0.5:
 		nav_agent.target_position = destination
 	if nav_agent.is_navigation_finished():
