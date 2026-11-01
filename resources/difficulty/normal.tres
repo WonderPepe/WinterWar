@@ -49,6 +49,19 @@ officers = 2
 mg_teams = 2
 barrage = true
 
+[sub_resource type="Resource" id="Resource_h38v7"]
+script = ExtResource("2_ckvit")
+riflemen = 11
+officers = 2
+mg_teams = 2
+
+[sub_resource type="Resource" id="Resource_0i645"]
+script = ExtResource("2_ckvit")
+riflemen = 12
+officers = 2
+mg_teams = 2
+barrage = true
+
 [resource]
 script = ExtResource("1_e8dl2")
-waves = Array[ExtResource("2_ckvit")]([SubResource("Resource_f8wgr"), SubResource("Resource_hyec1"), SubResource("Resource_mbwmd"), SubResource("Resource_purtg"), SubResource("Resource_k8iuy"), SubResource("Resource_jnhxb"), SubResource("Resource_3yum6"), SubResource("Resource_sfgca")])
+waves = Array[ExtResource("2_ckvit")]([SubResource("Resource_f8wgr"), SubResource("Resource_hyec1"), SubResource("Resource_mbwmd"), SubResource("Resource_purtg"), SubResource("Resource_k8iuy"), SubResource("Resource_jnhxb"), SubResource("Resource_3yum6"), SubResource("Resource_sfgca"), SubResource("Resource_h38v7"), SubResource("Resource_0i645")])

@@ -45,6 +45,7 @@ func _ready() -> void:
 	spawner.wave_list = d.waves
 	spawner.max_waves = d.waves_to_win
 	Enemy.spread_multiplier = d.enemy_spread_multiplier
+	Enemy.damage_multiplier = d.enemy_damage_multiplier
 	var game := get_parent() as Game
 	if game:
 		game.respawn_time = d.respawn_time

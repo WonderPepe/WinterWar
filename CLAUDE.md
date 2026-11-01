@@ -36,15 +36,15 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   - Commit on the owner's computer (repo-local git identity `WonderPepe`); the owner pushes with
     GitHub Desktop. Releases: see RELEASES.md (only when the owner asks for one).
   - Fastest way to get the project into the cloud: `git bundle create "Claude outputs/repo.bundle"
-    --all` on the owner's computer → stage it → `git clone` it in the cloud. Godot 4.7.2 + export
-    templates download from github.com/godotengine/godot/releases (4.7.2-stable). freesound.org
-    is NOT reachable from the cloud workspace – the owner downloads sounds into `assets_source/`.
+	--all` on the owner's computer → stage it → `git clone` it in the cloud. Godot 4.7.2 + export
+	templates download from github.com/godotengine/godot/releases (4.7.2-stable). freesound.org
+	is NOT reachable from the cloud workspace – the owner downloads sounds into `assets_source/`.
   - Git in the owner's folder needs delete permission (git removes its own .lock / tmp_obj files):
     ask for it once per chat (device_request_delete_permission) before committing, otherwise a
     `.git/HEAD.lock` is left behind and the next git command fails. `git fsck` there reports
     "unable to mmap … Invalid argument" – a quirk of the folder mount, the objects are fine.
   - Commits made in the cloud copy are scratch only (never pushed). A stop hook may ask to re-author
-    them as "Claude" – don't: the repo's commits use the owner's pseudonym `WonderPepe` (owner's
+	them as "Claude" – don't: the repo's commits use the owner's pseudonym `WonderPepe` (owner's
     privacy rule above).
   - Clean up your own temporary files in `Claude outputs/` (bundles, staged copies) at the end.
 
@@ -81,7 +81,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was
   skipped for now – still open, see development ideas.
 - [x] Front reports: after each cleared wave the owner's Finnish front report for that day
-  (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for Hard's waves 9–10; in order,
+  (21.12.1939 … 28.12.1939, then 31.12.1939 and 01.01.1940 for waves 9–10; in order,
   wave n → report n) – now shown on the day screen (see below); the victory screen shows the
   report of the last day held. Texts are the owner's own – never reword them.
 - [x] v0.1.3 aiming fixes (players: "ADS ends for a moment and comes back"), merged by hand later:
@@ -101,6 +101,13 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Radio static: recommended CC0 Freesound 199438 "Radio Fuzz for Old Radio Broadcast"
   (martinimeniscus) – the cloud workspace can't reach freesound.org, so the owner downloads it
   into `assets_source/`; then trim/convert it to `assets/audio/recorded/radio_static.ogg`.
+
+- [x] 10 waves on every difficulty (owner): the number of waves no longer depends on difficulty.
+  Easy = Normal's wave list with fewer RIFLEMEN only (officers, MG teams and barrages the same –
+  owner's rule: never change officers/MGs for Easy) and `DifficultyData.enemy_damage_multiplier`
+  0.6 (→ static `Enemy.damage_multiplier`, soldiers' bullets only; artillery unchanged – owner).
+  Normal got waves 9–10 ([11,2,2,0], [12,2,2,1]); Hard unchanged. test_artillery's "attack goes
+  on" check is a little flaky (failed once, then passed 4×; also on the old code).
 
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
@@ -311,7 +318,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `MatchDirector` (Game/MatchDirector, group `match_director`, synced by MatchSync with
   `delta_interval = 0.25`): host applies `DifficultyData` (`Settings.difficulty`, chosen in the
   main menu) to WaveSpawner (`base_enemies`, `enemies_added_per_wave`, `max_waves`),
-  `Game.respawn_time` and `Enemy.spread_multiplier` (static). Counts living enemies with
+  `Game.respawn_time`, `Enemy.spread_multiplier` and `Enemy.damage_multiplier` (static). Counts living enemies with
   `is_in_trench()` (y < -0.85 and z > 48) 4×/s → `in_trench`; ≥ `trench_limit` → DEFEAT.
   `wave_cleared(n)` → heal all players, n ≥ `waves_to_win` → VICTORY. `end_match()` stops the
   spawner (`active = false`) and `freeze()`s enemies. HUD opens `EndScreen` when `is_over()`;

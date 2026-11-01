@@ -72,7 +72,7 @@ func run() -> void:
 	Settings.difficulty = 1
 	await start_game()
 	check(director != null and director.get_difficulty_name() == "Normal", "match uses the chosen difficulty (Normal)")
-	check(director.waves_to_win == 8 and director.trench_limit == 4 and spawner.max_waves == 8, "Normal: 8 waves to hold, line breaks at 4")
+	check(director.waves_to_win == 10 and director.trench_limit == 4 and spawner.max_waves == 10, "Normal: 10 waves to hold, line breaks at 4")
 
 	# --- Ammo crate ---
 	var crate := get_tree().get_first_node_in_group("ammo_crates") as AmmoCrate
@@ -109,8 +109,8 @@ func run() -> void:
 	director._on_wave_cleared(3)
 	await seconds(1.0)
 	check(p.health == 100, "everyone patched up when a wave is cleared")
-	check(hud.wave_label.text == "WAVE 3 / 8", "HUD shows the wave out of 8 ('%s')" % hud.wave_label.text)
-	check(dusk.progress > 0.3 and sun.light_energy < energy_before - 0.1, "evening comes: the sun sinks (energy %.2f → %.2f)" % [energy_before, sun.light_energy])
+	check(hud.wave_label.text == "WAVE 3 / 10", "HUD shows the wave out of 10 ('%s')" % hud.wave_label.text)
+	check(dusk.progress > 0.25 and sun.light_energy < energy_before - 0.1, "evening comes: the sun sinks (energy %.2f → %.2f)" % [energy_before, sun.light_energy])
 
 	# --- Assault: a soldier at his jump-off point rushes the trench and jumps in ---
 	p.god_mode = true
@@ -153,12 +153,12 @@ func run() -> void:
 
 	# --- Victory: clear the last wave ---
 	await start_game()
-	spawner.wave_number = 8
-	director._on_wave_cleared(8)
+	spawner.wave_number = 10
+	director._on_wave_cleared(10)
 	await frames(3)
 	check(director.result == MatchDirector.Result.VICTORY, "last wave cleared: victory")
 	check(hud.end_screen.visible and hud.end_screen.title.text == "THE LINE HELD", "end screen: victory with statistics")
-	check(hud.end_screen.stats.text.contains("Waves held: 8 / 8"), "statistics show waves held")
+	check(hud.end_screen.stats.text.contains("Waves held: 10 / 10"), "statistics show waves held")
 
 	# --- Hard ---
 	get_tree().paused = false
@@ -166,8 +166,17 @@ func run() -> void:
 	await start_game()
 	check(director.waves_to_win == 10 and director.trench_limit == 3 and (game as Game).respawn_time == 10.0 \
 		and Enemy.spread_multiplier < 1.0, "Hard: 10 waves, breaks at 3, slower respawn, better enemy aim")
+	check(is_equal_approx(Enemy.damage_multiplier, 1.0), "Hard: full enemy damage")
+
+	# --- Easy: also 10 waves, softer bullets ---
+	get_tree().paused = false
+	Settings.difficulty = 0
+	await start_game()
+	check(director.waves_to_win == 10 and spawner.max_waves == 10, "Easy: 10 waves too")
+	check(is_equal_approx(Enemy.damage_multiplier, 0.6), "Easy: enemy bullets do 0.6× damage")
 	Settings.difficulty = 1
 	Enemy.spread_multiplier = 1.0
+	Enemy.damage_multiplier = 1.0
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

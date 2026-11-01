@@ -284,6 +284,20 @@ func run() -> void:
 	for d in ["easy", "normal", "hard"]:
 		var dd: DifficultyData = load("res://resources/difficulty/%s.tres" % d)
 		check(dd.waves.size() == dd.waves_to_win, "%s: %d waves listed" % [dd.display_name, dd.waves.size()])
+		check(dd.waves_to_win == 10, "%s: 10 waves" % dd.display_name)
+	# Easy = Normal with fewer riflemen; officers, MG teams and barrages unchanged (owner).
+	var easy: DifficultyData = load("res://resources/difficulty/easy.tres")
+	var normal: DifficultyData = load("res://resources/difficulty/normal.tres")
+	var same_rest := true
+	var fewer_riflemen := true
+	for i in normal.waves.size():
+		var a: WaveData = easy.waves[i]
+		var b: WaveData = normal.waves[i]
+		same_rest = same_rest and a.officers == b.officers and a.mg_teams == b.mg_teams and a.barrage == b.barrage
+		fewer_riflemen = fewer_riflemen and a.riflemen < b.riflemen
+	check(same_rest, "Easy: same officers, MG teams and barrages as Normal")
+	check(fewer_riflemen, "Easy: fewer riflemen than Normal in every wave")
+	check(easy.enemy_damage_multiplier < 1.0 and is_equal_approx(normal.enemy_damage_multiplier, 1.0), "Easy: enemy damage lowered")
 	# Spawn a real wave 4 (riflemen + officer + MG team) and check what comes out.
 	for e in get_tree().get_nodes_in_group("enemies"):
 		e.queue_free()
@@ -370,8 +384,8 @@ func run() -> void:
 	director.waves_cleared = director.waves_to_win
 	director.end_match(MatchDirector.Result.VICTORY)
 	await seconds(0.5)
-	check(not day.is_open and hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("28.12.1939"),
-			"victory on Normal: no day screen, the end screen shows the report of 28.12.1939")
+	check(not day.is_open and hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("01.01.1940"),
+			"victory on Normal: no day screen, the end screen shows the report of 01.01.1940")
 	get_tree().paused = false
 	var menu: Control = load("res://ui/settings_menu.tscn").instantiate()
 	add_child(menu)

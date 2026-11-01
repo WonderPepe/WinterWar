@@ -67,7 +67,6 @@ mg_teams = 3
 [resource]
 script = ExtResource("1_n06nw")
 display_name = "Hard"
-waves_to_win = 10
 trench_limit = 3
 base_enemies = 8
 waves = Array[ExtResource("2_itd1v")]([SubResource("Resource_whkac"), SubResource("Resource_0wnbe"), SubResource("Resource_y3fim"), SubResource("Resource_ui65m"), SubResource("Resource_yg04g"), SubResource("Resource_635u7"), SubResource("Resource_13fyy"), SubResource("Resource_i7a6e"), SubResource("Resource_q1018"), SubResource("Resource_hl4xt")])

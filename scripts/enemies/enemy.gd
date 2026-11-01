@@ -22,6 +22,8 @@ const TRENCH_FRONT_Z: float = 48.0
 
 ## Set by the MatchDirector from the difficulty: < 1 = better aim.
 static var spread_multiplier: float = 1.0
+## Difficulty: soldiers' bullet damage × this (host, set by the MatchDirector).
+static var damage_multiplier: float = 1.0
 ## Host: while an artillery barrage falls on the trench, nobody comes closer than this z
 ## (INF = no barrage). They hurry up to it, wait there, and go on when it lifts.
 static var barrage_hold_z: float = INF
@@ -378,7 +380,7 @@ func _shoot() -> void:
 		hit_normal = hit.normal
 		if hit.collider is Player:
 			hit_player = hit.collider
-			hit_player.take_damage(data.damage, -1, hit.position, hit.normal)
+			hit_player.take_damage(data.damage * damage_multiplier, -1, hit.position, hit.normal)
 			hit_player.notify_hurt.rpc_id(hit_player.get_peer_id(), origin) # where it came from
 		else:
 			surface = ImpactEffects.surface_of(hit.collider, hit.normal)

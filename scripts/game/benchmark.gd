@@ -56,6 +56,7 @@ func _ready() -> void:
 	if director:
 		director.set_process(false)
 	Enemy.spread_multiplier = 1.0
+	Enemy.damage_multiplier = 1.0
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	waves.max_waves = 0
 	waves.wave_list = [] # G2: riflemen only, so results stay comparable with earlier versions

@@ -1010,11 +1010,14 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 
 # ---------------------------------------------------------------- enemies
 ## G1: Easy / Normal / Hard (resources/difficulty/*.tres – tune them in the Inspector).
-## G2: what each wave is made of, per difficulty: [riflemen, officers, machine-gun teams,
-## artillery barrage first (1/0)]. Barrage waves have an officer (he whistles when it lifts).
+## Every difficulty has 10 waves (owner). What each wave is made of: [riflemen, officers,
+## machine-gun teams, artillery barrage first (1/0)]. Barrage waves have an officer (he whistles
+## when it lifts). Easy = Normal with fewer riflemen; officers, MG teams and barrages the same.
 const WAVE_LISTS := {
-	"Easy": [[5, 0, 0, 0], [6, 1, 0, 0], [6, 0, 1, 0], [7, 1, 1, 1], [8, 1, 1, 0], [8, 2, 1, 1]],
-	"Normal": [[6, 0, 0, 0], [7, 1, 0, 0], [7, 0, 1, 0], [8, 1, 1, 1], [9, 1, 1, 0], [9, 2, 1, 1], [10, 1, 2, 0], [10, 2, 2, 1]],
+	"Easy": [[4, 0, 0, 0], [4, 1, 0, 0], [4, 0, 1, 0], [5, 1, 1, 1], [5, 1, 1, 0], [5, 2, 1, 1], [6, 1, 2, 0], [6, 2, 2, 1],
+		[7, 2, 2, 0], [7, 2, 2, 1]],
+	"Normal": [[6, 0, 0, 0], [7, 1, 0, 0], [7, 0, 1, 0], [8, 1, 1, 1], [9, 1, 1, 0], [9, 2, 1, 1], [10, 1, 2, 0], [10, 2, 2, 1],
+		[11, 2, 2, 0], [12, 2, 2, 1]],
 	"Hard": [[8, 0, 0, 0], [9, 1, 0, 0], [9, 1, 1, 1], [10, 1, 1, 0], [11, 2, 1, 1], [11, 1, 2, 0], [12, 2, 2, 1], [13, 2, 2, 0],
 		[14, 2, 2, 1], [15, 3, 3, 0]],
 }
@@ -1022,8 +1025,10 @@ const WAVE_LISTS := {
 
 func _make_difficulty_data() -> void:
 	DirAccess.make_dir_recursive_absolute("res://resources/difficulty")
-	# name, waves to win, trench limit, wave 1 size, added per wave, enemy spread ×, respawn s
-	for d in [["Easy", 6, 6, 5, 1, 1.4, 5.0], ["Normal", 8, 4, 6, 2, 1.0, 5.0], ["Hard", 10, 3, 8, 2, 0.75, 10.0]]:
+	# name, waves to win, trench limit, wave 1 size, added per wave, enemy spread ×, respawn s,
+	# enemy damage ×
+	for d in [["Easy", 10, 6, 4, 1, 1.4, 5.0, 0.6], ["Normal", 10, 4, 6, 2, 1.0, 5.0, 1.0],
+			["Hard", 10, 3, 8, 2, 0.75, 10.0, 1.0]]:
 		var r := DifficultyData.new()
 		r.display_name = d[0]
 		r.waves_to_win = d[1]
@@ -1032,6 +1037,7 @@ func _make_difficulty_data() -> void:
 		r.enemies_added_per_wave = d[4]
 		r.enemy_spread_multiplier = d[5]
 		r.respawn_time = d[6]
+		r.enemy_damage_multiplier = d[7]
 		var waves: Array[WaveData] = []
 		for w: Array in WAVE_LISTS[d[0]]:
 			waves.append(WaveData.new().make(w[0], w[1], w[2], w[3] == 1))

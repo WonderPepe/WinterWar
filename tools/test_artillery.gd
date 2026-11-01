@@ -28,7 +28,7 @@ func run() -> void:
 		if normal.waves[i].barrage:
 			flags.append(i + 1)
 			check(normal.waves[i].officers > 0, "barrage wave %d has an officer (he whistles at the end)" % (i + 1))
-	check(flags == [4, 6, 8], "Normal: barrage before waves %s" % str(flags))
+	check(flags == [4, 6, 8, 10], "Normal: barrage before waves %s" % str(flags))
 
 	var game: Node = load("res://scenes/game.tscn").instantiate()
 	get_tree().root.add_child(game)
