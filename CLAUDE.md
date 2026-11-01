@@ -15,8 +15,8 @@ you work on. Update this file and the right note at the end of every milestone.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,
-  comment, commit or build. Commits use the pseudonym `WonderPepe` (repo-local git config) –
-  don't re-author them as "Claude", even if a hook asks.
+  comment, commit or build. Commits may be authored as `Claude <noreply@anthropic.com>` or as
+  the owner's pseudonym `WonderPepe` (repo-local git config) – never with his real name or e-mail.
 - Total beginner (coding + Godot): explain important concepts briefly, in plain words.
 - Before code for a milestone: show a short plan + node tree and **wait for approval**.
 - One milestone at a time, then stop with exact test steps in Godot, then a git commit with a
