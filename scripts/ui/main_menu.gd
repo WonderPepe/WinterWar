@@ -17,6 +17,7 @@ static var start_pressed_msec: int = 0
 @onready var credits_button: Button = $Center/VBox/CreditsButton
 @onready var credits: Control = $Credits
 @onready var credits_back: Button = $Credits/Panel/VBox/BackButton
+@onready var credits_scroll: ScrollContainer = $Credits/Panel/VBox/Scroll
 @onready var menu_box: Control = $Center
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 @onready var difficulty_option: OptionButton = $Center/VBox/DifficultyRow/DifficultyOption
@@ -49,11 +50,9 @@ func _ready() -> void:
 	credits_button.pressed.connect(func() -> void:
 		menu_box.visible = false
 		credits.visible = true
+		credits_scroll.scroll_vertical = 0 # start at the top
 		credits_back.grab_focus())
-	credits_back.pressed.connect(func() -> void:
-		credits.visible = false
-		menu_box.visible = true
-		credits_button.grab_focus())
+	credits_back.pressed.connect(_close_credits)
 	quit_button.pressed.connect(get_tree().quit)
 	# Test mode: start the battle at any wave. Only when run from the Godot editor.
 	test_button.visible = OS.has_feature("editor")
@@ -93,3 +92,16 @@ func _on_benchmark() -> void:
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), BENCHMARK_SCENE, false) # the benchmark runs on its own
+
+
+func _close_credits() -> void:
+	credits.visible = false
+	menu_box.visible = true
+	credits_button.grab_focus()
+
+
+## Esc (ui_cancel) closes the credits too.
+func _unhandled_input(event: InputEvent) -> void:
+	if credits.visible and event.is_action_pressed("ui_cancel"):
+		_close_credits()
+		get_viewport().set_input_as_handled()

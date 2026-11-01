@@ -512,7 +512,12 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Text" type="Label" parent="Credits/Panel/VBox" unique_id=1414598176]
+[node name="Scroll" type="ScrollContainer" parent="Credits/Panel/VBox" unique_id=1414598177]
+custom_minimum_size = Vector2(790, 540)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Text" type="Label" parent="Credits/Panel/VBox/Scroll" unique_id=1414598176]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15

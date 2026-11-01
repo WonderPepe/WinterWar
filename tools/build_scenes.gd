@@ -1944,7 +1944,11 @@ func _build_main_menu(theme: Theme) -> Node:
 	var cvb: VBoxContainer = _add(panel, VBoxContainer.new(), "VBox")
 	cvb.add_theme_constant_override("separation", 14)
 	var credits_text: String = FileAccess.get_file_as_string("res://CREDITS.md").replace("# ", "").replace("#", "")
-	var cl := _label(cvb, "Text", credits_text.strip_edges(), 15, HORIZONTAL_ALIGNMENT_LEFT, Color(0.92, 0.94, 0.97))
+	# The list is taller than the screen: it scrolls (mouse wheel / scroll bar), Back stays visible.
+	var scroll: ScrollContainer = _add(cvb, ScrollContainer.new(), "Scroll")
+	scroll.custom_minimum_size = Vector2(790, 540)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var cl := _label(scroll, "Text", credits_text.strip_edges(), 15, HORIZONTAL_ALIGNMENT_LEFT, Color(0.92, 0.94, 0.97))
 	cl.custom_minimum_size = Vector2(760, 0)
 	cl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var back: Button = _add(cvb, Button.new(), "BackButton")
