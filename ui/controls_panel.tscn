@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://ui/winter_theme.tres" id="1_q5nxy"]
+[ext_resource type="Script" path="res://scripts/ui/controls_panel.gd" id="2_ogjs0"]
+
+[node name="ControlsPanel" type="Control" unique_id=914446769]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("1_q5nxy")
+script = ExtResource("2_ogjs0")
+
+[node name="Center" type="CenterContainer" parent="." unique_id=640051470]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=1777815773]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel" unique_id=391362163]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/VBox" unique_id=941123370]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 6
+text = "CONTROLS"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Center/Panel/VBox" unique_id=646766617]
+custom_minimum_size = Vector2(760, 480)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Grid" type="GridContainer" parent="Center/Panel/VBox/Scroll" unique_id=1162560361]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 28
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="BackButton" type="Button" parent="Center/Panel/VBox" unique_id=1818961863]
+custom_minimum_size = Vector2(200, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Back"

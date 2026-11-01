@@ -1,5 +1,5 @@
 extends CanvasLayer
-## Esc menu: Resume / Main Menu. It also opens by itself whenever the mouse is not
+## Esc menu: Resume / Settings / Controls / Main Menu. It also opens by itself whenever the mouse is not
 ## captured - in a browser the mouse can only be locked after a click, so this menu
 ## doubles as the "click to play" screen.
 ## In single player the game pauses; in co-op (later) it will only show the menu.
@@ -15,6 +15,8 @@ var _ignore_until: float = 0.0
 @onready var settings_button: Button = $Root/Panel/VBox/SettingsButton
 @onready var panel: Control = $Root/Panel
 @onready var settings_menu: SettingsMenu = $Root/SettingsMenu
+@onready var controls_button: Button = $Root/Panel/VBox/ControlsButton
+@onready var controls_panel: ControlsPanel = $Root/ControlsPanel
 
 
 func _ready() -> void:
@@ -28,6 +30,13 @@ func _ready() -> void:
 		panel.visible = true
 		settings_button.grab_focus())
 	settings_menu.visible = false
+	controls_button.pressed.connect(func() -> void:
+		panel.visible = false
+		controls_panel.open())
+	controls_panel.closed.connect(func() -> void:
+		panel.visible = true
+		controls_button.grab_focus())
+	controls_panel.visible = false
 	_ignore_until = _now() + RECAPTURE_GRACE
 	_close()
 
@@ -45,7 +54,8 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause") and not settings_menu.visible and not _match_over() \
+	if event.is_action_pressed("pause") and not settings_menu.visible and not controls_panel.visible \
+			and not _match_over() \
 			and not get_tree().root.has_node("LoadingScreen"):
 		if is_open:
 			resume()
@@ -73,6 +83,7 @@ func _close() -> void:
 	is_open = false
 	root.visible = false
 	settings_menu.visible = false
+	controls_panel.visible = false
 	panel.visible = true
 	get_tree().paused = false
 

@@ -18,8 +18,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Driving (host): `route` (Path3D, group `tank_route`, `Level/TankRoutes/TankRoute1..3`, builder
   `TANK_ROUTES` → `_smooth_curve()` Catmull-Rom handles) – `_distance` along the baked curve,
   hull yaw turns towards a point `look_ahead_m` ahead, height/pitch/roll from
-  `TerrainGenerator.get_height()` under 4 track points (smoothed). Routes end at z = 46 (nose at
-  48.3; trench front edge ≈ 57) and avoid the lone trees (test_t1 rebuilds their positions with
+  `TerrainGenerator.get_height()` under 4 track points (smoothed). Routes end at z = 49 (owner:
+  3 m closer than the first 46; nose at 51.3; trench front edge ≈ 57) and avoid the lone trees (test_t1 rebuilds their positions with
   ForestScatter's random numbers). Synced (StateSync): position, rotation, `turret_yaw`,
   `gun_pitch` (ALWAYS), `drive_speed`, `state` (ON_CHANGE). State enum: new values at the END.
 - States: ADVANCE (2 m/s) / SUPPRESS (player seen: 1.2 m/s + DT) / HALT_FIRE (every 15–25 s if a
@@ -125,3 +125,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - MolotovManager: a pooled fire stuck to a freed wreck is skipped in `_update_visuals` and
   re-made in `shatter` (`is_instance_valid(f.node)`).
 - `tools/test_t3.gd`, `tools/shots_t3.gd` (tank in its lane, from the trench and up close).
+
+## Tank 3 m closer + Molotov hint (after T3, owner's request)
+- `TANK_ROUTES` last points z 46 → 49 (all three routes). From there a man standing in the trench
+  right in front of the tank was below the gun's lowest angle, so the tank never fired:
+  `Tank.gun_min_deg` −10° → −14° (test_t1 "fires into the trench" caught it).
+- First battle with tanks (normally battle 4; in Test Mode the first one played): `HUD.TankHint`
+  (where the BATTLE banner was) shows "TANKS ARE COMING!" + where the Molotov boxes are and the
+  keys (read from the Input Map via `ControlsPanel.key_text`). It waits until the banner has
+  faded, stays `tank_hint_time` 14 s, once per match (`_tank_hint_shown`). Local UI only.

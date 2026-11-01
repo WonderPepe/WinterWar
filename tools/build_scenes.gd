@@ -34,6 +34,7 @@ func _initialize() -> void:
 	var theme := _make_theme()
 	_save(_build_hud(theme), "res://ui/hud.tscn")
 	_save(_build_settings_menu(theme), "res://ui/settings_menu.tscn")
+	_save(_build_controls_panel(theme), "res://ui/controls_panel.tscn")
 	_save(_build_pause_menu(theme), "res://ui/pause_menu.tscn")
 	_save(_build_main_menu(theme), "res://ui/main_menu.tscn")
 	_save(_build_loading_screen(theme), "res://ui/loading_screen.tscn")
@@ -551,9 +552,9 @@ func _build_level(mats: Dictionary) -> Node:
 ## Tank routes (x, z): from the forest edge in the south to just in front of the trench
 ## (front edge at z ≈ 57; the last point is where the tank stops). Height comes from the terrain.
 const TANK_ROUTES := [
-	[Vector2(-68, -106), Vector2(-62, -60), Vector2(-54, -15), Vector2(-47, 25), Vector2(-44, 46)],
-	[Vector2(6, -106), Vector2(-4, -64), Vector2(-6, -30), Vector2(3, 0), Vector2(4, 24), Vector2(6, 46)],
-	[Vector2(74, -106), Vector2(69, -58), Vector2(58, -10), Vector2(49, 27), Vector2(46, 46)],
+	[Vector2(-68, -106), Vector2(-62, -60), Vector2(-54, -15), Vector2(-47, 25), Vector2(-44, 49)],
+	[Vector2(6, -106), Vector2(-4, -64), Vector2(-6, -30), Vector2(3, 0), Vector2(4, 24), Vector2(6, 49)],
+	[Vector2(74, -106), Vector2(69, -58), Vector2(58, -10), Vector2(49, 27), Vector2(46, 49)],
 ]
 const T26_TURRET := Vector3(0.014, 1.5, 0.07)       # turret ring centre (model is in metres)
 const T26_TRUNNION := Vector3(0.022, 1.888, -0.654) # where the gun turns up/down
@@ -1699,6 +1700,17 @@ func _build_hud(theme: Theme) -> Node:
 	arty_l.add_theme_constant_override("outline_size", 6)
 	arty_l.visible = false
 
+	# The first battle with tanks (after its banner): where the Molotov cocktails are and how to use them (hud.gd).
+	var tank_hint := _label(hud, "TankHint", "", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(1.0, 0.92, 0.75))
+	tank_hint.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	tank_hint.offset_left = -480 # where the BATTLE n banner was: it shows once the banner is gone
+	tank_hint.offset_right = 480
+	tank_hint.offset_top = -175
+	tank_hint.offset_bottom = -40
+	tank_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tank_hint.add_theme_constant_override("outline_size", 6)
+	tank_hint.visible = false
+
 	hud.set("front_reports", load("res://resources/front_reports.tres"))
 
 	# Death screen.
@@ -1784,13 +1796,45 @@ func _build_pause_menu(theme: Theme) -> Node:
 	vb.add_theme_constant_override("separation", 12)
 	_label(vb, "Title", "PAUSED", 34, HORIZONTAL_ALIGNMENT_CENTER)
 	_label(vb, "Hint", "Click Resume to play  (Esc opens this menu)", 15, HORIZONTAL_ALIGNMENT_CENTER, Color(0.8, 0.84, 0.9))
-	for b in [["ResumeButton", "Resume"], ["SettingsButton", "Settings"], ["MainMenuButton", "Main Menu"]]:
+	for b in [["ResumeButton", "Resume"], ["SettingsButton", "Settings"], ["ControlsButton", "Controls"], ["MainMenuButton", "Main Menu"]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
 		btn.text = b[1]
 		btn.custom_minimum_size = Vector2(300, 46)
 	var sm: Control = _add(root, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
 	sm.visible = false
+	var cp: Control = _add(root, load("res://ui/controls_panel.tscn").instantiate(), "ControlsPanel")
+	cp.visible = false
 	return pm
+
+
+## The "Controls" list (main menu + pause menu). The rows are filled by controls_panel.gd from
+## the Input Map, so only the frame is built here.
+func _build_controls_panel(theme: Theme) -> Node:
+	var cp := Control.new()
+	cp.name = "ControlsPanel"
+	cp.set_script(load("res://scripts/ui/controls_panel.gd"))
+	cp.theme = theme
+	_full_rect(cp)
+	var center: CenterContainer = _add(cp, CenterContainer.new(), "Center")
+	_full_rect(center)
+	var panel: PanelContainer = _add(center, PanelContainer.new(), "Panel")
+	var vb: VBoxContainer = _add(panel, VBoxContainer.new(), "VBox")
+	vb.add_theme_constant_override("separation", 14)
+	_label(vb, "Title", "CONTROLS", 32, HORIZONTAL_ALIGNMENT_CENTER)
+	# Taller than a small browser window: the list scrolls, Back stays visible.
+	var scroll: ScrollContainer = _add(vb, ScrollContainer.new(), "Scroll")
+	scroll.custom_minimum_size = Vector2(760, 480)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var grid: GridContainer = _add(scroll, GridContainer.new(), "Grid")
+	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 28)
+	grid.add_theme_constant_override("v_separation", 4)
+	var back: Button = _add(vb, Button.new(), "BackButton")
+	back.text = "Back"
+	back.custom_minimum_size = Vector2(200, 44)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	return cp
 
 
 ## Loading screen with a progress bar (main menu → battle). Same look as the main menu.
@@ -1911,7 +1955,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	for b in [["SinglePlayerButton", "Single Player", ""],
 			["TestModeButton", "Test Mode", "Start at any battle (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
 			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
-			["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
+			["ControlsButton", "Controls", "Which key does what"], ["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
 			["QuitButton", "Quit", ""]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
 		btn.text = b[1]
@@ -1935,6 +1979,8 @@ func _build_main_menu(theme: Theme) -> Node:
 
 	var sm: Control = _add(mm, load("res://ui/settings_menu.tscn").instantiate(), "SettingsMenu")
 	sm.visible = false
+	var cp: Control = _add(mm, load("res://ui/controls_panel.tscn").instantiate(), "ControlsPanel")
+	cp.visible = false
 
 	# Credits: the text of CREDITS.md (the models' licence requires naming their authors).
 	var cc: CenterContainer = _add(mm, CenterContainer.new(), "Credits")

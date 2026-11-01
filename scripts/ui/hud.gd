@@ -7,6 +7,7 @@ extends CanvasLayer
 
 @export var damage_flash_time: float = 0.6
 @export var wave_banner_time: float = 2.5
+@export var tank_hint_time: float = 14.0 ## Seconds the Molotov hint stays up in the first tank battle.
 @export var front_reports: FrontReports ## The day screen shows them one by one after each cleared wave.
 
 var _player: Player
@@ -47,6 +48,7 @@ var _last_cleared: int = 0
 @onready var end_screen: EndScreen = $EndScreen
 @onready var day_screen: DayScreen = $DayScreen
 @onready var artillery_label: Label = $ArtilleryWarning
+@onready var tank_hint: Label = $TankHint
 
 var _artillery: ArtilleryBarrage
 var _was_barrage: bool = false
@@ -55,6 +57,9 @@ var _lifted_until: float = 0.0
 var _director: MatchDirector
 var _message: String = ""
 var _message_until: float = 0.0
+var _tank_hint_shown: bool = false # once per match: the first battle that brings tanks
+var _tank_hint_left: float = 0.0
+var _tank_hint_wait: float = 0.0 # it waits for the BATTLE n banner to fade (same place on screen)
 
 
 func _ready() -> void:
@@ -248,7 +253,15 @@ func _update_waves(delta: float) -> void:
 			var comp: String = WaveData.describe(waves.wave_riflemen, waves.wave_officers, waves.wave_mg_teams, waves.wave_tanks)
 			banner_sub.text = comp if banner_sub.text == "" else banner_sub.text + "\n" + comp
 		_banner_left = wave_banner_time + (1.5 if banner_sub.text != "" else 0.0)
+		if waves.wave_tanks > 0 and not _tank_hint_shown:
+			_show_tank_hint()
 	_banner_left = maxf(_banner_left - delta, 0.0)
+	if _tank_hint_wait > 0.0:
+		_tank_hint_wait = maxf(_tank_hint_wait - delta, 0.0)
+	else:
+		_tank_hint_left = maxf(_tank_hint_left - delta, 0.0)
+	tank_hint.visible = _tank_hint_left > 0.0 and _tank_hint_wait <= 0.0 and _banner_left <= 0.0
+	tank_hint.modulate.a = clampf(_tank_hint_left / 1.0, 0.0, 1.0) # fades out in the last second
 	wave_banner.modulate.a = clampf(_banner_left / 0.6, 0.0, 1.0) # fades out in the last 0.6 s
 	banner_sub.modulate.a = wave_banner.modulate.a
 
@@ -298,6 +311,17 @@ func _update_day_screen() -> void:
 			banner_sub.text = ""
 			_banner_left = day_screen.intro_delay
 			day_screen.open(cleared, front_reports)
+
+
+## The first battle with tanks: tells where the Molotov cocktails are and how to use them.
+## The keys come from the Input Map (the same names as the Controls screen).
+func _show_tank_hint() -> void:
+	_tank_hint_shown = true
+	_tank_hint_left = tank_hint_time
+	_tank_hint_wait = _banner_left
+	var k := ControlsPanel.key_text
+	tank_hint.text = "TANKS ARE COMING!\nMolotov cocktails are in boxes in the trench – walk up to one and press [%s]\n[%s] bottle in hand  ·  hold [%s] to light it\n[%s] throw – aim for the engine deck at the back" \
+			% [k.call("interact"), k.call("molotov"), k.call("aim"), k.call("fire")]
 
 
 func _show_message(text: String) -> void:

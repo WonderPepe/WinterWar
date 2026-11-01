@@ -20,6 +20,8 @@ static var start_pressed_msec: int = 0
 @onready var credits_scroll: ScrollContainer = $Credits/Panel/VBox/Scroll
 @onready var menu_box: Control = $Center
 @onready var settings_menu: SettingsMenu = $SettingsMenu
+@onready var controls_button: Button = $Center/VBox/ControlsButton
+@onready var controls_panel: ControlsPanel = $ControlsPanel
 @onready var difficulty_option: OptionButton = $Center/VBox/DifficultyRow/DifficultyOption
 @onready var version_label: Label = $Version
 @onready var test_button: Button = $Center/VBox/TestModeButton
@@ -47,6 +49,13 @@ func _ready() -> void:
 		menu_box.visible = true
 		settings_button.grab_focus())
 	settings_menu.visible = false
+	controls_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		controls_panel.open())
+	controls_panel.closed.connect(func() -> void:
+		menu_box.visible = true
+		controls_button.grab_focus())
+	controls_panel.visible = false
 	credits_button.pressed.connect(func() -> void:
 		menu_box.visible = false
 		credits.visible = true

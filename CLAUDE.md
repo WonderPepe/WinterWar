@@ -9,7 +9,8 @@ you work on. Update this file and the right note at the end of every milestone.
   Soviet attacks. Long-term: real Summa terrain (Copernicus
   GLO-30 DEM – Finnish NLS data doesn't cover today's Russia), WebRTC co-op for 2–4 players.
 - Godot **4.7.2**, **GDScript only**, **Compatibility renderer** (must export to web/HTML5), Jolt.
-- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T3 done; public v0.1.x on GitHub Pages.
+- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T3 done, + Controls screen / Molotov hint; public
+  v0.2.x on GitHub Pages.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -46,7 +47,7 @@ you work on. Update this file and the right note at the end of every milestone.
   the launcher, because `--script` files compile before autoloads exist). **Run all tests
   before every commit.** List: `notes/tools.md`.
 - New `class_name` or new audio files: run `godot --headless --import` first.
-- Web export: `godot --headless --path . --export-release "Web" export/web/index.html`, then
+- Web export (`mkdir -p export/web` first in a fresh clone): `godot --headless --path . --export-release "Web" export/web/index.html`, then
   `python3 tools/web_smoke_test.py` and `tools/check_web_pack.gd`.
 - Shader errors only show with a real GL window (xvfb + `--rendering-driver opengl3`).
 

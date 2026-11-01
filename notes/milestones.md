@@ -105,6 +105,11 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   counts); wrecks stay as cover but only the newest 3 are kept (older ones vanish behind the black
   day screen); soldiers using wrecks as cover moved to a later milestone (with "field cover",
   idea 0). Tanks start 40 m back in the forest (cleared lanes) – the engine is heard first.
+- [x] Controls screen + tank 3 m closer + Molotov hint (owner): a **Controls** button in the
+  main menu and the pause menu opens `ui/controls_panel.tscn` (`ControlsPanel`, rows filled from
+  the Input Map – change a key there and the list follows; F-key test keys only in the editor;
+  Back / Esc close it). Tanks park 3 m closer (routes end at z = 49, gun depression −14°). The
+  first tank battle shows a Molotov hint after its banner. Details: `tank-and-molotov.md`.
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

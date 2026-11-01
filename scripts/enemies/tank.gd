@@ -33,7 +33,7 @@ const SOUNDS_DIR := "res://assets/audio/tank/"
 @export_group("Turret and sight")
 @export var turret_speed_deg: float = 24.0 ## Turret traverse (hand-cranked).
 @export var gun_speed_deg: float = 14.0 ## Gun elevation speed.
-@export var gun_min_deg: float = -10.0 ## (The real T-26 managed about -6°; a little more so it can fire into the trench.)
+@export var gun_min_deg: float = -14.0 ## (The real T-26 managed about -6°; more so it can fire into the trench from 3 m closer.)
 @export var gun_max_deg: float = 22.0
 @export var vision_range_m: float = 260.0 ## Players further than this are not noticed.
 @export var spot_time: float = 1.5 ## Seconds a player must be in sight before the crew opens fire.
