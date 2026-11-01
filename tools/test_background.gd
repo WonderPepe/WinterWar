@@ -65,5 +65,12 @@ func _ready() -> void:
 		if c is AudioStreamPlayer3D:
 			count += 1
 	check(count == 1 and bg._played[0], "only once per battle")
+	# When the sound has finished, its player is freed: moving the fly-overs must not touch it
+	# (error seen in the editor: "Trying to cast a freed object" in _move_flyovers).
+	for node in bg.get_children():
+		if node is AudioStreamPlayer3D:
+			node.free()
+	bg._process(0.016)
+	check(bg._flying.is_empty(), "a finished fly-over is forgotten without errors")
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

@@ -100,8 +100,10 @@ func play_flyover(index: int, heading: float, side_m: float) -> void:
 func _move_flyovers(delta: float) -> void:
 	for i in range(_flying.size() - 1, -1, -1):
 		var f: Array = _flying[i]
-		var p := f[0] as AudioStreamPlayer3D
-		if not is_instance_valid(p):
+		# Check BEFORE using it: once the sound has finished, its player is freed, and casting or
+		# even assigning a freed object to a typed variable is an error in Godot 4.
+		if not is_instance_valid(f[0]):
 			_flying.remove_at(i)
 			continue
+		var p := f[0] as AudioStreamPlayer3D
 		p.global_position += (f[2] as Vector3) * delta
