@@ -41,6 +41,7 @@ var _last_cleared: int = 0
 @onready var damage_indicator: DamageIndicator = $DamageIndicator
 @onready var hurt_sound: AudioStreamPlayer = $HurtSound
 @onready var trench_label: Label = $WavePanel/TrenchAlert
+@onready var test_tag: Label = $WavePanel/TestTag
 @onready var banner_sub: Label = $WaveBannerSub
 @onready var bandage_label: Label = $Vitals/Bandages
 @onready var end_screen: EndScreen = $EndScreen
@@ -189,12 +190,15 @@ func _update_waves(delta: float) -> void:
 		trench_label.text = "SOVIETS IN THE TRENCH: %d / %d" % [inside, _director.trench_limit]
 		trench_label.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / 110.0)
 	enemies_label.text = "Enemies: %d" % waves.alive_count
+	test_tag.visible = _director != null and _director.test_wave > 0
 	var next: float = waves.get_time_to_next_wave()
 	next_wave_label.visible = next > 0.0
 	next_wave_label.text = "Next wave in %d s" % ceili(next)
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
 	_update_day_screen()
 	# Big "WAVE n" banner when a new wave starts.
+	if waves.wave_number > _last_wave and _director and waves.wave_number < _director.test_wave:
+		_last_wave = waves.wave_number # test mode: the skipped waves get no banner
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
 		day_screen.close() # the day screen makes way for the new wave
@@ -252,7 +256,8 @@ func _update_day_screen() -> void:
 	var cleared: int = _director.waves_cleared if _director else 0
 	if cleared > _last_cleared:
 		_last_cleared = cleared
-		if not _director.is_over():
+		# Test mode: the waves before the chosen one were skipped – no day screens for them.
+		if not _director.is_over() and cleared >= _director.test_wave:
 			# "WAVE n COMPLETED" over the battlefield first; the day screen fades in after it.
 			wave_banner.text = "WAVE %d COMPLETED" % cleared
 			banner_sub.text = ""

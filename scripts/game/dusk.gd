@@ -25,6 +25,7 @@ var _env: Environment
 var _sky: ShaderMaterial
 var _start: Dictionary = {}
 var _applied: float = -1.0
+var _started: bool = false
 
 
 func _ready() -> void:
@@ -53,6 +54,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	var director := get_tree().get_first_node_in_group("match_director") as MatchDirector
 	var target: float = director.get_day_progress() if director else 0.0
+	if director and not _started:
+		_started = true
+		progress = target # test mode (or joining late): no slow sunset over the first seconds
 	progress = move_toward(progress, target, delta / maxf(transition_time, 0.01) / maxf(director.waves_to_win if director else 1, 1))
 	# Changing the sky re-draws its lighting, so only do it when it changed noticeably.
 	if absf(progress - _applied) > 0.004:

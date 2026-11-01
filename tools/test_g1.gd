@@ -178,5 +178,26 @@ func run() -> void:
 	Enemy.spread_multiplier = 1.0
 	Enemy.damage_multiplier = 1.0
 
+	# --- Test mode: start at wave 7 ---
+	get_tree().paused = false
+	MatchDirector.test_start_wave = 7
+	await start_game()
+	var dusk7: DuskLight = game.get_node("Dusk")
+	check(director.test_wave == 7 and director.waves_cleared == 6 and spawner.wave_number == 6,
+			"test mode: waves 1–6 count as held (cleared %d, spawner at %d)" % [director.waves_cleared, spawner.wave_number])
+	check(is_equal_approx(dusk7.progress, 0.6), "test mode: the evening light starts at wave 7's (%.2f)" % dusk7.progress)
+	check(not hud.day_screen.is_open and hud.wave_banner.modulate.a < 0.01, "test mode: no day screen or banner for the skipped waves")
+	check(hud.test_tag.visible, "test mode: HUD shows TEST MODE")
+	spawner.set_process(true)
+	await seconds(director.test_first_wave_delay + 0.5)
+	check(spawner.wave_number == 7 and hud.wave_label.text == "WAVE 7 / 10", "test mode: wave 7 comes first ('%s')" % hud.wave_label.text)
+	spawner.set_process(false)
+	director._on_wave_cleared(7)
+	await seconds(0.3)
+	check(hud.day_screen.is_open, "test mode: the day screen comes after the chosen wave")
+	MatchDirector.test_start_wave = 0
+	await start_game()
+	check(director.test_wave == 0 and spawner.wave_number == 0 and not hud.test_tag.visible, "normal battle again after test mode")
+
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

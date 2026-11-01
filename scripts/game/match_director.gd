@@ -14,6 +14,11 @@ enum Result { PLAYING, VICTORY, DEFEAT }
 
 @export var difficulties: Array[DifficultyData] = [] ## Easy, Normal, Hard.
 @export var check_interval: float = 0.25 ## Seconds between "how many are in the trench?" counts.
+@export var test_first_wave_delay: float = 3.0 ## Test mode: seconds before the chosen wave starts.
+
+## Test mode (main menu, only in the Godot editor): the battle starts at this wave (0 = normal).
+## Kept for "Play again"; the normal Single Player button sets it back to 0.
+static var test_start_wave: int = 0
 
 # --- Synced from the host by MatchSync ---
 var difficulty: int = 1
@@ -24,6 +29,7 @@ var waves_cleared: int = 0
 var result: int = Result.PLAYING:
 	set = _set_result
 var match_time: float = 0.0 ## Seconds since the match started (stops at the end).
+var test_wave: int = 0 ## Test mode: the wave this battle started at (0 = a normal battle).
 
 var _check_timer: float = 0.0
 
@@ -50,6 +56,16 @@ func _ready() -> void:
 	if game:
 		game.respawn_time = d.respawn_time
 	spawner.wave_cleared.connect(_on_wave_cleared)
+	if test_start_wave > 0:
+		_start_test_mode(clampi(test_start_wave, 1, maxi(waves_to_win, 1)))
+
+
+## Test mode: pretend the earlier waves were already held (evening light, front reports),
+## then send the chosen wave soon.
+func _start_test_mode(wave: int) -> void:
+	test_wave = wave
+	waves_cleared = wave - 1
+	spawner.start_at_wave(wave, test_first_wave_delay)
 
 
 func get_difficulty_name() -> String:

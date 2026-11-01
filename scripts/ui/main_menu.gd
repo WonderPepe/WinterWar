@@ -21,6 +21,12 @@ static var start_pressed_msec: int = 0
 @onready var settings_menu: SettingsMenu = $SettingsMenu
 @onready var difficulty_option: OptionButton = $Center/VBox/DifficultyRow/DifficultyOption
 @onready var version_label: Label = $Version
+@onready var test_button: Button = $Center/VBox/TestModeButton
+@onready var test_panel: Control = $TestMode
+@onready var test_wave: SpinBox = $TestMode/Panel/VBox/WaveRow/WaveSpin
+@onready var test_info: Label = $TestMode/Panel/VBox/Info
+@onready var test_start: Button = $TestMode/Panel/VBox/StartButton
+@onready var test_back: Button = $TestMode/Panel/VBox/BackButton
 
 
 func _ready() -> void:
@@ -49,18 +55,41 @@ func _ready() -> void:
 		menu_box.visible = true
 		credits_button.grab_focus())
 	quit_button.pressed.connect(get_tree().quit)
+	# Test mode: start the battle at any wave. Only when run from the Godot editor.
+	test_button.visible = OS.has_feature("editor")
+	test_panel.visible = false
+	test_wave.value = clampi(MatchDirector.test_start_wave, 1, int(test_wave.max_value))
+	test_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		test_info.text = "Difficulty: %s (change it in the main menu)" % difficulty_option.get_item_text(difficulty_option.selected)
+		test_panel.visible = true
+		test_start.grab_focus())
+	test_back.pressed.connect(func() -> void:
+		test_panel.visible = false
+		menu_box.visible = true
+		test_button.grab_focus())
+	test_start.pressed.connect(_on_test_start)
 	host_button.disabled = true # co-op comes later
 	join_button.disabled = true
 	single_button.grab_focus()
 
 
 func _on_single_player() -> void:
+	MatchDirector.test_start_wave = 0
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), GAME_SCENE) # with a progress bar
 
 
+func _on_test_start() -> void:
+	MatchDirector.test_start_wave = int(test_wave.value)
+	start_pressed_msec = Time.get_ticks_msec()
+	NetworkManager.start_single_player()
+	LoadingScreen.go(get_tree(), GAME_SCENE)
+
+
 func _on_benchmark() -> void:
+	MatchDirector.test_start_wave = 0
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), BENCHMARK_SCENE, false) # the benchmark runs on its own

@@ -66,80 +66,83 @@ properties/5/replication_mode = 2
 properties/6/path = NodePath(".:match_time")
 properties/6/spawn = true
 properties/6/replication_mode = 2
+properties/7/path = NodePath(".:test_wave")
+properties/7/spawn = true
+properties/7/replication_mode = 2
 
-[node name="Game" type="Node3D" unique_id=1251505909 node_paths=PackedStringArray("players_root")]
+[node name="Game" type="Node3D" unique_id=127910464 node_paths=PackedStringArray("players_root")]
 script = ExtResource("1_bhx41")
 players_root = NodePath("Players")
 
-[node name="Level" type="Node3D" parent="." unique_id=765049598 instance=ExtResource("2_qnb83")]
+[node name="Level" type="Node3D" parent="." unique_id=180420456 instance=ExtResource("2_qnb83")]
 
-[node name="Players" type="Node3D" parent="." unique_id=1449780728]
+[node name="Players" type="Node3D" parent="." unique_id=1724666653]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=522728847]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=556380075]
 _spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=1892128616]
+[node name="ShaderWarmup" type="CanvasLayer" parent="." unique_id=186567184]
 script = ExtResource("3_sww3w")
 
-[node name="Ambience" type="Node" parent="." unique_id=1588885643]
+[node name="Ambience" type="Node" parent="." unique_id=568099138]
 script = ExtResource("4_suyxu")
 
-[node name="QualityApplier" type="Node" parent="." unique_id=1824918171]
+[node name="QualityApplier" type="Node" parent="." unique_id=1662326271]
 script = ExtResource("5_sgl2t")
 
-[node name="ImpactEffects" type="Node3D" parent="." unique_id=376047780]
+[node name="ImpactEffects" type="Node3D" parent="." unique_id=1252507317]
 script = ExtResource("6_qouja")
 
-[node name="Enemies" type="Node3D" parent="." unique_id=617432372]
+[node name="Enemies" type="Node3D" parent="." unique_id=1075559596]
 
-[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1007558533]
+[node name="EnemySpawner" type="MultiplayerSpawner" parent="." unique_id=1796869829]
 _spawnable_scenes = PackedStringArray("res://scenes/enemies/soviet_rifleman.tscn", "res://scenes/enemies/soviet_officer.tscn", "res://scenes/enemies/soviet_mg_gunner.tscn")
 spawn_path = NodePath("../Enemies")
 
-[node name="WaveSpawner" type="Node" parent="." unique_id=777825536 node_paths=PackedStringArray("enemies_root")]
+[node name="WaveSpawner" type="Node" parent="." unique_id=2108656757 node_paths=PackedStringArray("enemies_root")]
 script = ExtResource("7_wljb1")
 enemy_scene = ExtResource("8_v2yb1")
 officer_scene = ExtResource("9_js0lu")
 mg_gunner_scene = ExtResource("10_gxtfn")
 enemies_root = NodePath("../Enemies")
 
-[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=493296886]
+[node name="WaveSync" type="MultiplayerSynchronizer" parent="WaveSpawner" unique_id=1542456238]
 replication_config = SubResource("SceneReplicationConfig_pf7vy")
 
-[node name="MatchDirector" type="Node" parent="." unique_id=2133966098]
+[node name="MatchDirector" type="Node" parent="." unique_id=128637008]
 script = ExtResource("11_twgab")
 difficulties = Array[ExtResource("12_02fa5")]([ExtResource("13_nepv3"), ExtResource("14_7025r"), ExtResource("15_m4url")])
 
-[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=778110422]
+[node name="MatchSync" type="MultiplayerSynchronizer" parent="MatchDirector" unique_id=124106764]
 delta_interval = 0.25
 replication_config = SubResource("SceneReplicationConfig_o8ni1")
 
-[node name="Dusk" type="Node" parent="." unique_id=1021602813]
+[node name="Dusk" type="Node" parent="." unique_id=1111182624]
 script = ExtResource("16_8ool0")
 
-[node name="ArtilleryBarrage" type="Node3D" parent="." unique_id=656783892]
+[node name="ArtilleryBarrage" type="Node3D" parent="." unique_id=742128268]
 script = ExtResource("17_pr1ej")
 sound = ExtResource("18_05nbr")
 shell_times = PackedFloat32Array(0.98, 1.65, 2.14, 2.6, 3.84, 4.41, 4.78, 5.15, 5.68, 6.3, 7.36, 7.95, 8.66, 9.03, 9.59, 10.05, 10.54, 10.98, 11.42, 11.84, 12.24, 12.69, 13.1, 13.73, 14.21, 14.78, 15.24, 15.71, 16.14, 16.53, 16.97, 17.44, 18.49, 19.17, 19.57, 19.97, 20.82, 21.41, 22.06, 22.43, 22.88, 23.29, 23.68, 24.18, 24.56, 24.94, 25.51)
 shell_strengths = PackedFloat32Array(0.18, 0.27, 0.24, 0.19, 0.14, 0.3, 0.59, 0.35, 0.52, 0.38, 0.41, 0.3, 0.57, 0.4, 0.22, 0.17, 0.17, 0.12, 0.16, 0.19, 0.25, 0.19, 0.31, 0.22, 0.28, 0.58, 0.31, 0.16, 0.14, 0.25, 0.93, 0.64, 0.4, 0.46, 0.36, 0.98, 0.65, 1, 0.89, 0.53, 0.28, 0.32, 0.25, 0.21, 0.14, 0.17, 0.16)
 
-[node name="BackgroundSounds" type="Node" parent="." unique_id=339525079]
+[node name="BackgroundSounds" type="Node" parent="." unique_id=2074393269]
 script = ExtResource("19_0sl42")
 sounds = Array[AudioStream]([ExtResource("20_oaba0")])
 overhead_at = Array[float]([10.9])
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=98779071 instance=ExtResource("21_458eo")]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=515755377 instance=ExtResource("21_458eo")]
 script = ExtResource("22_h3rex")
 front_reports = ExtResource("23_fedci")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1041487625 instance=ExtResource("24_8qswn")]
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=838040359 instance=ExtResource("24_8qswn")]
 layer = 20
 script = ExtResource("25_rm0al")
 
-[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1508804218]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=395108810]
 
-[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=621921577]
+[node name="DebugLabel" type="Label" parent="DebugUI" unique_id=367736208]
 offset_left = 12.0
 offset_top = 10.0
 offset_right = 12.0

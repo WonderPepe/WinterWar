@@ -84,6 +84,13 @@ func _process(delta: float) -> void:
 				wave_cleared.emit(wave_number)
 
 
+## Test mode: the next wave to come is `number`, in `delay` seconds.
+func start_at_wave(number: int, delay: float) -> void:
+	wave_number = number - 1
+	_phase = Phase.WAITING
+	_timer = delay
+
+
 ## Seconds until the next wave starts (0 while a wave is running).
 func get_time_to_next_wave() -> float:
 	return maxf(_timer, 0.0) if _phase == Phase.WAITING else 0.0

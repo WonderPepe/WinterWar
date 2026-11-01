@@ -109,6 +109,14 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   Normal got waves 9–10 ([11,2,2,0], [12,2,2,1]); Hard unchanged. test_artillery's "attack goes
   on" check is a little flaky (failed once, then passed 4×; also on the old code).
 
+- [x] Test mode (owner): main menu "Test Mode" button (visible only with `OS.has_feature("editor")`)
+  → panel with "Start at wave" SpinBox (1–10) + Start / Back; uses the menu's difficulty.
+  Static `MatchDirector.test_start_wave` (kept for "Play again"; Single Player / Benchmark reset it
+  to 0). Host `_start_test_mode()`: synced `test_wave`, `waves_cleared = wave − 1`,
+  `WaveSpawner.start_at_wave(wave, test_first_wave_delay 3 s)`. Dusk jumps to the right light on
+  its first frame; HUD skips banners/day screens for waves < `test_wave` and shows
+  `WavePanel/TestTag`. Checks at the end of test_g1.
+
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
