@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" format=3 uid="uid://s3ma6httf4yb"]
 
 [sub_resource type="AudioEffectReverb" id="AudioEffectReverb_j3pel"]
 predelay_msec = 120.0
