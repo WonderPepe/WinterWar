@@ -601,8 +601,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   (379108 AdamsArchive; plays when lighting starts, stopped if cancelled; local player only),
   `molotov_throw.ogg` (683101 florianreichelt, CC0), `fire_loop.ogg` (564621 Nox_Sound, CC0;
   `loop=true` in its .import; ground fires, burning tank, rag in the hand at −8 dB). All in
-  CREDITS.md. The licences of 74899 / 379108 could not be read from the cloud (freesound.org
-  blocked) – credited as attribution; the owner was asked to confirm.
+  CREDITS.md (owner confirmed: 74899 "Molotov.wav" CC-BY 4.0, 379108 "match.wav" CC-BY 3.0).
 - `tools/test_t2.gd`, `tools/shots_t2.gd` (box, held, lighting, aimed, flight, burning tank,
   crew, ground fire). `check_web_pack.gd` T2 checks.
 
