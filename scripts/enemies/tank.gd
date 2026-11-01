@@ -93,6 +93,10 @@ var drive_speed: float = 0.0 ## m/s now (engine sound).
 
 ## Host: the route this tank follows (set by the TankSpawner before it is added).
 var route: Path3D = null
+## Host (T3): metres the tank starts BEHIND the route start, deep in the forest, driving straight
+## north out of it. The engine is heard before the tank shows. The crew can't see out of the
+## forest, so they don't look for targets until they reach the route. 0 = start at the edge (F9).
+var forest_approach_m: float = 0.0
 ## Host: who comes out when it burns (TankSpawner sets these).
 var crew_scene: PackedScene = null
 var crew_root: Node3D = null
@@ -157,8 +161,9 @@ func _ready() -> void:
 		_next_halt = _rng.randf_range(halt_interval_min * 0.5, halt_interval_max * 0.5)
 		if route and route.curve:
 			_route_length = route.curve.get_baked_length()
-			var start: Vector3 = route.to_global(route.curve.sample_baked(0.0))
-			var ahead: Vector3 = route.to_global(route.curve.sample_baked(look_ahead_m))
+			_distance = -maxf(forest_approach_m, 0.0)
+			var start: Vector3 = _route_point(_distance)
+			var ahead: Vector3 = _route_point(_distance + look_ahead_m)
 			_yaw = _heading_to(start, ahead)
 			_place_on_ground(start, 0.0)
 	_apply_pivots()
@@ -202,7 +207,7 @@ func _physics_process(delta: float) -> void:
 		_burning()
 		return
 	_sense_timer -= delta
-	if _sense_timer <= 0.0:
+	if _sense_timer <= 0.0 and not is_in_forest():
 		_sense_timer = 0.25
 		_update_senses(0.25)
 	_think(delta)
@@ -345,13 +350,26 @@ func _drive(delta: float) -> void:
 	if route == null or route.curve == null:
 		return
 	_distance = minf(_distance + drive_speed * delta, _route_length)
-	var curve: Curve3D = route.curve
-	var here: Vector3 = route.to_global(curve.sample_baked(_distance))
-	var ahead: Vector3 = route.to_global(curve.sample_baked(minf(_distance + look_ahead_m, _route_length)))
+	var here: Vector3 = _route_point(_distance)
+	var ahead: Vector3 = _route_point(_distance + look_ahead_m)
 	if here.distance_to(ahead) > 0.5:
 		var want_yaw: float = _heading_to(here, ahead)
 		_yaw = rotate_toward(_yaw, want_yaw, deg_to_rad(turn_speed_deg) * delta)
 	_place_on_ground(here, delta)
+
+
+## The point `d` metres along the route. Negative = still in the forest: straight south of the
+## route start (T3).
+func _route_point(d: float) -> Vector3:
+	var start: Vector3 = route.to_global(route.curve.sample_baked(0.0))
+	if d < 0.0:
+		return start + Vector3(0.0, 0.0, d)
+	return route.to_global(route.curve.sample_baked(minf(d, _route_length)))
+
+
+## T3: still driving through the forest towards the route start (host).
+func is_in_forest() -> bool:
+	return _distance < 0.0
 
 
 ## Heading (rotation.y) that makes -z point from `a` towards `b`.
@@ -597,6 +615,11 @@ func deflects_bullets() -> bool:
 
 func is_destroyed() -> bool:
 	return state == State.DESTROYED
+
+
+## T3: burning or a wreck – no longer a threat (the wave can end).
+func is_knocked_out() -> bool:
+	return state == State.DESTROYED or state == State.BURNING
 
 
 ## Host (MolotovManager): a bottle burst at `local_pos` (model space). On the engine deck the

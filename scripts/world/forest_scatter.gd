@@ -23,8 +23,10 @@ extends Node3D
 @export var trees_per_100m2: float = 4.0
 @export var lone_trees: int = 30 ## A few single trees out on the open ground.
 @export var lone_tree_area: Rect2 = Rect2(-140, -105, 280, 140)
-## Areas where trees must never grow (trench earthworks + a little space around).
-@export var keep_clear: Array[Rect2] = [Rect2(-110, 46, 220, 32)]
+## Areas where trees must never grow (trench earthworks + a little space around) and, T3, three
+## lanes through the southern forest where the tanks drive out (x = start of TankRoute1..3 ± 6.5 m).
+@export var keep_clear: Array[Rect2] = [Rect2(-110, 46, 220, 32), Rect2(-74.5, -151, 13, 47),
+		Rect2(-0.5, -151, 13, 47), Rect2(67.5, -151, 13, 47)]
 @export var min_scale: float = 1.0
 @export var max_scale: float = 1.8
 @export var chunk_size: float = 50.0

@@ -100,11 +100,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   bottle can't be put away. Engine deck hit → BURNING (stops, no fire, 3 crew bail out and run
   in panic) → DESTROYED after 20 s; elsewhere on the tank = crew blinded 4 s; ground = burning
   fuel 6 s (hurts players and soldiers). Sounds: owner's Freesound picks (see T2 section).
-- [ ] T3 tank as an event: `WaveData.tanks`, engine heard before it shows in the haze, the
-  wreck stays as cover (cover point soldiers run to).
+- [x] T3 tanks in the battles (owner's numbers): one T-26 in battles 4–8, two in 9–10, the same on
+  every difficulty. Owner's choices: a battle only ends when its tanks are stopped too (burning
+  counts); wrecks stay as cover but only the newest 3 are kept (older ones vanish behind the black
+  day screen); soldiers using wrecks as cover moved to a later milestone (with "field cover",
+  idea 0). Tanks start 40 m back in the forest (cleared lanes) – the engine is heard first.
 
 ## Development ideas (not yet approved)
-0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
+0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
    points that soldiers bound between); MG fire suppressing the player (screen effect).
 1. (done in W2) Maxim sights/belt/heat. Still open: better Maxim sound, water can + hose.

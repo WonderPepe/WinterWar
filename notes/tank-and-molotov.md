@@ -1,4 +1,4 @@
-# T-26 tank and Molotov cocktail (T1, T2)
+# T-26 tank and Molotov cocktail (T1, T2, T3)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
@@ -102,3 +102,26 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   CREDITS.md (owner confirmed: 74899 "Molotov.wav" CC-BY 4.0, 379108 "match.wav" CC-BY 3.0).
 - `tools/test_t2.gd`, `tools/shots_t2.gd` (box, held, lighting, aimed, flight, burning tank,
   crew, ground fire). `check_web_pack.gd` T2 checks.
+
+## Tanks in the battles (T3) – how it is built
+- `WaveData.tanks` (builder `WAVE_LISTS` 5th value; owner: 0,0,0,1,1,1,1,1,2,2 on all
+  difficulties). `WaveSpawner._start_wave` queues spawn times `first_tank_delay` 12 s +
+  i × `tank_interval` 18 s on its own `_wave_clock` (runs while not WAITING); `_send_tanks()` →
+  `TankSpawner.spawn_wave_tank()`. WaveSync syncs `wave_tanks` (HUD banner "· 1 tank").
+- Wave clear rule (owner): FIGHTING ends only when `alive_count <= 0 and tanks_in_fight() == 0`
+  (= queued tanks + `TankSpawner.get_living_tanks()`, i.e. not `Tank.is_knocked_out()` –
+  BURNING counts as stopped). Bailed-out crew never count.
+- Route: `TankSpawner._pick_route()` = a random route no living tank uses (2 tanks → 2 routes).
+  Wave tanks get `Tank.forest_approach_m` = `TankSpawner.forest_approach_m` 40: `_distance` starts
+  at −40; `_route_point(d < 0)` = route start + (0, 0, d) (straight south of it, z ≈ −146).
+  `is_in_forest()` → no senses (trees don't block rays, so it would see through the forest).
+  F9 debug tanks still start at the edge (approach 0).
+- Forest lanes: `ForestScatter.keep_clear` default has 3 rects, x = route start ± 6.5,
+  z −151…−104 (positions RNG unchanged, trees inside just skipped). Navmesh re-baked after (fewer
+  tree holes: 3090 → 2800 vertices). If a route start moves, move its lane too (test_t3 checks).
+- Wrecks: `TankSpawner.max_wrecks` 3; host `_process` every 0.5 s calls `clear_old_wrecks()` while
+  `DayScreen.is_black()`, also at every wave start as a fallback. Oldest = lowest `TankN` number;
+  `queue_free` on the host, the MultiplayerSpawner removes it everywhere.
+- MolotovManager: a pooled fire stuck to a freed wreck is skipped in `_update_visuals` and
+  re-made in `shatter` (`is_instance_valid(f.node)`).
+- `tools/test_t3.gd`, `tools/shots_t3.gd` (tank in its lane, from the trench and up close).

@@ -22,12 +22,14 @@ riflemen = 8
 officers = 1
 mg_teams = 1
 barrage = true
+tanks = 1
 
 [sub_resource type="Resource" id="Resource_k8iuy"]
 script = ExtResource("2_ckvit")
 riflemen = 9
 officers = 1
 mg_teams = 1
+tanks = 1
 
 [sub_resource type="Resource" id="Resource_jnhxb"]
 script = ExtResource("2_ckvit")
@@ -35,12 +37,14 @@ riflemen = 9
 officers = 2
 mg_teams = 1
 barrage = true
+tanks = 1
 
 [sub_resource type="Resource" id="Resource_3yum6"]
 script = ExtResource("2_ckvit")
 riflemen = 10
 officers = 1
 mg_teams = 2
+tanks = 1
 
 [sub_resource type="Resource" id="Resource_sfgca"]
 script = ExtResource("2_ckvit")
@@ -48,12 +52,14 @@ riflemen = 10
 officers = 2
 mg_teams = 2
 barrage = true
+tanks = 1
 
 [sub_resource type="Resource" id="Resource_h38v7"]
 script = ExtResource("2_ckvit")
 riflemen = 11
 officers = 2
 mg_teams = 2
+tanks = 2
 
 [sub_resource type="Resource" id="Resource_0i645"]
 script = ExtResource("2_ckvit")
@@ -61,6 +67,7 @@ riflemen = 12
 officers = 2
 mg_teams = 2
 barrage = true
+tanks = 2
 
 [resource]
 script = ExtResource("1_e8dl2")

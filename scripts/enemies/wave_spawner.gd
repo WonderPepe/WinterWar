@@ -9,6 +9,8 @@ extends Node
 ## G2: a wave is a mix of riflemen, officers and DP-27 teams (`wave_list`, from the difficulty).
 ## Every group of soldiers comes out of the forest together; an officer walks in the middle
 ## of his group, a machine-gun team (gunner + helper) is a group of its own.
+## T3: a wave can bring T-26 tanks (`WaveData.tanks`, sent through the TankSpawner). A wave
+## with tanks only ends when its soldiers are dead AND every tank is burning or a wreck.
 
 signal wave_started(number: int, enemy_count: int)
 signal wave_cleared(number: int)
@@ -30,6 +32,8 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 @export var max_alive: int = 16 ## Performance limit for the web version.
 @export var spawn_spread_m: float = 5.0 ## Random offset around each spawn point.
 @export var max_waves: int = 0 ## Stop after this many waves (0 = endless). Set by the MatchDirector.
+@export var first_tank_delay: float = 12.0 ## T3: seconds after the wave starts before the first tank sets off in the forest.
+@export var tank_interval: float = 18.0 ## T3: seconds between the tanks of one wave.
 
 ## False = no more waves (the battle is over).
 var active: bool = true
@@ -44,6 +48,7 @@ var alive_count: int = 0
 var wave_riflemen: int = 0
 var wave_officers: int = 0
 var wave_mg_teams: int = 0
+var wave_tanks: int = 0 ## T3
 
 var _phase: Phase = Phase.WAITING
 var _timer: float = 0.0
@@ -52,6 +57,8 @@ var _queue: Array = [] # groups still to come out of the forest: each an Array o
 var _mg_count: int = 0
 var _spawned_total: int = 0
 var _rng := RandomNumberGenerator.new()
+var _tank_times: Array[float] = [] # T3: wave clock times when the next tanks set off
+var _wave_clock: float = 0.0
 
 
 func _ready() -> void:
@@ -65,6 +72,9 @@ func _process(delta: float) -> void:
 		return
 	if not (hold and _phase == Phase.WAITING):
 		_timer -= delta
+	if _phase != Phase.WAITING:
+		_wave_clock += delta
+		_send_tanks()
 	match _phase:
 		Phase.WAITING:
 			if _timer <= 0.0:
@@ -76,7 +86,7 @@ func _process(delta: float) -> void:
 			if _left_to_spawn <= 0:
 				_phase = Phase.FIGHTING
 		Phase.FIGHTING:
-			if alive_count <= 0:
+			if alive_count <= 0 and tanks_in_fight() == 0:
 				_phase = Phase.WAITING
 				_timer = time_between_waves
 				if max_waves > 0 and wave_number >= max_waves:
@@ -102,11 +112,37 @@ func _start_wave() -> void:
 	wave_riflemen = w.riflemen
 	wave_officers = w.officers
 	wave_mg_teams = w.mg_teams
+	wave_tanks = w.tanks
+	var tank_spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
+	if tank_spawner:
+		tank_spawner.clear_old_wrecks() # normally already done behind the black day screen
+	_wave_clock = 0.0
+	_tank_times.clear()
+	for i in w.tanks:
+		_tank_times.append(first_tank_delay + i * tank_interval)
 	_queue = _make_groups(w)
 	_left_to_spawn = w.total_soldiers()
 	wave_started.emit(wave_number, _left_to_spawn)
 	_phase = Phase.SPAWNING
 	_timer = 0.0
+
+
+## T3: tanks of this wave still to come + those still fighting (not burning, not a wreck).
+func tanks_in_fight() -> int:
+	var spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
+	if spawner == null:
+		return 0
+	return _tank_times.size() + spawner.get_living_tanks().size()
+
+
+## T3: sends the wave's tanks off when their time has come.
+func _send_tanks() -> void:
+	if _tank_times.is_empty() or _wave_clock < _tank_times[0]:
+		return
+	_tank_times.remove_at(0)
+	var spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
+	if spawner:
+		spawner.spawn_wave_tank()
 
 
 ## What wave `number` is made of.

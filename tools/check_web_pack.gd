@@ -36,6 +36,7 @@ func run() -> void:
 		[(load("res://assets/audio/background/plane_flyover_viima.ogg") as AudioStream).get_length() > 35.0, "plane fly-over sound in the export"],
 		[(load("res://assets/audio/artillery/barrage.ogg") as AudioStream).get_length() > 27.0, "artillery barrage sound in the export"],
 		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves[3].barrage, "barrage flags kept in the export"],
+		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves[9].tanks == 2, "T3: tanks per wave kept in the export"],
 		[ResourceLoader.exists("res://scenes/enemies/soviet_tank.tscn"), "T1: tank scene in the export"],
 		[(load("res://assets/models/vehicles/t26/model.gltf") as PackedScene).instantiate().find_child("vertices_001", true, false) != null, "T1: T-26 turret part in the export"],
 		[(load("res://assets/audio/tank/engine_a.ogg") as AudioStreamOggVorbis).loop, "T1: tank engine loop in the export"],

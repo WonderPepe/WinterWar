@@ -9,8 +9,8 @@ you work on. Update this file and the right note at the end of every milestone.
   Soviet attacks. Long-term: real Summa terrain (Copernicus
   GLO-30 DEM – Finnish NLS data doesn't cover today's Russia), WebRTC co-op for 2–4 players.
 - Godot **4.7.2**, **GDScript only**, **Compatibility renderer** (must export to web/HTML5), Jolt.
-- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T2 done; public v0.1.x on GitHub Pages.
-  Next planned: **T3** tank as a wave event. See `notes/milestones.md` for history + ideas.
+- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T3 done; public v0.1.x on GitHub Pages.
+  Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,
@@ -71,6 +71,6 @@ you work on. Update this file and the right note at the end of every milestone.
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery
 - `day-screen.md` – front reports, photos, day screen
-- `tank-and-molotov.md` – T-26 tank (T1) and Molotov cocktail (T2)
+- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3)
 - `gotchas.md` – full list of lessons learned
 - `tools.md` – helper tools and tests

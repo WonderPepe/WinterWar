@@ -80,7 +80,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `MatchDirector` copies it to `WaveSpawner.wave_list` (empty = old riflemen formula; the
   benchmark empties it). `_make_groups()`: rifle groups, officers in the middle of groups, MG
   teams after every second group; a group only spawns when it fits under `max_alive`.
-  WaveSync also syncs `wave_riflemen/officers/mg_teams`; the HUD banner shows `WaveData.describe()`.
+  WaveSync also syncs `wave_riflemen/officers/mg_teams` (+ T3 `wave_tanks`); the HUD banner shows
+  `WaveData.describe()`. T3 tanks in a wave: see `tank-and-molotov.md`.
 - `tools/test_g2.gd`, `tools/soak_g2.gd [waves]` (defender bot firing near misses, 3× speed),
   `tools/shots_g2.gd` (poses; needs xvfb). `check_web_pack.gd` checks the wave lists survive export.
 

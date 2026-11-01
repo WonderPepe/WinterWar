@@ -213,6 +213,11 @@ func shatter(id: int, pos: Vector3, normal: Vector3, hit: int, on_path: NodePath
 	if hit == Hit.TANK_ENGINE:
 		return # the tank shows its own big engine fire
 	var f: Dictionary = _fire_fx[_next_fx]
+	if not is_instance_valid(f.node):
+		# T3: this fire was stuck to a tank wreck that has been cleared away – make a new one.
+		f = _make_fire()
+		add_child(f.node)
+		_fire_fx[_next_fx] = f
 	_next_fx = (_next_fx + 1) % _fire_fx.size()
 	var node := f.node as Node3D
 	var parent: Node = get_node_or_null(on_path) if not on_path.is_empty() else self
@@ -249,6 +254,8 @@ func _update_visuals(delta: float) -> void:
 			b.id = -1
 			node.visible = false
 	for f in _fire_fx:
+		if not is_instance_valid(f.node):
+			continue # went with a cleared-away wreck (replaced when next needed)
 		var node := f.node as Node3D
 		if not node.visible:
 			continue

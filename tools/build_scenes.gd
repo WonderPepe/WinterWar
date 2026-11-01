@@ -712,6 +712,7 @@ func _build_game() -> Node:
 		[".:wave_riflemen", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:wave_officers", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:wave_mg_teams", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:wave_tanks", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
 	# G1: the rules of the battle (difficulty, victory, defeat) and the evening light.
@@ -1155,13 +1156,15 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 ## Every difficulty has 10 waves (owner). What each wave is made of: [riflemen, officers,
 ## machine-gun teams, artillery barrage first (1/0)]. Barrage waves have an officer (he whistles
 ## when it lifts). Easy = Normal with fewer riflemen; officers, MG teams and barrages the same.
+## [riflemen, officers, MG teams, barrage (1 = yes), tanks] per wave (T3: tanks owner's choice:
+## one in battles 4–8, two in 9–10, the same on every difficulty).
 const WAVE_LISTS := {
-	"Easy": [[4, 0, 0, 0], [4, 1, 0, 0], [4, 0, 1, 0], [5, 1, 1, 1], [5, 1, 1, 0], [5, 2, 1, 1], [6, 1, 2, 0], [6, 2, 2, 1],
-		[7, 2, 2, 0], [7, 2, 2, 1]],
-	"Normal": [[6, 0, 0, 0], [7, 1, 0, 0], [7, 0, 1, 0], [8, 1, 1, 1], [9, 1, 1, 0], [9, 2, 1, 1], [10, 1, 2, 0], [10, 2, 2, 1],
-		[11, 2, 2, 0], [12, 2, 2, 1]],
-	"Hard": [[8, 0, 0, 0], [9, 1, 0, 0], [9, 1, 1, 1], [10, 1, 1, 0], [11, 2, 1, 1], [11, 1, 2, 0], [12, 2, 2, 1], [13, 2, 2, 0],
-		[14, 2, 2, 1], [15, 3, 3, 0]],
+	"Easy": [[4, 0, 0, 0, 0], [4, 1, 0, 0, 0], [4, 0, 1, 0, 0], [5, 1, 1, 1, 1], [5, 1, 1, 0, 1], [5, 2, 1, 1, 1], [6, 1, 2, 0, 1], [6, 2, 2, 1, 1],
+		[7, 2, 2, 0, 2], [7, 2, 2, 1, 2]],
+	"Normal": [[6, 0, 0, 0, 0], [7, 1, 0, 0, 0], [7, 0, 1, 0, 0], [8, 1, 1, 1, 1], [9, 1, 1, 0, 1], [9, 2, 1, 1, 1], [10, 1, 2, 0, 1], [10, 2, 2, 1, 1],
+		[11, 2, 2, 0, 2], [12, 2, 2, 1, 2]],
+	"Hard": [[8, 0, 0, 0, 0], [9, 1, 0, 0, 0], [9, 1, 1, 1, 0], [10, 1, 1, 0, 1], [11, 2, 1, 1, 1], [11, 1, 2, 0, 1], [12, 2, 2, 1, 1], [13, 2, 2, 0, 1],
+		[14, 2, 2, 1, 2], [15, 3, 3, 0, 2]],
 }
 
 
@@ -1182,7 +1185,7 @@ func _make_difficulty_data() -> void:
 		r.enemy_damage_multiplier = d[7]
 		var waves: Array[WaveData] = []
 		for w: Array in WAVE_LISTS[d[0]]:
-			waves.append(WaveData.new().make(w[0], w[1], w[2], w[3] == 1))
+			waves.append(WaveData.new().make(w[0], w[1], w[2], w[3] == 1, w[4]))
 		r.waves = waves
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
