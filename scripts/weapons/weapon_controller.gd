@@ -364,6 +364,8 @@ func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: A
 	if not hit.is_empty():
 		var collider: Node = hit.collider
 		var target := _find_damageable(collider)
+		if target and target.has_method("deflects_bullets") and target.deflects_bullets():
+			target = null # tank armour: sparks only, no damage and no hit marker
 		if target is Enemy and (target as Enemy).state != Enemy.State.DEAD:
 			shots_hit += 1
 		if target and (friendly_fire or not target is Player):

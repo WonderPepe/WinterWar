@@ -1,0 +1,89 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/tank.gd" id="1_utsw7"]
+[ext_resource type="PackedScene" path="res://assets/models/vehicles/t26/model.gltf" id="2_xuiai"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fx0oc"]
+size = Vector3(2.35, 1.4, 4.65)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_w52qx"]
+height = 0.85
+radius = 0.78
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nciiy"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:turret_yaw")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:gun_pitch")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:drive_speed")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:state")
+properties/5/spawn = true
+properties/5/replication_mode = 2
+
+[node name="SovietTank" type="AnimatableBody3D" unique_id=1564799713]
+collision_layer = 4
+collision_mask = 0
+sync_to_physics = false
+script = ExtResource("1_utsw7")
+metadata/surface = "metal"
+
+[node name="HullShape" type="CollisionShape3D" parent="." unique_id=643734385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxShape3D_fx0oc")
+
+[node name="TurretShape" type="CollisionShape3D" parent="." unique_id=352180392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014, 1.95, 0.07)
+shape = SubResource("CylinderShape3D_w52qx")
+
+[node name="Model" type="Node3D" parent="." unique_id=1867636902 instance=ExtResource("2_xuiai")]
+
+[node name="TurretPivot" type="Node3D" parent="." unique_id=1926153108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.014, 1.5, 0.07)
+
+[node name="Eye" type="Marker3D" parent="TurretPivot" unique_id=1395067911]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, -0.2)
+
+[node name="GunPivot" type="Node3D" parent="TurretPivot" unique_id=833011250]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007999999, 0.388, -0.724)
+
+[node name="Muzzle" type="Marker3D" parent="TurretPivot/GunPivot" unique_id=1974673162]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.006000001, 0, -1.8539999)
+
+[node name="DtMuzzle" type="Marker3D" parent="TurretPivot/GunPivot" unique_id=1523343391]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.02, -0.5)
+
+[node name="GunSound" type="AudioStreamPlayer3D" parent="TurretPivot/GunPivot" unique_id=2073871017]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.006000001, 0, -1.8539999)
+unit_size = 60.0
+max_polyphony = 2
+bus = &"SFX"
+attenuation_filter_cutoff_hz = 4000.0
+
+[node name="DtSound" type="AudioStreamPlayer3D" parent="TurretPivot/GunPivot" unique_id=1250808496]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.02, -0.5)
+unit_size = 30.0
+max_polyphony = 4
+bus = &"SFX"
+attenuation_filter_cutoff_hz = 2500.0
+attenuation_filter_db = -30.0
+
+[node name="EngineSound" type="AudioStreamPlayer3D" parent="." unique_id=680298344]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1.2)
+unit_size = 18.0
+max_distance = 450.0
+bus = &"SFX"
+attenuation_filter_cutoff_hz = 3000.0
+attenuation_filter_db = -20.0
+
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=29771725]
+replication_config = SubResource("SceneReplicationConfig_nciiy")

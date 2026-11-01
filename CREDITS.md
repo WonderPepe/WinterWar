@@ -13,6 +13,8 @@ the game; the models are otherwise unchanged.
   https://sketchfab.com/3d-models/suomi-kp-31-7e5a00199276485b96b4749f68a0a9a0
 - "Machine Gun Maxim" by jezusek
   https://sketchfab.com/3d-models/machine-gun-maxim-c3be4e0b9ddc4297a8356852b21bdc37
+- "Т-26 SD" (the T-26 tank) by MMD_SonicNewYear
+  https://sketchfab.com/3d-models/26-sd-75689d006c704894aff88646017a94dc
 
 ## Sounds (Creative Commons Attribution 4.0)
 - "Lentokone, potkurikone, syöksy, ylilento / An old aeroplane, old propeller aircraft, Viima,
@@ -20,7 +22,17 @@ the game; the models are otherwise unchanged.
   https://freesound.org/s/254511/ – shortened and made mono for the game.
 
 - "Artillery Barrage" by Mozfoo, made from an explosion by Steveygos93
-  https://freesound.org/s/486086/ – made mono and a little quieter for the game.
+  https://freesound.org/s/486086/ – made mono and a little quieter for the game. One of its
+  bangs is also the tank's 45 mm gun and its shell bursting.
+
+- "War tank engine and crawlers – crawlers rattling and engine sounds 0004" by joniheinonen
+  https://freesound.org/s/161894/ – the tank's engine and tracks (made mono, looped).
+
+- "T26 moving 01" by greatmganga
+  https://freesound.org/s/329800/ – a T-26 driving (made mono, looped).
+
+- "Warfare gunshots – machine gun burst 001" by soundscalpel.com
+  https://freesound.org/s/110622/ – one round of it is the tank's DT machine gun.
 
 ## Photographs (Creative Commons Attribution 4.0)
 - Wartime photographs from the Finnish Wartime Photograph Archive: **SA-kuva**

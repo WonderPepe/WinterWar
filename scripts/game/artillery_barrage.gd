@@ -208,6 +208,13 @@ func _flat_offset(dist: float) -> Vector3:
 @rpc("authority", "call_local", "reliable")
 func explode(pos: Vector3, strength: float) -> void:
 	shells_fired += 1
+	show_explosion(pos, strength)
+	_scorch_fade = -1.0
+
+
+## Only the look of a shell landing (this computer). Also used by the tank's 45 mm shells
+## (T1); outside a barrage their scorch marks fade away after `scorch_fade_time`.
+func show_explosion(pos: Vector3, strength: float) -> void:
 	var b: Array = _blasts[_next_blast]
 	_next_blast = (_next_blast + 1) % _blasts.size()
 	var size: float = lerpf(0.8, 1.3, strength)
@@ -231,7 +238,8 @@ func explode(pos: Vector3, strength: float) -> void:
 	var sm := scorch.material_override as StandardMaterial3D
 	sm.albedo_color.a = 0.75
 	scorch.visible = true
-	_scorch_fade = -1.0
+	if phase == Phase.IDLE:
+		_scorch_fade = scorch_fade_time
 	# Shake the camera of the player on this computer: stronger the closer it landed.
 	for node in get_tree().get_nodes_in_group("players"):
 		var pl := node as Player

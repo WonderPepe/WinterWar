@@ -77,6 +77,11 @@ func _process(_delta: float) -> void:
 		request_bandage.rpc_id(1)
 	if Input.is_action_just_pressed("debug_god_mode"):
 		request_god_mode.rpc_id(1)
+	if OS.has_feature("editor"): # tank test keys (T1) – only when started from the Godot editor
+		if Input.is_action_just_pressed("debug_spawn_tank"):
+			request_debug_tank.rpc_id(1, true)
+		if Input.is_action_just_pressed("debug_destroy_tank"):
+			request_debug_tank.rpc_id(1, false)
 
 
 ## Mouse look uses _input (not _unhandled_input): while the mouse is captured, no on-screen
@@ -144,6 +149,18 @@ func request_switch(slot: int) -> void:
 func request_god_mode() -> void:
 	var player := get_parent() as Player
 	player.god_mode = not player.god_mode
+
+
+## Debug (T1, editor only): F9 brings a tank (`spawn` true), F10 knocks out the nearest one.
+@rpc("authority", "call_local", "reliable")
+func request_debug_tank(spawn: bool) -> void:
+	var spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
+	if spawner == null:
+		return
+	if spawn:
+		spawner.spawn_tank()
+	else:
+		spawner.destroy_nearest((get_parent() as Node3D).global_position)
 
 
 ## Called by the WeaponController on the host: returns true once per reload request.

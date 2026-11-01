@@ -37,6 +37,8 @@ var _crack_streams: Array[AudioStream] = []
 var _round_tex: GradientTexture2D
 var cracks_played: int = 0 ## How many near-miss cracks were heard (used by the tests).
 var _soft_tex: GradientTexture2D
+var _ricochets: Array[AudioStreamPlayer3D] = []
+var _next_ricochet: int = 0
 
 
 func _ready() -> void:
@@ -60,7 +62,7 @@ func _ready() -> void:
 		hole.visible = false
 		add_child(hole)
 		_holes.append(hole)
-	for surface in ["snow", "wood", "cloth"]:
+	for surface in ["snow", "wood", "cloth", "metal"]:
 		var pool: Array[CPUParticles3D] = []
 		for i in sprays_per_surface:
 			var p := _make_spray(surface)
@@ -85,6 +87,12 @@ func _ready() -> void:
 		_flashes.append(f)
 	for path in CRACK_SOUNDS:
 		_crack_streams.append(load(path))
+	for i in 3: # bullets glancing off a tank (only if a "ricochet…" recording exists)
+		var r := AudioStreamPlayer3D.new()
+		r.bus = &"SFX"
+		r.unit_size = 10.0
+		add_child(r)
+		_ricochets.append(r)
 	for i in max_cracks:
 		var a := AudioStreamPlayer3D.new()
 		a.bus = &"SFX"
@@ -100,6 +108,8 @@ func spawn_impact(pos: Vector3, normal: Vector3, surface: String, attach_to: Nod
 		surface = "snow"
 	var up: Vector3 = Vector3.RIGHT if absf(normal.y) > 0.99 else Vector3.UP
 	_spawn_spray(surface, pos, normal, up)
+	if surface == "metal":
+		_play_ricochet(pos)
 	if not HOLE_COLORS.has(surface):
 		return # no bullet holes on moving soldiers
 	var facing := Basis.looking_at(-normal, up) # quad's front (+Z) points along the normal
@@ -176,6 +186,19 @@ static func surface_of(node: Node, normal: Vector3) -> String:
 	return surface
 
 
+## A bullet glancing off armour: a recording named "ricochet…" in assets/audio/recorded/, if any.
+func _play_ricochet(pos: Vector3) -> void:
+	var stream: AudioStream = RecordedSounds.pick("ricochet")
+	if stream == null:
+		return
+	var r := _ricochets[_next_ricochet]
+	_next_ricochet = (_next_ricochet + 1) % _ricochets.size()
+	r.stream = stream
+	r.pitch_scale = randf_range(0.9, 1.15)
+	r.global_position = pos
+	r.play()
+
+
 ## A short flash at another player's muzzle.
 func spawn_flash(pos: Vector3) -> void:
 	var f := _flashes[_next_flash]
@@ -187,6 +210,7 @@ func spawn_flash(pos: Vector3) -> void:
 
 ## Particles for one kind of hit. Snow: a burst of powder that hangs in the air a moment.
 ## Wood: small dark splinters that fall quickly. Cloth: a little dust.
+## Metal (tank armour): a few bright sparks that fly off and drop.
 func _make_spray(surface: String) -> CPUParticles3D:
 	var p := CPUParticles3D.new()
 	p.emitting = false
@@ -237,6 +261,19 @@ func _make_spray(surface: String) -> CPUParticles3D:
 			p.angular_velocity_max = 720.0
 			fade.set_color(0, Color(0.45, 0.32, 0.2, 1.0))
 			fade.set_color(1, Color(0.35, 0.25, 0.15, 0.6))
+		"metal":
+			p.amount = 10
+			p.lifetime = 0.35
+			p.spread = 55.0
+			p.initial_velocity_min = 4.0
+			p.initial_velocity_max = 9.0
+			p.gravity = Vector3(0, -9.8, 0)
+			q.size = Vector2(0.03, 0.03)
+			p.scale_amount_min = 0.7
+			p.scale_amount_max = 1.4
+			m.albedo_texture = _round_tex
+			fade.set_color(0, Color(1.0, 0.78, 0.35, 1.0))
+			fade.set_color(1, Color(1.0, 0.5, 0.15, 0.0))
 		_: # cloth
 			p.amount = 10
 			p.lifetime = 0.6

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Т-26 SD
+* source:	https://sketchfab.com/3d-models/26-sd-75689d006c704894aff88646017a94dc
+* author:	MMD_SonicNewYear (https://sketchfab.com/MMD_SonicNewYear)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Т-26 SD" (https://sketchfab.com/3d-models/26-sd-75689d006c704894aff88646017a94dc) by MMD_SonicNewYear (https://sketchfab.com/MMD_SonicNewYear) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

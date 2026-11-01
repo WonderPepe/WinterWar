@@ -55,7 +55,7 @@ func _warm_up() -> void:
 		vm._flash_until = Time.get_ticks_msec() / 1000.0 + 10.0
 	# Impacts on every surface type and another player's muzzle flash.
 	if effects:
-		for surface in ["snow", "wood", "cloth"]:
+		for surface in ["snow", "wood", "cloth", "metal"]:
 			effects.spawn_impact(front, cam.global_basis.z, surface) # facing the camera
 		effects.spawn_flash(front)
 		effects.spawn_smoke(front, -cam.global_basis.z)
@@ -74,6 +74,12 @@ func _warm_up() -> void:
 	maxim_model.scale = Vector3.ONE * 0.01
 	maxim_model.global_position = cam.global_position - cam.global_basis.z * 2.5
 	_temp.append(maxim_model)
+	# The T-26 tank's model (T1), shrunk to a toy in front of you.
+	var tank_model: Node3D = load("res://assets/models/vehicles/t26/model.gltf").instantiate()
+	player.get_parent().add_child(tank_model)
+	tank_model.scale = Vector3.ONE * 0.02
+	tank_model.global_position = cam.global_position - cam.global_basis.z * 2.5 + cam.global_basis.x * 0.3
+	_temp.append(tank_model)
 
 	for i in frames:
 		progress = float(i + 1) / frames

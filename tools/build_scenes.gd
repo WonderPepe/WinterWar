@@ -26,6 +26,7 @@ func _initialize() -> void:
 	_save(_build_enemy(mats, "soviet_mg_gunner", "SovietMGGunner"), "res://scenes/enemies/soviet_mg_gunner.tscn")
 	_save(_build_player(mats), "res://scenes/player.tscn")
 	_save(_build_maxim(mats), "res://scenes/weapons/maxim_mg.tscn")
+	_save(_build_tank(), "res://scenes/enemies/soviet_tank.tscn")
 	_save(_build_trench_source(mats), TRENCH_SOURCE)
 	_save(_build_level(mats), "res://levels/test_level.tscn")
 	DirAccess.make_dir_recursive_absolute("res://ui")
@@ -480,6 +481,13 @@ func _build_level(mats: Dictionary) -> Node:
 		m.position = Vector3(-84 + i * 24, 0, 38 + (i % 2) * 4)
 		m.add_to_group("attack_point", true)
 
+	# --- T1: tank routes from the southern forest to the edge of the trench ---
+	var routes: Node3D = _add(root, Node3D.new(), "TankRoutes")
+	for i in TANK_ROUTES.size():
+		var path: Path3D = _add(routes, Path3D.new(), "TankRoute%d" % (i + 1))
+		path.curve = _smooth_curve(TANK_ROUTES[i])
+		path.add_to_group("tank_route", true)
+
 	# --- G1: ammo crates (one in a niche of the trench, one in the bunker) ---
 	var crate_scene: PackedScene = load("res://scenes/props/ammo_crate.tscn")
 	var niche: Array = _ammo_niche()
@@ -513,6 +521,102 @@ func _build_level(mats: Dictionary) -> Node:
 		m.position = Vector3(-30 + i * 20, -DEPTH + 0.1, 61)
 		m.add_to_group("player_spawn", true)
 	return root
+
+
+# ---------------------------------------------------------------- T1: tank
+## Tank routes (x, z): from the forest edge in the south to just in front of the trench
+## (front edge at z ≈ 57; the last point is where the tank stops). Height comes from the terrain.
+const TANK_ROUTES := [
+	[Vector2(-68, -106), Vector2(-62, -60), Vector2(-54, -15), Vector2(-47, 25), Vector2(-44, 46)],
+	[Vector2(6, -106), Vector2(-4, -64), Vector2(-6, -30), Vector2(3, 0), Vector2(4, 24), Vector2(6, 46)],
+	[Vector2(74, -106), Vector2(69, -58), Vector2(58, -10), Vector2(49, 27), Vector2(46, 46)],
+]
+const T26_TURRET := Vector3(0.014, 1.5, 0.07)       # turret ring centre (model is in metres)
+const T26_TRUNNION := Vector3(0.022, 1.888, -0.654) # where the gun turns up/down
+const T26_MUZZLE := Vector3(0.028, 1.888, -2.508)
+
+
+## A smooth Curve3D through the points (Catmull-Rom handles), lying on y = 0.
+func _smooth_curve(points: Array) -> Curve3D:
+	var c := Curve3D.new()
+	c.bake_interval = 0.5
+	for i in points.size():
+		var p := Vector3(points[i].x, 0.0, points[i].y)
+		var prev: Vector2 = points[maxi(i - 1, 0)]
+		var next: Vector2 = points[mini(i + 1, points.size() - 1)]
+		var tangent := Vector3(next.x - prev.x, 0.0, next.y - prev.y) / 6.0
+		c.add_point(p, -tangent, tangent)
+	return c
+
+
+func _build_tank() -> Node:
+	var t := AnimatableBody3D.new()
+	t.name = "SovietTank"
+	t.set_script(load("res://scripts/enemies/tank.gd"))
+	t.collision_layer = 0b100 # layer 3: enemies (bullets hit it, players bump into it)
+	t.collision_mask = 0
+	t.sync_to_physics = false # the script places it every physics frame (with Jolt, "true" kept it at 0,0,0)
+	t.set_meta("surface", "metal")
+	var hull := BoxShape3D.new()
+	hull.size = Vector3(2.35, 1.4, 4.65)
+	var hs: CollisionShape3D = _add(t, CollisionShape3D.new(), "HullShape")
+	hs.shape = hull
+	hs.position = Vector3(0, 0.9, 0)
+	var turret := CylinderShape3D.new()
+	turret.radius = 0.78
+	turret.height = 0.85
+	var ts: CollisionShape3D = _add(t, CollisionShape3D.new(), "TurretShape")
+	ts.shape = turret
+	ts.position = T26_TURRET + Vector3(0, 0.45, 0)
+	# "Т-26 SD" by MMD_SonicNewYear (Sketchfab), CC-BY 4.0. Already in metres, front = -z.
+	_add(t, load("res://assets/models/vehicles/t26/model.gltf").instantiate(), "Model")
+
+	var turret_pivot: Node3D = _add(t, Node3D.new(), "TurretPivot")
+	turret_pivot.position = T26_TURRET
+	var eye: Marker3D = _add(turret_pivot, Marker3D.new(), "Eye")
+	eye.position = Vector3(0, 0.85, -0.2) # commander's hatch / periscope
+	var gun_pivot: Node3D = _add(turret_pivot, Node3D.new(), "GunPivot")
+	gun_pivot.position = T26_TRUNNION - T26_TURRET
+	var muzzle: Marker3D = _add(gun_pivot, Marker3D.new(), "Muzzle")
+	muzzle.position = T26_MUZZLE - T26_TRUNNION
+	var dt: Marker3D = _add(gun_pivot, Marker3D.new(), "DtMuzzle")
+	dt.position = Vector3(0.2, -0.02, -0.5) # coaxial DT, right of the gun
+	var gun_sound: AudioStreamPlayer3D = _add(gun_pivot, AudioStreamPlayer3D.new(), "GunSound")
+	gun_sound.bus = &"SFX"
+	gun_sound.unit_size = 60.0
+	gun_sound.max_polyphony = 2
+	gun_sound.attenuation_filter_cutoff_hz = 4000.0
+	gun_sound.position = muzzle.position
+	var dt_sound: AudioStreamPlayer3D = _add(gun_pivot, AudioStreamPlayer3D.new(), "DtSound")
+	dt_sound.bus = &"SFX"
+	dt_sound.unit_size = 30.0
+	dt_sound.max_polyphony = 4
+	dt_sound.attenuation_filter_cutoff_hz = 2500.0
+	dt_sound.attenuation_filter_db = -30.0
+	dt_sound.position = dt.position
+
+	# Engine + tracks (loop): heard from far away, before the tank comes out of the haze.
+	var engine: AudioStreamPlayer3D = _add(t, AudioStreamPlayer3D.new(), "EngineSound")
+	engine.bus = &"SFX"
+	engine.unit_size = 18.0
+	engine.max_distance = 450.0
+	engine.attenuation_filter_cutoff_hz = 3000.0
+	engine.attenuation_filter_db = -20.0
+	engine.position = Vector3(0, 1.0, 1.2) # engine at the back
+
+	var sync: MultiplayerSynchronizer = _add(t, MultiplayerSynchronizer.new(), "StateSync")
+	sync.root_path = NodePath("..")
+	var ALWAYS := SceneReplicationConfig.REPLICATION_MODE_ALWAYS
+	var ON_CHANGE := SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
+	sync.replication_config = _sync_config([
+		[".:position", true, ALWAYS],
+		[".:rotation", true, ALWAYS],
+		[".:turret_yaw", true, ALWAYS],
+		[".:gun_pitch", true, ALWAYS],
+		[".:drive_speed", true, ON_CHANGE],
+		[".:state", true, ON_CHANGE],
+	])
+	return t
 
 
 # ---------------------------------------------------------------- game
@@ -556,6 +660,15 @@ func _build_game() -> Node:
 	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_rifleman.tscn")
 	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_officer.tscn")
 	enemy_spawner.add_spawnable_scene("res://scenes/enemies/soviet_mg_gunner.tscn")
+	# T1: tanks (their own root + spawner, so they never count as soldiers of a wave).
+	var tanks: Node3D = _add(g, Node3D.new(), "Tanks")
+	var tank_node_spawner: MultiplayerSpawner = _add(g, MultiplayerSpawner.new(), "TankNodeSpawner")
+	tank_node_spawner.spawn_path = NodePath("../Tanks")
+	tank_node_spawner.add_spawnable_scene("res://scenes/enemies/soviet_tank.tscn")
+	var tank_spawner: Node = _add(g, Node.new(), "TankSpawner")
+	tank_spawner.set_script(load("res://scripts/enemies/tank_spawner.gd"))
+	tank_spawner.set("tank_scene", load("res://scenes/enemies/soviet_tank.tscn"))
+	tank_spawner.set("tanks_root", tanks)
 	var waves: Node = _add(g, Node.new(), "WaveSpawner")
 	waves.set_script(load("res://scripts/enemies/wave_spawner.gd"))
 	waves.set("enemy_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))

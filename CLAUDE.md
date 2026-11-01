@@ -135,6 +135,16 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - [x] Get-ready time between battles 20 s → 5 s (owner): `WaveSpawner.time_between_waves`. The
   countdown is held while the day screen is open, so the 5 s start when it closes.
 
+- [x] T1 tank (owner's plan, step 1 of 3): a Soviet T-26 that drives a drawn route to the trench
+  edge, turret + coaxial DT + 45 mm HE gun, armoured (bullets only spark), stops at the trench
+  edge and fires from there. Owner's choices: armour instead of hit points (only a Molotov will
+  stop it), routes instead of the navmesh, it STOPS at the trench edge (doesn't cross), the wreck
+  becomes a cover point (T3). T1 has no waves yet: F9 / F10 (editor only) bring / knock out a tank.
+- [ ] T2 Molotov cocktail: from a crate, thrown in an arc, hit on the engine deck (back of the
+  hull, +z in the model) → BURNING (fire, stops, 2–3 crew bail out = rifleman scenes) → DESTROYED.
+- [ ] T3 tank as an event: `WaveData.tanks`, engine heard before it shows in the haze, the
+  wreck stays as cover (cover point soldiers run to).
+
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
@@ -145,7 +155,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
    drum change is done).
 3. Real Summa terrain from the owner's maps + Copernicus DEM; real trench line, the big concrete
    bunkers (e.g. Sj5 "Millionaire"), anti-tank rocks, barbed wire, shell craters.
-4. Soviet attack variety: tanks (T-26/T-28) with infantry behind them, artillery barrages
+4. Soviet attack variety: (T-26 tank: T1 done, T2/T3 planned) infantry behind the tanks, T-28, artillery barrages
    (craters, camera shake), enemies using cover, grenades, smoke screens, officers.
 5. Player options: Molotov cocktails / satchel charges against tanks, grenades, bandages,
    ammo crate in the trench, a firing step, prone, leaning.
@@ -489,6 +499,59 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - `tools/shots_reports.gd [days…]` (screenshots, xvfb), checks in `test_g2.gd`, `test_m3.gd`,
   `check_web_pack.gd`.
 
+## Tank (T1) – how it is built
+- `Tank` (`scripts/enemies/tank.gd`, scene `scenes/enemies/soviet_tank.tscn` from the builder's
+  `_build_tank()`): AnimatableBody3D, layer 3 (bullets hit it, players bump into it; soldiers
+  pass through – their mask has no layer 3), meta `surface = "metal"`, `sync_to_physics = false`
+  (with Jolt, `true` kept the body at 0,0,0). Group `tanks` – NOT `enemies` (it is no soldier:
+  the wave counter, suppression, hearing, officers ignore it). `MatchDirector.end_match` freezes tanks.
+- Model: Sketchfab "Т-26 SD" (MMD_SonicNewYear, CC-BY 4.0, in CREDITS.md) →
+  `assets/models/vehicles/t26/` by `tools/import_weapons.py` (zip `-26_sd.zip`, the Cyrillic T is
+  lost in the file name; vehicles drop their specular maps). Metres, front = -z, 8.7k tris,
+  7 materials. Parts: `vertices` hull, `vertices_001` turret, `gun_08Shape` gun, tracks, chassis.
+  `_split_model()` makes turret + gun `top_level` and copies `TurretPivot` / `GunPivot` every
+  frame (offsets taken at rest). Builder constants `T26_TURRET` (ring centre), `T26_TRUNNION`,
+  `T26_MUZZLE`; `DtMuzzle` right of the gun, `Eye` above the turret (line-of-sight checks).
+- Driving (host): `route` (Path3D, group `tank_route`, `Level/TankRoutes/TankRoute1..3`, builder
+  `TANK_ROUTES` → `_smooth_curve()` Catmull-Rom handles) – `_distance` along the baked curve,
+  hull yaw turns towards a point `look_ahead_m` ahead, height/pitch/roll from
+  `TerrainGenerator.get_height()` under 4 track points (smoothed). Routes end at z = 46 (nose at
+  48.3; trench front edge ≈ 57) and avoid the lone trees (test_t1 rebuilds their positions with
+  ForestScatter's random numbers). Synced (StateSync): position, rotation, `turret_yaw`,
+  `gun_pitch` (ALWAYS), `drive_speed`, `state` (ON_CHANGE). State enum: new values at the END.
+- States: ADVANCE (2 m/s) / SUPPRESS (player seen: 1.2 m/s + DT) / HALT_FIRE (every 15–25 s if a
+  target ≥ 20 m: brake, aim `gun_aim_time` 1.2 s, one HE shell, 1.5 s, drive on; gives up after
+  8 s) / AT_TRENCH (end of route: parked, DT + a shell every 6–10 s, turret sweeps ±55° when
+  nobody is seen) / DESTROYED (`destroy()`: `_become_wreck()` on every computer – engine off,
+  dark `material_overlay`, `WreckSmoke` particles, group `tank_wrecks`; it stays on the field).
+- Senses 4×/s: players in `vision_range_m` 260 with a clear line (world layer) from `Eye` to head
+  or chest, noticed after `spot_time` 1.5 s (×2 crouching, ×0.5 once fighting), forgotten after
+  4 s out of sight. Gun depression −10° (real T-26 ≈ −6°; needed to reach into the trench from the
+  edge). A crouching player in the trench is out of sight; standing up he is seen.
+- DT: bursts 5–12 at 0.1 s, 63-round pan, 5 s reload, fires when the turret is within 3° of the
+  target; spread like the soldiers (× `Enemy.spread_multiplier`, wider while driving), damage
+  25 × `Enemy.damage_multiplier`, `bullet_passed` cracks. RPC `show_dt_effects` (unreliable).
+- 45 mm HE: ray (world + players) with 0.5° spread; burst damages players within 6 m (dead within
+  1.5 m) whom the blast can reach (clear line from the burst – a trench wall shields you).
+  RPCs `show_gun_fire` (flash, big smoke, shake) and `show_shell_burst` (uses the new
+  `ArtilleryBarrage.show_explosion(pos, strength)` = explode's visuals without the barrage
+  bookkeeping; outside a barrage its scorch fades after `scorch_fade_time`).
+- Bullets on the armour: `WeaponController.resolve_shot` skips damage + hit marker for anything
+  with `deflects_bullets()`; `ImpactEffects` has a "metal" spray (sparks; also in ShaderWarmup)
+  and plays a `ricochet…` recording from `assets/audio/recorded/` if there is one (none yet).
+- Sounds (`assets/audio/tank/`, made by `tools/make_tank_sounds.py` from `assets_source/`, all
+  CC-BY 4.0 and credited): `engine_a.ogg` (joniheinonen 161894) / `engine_b.ogg` (greatmganga
+  329800, a real T-26) – seamless loops (`loop=true` in the .import), one per tank by name,
+  pitch/volume follow `drive_speed`; `dt_shot.ogg` = one round of soundscalpel.com 110622, played
+  per round; `gun_bang.ogg` = the loudest bang of the barrage recording (also the shell burst,
+  pitched 0.8). `RecordedSounds` prefixes `tank_gun` / `tank_dt` override them.
+- `TankSpawner` (Game/TankSpawner, group `tank_spawner`, `scripts/enemies/tank_spawner.gd`):
+  `spawn_tank(route_index = -1)`, `destroy_nearest(pos)`, `get_routes()`. Tanks go under
+  `Game/Tanks`, replicated by `Game/TankNodeSpawner` (MultiplayerSpawner). Debug keys F9/F10
+  (`debug_spawn_tank` / `debug_destroy_tank`, only `OS.has_feature("editor")`) →
+  `PlayerInput.request_debug_tank` RPC to the host.
+- `tools/test_t1.gd`, `tools/shots_t1.gd` (approach, side, front, trench edge, wreck; xvfb).
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -558,5 +621,6 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `make_textures.py` (regenerates `assets/textures/`), `test_p2.gd`, `shots_p2.gd` (soldier
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),
   `check_web_pack.gd` (checks the exported pck, see gotchas),
+  `test_t1.gd`, `shots_t1.gd` (tank), `make_tank_sounds.py` (tank sounds from assets_source/),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

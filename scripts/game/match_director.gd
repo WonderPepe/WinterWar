@@ -136,6 +136,8 @@ func end_match(r: int) -> void:
 	spawner.active = false
 	for node in get_tree().get_nodes_in_group("enemies"):
 		(node as Enemy).freeze()
+	for node in get_tree().get_nodes_in_group("tanks"):
+		(node as Tank).freeze()
 
 
 func _set_result(value: int) -> void:
