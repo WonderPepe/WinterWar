@@ -106,11 +106,41 @@ func run() -> void:
 	var sun := get_tree().get_first_node_in_group("sun") as DirectionalLight3D
 	var energy_before: float = sun.light_energy
 	spawner.wave_number = 3
+	await frames(2) # the HUD sees battle 3 start first (as in a real game), else it closes the day screen
 	director._on_wave_cleared(3)
 	await seconds(1.0)
 	check(p.health == 100, "everyone patched up when a wave is cleared")
 	check(hud.wave_label.text == "BATTLE 3 / 10", "HUD shows the battle out of 10 ('%s')" % hud.wave_label.text)
 	check(dusk.progress > 0.25 and sun.light_energy < energy_before - 0.1, "evening comes: the sun sinks (energy %.2f → %.2f)" % [energy_before, sun.light_energy])
+
+	# --- New battle: everyone back at the start spot, fresh, behind the black day screen ---
+	var start: Node3D = get_tree().get_nodes_in_group("player_spawn")[0]
+	p.global_position = Vector3(-30, 0.5, 20) # out in front of the trench
+	p.is_crouching = true
+	p.weapons.reserve_ammo = PackedInt32Array([0, 0])
+	p.bandages = 0
+	await seconds(director.reset_players_delay - 1.0 - 0.3) # still before the reset
+	check(p.global_position.distance_to(start.global_position) > 5.0, "players stay put while 'BATTLE 3 COMPLETED' shows")
+	await seconds(0.6)
+	check(hud.day_screen.is_black() and p.global_position.distance_to(start.global_position) < 0.5,
+			"new battle: player back at the start spot while the screen is black (%.1f m away)" % p.global_position.distance_to(start.global_position))
+	check(not p.is_crouching and p.bandages == p.max_bandages and p.weapons.reserve_ammo[0] > 0, "new battle: standing, ammo and bandages refilled")
+	check(is_equal_approx(dusk.progress, 0.3), "new battle opens with its own light (%.2f)" % dusk.progress)
+	# A dead player comes back at once, and the old respawn timer does nothing later.
+	p.take_damage(1000.0, -1, p.global_position, Vector3.UP)
+	check(p.is_dead, "player killed before battle 4 is cleared")
+	p.global_position += Vector3(2, 0, 0)
+	hud.day_screen.close_now()
+	spawner.wave_number = 4
+	await frames(2)
+	director._on_wave_cleared(4)
+	await seconds(director.reset_players_delay + 0.3)
+	check(not p.is_dead and p.health == 100 and p.global_position.distance_to(start.global_position) < 0.5, "a dead player is back at the start for the new battle")
+	var deaths_before: int = p.deaths
+	p.global_position = start.global_position + Vector3(0, 0, -1.0)
+	await seconds((game as Game).respawn_time) # the old death's timer runs out meanwhile
+	check(p.deaths == deaths_before and p.global_position.distance_to(start.global_position + Vector3(0, 0, -1.0)) < 0.5, "the old respawn timer doesn't move him again")
+	hud.day_screen.close_now()
 
 	# --- Assault: a soldier at his jump-off point rushes the trench and jumps in ---
 	p.god_mode = true

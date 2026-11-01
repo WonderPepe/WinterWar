@@ -2,6 +2,8 @@ class_name DuskLight
 extends Node
 ## The short winter day ends as the battle goes on: after every cleared wave the sun sinks a
 ## little, the light turns orange and the sky darker. When the last wave is cleared, it is dusk.
+## The change happens at once while the day screen is black (a new day); without a day screen
+## (after the last battle) it moves slowly over `transition_time`.
 ## Runs on every computer (only reads the MatchDirector's synced `waves_cleared`).
 ## The environment and sky material are COPIED at start, so the saved scene files never change.
 
@@ -57,6 +59,9 @@ func _process(delta: float) -> void:
 	if director and not _started:
 		_started = true
 		progress = target # test mode (or joining late): no slow sunset over the first seconds
+	var day_screen := get_tree().get_first_node_in_group("day_screen") as DayScreen
+	if day_screen and day_screen.is_black():
+		progress = target # nobody can see the battlefield: open the new day with its own light
 	progress = move_toward(progress, target, delta / maxf(transition_time, 0.01) / maxf(director.waves_to_win if director else 1, 1))
 	# Changing the sky re-draws its lighting, so only do it when it changed noticeably.
 	if absf(progress - _applied) > 0.004:

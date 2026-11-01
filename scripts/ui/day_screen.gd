@@ -53,8 +53,15 @@ const MONTHS: PackedStringArray = ["tammikuuta", "helmikuuta", "maaliskuuta", "h
 
 
 func _ready() -> void:
+	add_to_group("day_screen")
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+## True while the screen is fully black (the battlefield can't be seen): DuskLight changes the
+## light to the new day's light then, so nobody sees it change.
+func is_black() -> bool:
+	return is_open and black.color.a >= 0.99
 
 
 ## Shows the day after wave `cleared_wave`. Returns false if there is no report for it.

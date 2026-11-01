@@ -123,6 +123,16 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   loading tip, debug overlay; day-screen title "TAISTELU n" (was "PÄIVÄ n"). Code names
   (wave_number, WaveData, WaveSpawner, DayScreen…) stay as they are.
 
+- [x] New battle = new day (owner): after a cleared battle (not the last), once the day screen is
+  black, every player goes back to the spot they started the match at (`Game._start_points`, by
+  player name) with a fresh start: `Game.reset_players_to_start()` → `Player.respawn()` (full
+  health, ammo, bandages, off the Maxim, standing; a dead player comes back at once). Host:
+  `MatchDirector._reset_players_later()` waits `reset_players_delay` 3.8 s (day screen: 2.5 s
+  banner + 1 s fade). `Game._on_player_died` ignores its timer if the player is already alive or
+  died again (`deaths` count). The light now JUMPS to the new day's light while
+  `DayScreen.is_black()` (group `day_screen`); without a day screen (last battle) it still moves
+  slowly. Owner's plan next: own weather + time of day per battle (idea 6). Checks in test_g1.
+
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
@@ -179,7 +189,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   hit_normal: Vector3) -> bool` (returns true if the hit killed). Enemies use attacker_id -1.
 - Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
   `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`, `match_director`, `ammo_crates`,
-  `trench_entry`.
+  `trench_entry`, `day_screen`.
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers.
 - Surface metadata `surface` = `snow` (default) / `wood` / `earthwork` / `cloth`; meta
   `attach_holes` makes bullet holes stick to moving targets.
@@ -361,6 +371,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   (never edit the saved resources at runtime – they are cached across "Play again"), then lerps
   sun pitch/yaw/colour/energy, ambient, fog colour and sky colours by `waves_cleared/waves_to_win`,
   `transition_time` s per wave, only re-applying when it changed > 0.004 (sky re-draws are costly).
+  While the day screen is black it jumps straight to the new value (`DayScreen.is_black()`).
 - `tools/test_g1.gd`, `tools/soak_g1.gd` (real waves at 3× speed vs a god-mode player: with nobody
   shooting, wave 1 breaks the line after ~2.5 min), `tools/shots_g1.gd`.
 - Measured (G1, xvfb): ~177 draw calls average (crates add a few).
@@ -514,6 +525,9 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   autoload name can't be referenced from them. Tests are therefore plain Nodes started by the
   launcher: `godot --headless --path . --script tools/run.gd -- tools/test_m1.gd`.
   The builder uses `_initialize()` and only `load()`s game scripts at runtime.
+- Tests that clear a wave by hand (`director._on_wave_cleared(n)`): set `spawner.wave_number = n`
+  and wait 2 frames FIRST – otherwise the HUD sees "battle n started" after the day screen opened
+  and closes it at once.
 - Headless tests must free `Game/PauseMenu` (the mouse can't be captured, so it would pause).
 - The navigation map needs a few physics frames after loading before paths are returned.
 - After delivering files that change `project.godot` (new autoloads, settings, input actions) or

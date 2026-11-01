@@ -31,11 +31,12 @@ func _ready() -> void:
 	check(bg != null and bg.sounds.size() == 1 and bg.sounds[0] != null, "plane sound is set up")
 	check(bg.sounds[0].get_length() > 35.0, "plane recording ~39 s (%.1f s)" % bg.sounds[0].get_length())
 
-	# Wave 1 starts: the plane's wave is picked in the middle of the battle (2 … 7 of 8).
+	# Wave 1 starts: the plane's wave is picked in the middle of the battle (2 … waves_to_win − 1; 10 battles now).
 	spawner.wave_number = 1
 	spawner.alive_count = 5
 	await seconds(0.2)
-	check(bg._waves[0] >= 2 and bg._waves[0] <= 7, "plays in wave %d (middle of the battle)" % bg._waves[0])
+	var last_middle: int = (get_tree().get_first_node_in_group("match_director") as MatchDirector).waves_to_win - 1
+	check(bg._waves[0] >= 2 and bg._waves[0] <= last_middle, "plays in wave %d (middle of the battle)" % bg._waves[0])
 	check(bg._at[0] >= bg.earliest_s and bg._at[0] <= bg.latest_s, "at %.0f s into that wave" % bg._at[0])
 	await seconds(0.5)
 	check(bg.get_child_count() == 0, "not in wave 1")

@@ -6,7 +6,8 @@ extends Node
 ## - applies the difficulty chosen in the main menu (DifficultyData),
 ## - wins the match when the last wave is cleared,
 ## - loses it when too many Soviets are inside the trench at the same time,
-## - patches everyone up (full health) after every cleared wave.
+## - patches everyone up (full health) after every cleared wave,
+## - puts everyone back at their start spot for the next battle (behind the black day screen).
 
 signal match_ended(result: int)
 
@@ -15,6 +16,9 @@ enum Result { PLAYING, VICTORY, DEFEAT }
 @export var difficulties: Array[DifficultyData] = [] ## Easy, Normal, Hard.
 @export var check_interval: float = 0.25 ## Seconds between "how many are in the trench?" counts.
 @export var test_first_wave_delay: float = 3.0 ## Test mode: seconds before the chosen wave starts.
+## Seconds after a cleared battle before the players are moved back to their start spots.
+## The day screen shows "BATTLE n COMPLETED" for 2.5 s, then fades to black in 1 s.
+@export var reset_players_delay: float = 3.8
 
 ## Test mode (main menu, only in the Godot editor): the battle starts at this wave (0 = normal).
 ## Kept for "Play again"; the normal Single Player button sets it back to 0.
@@ -110,6 +114,18 @@ func _on_wave_cleared(number: int) -> void:
 			p.heal(p.max_health)
 	if number >= waves_to_win:
 		end_match(Result.VICTORY)
+		return
+	_reset_players_later()
+
+
+## Host: a new day – move the players back once the screen has gone black.
+func _reset_players_later() -> void:
+	await get_tree().create_timer(reset_players_delay, false).timeout
+	if is_over():
+		return
+	var game := get_parent() as Game
+	if game:
+		game.reset_players_to_start()
 
 
 ## Host: the battle is over. The soldiers stop where they are.
