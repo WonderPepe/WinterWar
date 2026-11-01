@@ -26,7 +26,7 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 @export var group_size_min: int = 2
 @export var group_size_max: int = 3
 @export var time_between_groups: float = 4.0
-@export var time_between_waves: float = 20.0
+@export var time_between_waves: float = 5.0 ## "Battle n begins in …" after a cleared battle (held while the day screen is open).
 @export var max_alive: int = 16 ## Performance limit for the web version.
 @export var spawn_spread_m: float = 5.0 ## Random offset around each spawn point.
 @export var max_waves: int = 0 ## Stop after this many waves (0 = endless). Set by the MatchDirector.

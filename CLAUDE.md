@@ -132,6 +132,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   died again (`deaths` count). The light now JUMPS to the new day's light while
   `DayScreen.is_black()` (group `day_screen`); without a day screen (last battle) it still moves
   slowly. Owner's plan next: own weather + time of day per battle (idea 6). Checks in test_g1.
+- [x] Get-ready time between battles 20 s → 5 s (owner): `WaveSpawner.time_between_waves`. The
+  countdown is held while the day screen is open, so the 5 s start when it closes.
 
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
