@@ -34,7 +34,7 @@ func open(director: MatchDirector, player: Player, reports: FrontReports = null)
 	var shots: int = player.weapons.shots_fired
 	var accuracy: int = roundi(100.0 * player.weapons.shots_hit / shots) if shots > 0 else 0
 	var minutes: int = int(director.match_time) / 60
-	stats.text = "Difficulty: %s\nWaves held: %d / %d\nKills: %d\nDeaths: %d\nHits: %d %%  (%d / %d shots)\nTime: %d min %02d s" % [
+	stats.text = "Difficulty: %s\nDays held: %d / %d\nKills: %d\nDeaths: %d\nHits: %d %%  (%d / %d shots)\nTime: %d min %02d s" % [
 		director.get_difficulty_name(), director.waves_cleared, director.waves_to_win,
 		player.kills, player.deaths, accuracy, player.weapons.shots_hit, shots,
 		minutes, int(director.match_time) % 60]

@@ -1483,7 +1483,7 @@ func _build_hud(theme: Theme) -> Node:
 	prompt.offset_top = 150
 	prompt.offset_bottom = 180
 
-	var banner := _label(hud, "WaveBanner", "WAVE 1", 60, HORIZONTAL_ALIGNMENT_CENTER)
+	var banner := _label(hud, "WaveBanner", "DAY 1", 60, HORIZONTAL_ALIGNMENT_CENTER)
 	banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	banner.offset_left = -300
 	banner.offset_right = 300
@@ -1716,7 +1716,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	var spacer: Control = _add(vb, Control.new(), "Spacer")
 	spacer.custom_minimum_size = Vector2(0, 14)
 	for b in [["SinglePlayerButton", "Single Player", ""],
-			["TestModeButton", "Test Mode", "Start the battle at any wave (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
+			["TestModeButton", "Test Mode", "Start the battle on any day (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
 			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
 			["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
 			["QuitButton", "Quit", ""]]:
@@ -1735,7 +1735,7 @@ func _build_main_menu(theme: Theme) -> Node:
 		opt.add_item(n)
 	opt.select(1)
 	opt.custom_minimum_size = Vector2(200, 40)
-	opt.tooltip_text = "10 waves on every level.\nEasy: fewer riflemen, weaker enemy fire, the line breaks at 6 Soviets in the trench.\nNormal: 4 in the trench.\nHard: more soldiers, 3 in the trench, better enemy aim."
+	opt.tooltip_text = "10 days on every level.\nEasy: fewer riflemen, weaker enemy fire, the line breaks at 6 Soviets in the trench.\nNormal: 4 in the trench.\nHard: more soldiers, 3 in the trench, better enemy aim."
 	vb.move_child(row, vb.get_node("SinglePlayerButton").get_index())
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
@@ -1770,7 +1770,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	var trow: HBoxContainer = _add(tvb, HBoxContainer.new(), "WaveRow")
 	trow.alignment = BoxContainer.ALIGNMENT_CENTER
 	trow.add_theme_constant_override("separation", 12)
-	_label(trow, "Label", "Start at wave", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.92, 0.94, 0.97))
+	_label(trow, "Label", "Start at day", 18, HORIZONTAL_ALIGNMENT_RIGHT, Color(0.92, 0.94, 0.97))
 	var spin: SpinBox = _add(trow, SpinBox.new(), "WaveSpin")
 	spin.min_value = 1
 	spin.max_value = 10

@@ -33,9 +33,9 @@ func _process(_delta: float) -> void:
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	var wave_line: String = ""
 	if waves:
-		wave_line = "Wave %d   Enemies alive: %d" % [waves.wave_number, waves.alive_count]
+		wave_line = "Day %d   Enemies alive: %d" % [waves.wave_number, waves.alive_count]
 		if waves.get_time_to_next_wave() > 0.0:
-			wave_line += "   Next wave in %d s" % ceili(waves.get_time_to_next_wave())
+			wave_line += "   Next day in %d s" % ceili(waves.get_time_to_next_wave())
 	text = "Speed: %.1f m/s   Stamina: %d   Health: %d%s\nState: %s   Deep snow: %s\n%s\n%s\n%s\nFPS: %d   Mouse: %s   [F1 god mode, F2 enemy labels, F3 hide]" % [
 		player.get_speed(), int(player.stamina), player.health, "  (GOD MODE)" if player.god_mode else "",
 		state, "YES" if player.is_in_deep_snow() else "no",

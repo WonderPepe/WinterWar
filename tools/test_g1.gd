@@ -109,7 +109,7 @@ func run() -> void:
 	director._on_wave_cleared(3)
 	await seconds(1.0)
 	check(p.health == 100, "everyone patched up when a wave is cleared")
-	check(hud.wave_label.text == "WAVE 3 / 10", "HUD shows the wave out of 10 ('%s')" % hud.wave_label.text)
+	check(hud.wave_label.text == "DAY 3 / 10", "HUD shows the day out of 10 ('%s')" % hud.wave_label.text)
 	check(dusk.progress > 0.25 and sun.light_energy < energy_before - 0.1, "evening comes: the sun sinks (energy %.2f → %.2f)" % [energy_before, sun.light_energy])
 
 	# --- Assault: a soldier at his jump-off point rushes the trench and jumps in ---
@@ -158,7 +158,7 @@ func run() -> void:
 	await frames(3)
 	check(director.result == MatchDirector.Result.VICTORY, "last wave cleared: victory")
 	check(hud.end_screen.visible and hud.end_screen.title.text == "THE LINE HELD", "end screen: victory with statistics")
-	check(hud.end_screen.stats.text.contains("Waves held: 10 / 10"), "statistics show waves held")
+	check(hud.end_screen.stats.text.contains("Days held: 10 / 10"), "statistics show days held")
 
 	# --- Hard ---
 	get_tree().paused = false
@@ -190,7 +190,7 @@ func run() -> void:
 	check(hud.test_tag.visible, "test mode: HUD shows TEST MODE")
 	spawner.set_process(true)
 	await seconds(director.test_first_wave_delay + 0.5)
-	check(spawner.wave_number == 7 and hud.wave_label.text == "WAVE 7 / 10", "test mode: wave 7 comes first ('%s')" % hud.wave_label.text)
+	check(spawner.wave_number == 7 and hud.wave_label.text == "DAY 7 / 10", "test mode: day 7 comes first ('%s')" % hud.wave_label.text)
 	spawner.set_process(false)
 	director._on_wave_cleared(7)
 	await seconds(0.3)

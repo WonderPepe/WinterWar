@@ -10,7 +10,7 @@ extends Control
 
 signal closed
 
-@export var intro_delay: float = 2.5 ## Seconds of "WAVE n COMPLETED" (HUD banner) before the fade to black.
+@export var intro_delay: float = 2.5 ## Seconds of "DAY n COMPLETED" (HUD banner) before the fade to black.
 @export var type_speed: float = 28.0 ## Telegram letters per second.
 @export var type_start: float = 3.0 ## Seconds after opening when the telegram starts typing.
 @export var read_time: float = 7.0 ## Seconds to read after the telegram is typed out.
@@ -69,7 +69,7 @@ func open(cleared_wave: int, reports: FrontReports) -> bool:
 	tele_text.text = r[1]
 	_set_photo(reports.get_photo(cleared_wave))
 	_typed = 0.0
-	_t = -intro_delay # negative = the battlefield is still visible (the HUD shows "WAVE n COMPLETED")
+	_t = -intro_delay # negative = the battlefield is still visible (the HUD shows "DAY n COMPLETED")
 	_closing = -1.0
 	_total = type_start + (r[0].length() + r[1].length()) / type_speed + read_time
 	is_open = true

@@ -117,6 +117,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   its first frame; HUD skips banners/day screens for waves < `test_wave` and shows
   `WavePanel/TestTag`. Checks at the end of test_g1.
 
+- [x] Days instead of waves (owner): everything the PLAYER reads says "Day" – HUD "DAY n / 10",
+  banner "DAY n" / "DAY n COMPLETED", "Day n begins in s", end screen "Days held", Test Mode
+  "Start at day", menu tooltips, loading tip, debug overlay. Code names (wave_number, WaveData,
+  WaveSpawner…) stay "wave".
+
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover
