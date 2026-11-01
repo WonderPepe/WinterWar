@@ -100,7 +100,7 @@ func play_flyover(index: int, heading: float, side_m: float) -> void:
 func _move_flyovers(delta: float) -> void:
 	for i in range(_flying.size() - 1, -1, -1):
 		var f: Array = _flying[i]
-a		var p := f[0] as AudioStreamPlayer3D
+		var p := f[0] as AudioStreamPlayer3D
 		if not is_instance_valid(p):
 			_flying.remove_at(i)
 			continue
