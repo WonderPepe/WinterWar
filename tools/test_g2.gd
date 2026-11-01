@@ -330,7 +330,7 @@ func run() -> void:
 	var reports: FrontReports = load("res://resources/front_reports.tres")
 	check(reports.dates.size() == 10 and reports.texts.size() == 10 and reports.dates[0] == "21.12.1939" and reports.dates[7] == "28.12.1939" and reports.dates[9] == "01.01.1940",
 			"10 front reports, 21.12.1939 … 01.01.1940")
-	check(reports.get_report(9)[0] == "31.12.1939" and reports.get_report(10)[1].ends_with("Tilanne rintamalla on vakaa.\""),
+	check(reports.get_report(9)[0] == "31.12.1939" and reports.get_report(10)[1].ends_with("Puolustajien taistelutahto on horjumaton.\""),
 			"Hard: wave 9 → 31.12.1939, wave 10 → 01.01.1940")
 	check(reports.get_report(11).is_empty(), "no report after wave 11 (none written)")
 	check(reports.photos.size() == 10 and reports.get_photo(1) != null and reports.get_photo(7).get_height() > reports.get_photo(7).get_width(),
@@ -374,7 +374,7 @@ func run() -> void:
 	spawner._timer = saved_timer
 	director.waves_cleared = 2
 	await seconds(0.4)
-	check(day.is_open and day.tele_date.text == "22.12.1939" and day.tele_text.text.contains("vihollispanssareita"), "wave 2 cleared: 22.12.1939")
+	check(day.is_open and day.tele_date.text == "22.12.1939" and day.tele_text.text.contains("etenemisyritykset on torjuttu"), "wave 2 cleared: 22.12.1939")
 	spawner.wave_number += 1
 	await seconds(1.6)
 	check(not day.is_open, "the day screen goes away when the next wave starts")

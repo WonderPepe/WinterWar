@@ -484,9 +484,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
 - Photos: `assets/photos/sa_kuva_*.jpg` (SA-kuva, CC BY 4.0, credited in CREDITS.md and on screen
   "Kuva: SA-kuva"), made from the owner's originals in `assets_source/` (≈5000 px) → greyscale,
   1280 px, JPG q86. Import: lossy WebP (`compress/mode=1`, quality 0.85), no mipmaps ≈ 150 kB each.
-  Day → photo: 21.12 144612 (anti-tank rocks), 22.12 a_511 (captured tank), 23.12 144608,
-  24.12 a_128 (dugout), 25.12 a_126, 26.12 a_125 (officers), 27.12 a_8 (trench, upright photo),
-  28.12 a_123 (dark foxhole), 31.12 144607, 01.01 a_129. Spares: 144616, 144609, a_4, a_127.
+  Day → photo (owner's order, changed after T2): 21.12 144612 (anti-tank rocks), 22.12 117623
+  (frosted wire / spruce), 23.12 a_4 (misty field, fence), 24.12 a_511 (captured tank), 25.12 a_126,
+  26.12 a_125 (officers), 27.12 a_8 (trench, upright photo), 28.12 a_123 (dark foxhole),
+  31.12 144607, 01.01 a_129. Spares (originals in assets_source/ only): 144608, a_128, 144616,
+  144609, a_127, 144604, 2224, 129503. The owner rewrote all ten front-report texts at the same time.
 - `DayScreen` (HUD/DayScreen, `scripts/ui/day_screen.gd`, built by `_build_day_screen()`): HUD
   `_update_day_screen()` watches the synced `MatchDirector.waves_cleared` (co-op clients too, no RPC)
   and calls `open(wave, reports)`; not after the last wave (end screen takes over, `close_now()`).

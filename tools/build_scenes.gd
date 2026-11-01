@@ -1190,16 +1190,16 @@ func _make_difficulty_data() -> void:
 ## After each cleared wave the HUD shows the next front report (the owner's texts).
 ## [date, the owner's own text (never reword), SA-kuva photo in assets/photos/ (CC BY 4.0)].
 const FRONT_REPORTS := [
-	["21.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on päivän aikana jatkanut hyökkäyksiään Summan suunnalla. Puolustusasemamme ovat kestäneet raskaan tykistötulen. Tilanne on hallinnassa.\"", "sa_kuva_144612"],
-	["22.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on jälleen yrittänyt murtaa asemamme Summan lohkolla. Hyökkäys on torjuttu. Useita vihollispanssareita on tuhottu esteisiin ja korsujen tuleen. Miehistön taistelutahto on hyvä.\"", "sa_kuva_a_511"],
-	["23.12.1939", "\"Rintamatiedotus. Summassa on kulunut päivä ankarissa taisteluissa. Vihollinen jatkaa tykistökeskityksiä, mutta asemamme pitävät. Joukkomme ovat aiheuttaneet hyökkääjälle raskaita tappioita.\"", "sa_kuva_144608"],
-	["24.12.1939", "\"Jouluaatto Kannaksella. Vihollisen toiminta on ollut vilkasta koko päivän. Puolustajat viettävät pyhää asemissaan. Mieliala joukkojen keskuudessa on luja.\"", "sa_kuva_a_128"],
-	["25.12.1939", "\"Joulupäivä Summassa. Taistelut jatkuvat. Puolustajat viettävät joulua asemissaan. Vihollisen yritykset edetä Viipurin suuntaan on pysäytetty.\"", "sa_kuva_a_126"],
-	["26.12.1939", "\"Kannaksen rintamalta ilmoitetaan vihollisen keskittävän uusia joukkoja etulinjan tuntumaan. Puolustusvalmisteluja jatketaan kaikilla lohkoilla.\"", "sa_kuva_a_125"],
-	["27.12.1939", "\"Tiedotus Summan lohkolta. Päivän aikana suoritetut hyökkäykset on torjuttu. Tykistö ja konekiväärit ovat toimineet tehokkaasti.\"", "sa_kuva_a_8"],
-	["28.12.1939", "\"Vihollinen on yrittänyt hyödyntää pimeyttä tunkeutuakseen etuasemiimme. Yritykset on havaittu ajoissa ja torjuttu.\"", "sa_kuva_a_123"],
-	["31.12.1939", "\"Vuoden viimeinen päivä Kannaksella. Summan puolustajat ovat torjuneet vihollisen hyökkäyksiä jo viikkojen ajan. Asemat pitävät edelleen. Uuteen vuoteen siirrytään valppaina ja taistelutahto korkeana.\"", "sa_kuva_144607"],
-	["01.01.1940", "\"Täällä Kannaksen rintama. Uusi vuosi on alkanut vihollisen tykistötulella Summan lohkolla. Puolustajat ovat kuitenkin säilyttäneet asemansa. Tilanne rintamalla on vakaa.\"", "sa_kuva_a_129"],
+	["21.12.1939", "\"Täällä Kannaksen rintama. Summan suunnalla on havaittu vihollisen tiedustelu- ja jalkaväkiosastoja. Etumaastossa on käyty päivän aikana tulitaisteluita. Puolustusasemamme ovat säilyneet lujina.\"", "sa_kuva_144612"],
+	["22.12.1939", "\"Täällä Kannaksen rintama. Summan lohkolla vihollinen on lisännyt hyökkäystoimintaansa ja tuonut uusia joukkoja etulinjaan. Useat etenemisyritykset on torjuttu. Joukkojen mieliala on hyvä.\"", "sa_kuva_117623"],
+	["23.12.1939", "\"Rintamatiedotus Kannakselta. Summan suunnalla vihollinen on tukenut hyökkäyksiään voimakkaalla konekivääritulella. Kovista hyökkäyksistä huolimatta asemamme ovat edelleen hallussamme.\"", "sa_kuva_a_4"],
+	["24.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on valmistellut hyökkäyksiään voimakkaalla tykistötulella sekä konekivääriosastojen tukemana. Puolustajat jatkavat tehtävissään asemissaan.\"", "sa_kuva_a_511"],
+	["25.12.1939", "\"Rintamatiedotus Summasta. Vihollinen jatkaa painostusta koko lohkolla. Konekiväärien tukemat hyökkäykset on torjuttu, eikä asemissamme ole tapahtunut muutoksia.\"", "sa_kuva_a_126"],
+	["26.12.1939", "\"Täällä Kannaksen rintama. Vihollisen on havaittu keskittävän uusia joukkoja Summan eteen. Tykistötoiminta on jatkunut vilkkaana. Puolustusvalmisteluja jatketaan kaikilla osastoilla.\"", "sa_kuva_a_125"],
+	["27.12.1939", "\"Rintamatiedotus Summan lohkolta. Vihollinen on lisännyt konekivääriosastojen käyttöä hyökkäystensä tukena. Päivän taistelut ovat päättyneet puolustajiemme onnistuneeseen torjuntaan.\"", "sa_kuva_a_8"],
+	["28.12.1939", "\"Täällä Kannaksen rintama. Vihollinen on pyrkinyt murtamaan puolustusta voimakkaalla tykistötulella ja useilla jalkaväkihyökkäyksillä. Joukkomme pitävät edelleen asemansa.\"", "sa_kuva_a_123"],
+	["31.12.1939", "\"Rintamatiedotus Summasta. Vihollinen jatkaa joukkojensa keskittämistä hyökkäysalueelle. Taistelutoiminta on ollut vilkasta, mutta puolustuslinjamme kestää edelleen.\"", "sa_kuva_144607"],
+	["01.01.1940", "\"Täällä Kannaksen rintama. Vihollinen on tehostanut hyökkäyksiään Summan lohkolla tykistön ja suurten jalkaväkivoimien tukemana. Kaikista hyökkäyksistä huolimatta asemamme ovat säilyneet hallussamme. Puolustajien taistelutahto on horjumaton.\"", "sa_kuva_a_129"],
 ]
 
 
