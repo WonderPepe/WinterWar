@@ -61,10 +61,17 @@ func _ready() -> void:
 	if sound:
 		_length = sound.get_length()
 	_make_pool()
+	# The hold line is shared by all soldiers (static) and outlives a match: a match that ended
+	# (or was left) during a barrage must not leave it behind for the next one.
+	Enemy.barrage_hold_z = INF
 	if multiplayer.is_server():
 		var spawner := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 		if spawner:
 			spawner.wave_started.connect(_on_wave_started)
+
+
+func _exit_tree() -> void:
+	Enemy.barrage_hold_z = INF # the match is over or left: no hold line for the next one
 
 
 func is_active() -> bool:

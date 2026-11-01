@@ -667,9 +667,19 @@ func _bail_out(i: int) -> void:
 	e.rotation.y = _yaw + PI # facing back, away from the trench
 	e.attack_point = _nearest_attack_point(spot)
 	crew_root.add_child(e, true)
+	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
+	if waves:
+		waves.add_enemy(e) # counted like any other soldier: the battle isn't over while he lives
 	e.state = Enemy.State.PATROL
 	var away := Vector3(spot.x + _rng.randf_range(-8.0, 8.0), spot.y, spot.z - _rng.randf_range(35.0, 50.0))
 	e.panic(_rng.randf_range(crew_panic_min, crew_panic_max), away)
+
+
+## Host: crewmen who will still climb out of this burning tank (0 when not burning).
+func crew_still_inside() -> int:
+	if state != State.BURNING or crew_scene == null or crew_root == null:
+		return 0
+	return maxi(crew_count - crew_bailed, 0)
 
 
 func _nearest_attack_point(pos: Vector3) -> Vector3:

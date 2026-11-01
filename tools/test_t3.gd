@@ -102,9 +102,16 @@ func run() -> void:
 	await seconds(2.0)
 	check(waves.alive_count == 0 and cleared.is_empty() and waves.tanks_in_fight() == 1, "soldiers dead, tank alive → battle goes on")
 	tank.ignite()
+	# The crew who bail out are soldiers of this battle too: it is not over while they live
+	# (bug fix: they used to be left out, survive into the next battle and could break the line).
+	var out3: bool = await wait_for(func() -> bool: return tank.crew_bailed >= tank.crew_count, 10.0)
+	await seconds(0.5)
+	check(out3 and cleared.is_empty() and waves.alive_count == tank.crew_count,
+			"tank burning, crew out → counted (alive %d), battle goes on" % waves.alive_count)
+	for e in get_tree().get_nodes_in_group("enemies"):
+		(e as Enemy).take_damage(9999.0, 1, e.global_position, Vector3.UP)
 	var won: bool = await wait_for(func() -> bool: return cleared.size() == 1, 3.0)
-	check(won and cleared[0] == 4, "tank burning → battle 4 cleared")
-	# Crew who bailed out don't hold the wave up.
+	check(won and cleared[0] == 4 and waves.alive_count == 0, "crew dead → battle 4 cleared")
 	await seconds(0.5)
 
 	# --- Battle 9: two tanks, on different routes, one after the other.

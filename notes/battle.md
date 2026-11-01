@@ -104,6 +104,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `_move_to` clamps the destination z to `hold_z + _hold_offset` (−8…0) and hurries;
   `_hold_at_goal` only kneels (no assault). End → INF, every living officer `signal_advance()`
   (whistle + rally). Barrage waves always have an officer (builder `WAVE_LISTS` 4th value).
+- Fix (2026-11-01): the static hold line outlived the match – leaving (Esc → Main Menu) or
+  losing (the end screen pauses before `_finish`) during a barrage kept it at 0, so the next
+  match's soldiers stopped ~50 m short and never assaulted until a barrage ended.
+  `ArtilleryBarrage._ready()` and `_exit_tree()` now set it back to INF (checked in test_artillery).
 - HUD `ArtilleryWarning` label (top centre): warning / "stay down" or "GET INTO THE TRENCH!" /
   "The barrage lifts". `tools/test_artillery.gd`, `tools/shots_artillery.gd`.
 - Sound: Freesound 486086 "Artillery Barrage" by Mozfoo (explosion by Steveygos93), CC-BY 4.0;

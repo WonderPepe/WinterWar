@@ -118,5 +118,14 @@ func run() -> void:
 	spawner._start_wave() # wave 5
 	await seconds(0.3)
 	check(not arty.is_active(), "wave 5: no barrage")
+
+	# Bug fix: leaving a match during a barrage (Esc → Main Menu, or losing → Play again) must
+	# not leave the hold line behind – the next match's soldiers would stop 50 m short.
+	arty.start()
+	check(Enemy.barrage_hold_z < INF, "barrage started again: hold line set")
+	var parent: Node = arty.get_parent()
+	parent.remove_child(arty) # like the game scene being freed
+	check(Enemy.barrage_hold_z == INF, "match left during a barrage → hold line cleared")
+	arty.free()
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

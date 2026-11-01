@@ -111,6 +111,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   Back / Esc close it). Tanks park 3 m closer (routes end at z = 49, gun depression −14°). The
   first tank battle shows a Molotov hint after its banner. Details: `tank-and-molotov.md`.
 
+- [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
+  no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
+  of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at
+  99 HP, Space closes the day screen AND jumps, saved fullscreen can't apply in a browser
+  without a click, rifle fire timing / corpse timers use real time, "last enemy" hunt for a hidden
+  MG team, respawn next to Soviets in the trench, soldiers walk through Molotov fires,
+  FOV / invert-Y options.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

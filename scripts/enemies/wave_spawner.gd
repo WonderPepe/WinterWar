@@ -127,12 +127,18 @@ func _start_wave() -> void:
 	_timer = 0.0
 
 
-## T3: tanks of this wave still to come + those still fighting (not burning, not a wreck).
+## T3: tanks of this wave still to come + those still fighting (not burning, not a wreck)
+## + burning ones whose crew have not all bailed out yet (the crew count as soldiers then).
 func tanks_in_fight() -> int:
 	var spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
 	if spawner == null:
 		return 0
-	return _tank_times.size() + spawner.get_living_tanks().size()
+	var crew_to_come: int = 0
+	for node in get_tree().get_nodes_in_group("tanks"):
+		var t := node as Tank
+		if t and t.crew_still_inside() > 0:
+			crew_to_come += 1 # burning, but its crew are still climbing out
+	return _tank_times.size() + spawner.get_living_tanks().size() + crew_to_come
 
 
 ## T3: sends the wave's tanks off when their time has come.
@@ -248,6 +254,14 @@ func _spawn_enemy(near: Vector3, goal: Vector3, scene: PackedScene = null) -> En
 	enemies_root.add_child(enemy, true)
 	alive_count += 1
 	return enemy
+
+
+## Host: a soldier who did not come out of the forest with a group (T2: the crew of a burning
+## tank) joins the battle – he is counted like the others, so the battle only ends when he is
+## dead too (and the HUD's "Enemies" count includes him).
+func add_enemy(enemy: Enemy) -> void:
+	enemy.died.connect(_on_enemy_died)
+	alive_count += 1
 
 
 func _on_enemy_died(_enemy: Enemy) -> void:
