@@ -423,7 +423,7 @@ horizontal_alignment = 2
 [node name="DifficultyOption" type="OptionButton" parent="Center/VBox/DifficultyRow" unique_id=1835866763]
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
-tooltip_text = "10 days on every level.
+tooltip_text = "10 battles on every level.
 Easy: fewer riflemen, weaker enemy fire, the line breaks at 6 Soviets in the trench.
 Normal: 4 in the trench.
 Hard: more soldiers, 3 in the trench, better enemy aim."
@@ -446,7 +446,7 @@ text = "Single Player"
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
-tooltip_text = "Start the battle on any day (only shown in the Godot editor)"
+tooltip_text = "Start at any battle (only shown in the Godot editor)"
 text = "Test Mode"
 
 [node name="HostCoopButton" type="Button" parent="Center/VBox" unique_id=1045611515]
@@ -597,7 +597,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.92, 0.94, 0.97, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
-text = "Start at day"
+text = "Start at battle"
 horizontal_alignment = 2
 
 [node name="WaveSpin" type="SpinBox" parent="TestMode/Panel/VBox/WaveRow" unique_id=1063379871]

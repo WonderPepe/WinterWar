@@ -93,7 +93,7 @@ func run() -> void:
 	check(e.state == Enemy.State.DEAD and p.kills == 1, "enemy killed, kills = %d" % p.kills)
 	check(hud.ammo_label.text == "4 / 30", "HUD ammo updated (%s)" % hud.ammo_label.text)
 	check(hud.score_label.text.begins_with("Kills 1"), "HUD score shows the kill")
-	check(hud.wave_label.text.begins_with("DAY 1"), "HUD shows the day (%s)" % hud.wave_label.text)
+	check(hud.wave_label.text.begins_with("BATTLE 1"), "HUD shows the battle (%s)" % hud.wave_label.text)
 
 	# --- Damage flash, death, respawn ---
 	var hp_before: int = p.health

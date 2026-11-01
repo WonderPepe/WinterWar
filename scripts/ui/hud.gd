@@ -180,9 +180,9 @@ func _update_waves(delta: float) -> void:
 	if waves.wave_number <= 0:
 		wave_label.text = "Get ready"
 	elif total > 0:
-		wave_label.text = "DAY %d / %d" % [waves.wave_number, total]
+		wave_label.text = "BATTLE %d / %d" % [waves.wave_number, total]
 	else:
-		wave_label.text = "DAY %d" % waves.wave_number
+		wave_label.text = "BATTLE %d" % waves.wave_number
 	# Soviets inside the trench: the line breaks when there are too many at once.
 	var inside: int = _director.in_trench if _director else 0
 	trench_label.visible = inside > 0
@@ -193,21 +193,21 @@ func _update_waves(delta: float) -> void:
 	test_tag.visible = _director != null and _director.test_wave > 0
 	var next: float = waves.get_time_to_next_wave()
 	next_wave_label.visible = next > 0.0
-	next_wave_label.text = "Day %d begins in %d s" % [waves.wave_number + 1, ceili(next)]
+	next_wave_label.text = "Battle %d begins in %d s" % [waves.wave_number + 1, ceili(next)]
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
 	_update_day_screen()
-	# Big "DAY n" banner when a new wave starts.
+	# Big "BATTLE n" banner when a new wave starts.
 	if waves.wave_number > _last_wave and _director and waves.wave_number < _director.test_wave:
 		_last_wave = waves.wave_number # test mode: the skipped waves get no banner
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
 		day_screen.close() # the day screen makes way for the new wave
-		wave_banner.text = "DAY %d" % _last_wave
+		wave_banner.text = "BATTLE %d" % _last_wave
 		banner_sub.text = ""
 		if _last_wave == 1 and total > 0:
-			banner_sub.text = "Hold the line for %d days" % total
+			banner_sub.text = "Hold the line through %d battles" % total
 		elif total > 0 and _last_wave == total:
-			banner_sub.text = "The last day – hold on!"
+			banner_sub.text = "The last battle – hold on!"
 		# G2: what is coming (only worth saying once officers or machine guns join in).
 		if waves.wave_officers > 0 or waves.wave_mg_teams > 0:
 			var comp: String = WaveData.describe(waves.wave_riflemen, waves.wave_officers, waves.wave_mg_teams)
@@ -258,8 +258,8 @@ func _update_day_screen() -> void:
 		_last_cleared = cleared
 		# Test mode: the waves before the chosen one were skipped – no day screens for them.
 		if not _director.is_over() and cleared >= _director.test_wave:
-			# "DAY n COMPLETED" over the battlefield first; the day screen fades in after it.
-			wave_banner.text = "DAY %d COMPLETED" % cleared
+			# "BATTLE n COMPLETED" over the battlefield first; the day screen fades in after it.
+			wave_banner.text = "BATTLE %d COMPLETED" % cleared
 			banner_sub.text = ""
 			_banner_left = day_screen.intro_delay
 			day_screen.open(cleared, front_reports)

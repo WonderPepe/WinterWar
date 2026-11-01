@@ -12,7 +12,7 @@ extends CanvasLayer
 
 const SCENE_PATH: String = "res://ui/loading_screen.tscn"
 const TIPS: Array[String] = [
-	"Hold the line for 10 days. If too many Soviets get into the trench, the line breaks.",
+	"Hold the line through 10 battles. If too many Soviets get into the trench, the line breaks.",
 	"F next to an ammo crate refills your spare ammunition and bandages.",
 	"B puts on a bandage: +50 health, but you can't shoot for 3 seconds.",
 	"The Maxim in the bunker overheats in long bursts – fire short bursts.",

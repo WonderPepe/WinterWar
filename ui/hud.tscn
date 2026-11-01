@@ -411,7 +411,7 @@ theme_override_font_sizes/font_size = 60
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 12
-text = "DAY 1"
+text = "BATTLE 1"
 horizontal_alignment = 1
 
 [node name="WaveBannerSub" type="Label" parent="." unique_id=1723777691]
@@ -532,7 +532,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
-text = "P Ä I V Ä   1"
+text = "T A I S T E L U   1"
 horizontal_alignment = 1
 
 [node name="Date" type="Label" parent="DayScreen/Content/Title" unique_id=1276718696]

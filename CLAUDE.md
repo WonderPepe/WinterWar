@@ -117,10 +117,11 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   its first frame; HUD skips banners/day screens for waves < `test_wave` and shows
   `WavePanel/TestTag`. Checks at the end of test_g1.
 
-- [x] Days instead of waves (owner): everything the PLAYER reads says "Day" – HUD "DAY n / 10",
-  banner "DAY n" / "DAY n COMPLETED", "Day n begins in s", end screen "Days held", Test Mode
-  "Start at day", menu tooltips, loading tip, debug overlay. Code names (wave_number, WaveData,
-  WaveSpawner…) stay "wave".
+- [x] Battles instead of waves (owner; replaced an earlier "Day n" wording): everything the
+  PLAYER reads says "Battle" – HUD "BATTLE n / 10", banner "BATTLE n" / "BATTLE n COMPLETED",
+  "Battle n begins in s", end screen "Battles held", Test Mode "Start at battle", menu tooltips,
+  loading tip, debug overlay; day-screen title "TAISTELU n" (was "PÄIVÄ n"). Code names
+  (wave_number, WaveData, WaveSpawner, DayScreen…) stay as they are.
 
 ## Development ideas (not yet approved)
 0. G2 leftovers: field cover (granite rocks / anti-tank rocks, old shell craters in
@@ -136,7 +137,10 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
    (craters, camera shake), enemies using cover, grenades, smoke screens, officers.
 5. Player options: Molotov cocktails / satchel charges against tanks, grenades, bandages,
    ammo crate in the trench, a firing step, prone, leaning.
-6. Game structure: hold for N waves → victory/defeat screen, difficulty levels, short winter day
+6. (owner's plan) Each battle its own event: real battle dates, realistic photos and info per
+   battle (FRONT_REPORTS / day screen), and later a different start for each battle – own
+   weather and time of day (instead of one dusk over the whole game).
+6b. Game structure: hold for N waves → victory/defeat screen, difficulty levels, short winter day
    turning to dusk/night with flares, scores.
 7. Finnish comrades: AI riflemen in the trench (later replaced by co-op players).
 8. Co-op over WebRTC (needs a small signaling server) with a lobby code.
