@@ -9,13 +9,15 @@ extends AnimatableBody3D
 ##   HALT_FIRE – every 15–25 s (if someone is in sight) it stops, aims and fires one
 ##               45 mm high-explosive shell, then drives on.
 ##   AT_TRENCH – at the trench edge: stands still, sweeps the trench, DT + main gun.
-##   DESTROYED – (T1: only with the debug key F10) stops, goes dark, smokes for the rest of the game.
+##   BURNING   – (T2) a Molotov cocktail on the engine deck: stops, stops firing, the engine
+##               burns, the crew bail out and run; after `burn_time` s → DESTROYED.
+##   DESTROYED – stops, goes dark, smokes for the rest of the game (also debug key F10).
 ## Like the soldiers, all thinking, moving and shooting happens on the HOST. Other computers
 ## get the position, facing, turret/gun angles and state through StateSync and only draw it.
 
 signal destroyed(tank: Tank)
 
-enum State { ADVANCE, SUPPRESS, HALT_FIRE, AT_TRENCH, DESTROYED } # (new states go at the end: synced as numbers)
+enum State { ADVANCE, SUPPRESS, HALT_FIRE, AT_TRENCH, DESTROYED, BURNING } # (new states go at the end: synced as numbers)
 
 const SOUNDS_DIR := "res://assets/audio/tank/"
 
@@ -70,6 +72,18 @@ const SOUNDS_DIR := "res://assets/audio/tank/"
 @export_group("Trench edge")
 @export var sweep_angle_deg: float = 55.0 ## With nobody in sight, the turret searches this far left/right.
 
+@export_group("Molotov (T2)")
+## The engine deck (model space, metres): a bottle bursting inside this box sets the tank on
+## fire. T-26: the flat rear deck with the engine louvres, behind the turret.
+@export var engine_deck: AABB = AABB(Vector3(-1.15, 1.1, 0.9), Vector3(2.3, 0.8, 1.55))
+@export var burn_time: float = 20.0 ## Seconds of fire before it is a wreck.
+@export var blind_time: float = 4.0 ## Fire on the armour elsewhere: the crew can't see / shoot.
+@export var crew_count: int = 3
+@export var crew_delay_min: float = 2.0 ## The crew bail out this many seconds after it catches fire.
+@export var crew_delay_max: float = 4.0
+@export var crew_panic_min: float = 6.0 ## Then they run back towards the forest for this long.
+@export var crew_panic_max: float = 10.0
+
 # --- Synced from the host by StateSync ---
 var state: State = State.ADVANCE:
 	set = _set_state
@@ -79,6 +93,10 @@ var drive_speed: float = 0.0 ## m/s now (engine sound).
 
 ## Host: the route this tank follows (set by the TankSpawner before it is added).
 var route: Path3D = null
+## Host: who comes out when it burns (TankSpawner sets these).
+var crew_scene: PackedScene = null
+var crew_root: Node3D = null
+var crew_bailed: int = 0 ## Tests.
 var shells_fired: int = 0 ## Statistics / tests.
 var dt_rounds_fired: int = 0
 
@@ -104,6 +122,10 @@ var _dt_ammo: int = 63
 var _dt_reload_until: float = 0.0
 var _sweep_phase: float = 0.0
 var _yaw: float = 0.0 # hull heading
+var _blind_until: float = -1.0
+var _burn_until: float = 0.0
+var _next_crew: float = 0.0
+var _engine_fire: Node3D
 var _rng := RandomNumberGenerator.new()
 
 # --- Visuals (every computer) ---
@@ -140,6 +162,8 @@ func _ready() -> void:
 			_yaw = _heading_to(start, ahead)
 			_place_on_ground(start, 0.0)
 	_apply_pivots()
+	if state == State.BURNING:
+		_start_engine_fire() # joined a game where this one was already burning
 	if state == State.DESTROYED:
 		_become_wreck() # joined a game where this one was already knocked out
 
@@ -174,6 +198,9 @@ func _physics_process(delta: float) -> void:
 	_clock += delta
 	if not multiplayer.is_server() or state == State.DESTROYED:
 		return
+	if state == State.BURNING:
+		_burning()
+		return
 	_sense_timer -= delta
 	if _sense_timer <= 0.0:
 		_sense_timer = 0.25
@@ -186,6 +213,9 @@ func _physics_process(delta: float) -> void:
 
 func _process(_delta: float) -> void:
 	_apply_pivots()
+	if _engine_fire:
+		var light := _engine_fire.get_node("FireLight") as OmniLight3D
+		light.light_energy = 1.6 + randf() * 0.9 # flickering flames
 	# Engine: idles low when standing, revs up when driving.
 	var t: float = clampf(drive_speed / maxf(speed, 0.1), 0.0, 1.0)
 	engine_sound.pitch_scale = lerpf(0.82, 1.0, t)
@@ -293,7 +323,12 @@ func _distance_to_target() -> float:
 
 ## True once the gun has pointed steadily at a visible target for `gun_aim_time`.
 func _main_gun_ready() -> bool:
-	return _target_visible and _aim_steady >= gun_aim_time
+	return _target_visible and _aim_steady >= gun_aim_time and not is_blinded()
+
+
+## Fire on the armour in front of the vision slits: the crew can't aim for a moment.
+func is_blinded() -> bool:
+	return _clock < _blind_until
 
 
 # ------------------------------------------------------------------ driving (host)
@@ -387,6 +422,9 @@ func _aim_error_deg(from: Node3D) -> float:
 
 # ------------------------------------------------------------------ DT machine gun (host)
 func _fire_dt() -> void:
+	if is_blinded():
+		_dt_burst_left = 0
+		return
 	if _clock < _dt_reload_until:
 		return
 	if _dt_ammo <= 0:
@@ -548,7 +586,7 @@ func _shake_local(pos: Vector3, strength: float, reach: float) -> void:
 
 # ------------------------------------------------------------------ damage
 ## Armour: rifle and machine-gun bullets do nothing (the WeaponController shows sparks and
-## gives no hit marker). Molotov cocktails come in T2.
+## gives no hit marker). Only a Molotov cocktail on the engine deck stops it (molotov_hit).
 func take_damage(_amount: float, _attacker_id: int, _hit_position: Vector3, _hit_normal: Vector3) -> bool:
 	return false
 
@@ -559,6 +597,67 @@ func deflects_bullets() -> bool:
 
 func is_destroyed() -> bool:
 	return state == State.DESTROYED
+
+
+## Host (MolotovManager): a bottle burst at `local_pos` (model space). On the engine deck the
+## tank catches fire (returns true); anywhere else the burning fuel only blinds the crew.
+func molotov_hit(local_pos: Vector3) -> bool:
+	if not multiplayer.is_server() or state == State.DESTROYED or state == State.BURNING:
+		return false
+	if engine_deck.has_point(local_pos):
+		ignite()
+		return true
+	_blind_until = _clock + blind_time
+	return false
+
+
+## Host: the engine is on fire. The tank stops, the crew bail out, then it burns out.
+func ignite() -> void:
+	if not multiplayer.is_server() or state == State.DESTROYED or state == State.BURNING:
+		return
+	drive_speed = 0.0
+	_burn_until = _clock + burn_time
+	_next_crew = _clock + _rng.randf_range(crew_delay_min, crew_delay_max)
+	state = State.BURNING
+
+
+func _burning() -> void:
+	if crew_bailed < crew_count and _clock >= _next_crew:
+		_bail_out(crew_bailed)
+		crew_bailed += 1
+		_next_crew = _clock + _rng.randf_range(0.5, 1.0)
+	if _clock >= _burn_until:
+		destroy()
+
+
+## Host: one crewman climbs out beside the hull and runs back towards the forest in panic.
+func _bail_out(i: int) -> void:
+	if crew_scene == null or crew_root == null:
+		return
+	var side: float = -1.0 if i % 2 == 0 else 1.0
+	var spot: Vector3 = global_transform * Vector3(side * 1.7, 0.0, 0.6 - i * 0.9)
+	var terrain := get_tree().get_first_node_in_group("terrain") as TerrainGenerator
+	spot.y = (terrain.get_height(spot.x, spot.z) if terrain else spot.y) + 0.1
+	var e: Enemy = crew_scene.instantiate()
+	e.name = "%sCrew%d" % [name, i + 1]
+	e.position = spot
+	e.rotation.y = _yaw + PI # facing back, away from the trench
+	e.attack_point = _nearest_attack_point(spot)
+	crew_root.add_child(e, true)
+	e.state = Enemy.State.PATROL
+	var away := Vector3(spot.x + _rng.randf_range(-8.0, 8.0), spot.y, spot.z - _rng.randf_range(35.0, 50.0))
+	e.panic(_rng.randf_range(crew_panic_min, crew_panic_max), away)
+
+
+func _nearest_attack_point(pos: Vector3) -> Vector3:
+	var best := Vector3(pos.x, 0.0, 40.0)
+	var best_d: float = INF
+	for node in get_tree().get_nodes_in_group("attack_point"):
+		var d: float = (node as Node3D).global_position.distance_to(pos)
+		if d < best_d:
+			best_d = d
+			best = (node as Node3D).global_position
+	return best
 
 
 ## Host: knocked out (T1: debug key F10). Stops for good; the wreck stays on the field.
@@ -579,14 +678,58 @@ func freeze() -> void:
 func _set_state(value: State) -> void:
 	var was: State = state
 	state = value
-	if value == State.DESTROYED and was != State.DESTROYED and is_node_ready():
+	if not is_node_ready():
+		return
+	if value == State.BURNING and was != State.BURNING:
+		_start_engine_fire()
+	if value == State.DESTROYED and was != State.DESTROYED:
 		_become_wreck()
+
+
+## Every computer: the engine deck is on fire – flames, thick black smoke and a flickering
+## light (the only light a tank has; budget: see CLAUDE.md).
+func _start_engine_fire() -> void:
+	engine_sound.stop()
+	if _engine_fire:
+		return
+	var soft: Texture2D = ImpactEffects.make_soft_texture()
+	_engine_fire = Node3D.new()
+	_engine_fire.name = "EngineFire"
+	add_child(_engine_fire)
+	_engine_fire.position = engine_deck.get_center() + Vector3(0, -0.4, 0)
+	var flames := MolotovManager.make_flames(48, 3.0, soft)
+	flames.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	flames.emission_box_extents = Vector3(0.8, 0.05, 0.8)
+	flames.emitting = true
+	_engine_fire.add_child(flames)
+	var smoke := MolotovManager.make_black_smoke(30, 1.8, soft)
+	smoke.position.y = 0.8
+	smoke.emitting = true
+	_engine_fire.add_child(smoke)
+	var light := OmniLight3D.new()
+	light.name = "FireLight"
+	light.light_color = Color(1.0, 0.55, 0.2)
+	light.omni_range = 9.0
+	light.light_energy = 2.0
+	light.position.y = 1.0
+	_engine_fire.add_child(light)
+	var crackle: AudioStream = RecordedSounds.pick("fire_loop")
+	if crackle:
+		var a := AudioStreamPlayer3D.new()
+		a.bus = &"SFX"
+		a.unit_size = 14.0
+		a.stream = crackle
+		_engine_fire.add_child(a)
+		a.play()
 
 
 ## Every computer: engine off, the paint goes dark, black smoke rises for the rest of the game.
 func _become_wreck() -> void:
 	add_to_group("tank_wrecks")
 	engine_sound.stop()
+	if _engine_fire:
+		_engine_fire.queue_free() # the fire burns out; the wreck smokes on
+		_engine_fire = null
 	var dark := StandardMaterial3D.new()
 	dark.albedo_color = Color(0.03, 0.03, 0.03, 0.6)
 	dark.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

@@ -7,20 +7,21 @@
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="5_f1ej7"]
 [ext_resource type="Resource" path="res://resources/weapons/mosin_m28_30.tres" id="6_oprun"]
 [ext_resource type="Resource" path="res://resources/weapons/suomi_kp31.tres" id="7_a8ls1"]
+[ext_resource type="Script" path="res://scripts/player/molotov_handler.gd" id="8_d2wvv"]
 [ext_resource type="Script" path="res://scripts/player/player_fx.gd" id="8_qfm1y"]
 [ext_resource type="Material" path="res://resources/materials/snowflake.tres" id="9_fulsm"]
 [ext_resource type="Script" path="res://scripts/player/player_input.gd" id="10_4r5pv"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_60mlk"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v2ag"]
 radius = 0.35
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_i4ail"]
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_jej6c"]
 material = ExtResource("2_d2wvv")
 radius = 0.35
 height = 1.8
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_a38lo"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_f1ej7"]
 properties/0/path = NodePath(".:current_slot")
 properties/0/spawn = true
 properties/0/replication_mode = 2
@@ -40,14 +41,22 @@ properties/5/path = NodePath(".:shots_hit")
 properties/5/spawn = true
 properties/5/replication_mode = 2
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_4ni07"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_oprun"]
+properties/0/path = NodePath(".:count")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:phase")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_a8ls1"]
 radius = 0.3
 
-[sub_resource type="QuadMesh" id="QuadMesh_l71n6"]
+[sub_resource type="QuadMesh" id="QuadMesh_qfm1y"]
 material = ExtResource("9_fulsm")
 size = Vector2(0.05, 0.05)
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ke2ow"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fulsm"]
 properties/0/path = NodePath(".:move_dir")
 properties/0/spawn = false
 properties/0/replication_mode = 1
@@ -67,7 +76,7 @@ properties/5/path = NodePath(".:aim_held")
 properties/5/spawn = false
 properties/5/replication_mode = 2
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ujl30"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_4r5pv"]
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
@@ -111,68 +120,74 @@ properties/13/path = NodePath(".:is_bandaging")
 properties/13/spawn = true
 properties/13/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D" unique_id=1247500625]
+[node name="Player" type="CharacterBody3D" unique_id=992209146]
 collision_layer = 2
 collision_mask = 7
 floor_max_angle = 0.80285144
 floor_snap_length = 0.3
 script = ExtResource("1_y4r1p")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1249722524]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1568831437]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("CapsuleShape3D_60mlk")
+shape = SubResource("CapsuleShape3D_3v2ag")
 
-[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=925545856]
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=2016875538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_i4ail")
+mesh = SubResource("CapsuleMesh_jej6c")
 
-[node name="Head" type="Node3D" parent="." unique_id=23590387]
+[node name="Head" type="Node3D" parent="." unique_id=1565933513]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1602935759]
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1957600046]
 far = 600.0
 
-[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=1614842219]
+[node name="WeaponHolder" type="Node3D" parent="Head/Camera3D" unique_id=1268306638]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13, -0.17, -0.3)
 
-[node name="Arms" type="Node3D" parent="Head/Camera3D" unique_id=26859132]
+[node name="Arms" type="Node3D" parent="Head/Camera3D" unique_id=436453848]
 script = ExtResource("3_3v2ag")
 
-[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=1891209195]
+[node name="WallCheck" type="RayCast3D" parent="Head/Camera3D" unique_id=7998492]
 target_position = Vector3(0, 0, -0.9)
 
-[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=633658515]
+[node name="RemoteAudio" type="AudioStreamPlayer3D" parent="Head" unique_id=325095801]
 unit_size = 25.0
 max_polyphony = 4
 bus = &"SFX"
 attenuation_filter_cutoff_hz = 2500.0
 attenuation_filter_db = -30.0
 
-[node name="WeaponController" type="Node" parent="." unique_id=1941720883]
+[node name="WeaponController" type="Node" parent="." unique_id=1599424405]
 script = ExtResource("4_jej6c")
 loadout = Array[ExtResource("5_f1ej7")]([ExtResource("6_oprun"), ExtResource("7_a8ls1")])
 
-[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=109063175]
+[node name="ShotAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=663684767]
 volume_db = -4.0
 max_polyphony = 4
 bus = &"SFX"
 
-[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=2111429245]
+[node name="MechAudio" type="AudioStreamPlayer" parent="WeaponController" unique_id=893774618]
 volume_db = -6.0
 bus = &"SFX"
 
-[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=1182468873]
-replication_config = SubResource("SceneReplicationConfig_a38lo")
+[node name="WeaponSync" type="MultiplayerSynchronizer" parent="WeaponController" unique_id=1070345287]
+replication_config = SubResource("SceneReplicationConfig_f1ej7")
 
-[node name="PlayerFX" type="Node3D" parent="." unique_id=753009488]
+[node name="Molotov" type="Node" parent="." unique_id=1729187580]
+script = ExtResource("8_d2wvv")
+
+[node name="MolotovSync" type="MultiplayerSynchronizer" parent="Molotov" unique_id=458654444]
+replication_config = SubResource("SceneReplicationConfig_oprun")
+
+[node name="PlayerFX" type="Node3D" parent="." unique_id=1082899348]
 script = ExtResource("8_qfm1y")
 
-[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=51184447]
+[node name="CeilingCheck" type="ShapeCast3D" parent="." unique_id=972913679]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("SphereShape3D_4ni07")
+shape = SubResource("SphereShape3D_a8ls1")
 target_position = Vector3(0, 0.75, 0)
 
-[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=2004437248]
+[node name="SnowParticles" type="CPUParticles3D" parent="." unique_id=1429013300]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
 cast_shadow = 0
 emitting = false
@@ -180,7 +195,7 @@ amount = 900
 lifetime = 8.0
 preprocess = 8.0
 fixed_fps = 30
-mesh = SubResource("QuadMesh_l71n6")
+mesh = SubResource("QuadMesh_qfm1y")
 emission_shape = 3
 emission_box_extents = Vector3(22, 1, 22)
 direction = Vector3(0, -1, 0)
@@ -189,11 +204,11 @@ gravity = Vector3(0.4, -1, 0.2)
 initial_velocity_min = 0.3
 initial_velocity_max = 0.8
 
-[node name="PlayerInput" type="Node" parent="." unique_id=595444922]
+[node name="PlayerInput" type="Node" parent="." unique_id=1232021452]
 script = ExtResource("10_4r5pv")
 
-[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=859773547]
-replication_config = SubResource("SceneReplicationConfig_ke2ow")
+[node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=376278510]
+replication_config = SubResource("SceneReplicationConfig_fulsm")
 
-[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=2110318400]
-replication_config = SubResource("SceneReplicationConfig_ujl30")
+[node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=954353018]
+replication_config = SubResource("SceneReplicationConfig_4r5pv")

@@ -21,6 +21,7 @@ func _initialize() -> void:
 	_make_front_reports()
 	DirAccess.make_dir_recursive_absolute("res://scenes/props")
 	_save(_build_ammo_crate(mats), "res://scenes/props/ammo_crate.tscn")
+	_save(_build_molotov_crate(mats), "res://scenes/props/molotov_crate.tscn")
 	_save(_build_enemy(mats), "res://scenes/enemies/soviet_rifleman.tscn")
 	_save(_build_enemy(mats, "soviet_officer", "SovietOfficer"), "res://scenes/enemies/soviet_officer.tscn")
 	_save(_build_enemy(mats, "soviet_mg_gunner", "SovietMGGunner"), "res://scenes/enemies/soviet_mg_gunner.tscn")
@@ -110,6 +111,8 @@ func _make_materials() -> Dictionary:
 		"crate_wood": _mat("crate_wood.tres", Color(0.33, 0.34, 0.26), 0.85),
 		"tin_white": _mat("first_aid_white.tres", Color(0.86, 0.86, 0.82), 0.5),
 		"cross_red": _mat("first_aid_red.tres", Color(0.62, 0.07, 0.06), 0.6),
+		"bottle_glass": _mat("bottle_glass.tres", Color(0.16, 0.24, 0.13), 0.15),
+		"rag_cloth": _mat("rag_cloth.tres", Color(0.78, 0.74, 0.62), 1.0),
 	}
 
 
@@ -231,6 +234,16 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:is_reloading", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:shots_fired", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:shots_hit", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+	])
+
+	# T2: Molotov cocktails (G = in the hand, right mouse = light / aim, left mouse = throw).
+	var mol: Node = _add(p, Node.new(), "Molotov")
+	mol.set_script(load("res://scripts/player/molotov_handler.gd"))
+	var mol_sync: MultiplayerSynchronizer = _add(mol, MultiplayerSynchronizer.new(), "MolotovSync")
+	mol_sync.root_path = NodePath("..")
+	mol_sync.replication_config = _sync_config([
+		[".:count", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:phase", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
 	# Footsteps, breath vapour and drifting snow (made in code by player_fx.gd).
@@ -496,6 +509,17 @@ func _build_level(mats: Dictionary) -> Node:
 	crate1.rotation.y = niche[1]
 	var crate2: Node3D = _add(root, crate_scene.instantiate(), "AmmoCrateBunker")
 	crate2.position = Vector3(1.75, -DEPTH, 68.35)
+	# T2: boxes of Molotov cocktails against the rear wall of two trench legs.
+	var bottle_scene: PackedScene = load("res://scenes/props/molotov_crate.tscn")
+	for spot: Array in [[3, 0.2, "MolotovCrateWest"], [5, 0.3, "MolotovCrateCentre"]]:
+		var a := _zig_point(spot[0])
+		var b := _zig_point(spot[0] + 1)
+		var dir := (b - a).normalized()
+		var rear := Vector2(-dir.y, dir.x)
+		var at: Vector2 = a.lerp(b, spot[1]) + rear * (TRENCH_WIDTH / 2.0 - 0.28)
+		var box: Node3D = _add(root, bottle_scene.instantiate(), spot[2])
+		box.position = Vector3(at.x, -DEPTH, at.y)
+		box.rotation.y = atan2(-(b - a).y, (b - a).x)
 
 	# --- G1: trench entries: where the Soviets jump down into the trench (one per zigzag leg).
 	# A NavigationLink3D joins the walkable ground in front to the trench floor.
@@ -669,6 +693,11 @@ func _build_game() -> Node:
 	tank_spawner.set_script(load("res://scripts/enemies/tank_spawner.gd"))
 	tank_spawner.set("tank_scene", load("res://scenes/enemies/soviet_tank.tscn"))
 	tank_spawner.set("tanks_root", tanks)
+	tank_spawner.set("crew_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))
+	tank_spawner.set("crew_root", enemies)
+	# T2: flying Molotov cocktails and the fires they start.
+	var molotovs: Node3D = _add(g, Node3D.new(), "Molotovs")
+	molotovs.set_script(load("res://scripts/weapons/molotov_manager.gd"))
 	var waves: Node = _add(g, Node.new(), "WaveSpawner")
 	waves.set_script(load("res://scripts/enemies/wave_spawner.gd"))
 	waves.set("enemy_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))
@@ -1208,6 +1237,54 @@ func _build_ammo_crate(mats: Dictionary) -> Node:
 	shape.size = Vector3(0.78, 0.72, 0.46)
 	cs.shape = shape
 	cs.position = Vector3(0, 0.36, 0)
+	return c
+
+
+## T2: a wooden box with six Molotov cocktails (bottles with rags) standing in it.
+## Three draw calls: the box, all bottles (one MultiMesh), all rags (one MultiMesh).
+func _build_molotov_crate(mats: Dictionary) -> Node:
+	var c := StaticBody3D.new()
+	c.name = "MolotovCrate"
+	c.set_script(load("res://scripts/world/molotov_crate.gd"))
+	c.collision_layer = 0b1
+	c.set_meta("surface", "wood")
+	var box: MeshInstance3D = _part(c, "Box", _box(Vector3(0.62, 0.2, 0.4)), Vector3(0, 0.1, 0), mats.crate_wood)
+	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	# One bottle mesh = body + neck (merged), the rag separately.
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var body := _cyl(0.038, 0.19)
+	st.append_from(body, 0, Transform3D(Basis(), Vector3(0, 0.095, 0)))
+	var neck := _cyl(0.016, 0.1)
+	st.append_from(neck, 0, Transform3D(Basis(), Vector3(0, 0.22, 0)))
+	st.generate_normals()
+	var bottle_mesh: ArrayMesh = st.commit()
+	bottle_mesh.surface_set_material(0, mats.bottle_glass)
+	var rag_mesh := _box(Vector3(0.035, 0.08, 0.02))
+	rag_mesh.material = mats.rag_cloth
+	var spots: Array[Transform3D] = []
+	for i in 6:
+		var x: float = -0.18 + (i % 3) * 0.18
+		var z: float = -0.09 if i < 3 else 0.09
+		spots.append(Transform3D(Basis(Vector3.UP, i * 1.3), Vector3(x, 0.06, z)))
+	for part: Array in [["Bottles", bottle_mesh, Transform3D()],
+			["Rags", rag_mesh, Transform3D(Basis(Vector3.BACK, -0.5), Vector3(0.012, 0.28, 0))]]:
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = part[1]
+		mm.instance_count = spots.size()
+		for i in spots.size():
+			mm.set_instance_transform(i, spots[i] * (part[2] as Transform3D))
+		var mmi: MultiMeshInstance3D = _add(c, MultiMeshInstance3D.new(), part[0])
+		mmi.multimesh = mm
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for gi in c.find_children("*", "GeometryInstance3D", true, false):
+		(gi as GeometryInstance3D).visibility_range_end = 70.0 # small: not drawn from far away
+	var cs: CollisionShape3D = _add(c, CollisionShape3D.new(), "CollisionShape3D")
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(0.64, 0.42, 0.42)
+	cs.shape = shape
+	cs.position = Vector3(0, 0.21, 0)
 	return c
 
 

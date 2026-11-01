@@ -10,6 +10,8 @@ signal tank_spawned(tank: Tank)
 
 @export var tank_scene: PackedScene
 @export var tanks_root: Node3D
+@export var crew_scene: PackedScene ## T2: the crew who bail out of a burning tank (riflemen).
+@export var crew_root: Node3D ## ...are added here (Game/Enemies, replicated by its spawner).
 
 var _count: int = 0
 var _rng := RandomNumberGenerator.new()
@@ -44,6 +46,8 @@ func spawn_tank(route_index: int = -1) -> Tank:
 	_count += 1
 	tank.name = "Tank%d" % _count
 	tank.route = routes[route_index]
+	tank.crew_scene = crew_scene
+	tank.crew_root = crew_root
 	tanks_root.add_child(tank, true)
 	tank_spawned.emit(tank)
 	return tank

@@ -140,8 +140,12 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   edge and fires from there. Owner's choices: armour instead of hit points (only a Molotov will
   stop it), routes instead of the navmesh, it STOPS at the trench edge (doesn't cross), the wreck
   becomes a cover point (T3). T1 has no waves yet: F9 / F10 (editor only) bring / knock out a tank.
-- [ ] T2 Molotov cocktail: from a crate, thrown in an arc, hit on the engine deck (back of the
-  hull, +z in the model) → BURNING (fire, stops, 2–3 crew bail out = rifleman scenes) → DESTROYED.
+- [x] T2 Molotov cocktail (owner's ignition flow): boxes in the trench (F), G = bottle in the
+  hand, RIGHT mouse held ~1 s lights the rag (then right mouse = aim), LEFT mouse throws. Lit
+  0–5 s fine, 5–8 s bigger flame + warning, 8+ s burns the hand + may slip at your feet. A lit
+  bottle can't be put away. Engine deck hit → BURNING (stops, no fire, 3 crew bail out and run
+  in panic) → DESTROYED after 20 s; elsewhere on the tank = crew blinded 4 s; ground = burning
+  fuel 6 s (hurts players and soldiers). No sounds yet (RecordedSounds hooks only).
 - [ ] T3 tank as an event: `WaveData.tanks`, engine heard before it shows in the haze, the
   wreck stays as cover (cover point soldiers run to).
 
@@ -201,7 +205,8 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   hit_normal: Vector3) -> bool` (returns true if the hit killed). Enemies use attacker_id -1.
 - Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
   `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`, `match_director`, `ammo_crates`,
-  `trench_entry`, `day_screen`.
+  `trench_entry`, `day_screen`, `tanks`, `tank_route`, `tank_spawner`, `tank_wrecks`, `molotovs`,
+  `molotov_crates`.
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers.
 - Surface metadata `surface` = `snow` (default) / `wood` / `earthwork` / `cloth`; meta
   `attach_holes` makes bullet holes stick to moving targets.
@@ -552,6 +557,49 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   `PlayerInput.request_debug_tank` RPC to the host.
 - `tools/test_t1.gd`, `tools/shots_t1.gd` (approach, side, front, trench edge, wreck; xvfb).
 
+## Molotov cocktail (T2) – how it is built
+- `MolotovHandler` (`scripts/player/molotov_handler.gd`, Player child `Molotov` + `MolotovSync`:
+  `count`, `phase` ON_CHANGE). Phases NONE / HELD / IGNITING / LIT / THROWING (new ones at the
+  END). Host rules in `_physics_process`: `PlayerInput.request_molotov` (G) / `request_throw`
+  (left mouse while `is_selected()`; PlayerInput sends it) → `consume_molotov/consume_throw`;
+  right mouse = the synced `aim_held` (lighting needs a FRESH press: `_rmb_released`, so holding it
+  through a throw doesn't light the next bottle). `ignite_time` 1 s, `warn_time` 5, `danger_time` 8
+  (then `hand_burn_damage` per 0.5 s and `drop_chance` + `drop_chance_growth`·(t−8) → `_drop()`).
+  Throw: from the camera, `throw_speed` 11 / `aimed_throw_speed` 16 m/s + `throw_lift` 2.5 up
+  (aimed ≈ 22 m on flat ground). Dead with a lit bottle → it drops. `Player.respawn` → `reset()`
+  (no bottles). Crates: `MolotovCrate` (`scripts/world/molotov_crate.gd`, group `molotov_crates`,
+  `give()` → `refill()` = `max_carry` 2, `notify_picked_up` → HUD message). Player F picks the
+  nearer of ammo crate / Molotov box; mounting the Maxim / bandaging need the bottle put away.
+- WeaponController with a bottle selected: gun hidden (`holder`), no aiming / firing (and the gun
+  waits for the fire button to be let go – `_fire_blocked`), 1/2 put an UNLIT bottle away
+  (`can_put_away()`), reload ignored, `get_hand_grips()` → the handler's GripR / GripL; the gun
+  plays its raise when the bottle is gone (`_had_bottle`).
+- Hand visuals (local player only, built in code under the camera: `MolotovHand`): bottle
+  (`MolotovManager.make_bottle()`), rag flame + match flame (`make_flames`, `local_coords` so they
+  don't smear when turning), a small OmniLight (local only, like the muzzle flash). Poses in camera
+  space per phase (held, lighting = left hand with the match at the rag, aimed = cocked back,
+  throw swing); flame size grows after `warn_time` / `danger_time`.
+- `MolotovManager` (Game/Molotovs, group `molotovs`): host `throw(origin, velocity, thrower)`
+  steps a ballistic arc with rays (mask world+players+enemies, thrower excluded) each physics
+  frame; RPCs `flight_started` (every computer draws the same arc, tumbling bottle pool of 6) and
+  `shatter(id, pos, normal, hit, tank_path)` (glass burst, fire pool of 8 – on a tank it is
+  re-parented to the tank). Hit = GROUND / TANK_ARMOUR / TANK_ENGINE (`Tank.molotov_hit(local)`).
+  Ground fires (host list) burn `ground_burn_time` 6 s, radius 1.6 m: every 0.5 s 8 damage to
+  players, 25 to soldiers (kill counts for the thrower). `drop_at(pos)` = a bottle at the feet.
+  `make_flames()` / `make_black_smoke()` are static (tank engine fire reuses them; web_fallback).
+- Tank T2: `State.BURNING` (end of enum). `engine_deck` AABB (model space, rear deck behind the
+  turret) → `ignite()`: stops, no firing, `_start_engine_fire()` on every computer (flames over the
+  deck, black smoke, flickering OmniLight – the tank's only light), crew bail out 2–4 s later
+  (`crew_count` 3, 0.5–1 s apart, rifleman scenes from `TankSpawner.crew_scene` under
+  `Game/Enemies`; they do NOT count for the wave) → `Enemy.panic(6–10 s, 35–50 m back south)`
+  (runs, never fights or goes prone meanwhile, then normal from its nearest attack point);
+  `burn_time` 20 s → `destroy()` (fire removed, wreck smoke). Other hits: `_blind_until` 4 s (no
+  DT, no main gun).
+- Sounds: none recorded yet. `RecordedSounds` prefixes `molotov_ignite`, `molotov_throw`,
+  `molotov_break`, `fire_loop` (should be a looping file) – silent until the owner adds files.
+- `tools/test_t2.gd`, `tools/shots_t2.gd` (box, held, lighting, aimed, flight, burning tank,
+  crew, ground fire). `check_web_pack.gd` T2 checks.
+
 ## Gotchas learned
 - **Export bug:** `@export var x: PackedStringArray = []` loses the scene's values when the export
   converts scenes to binary (web build showed hidden Mosin parts, Maxim didn't turn). Use
@@ -622,5 +670,6 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),
   `check_web_pack.gd` (checks the exported pck, see gotchas),
   `test_t1.gd`, `shots_t1.gd` (tank), `make_tank_sounds.py` (tank sounds from assets_source/),
+  `test_t2.gd`, `shots_t2.gd` (Molotov cocktail),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

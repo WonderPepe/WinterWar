@@ -97,6 +97,8 @@ var _prone_since: float = 0.0
 var _prone_patience: float = 8.0
 var _dash_until: float = -100.0     # up and running for a few seconds despite the fire
 var _hold_offset: float = 0.0       # each soldier waits for the barrage at a slightly different line
+var _panic_until: float = -100.0    # T2: crew of a burning tank – running away, not fighting
+var _flee_point: Vector3
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
@@ -161,6 +163,16 @@ func _physics_process(delta: float) -> void:
 		var interval: float = 0.2 + _rng.randf() * 0.05
 		_update_senses(interval)
 		_sense_timer = interval
+	if _now() < _panic_until:
+		# T2: bailed out of a burning tank – run back towards the forest, don't fight yet.
+		suppression = 0.0
+		is_prone = false
+		is_kneeling = false
+		if _move_to(_flee_point, data.hurry_speed):
+			_panic_until = _now() # there already: pull himself together
+		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+		_fall_and_slide(delta)
+		return
 	_update_suppression(delta)
 
 	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER:
@@ -597,6 +609,18 @@ func _nearest_player() -> Player:
 			best = p
 			best_dist = dist
 	return best
+
+
+## Host (T2): panic – run to `flee_to` for `time` seconds without fighting (tank crew).
+func panic(time: float, flee_to: Vector3) -> void:
+	if not multiplayer.is_server() or state == State.DEAD:
+		return
+	_panic_until = _now() + time
+	_flee_point = flee_to
+
+
+func is_panicking() -> bool:
+	return _now() < _panic_until
 
 
 ## Host: the battle is over – stand still.

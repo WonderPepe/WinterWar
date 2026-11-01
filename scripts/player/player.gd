@@ -80,6 +80,7 @@ var _shake: float = 0.0 # camera shake (artillery), local
 @onready var ceiling_check: ShapeCast3D = $CeilingCheck
 @onready var snow_particles: CPUParticles3D = $SnowParticles
 @onready var weapons: WeaponController = $WeaponController
+@onready var molotov: MolotovHandler = $Molotov
 
 
 func _enter_tree() -> void:
@@ -123,6 +124,19 @@ func find_ammo_crate() -> AmmoCrate:
 	var best_dist: float = INF
 	for node in get_tree().get_nodes_in_group("ammo_crates"):
 		var crate := node as AmmoCrate
+		var dist: float = global_position.distance_to(crate.global_position)
+		if dist <= crate.use_distance and dist < best_dist:
+			best = crate
+			best_dist = dist
+	return best
+
+
+## T2: the nearest box of Molotov cocktails within reach, or null (also used by the HUD prompt).
+func find_molotov_crate() -> MolotovCrate:
+	var best: MolotovCrate = null
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("molotov_crates"):
+		var crate := node as MolotovCrate
 		var dist: float = global_position.distance_to(crate.global_position)
 		if dist <= crate.use_distance and dist < best_dist:
 			best = crate
@@ -202,7 +216,8 @@ func _physics_process(delta: float) -> void:
 
 ## Host: B starts a bandage; after `bandage_time` seconds it heals. No shooting meanwhile.
 func _update_bandage(delta: float) -> void:
-	if input.consume_bandage() and not is_bandaging and bandages > 0 and health < max_health:
+	if input.consume_bandage() and not is_bandaging and bandages > 0 and health < max_health \
+			and not molotov.is_selected(): # (T2: not with a bottle in the hand)
 		is_bandaging = true
 		_bandage_timer = bandage_time
 	if is_bandaging:
@@ -228,12 +243,16 @@ func _handle_mounted_gun() -> bool:
 			gun.release()
 			return false
 		var usable := find_usable_gun()
-		if usable:
+		if usable and molotov.can_put_away():
+			molotov.put_away()
 			usable.mount(self)
 			gun = usable
-		else:
+		elif usable == null:
 			var crate := find_ammo_crate()
-			if crate:
+			var bottles := find_molotov_crate()
+			if bottles and (crate == null or global_position.distance_to(bottles.global_position) < global_position.distance_to(crate.global_position)):
+				bottles.give(self)
+			elif crate:
 				crate.resupply(self)
 	if gun == null:
 		return false
@@ -354,6 +373,7 @@ func respawn(at: Transform3D) -> void:
 	is_sprinting = false
 	is_bandaging = false
 	bandages = max_bandages
+	molotov.reset() # (T2: bottles have to be fetched from the box again)
 	weapons.refill_ammo()
 	is_dead = false
 	input.set_look.rpc_id(get_peer_id(), at.basis.get_euler().y, 0.0) # the owner controls the view

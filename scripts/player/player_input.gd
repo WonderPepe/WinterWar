@@ -29,6 +29,8 @@ var _reload_requested: bool = false
 var _switch_requested: int = -1
 var _interact_requested: bool = false
 var _bandage_requested: bool = false
+var _molotov_requested: bool = false
+var _throw_requested: bool = false
 var _block_fire_until_release: bool = false # the click that grabs the mouse must not shoot
 var _was_captured: bool = false
 
@@ -75,6 +77,12 @@ func _process(_delta: float) -> void:
 		request_interact.rpc_id(1)
 	if Input.is_action_just_pressed("bandage"):
 		request_bandage.rpc_id(1)
+	if Input.is_action_just_pressed("molotov"):
+		request_molotov.rpc_id(1)
+	# With a Molotov cocktail in the hand, the left mouse button throws it (T2).
+	var molotov := get_parent().get_node_or_null("Molotov") as MolotovHandler
+	if molotov and molotov.is_selected() and Input.is_action_just_pressed("fire") and not _block_fire_until_release:
+		request_throw.rpc_id(1)
 	if Input.is_action_just_pressed("debug_god_mode"):
 		request_god_mode.rpc_id(1)
 	if OS.has_feature("editor"): # tank test keys (T1) – only when started from the Godot editor
@@ -185,6 +193,32 @@ func consume_interact() -> bool:
 
 
 ## Called by the Player on the host: returns true once per bandage request (B).
+## T2: G = take a Molotov cocktail in the hand.
+@rpc("authority", "call_local", "reliable")
+func request_molotov() -> void:
+	_molotov_requested = true
+
+
+## T2: left mouse with a bottle in the hand = throw it.
+@rpc("authority", "call_local", "reliable")
+func request_throw() -> void:
+	_throw_requested = true
+
+
+## Called by the MolotovHandler on the host: true once per G press.
+func consume_molotov() -> bool:
+	var requested: bool = _molotov_requested
+	_molotov_requested = false
+	return requested
+
+
+## Called by the MolotovHandler on the host: true once per throw click.
+func consume_throw() -> bool:
+	var requested: bool = _throw_requested
+	_throw_requested = false
+	return requested
+
+
 func consume_bandage() -> bool:
 	var requested: bool = _bandage_requested
 	_bandage_requested = false

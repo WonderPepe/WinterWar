@@ -75,6 +75,7 @@ func _init() -> void:
 	action("debug_god_mode", [key(KEY_F1)])
 	action("debug_enemy_labels", [key(KEY_F2)])
 	action("debug_overlay", [key(KEY_F3)])
+	action("molotov", [key(KEY_G)])              # T2: Molotov cocktail in the hand
 	action("debug_spawn_tank", [key(KEY_F9)])    # T1 test: a tank on a random route (editor only)
 	action("debug_destroy_tank", [key(KEY_F10)]) # T1 test: knock out the nearest tank
 	s.set_setting("input/release_mouse", null) # replaced by "pause" in M4

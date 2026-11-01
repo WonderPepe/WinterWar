@@ -40,6 +40,9 @@ func run() -> void:
 		[(load("res://assets/models/vehicles/t26/model.gltf") as PackedScene).instantiate().find_child("vertices_001", true, false) != null, "T1: T-26 turret part in the export"],
 		[(load("res://assets/audio/tank/engine_a.ogg") as AudioStreamOggVorbis).loop, "T1: tank engine loop in the export"],
 		[ResourceLoader.exists("res://assets/audio/tank/dt_shot.ogg") and ResourceLoader.exists("res://assets/audio/tank/gun_bang.ogg"), "T1: tank gun sounds in the export"],
+		[ResourceLoader.exists("res://scenes/props/molotov_crate.tscn"), "T2: Molotov box in the export"],
+		[(load("res://scenes/player.tscn") as PackedScene).instantiate().get_node_or_null("Molotov") is MolotovHandler, "T2: player's Molotov handler in the export"],
+		[(load("res://scenes/game.tscn") as PackedScene).instantiate().get_node_or_null("Molotovs") is MolotovManager, "T2: Molotov manager in the export"],
 	]:
 		print(("PASS  " if check[0] else "FAIL  ") + check[1])
 		if not check[0]:

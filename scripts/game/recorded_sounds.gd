@@ -11,6 +11,11 @@ extends RefCounted
 ##   officer_whistle…  a Soviet officer's whistle (G2)
 ##   dp27…          one DP-27 machine-gun shot (G2)
 ##   telegraph…     typewriter clatter while a front-report telegram types itself out
+##   tank_gun… / tank_dt… / ricochet…  the T-26's 45 mm gun / DT machine gun, bullets off armour
+##   molotov_ignite…  lighting the rag of a Molotov cocktail (match / lighter)
+##   molotov_throw…   the bottle leaving the hand (whoosh)
+##   molotov_break…   the bottle breaking and the fuel catching fire
+##   fire_loop…       burning fuel / a burning tank (should loop)
 ## Example: hurt_1.ogg, hurt_2.ogg, hurt_3.ogg, reload_mosin.ogg.
 ## Missing files = silence (better than a bad placeholder). See the README in the folder.
 

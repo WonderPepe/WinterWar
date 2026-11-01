@@ -43,6 +43,8 @@ var _bloom_deg: float = 0.0       # owner: extra spread from sustained fire
 var _recoil_to_recover: float = 0.0
 var _bob_time: float = 0.0
 var _server_next_fire: float = 0.0 # host: anti-cheat fire-rate check
+var _had_bottle: bool = false     # T2: a Molotov was in the hand last frame
+var _fire_blocked: bool = false   # T2: wait for the fire button to be let go after a throw
 var _reload_timer: float = 0.0     # host
 var _view_models: Array[ViewModel] = []
 var _last_smoke_time: float = 0.0
@@ -111,6 +113,8 @@ func get_hand_grips() -> Array[Transform3D]:
 	var gun := get_mounted_gun()
 	if gun:
 		return gun.get_hand_grips()
+	if player.molotov.is_selected():
+		return player.molotov.get_hand_grips() # T2: a bottle in the hand
 	if current_slot >= _view_models.size():
 		return []
 	return _current_view_model().get_hand_grips()
@@ -137,9 +141,15 @@ func _process(delta: float) -> void:
 	# A hand weapon leaves the shoulder to reload; on the Maxim the gunner stays behind the sights
 	# while the right hand feeds the new belt.
 	var reloading_hand_weapon: bool = is_reloading_now() and get_mounted_gun() == null
-	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging
+	var bottle: bool = player.molotov.is_selected() # T2: right mouse lights / aims the bottle instead
+	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging \
+			and not bottle
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
-	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null
+	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null and not bottle
+	if _had_bottle and not bottle and current_slot < _view_models.size():
+		_view_models[current_slot].play_raise(switch_time) # the gun comes back up
+		_next_fire_time = _now() + switch_time
+	_had_bottle = bottle
 	if player.is_local_player():
 		_owner_process(delta, w)
 
@@ -152,8 +162,19 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 		input.add_look(-step, 0.0)
 		_recoil_to_recover -= step
 
+	if player.molotov.is_selected():
+		# T2: the left mouse button throws the bottle (PlayerInput); the gun waits until it is
+		# let go, so the throwing click can't fire it afterwards.
+		_fire_blocked = true
+		camera.position = Vector3.ZERO
+		camera.fov = base_fov
+		input.look_sensitivity_scale = 1.0
+		return
 	if not input.fire_held:
 		_trigger_ready = true
+		_fire_blocked = false
+	elif _fire_blocked:
+		pass
 	elif is_gun_overheated():
 		if _trigger_ready: # boiling: the trigger just clicks
 			_trigger_ready = false
@@ -285,6 +306,15 @@ func _host_process(delta: float, w: WeaponData) -> void:
 			gun.start_reload() # a new belt
 		return
 	var slot: int = input.consume_switch()
+	if player.molotov.is_selected():
+		# T2: 1 / 2 put the bottle away (not a lit one: that has to be thrown).
+		if slot >= 0 and slot < loadout.size() and player.molotov.can_put_away():
+			player.molotov.put_away()
+		else:
+			slot = -1
+		input.consume_reload()
+		if slot == current_slot:
+			return
 	if slot >= 0 and slot < loadout.size() and slot != current_slot:
 		is_reloading = false
 		current_slot = slot

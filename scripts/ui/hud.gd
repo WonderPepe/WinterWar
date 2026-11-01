@@ -93,6 +93,7 @@ func _find_local_player() -> void:
 			p.weapons.hit_confirmed.connect(_on_hit_confirmed)
 			p.hurt_from.connect(damage_indicator.add_hit)
 			p.resupplied.connect(_show_message.bind("Ammo and bandages refilled"))
+			p.molotov.picked_up.connect(func(n: int) -> void: _show_message("Molotov cocktails: %d   [G]" % n))
 			damage_indicator.set_player(p)
 			return
 
@@ -123,6 +124,8 @@ func _update_vitals() -> void:
 		bandage_label.text = "Bandaging... %d %%" % roundi(_player.get_bandage_progress() * 100.0)
 	else:
 		bandage_label.text = "Bandages: %d   [B]" % _player.bandages
+	if _player.molotov.count > 0:
+		bandage_label.text += "      Molotovs: %d   [G]" % _player.molotov.count
 
 
 func _update_weapon() -> void:
@@ -135,6 +138,9 @@ func _update_weapon() -> void:
 		ammo_label.text = "%d / %s" % [weapons.get_mag_ammo(), "∞" if reserve < 0 else str(reserve)]
 	reload_label.visible = weapons.is_reloading_now()
 	reload_label.text = "NEW BELT" if weapons.get_mounted_gun() else "RELOADING"
+	reload_label.modulate = Color.WHITE
+	if _player.molotov.is_selected():
+		_update_molotov(_player.molotov)
 	_update_heat(weapons.get_mounted_gun())
 	# "[F] Use Maxim" near a free mounted gun, a reminder how to leave while on it.
 	var gun := weapons.get_mounted_gun()
@@ -147,8 +153,13 @@ func _update_weapon() -> void:
 	else:
 		var usable := _player.find_usable_gun()
 		var crate := _player.find_ammo_crate() if usable == null else null
+		var bottles := _player.find_molotov_crate() if usable == null else null
+		if bottles and (crate == null or _player.global_position.distance_to(bottles.global_position) < _player.global_position.distance_to(crate.global_position)):
+			crate = null
 		if usable:
 			interact_prompt.text = "[F] Use %s" % usable.data.display_name
+		elif bottles:
+			interact_prompt.text = "[F] Take Molotov cocktails"
 		elif crate:
 			interact_prompt.text = "[F] Take ammunition and bandages"
 		else:
@@ -159,6 +170,30 @@ func _update_weapon() -> void:
 
 
 ## Maxim water-jacket heat: white → orange → red, and "OVERHEATED" (blinking) at the top.
+## T2: a Molotov cocktail in the hand – what to do next, and a warning when it burns too long.
+func _update_molotov(m: MolotovHandler) -> void:
+	weapon_name.text = "Molotov cocktail"
+	ammo_label.text = "%d" % m.count
+	reload_label.visible = true
+	match m.phase:
+		MolotovHandler.Phase.HELD:
+			reload_label.text = "HOLD RIGHT MOUSE TO LIGHT IT    [1/2] GUN"
+		MolotovHandler.Phase.IGNITING:
+			reload_label.text = "LIGHTING... %d %%" % roundi(m.get_ignite_progress() * 100.0)
+		MolotovHandler.Phase.LIT:
+			var t: float = m.get_lit_time()
+			if t >= m.danger_time:
+				reload_label.text = "IT BURNS YOUR HAND – THROW IT!"
+				reload_label.modulate = Color(1.0, 0.25, 0.15) if fmod(t, 0.4) < 0.2 else Color(1.0, 0.8, 0.3)
+			elif t >= m.warn_time:
+				reload_label.text = "THE RAG BURNS DOWN – THROW!  [LEFT MOUSE]"
+				reload_label.modulate = Color(1.0, 0.6, 0.25)
+			else:
+				reload_label.text = "LIT – THROW [LEFT MOUSE]   aim [RIGHT MOUSE]"
+		_:
+			reload_label.visible = false
+
+
 func _update_heat(gun: MountedGun) -> void:
 	var shown: bool = gun != null and gun.data != null and gun.data.heat_per_shot > 0.0
 	heat_row.visible = shown
