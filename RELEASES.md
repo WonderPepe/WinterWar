@@ -27,6 +27,7 @@ Notes:
 ## Versions
 | Version | Content |
 |---|---|
+| 0.2.2 | Controls screen (main menu and pause menu) listing every key; tanks stop 3 m closer to the trench; in the first tank battle a hint shows where the Molotov cocktails are and how to throw them. |
 | 0.2.1 | Fix: the Credits list scrolls, so Back (or Esc) closes it again. |
 | 0.2.0 | Ten battles with front reports and SA-kuva photos between them; officers, DP-27 machine-gun teams, suppression and artillery barrages; T-26 tanks from battle 4 (two in battles 9–10) and Molotov cocktails to stop them; Suomi drum change, aiming fixes. |
 | 0.1.2 | Browser: "Click to start the battle" at the end of loading instead of the pause menu. |
