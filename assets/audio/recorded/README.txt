@@ -10,6 +10,12 @@ Real sound recordings for the game (used automatically, by file name):
   dp27...           one DP-27 machine-gun shot (G2; the Maxim placeholder, pitched up, until then)
   telegraph...      teleprinter / typewriter clatter while a front-report telegram types itself out
                     (stops when the text is finished; silent if there is none)
+  tank_gun... / tank_dt... / ricochet...  the T-26's 45 mm gun / DT machine gun (replace the
+                    cuts in assets/audio/tank/), bullets glancing off armour (silent until added)
+  molotov_ignite... lighting the rag (T2)      molotov_throw...  the bottle leaving the hand
+  molotov_break...  glass breaking + fuel catching fire
+  fire_loop...      burning fuel / a burning tank - set "Loop" on in its import settings
+                    (the four Molotov sounds are made by tools/make_molotov_sounds.py)
 
 .ogg is best (small). Keep each file short and trimmed (no silence at the start).
 Good free sources:

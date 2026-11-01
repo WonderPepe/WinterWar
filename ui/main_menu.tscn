@@ -14,7 +14,7 @@ width = 4
 height = 128
 fill_to = Vector2(0, 1)
 
-[node name="MainMenu" type="Control" unique_id=2061096837]
+[node name="MainMenu" type="Control" unique_id=1280279758]
 layout_mode = 3
 anchors_preset = 0
 anchor_right = 1.0
@@ -22,14 +22,14 @@ anchor_bottom = 1.0
 theme = ExtResource("1_rmr83")
 script = ExtResource("2_8uxxo")
 
-[node name="Background" type="TextureRect" parent="." unique_id=682493338]
+[node name="Background" type="TextureRect" parent="." unique_id=839539385]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = SubResource("GradientTexture2D_arv2f")
 expand_mode = 1
 
-[node name="Ground" type="ColorRect" parent="." unique_id=1933833281]
+[node name="Ground" type="ColorRect" parent="." unique_id=409777034]
 layout_mode = 0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -37,7 +37,7 @@ anchor_bottom = 1.0
 offset_top = -150.0
 color = Color(0.82, 0.86, 0.91, 1)
 
-[node name="TreeLine" type="Control" parent="." unique_id=2040181341]
+[node name="TreeLine" type="Control" parent="." unique_id=1967926429]
 anchors_preset = 0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -45,311 +45,311 @@ anchor_bottom = 1.0
 offset_top = -150.0
 offset_bottom = -150.0
 
-[node name="Tree" type="Polygon2D" parent="TreeLine" unique_id=288128652]
+[node name="Tree" type="Polygon2D" parent="TreeLine" unique_id=1433756068]
 color = Color(0.13802585, 0.17182843, 0.2094336, 1)
 polygon = PackedVector2Array(-44.552628, 4, -20, -72.78524, 4.5526266, 4)
 
-[node name="@Polygon2D@37" type="Polygon2D" parent="TreeLine" unique_id=2102306984]
+[node name="@Polygon2D@37" type="Polygon2D" parent="TreeLine" unique_id=1701324241]
 color = Color(0.1602021, 0.1962223, 0.23826271, 1)
 polygon = PackedVector2Array(-31.290007, 4, -4.4872284, -82.31677, 22.31555, 4)
 
-[node name="@Polygon2D@38" type="Polygon2D" parent="TreeLine" unique_id=541262665]
+[node name="@Polygon2D@38" type="Polygon2D" parent="TreeLine" unique_id=1868357715]
 color = Color(0.14229356, 0.1765229, 0.21498162, 1)
 polygon = PackedVector2Array(-9.421903, 4, 20.59893, -86.222786, 50.619762, 4)
 
-[node name="@Polygon2D@39" type="Polygon2D" parent="TreeLine" unique_id=1763040425]
+[node name="@Polygon2D@39" type="Polygon2D" parent="TreeLine" unique_id=2077678874]
 color = Color(0.19600338, 0.23560369, 0.28480434, 1)
 polygon = PackedVector2Array(14.406541, 4, 36.442226, -58.2297, 58.47791, 4)
 
-[node name="@Polygon2D@40" type="Polygon2D" parent="TreeLine" unique_id=2115843929]
+[node name="@Polygon2D@40" type="Polygon2D" parent="TreeLine" unique_id=526778054]
 color = Color(0.1004195, 0.13046144, 0.16054535, 1)
 polygon = PackedVector2Array(40.168793, 4, 60.571342, -62.074745, 80.97389, 4)
 
-[node name="@Polygon2D@41" type="Polygon2D" parent="TreeLine" unique_id=538152650]
+[node name="@Polygon2D@41" type="Polygon2D" parent="TreeLine" unique_id=174691248]
 color = Color(0.18091664, 0.2190083, 0.2651916, 1)
 polygon = PackedVector2Array(45.17728, 4, 78.81533, -95.99408, 112.453384, 4)
 
-[node name="@Polygon2D@42" type="Polygon2D" parent="TreeLine" unique_id=154445015]
+[node name="@Polygon2D@42" type="Polygon2D" parent="TreeLine" unique_id=1083367666]
 color = Color(0.19281408, 0.23209547, 0.28065827, 1)
 polygon = PackedVector2Array(86.60786, 4, 111.61473, -69.52609, 136.6216, 4)
 
-[node name="@Polygon2D@43" type="Polygon2D" parent="TreeLine" unique_id=1807218838]
+[node name="@Polygon2D@43" type="Polygon2D" parent="TreeLine" unique_id=838528816]
 color = Color(0.13907932, 0.17298724, 0.21080309, 1)
 polygon = PackedVector2Array(103.802536, 4, 127.63157, -57.077347, 151.4606, 4)
 
-[node name="@Polygon2D@44" type="Polygon2D" parent="TreeLine" unique_id=1279712946]
+[node name="@Polygon2D@44" type="Polygon2D" parent="TreeLine" unique_id=614798808]
 color = Color(0.18826222, 0.22708842, 0.27474087, 1)
 polygon = PackedVector2Array(98.30206, 4, 145.45576, -123.8087, 192.60945, 4)
 
-[node name="@Polygon2D@45" type="Polygon2D" parent="TreeLine" unique_id=921713648]
+[node name="@Polygon2D@45" type="Polygon2D" parent="TreeLine" unique_id=1509326240]
 color = Color(0.14563164, 0.1801948, 0.21932112, 1)
 polygon = PackedVector2Array(116.1781, 4, 165.14102, -117.35799, 214.10394, 4)
 
-[node name="@Polygon2D@46" type="Polygon2D" parent="TreeLine" unique_id=1170783320]
+[node name="@Polygon2D@46" type="Polygon2D" parent="TreeLine" unique_id=895076631]
 color = Color(0.16369377, 0.20006314, 0.24280187, 1)
 polygon = PackedVector2Array(153.48573, 4, 186.85072, -80.12009, 220.2157, 4)
 
-[node name="@Polygon2D@47" type="Polygon2D" parent="TreeLine" unique_id=809595897]
+[node name="@Polygon2D@47" type="Polygon2D" parent="TreeLine" unique_id=992450275]
 color = Color(0.1907627, 0.22983897, 0.2779915, 1)
 polygon = PackedVector2Array(178.97728, 4, 222.79042, -128.39142, 266.60355, 4)
 
-[node name="@Polygon2D@48" type="Polygon2D" parent="TreeLine" unique_id=1780166094]
+[node name="@Polygon2D@48" type="Polygon2D" parent="TreeLine" unique_id=1377425448]
 color = Color(0.18365908, 0.22202496, 0.26875678, 1)
 polygon = PackedVector2Array(238.58548, 4, 259.88074, -53.157383, 281.17596, 4)
 
-[node name="@Polygon2D@49" type="Polygon2D" parent="TreeLine" unique_id=1646992670]
+[node name="@Polygon2D@49" type="Polygon2D" parent="TreeLine" unique_id=1028637375]
 color = Color(0.16626492, 0.20289138, 0.24614437, 1)
 polygon = PackedVector2Array(234.08295, 4, 281.60004, -124.43965, 329.11713, 4)
 
-[node name="@Polygon2D@50" type="Polygon2D" parent="TreeLine" unique_id=2080521969]
+[node name="@Polygon2D@50" type="Polygon2D" parent="TreeLine" unique_id=52007599]
 color = Color(0.15746179, 0.19320795, 0.2347003, 1)
 polygon = PackedVector2Array(283.95657, 4, 320.29926, -113.17138, 356.6419, 4)
 
-[node name="@Polygon2D@51" type="Polygon2D" parent="TreeLine" unique_id=1710611595]
+[node name="@Polygon2D@51" type="Polygon2D" parent="TreeLine" unique_id=125517704]
 color = Color(0.106461845, 0.13710801, 0.16840039, 1)
 polygon = PackedVector2Array(324.79663, 4, 360.11356, -108.1465, 395.43045, 4)
 
-[node name="@Polygon2D@52" type="Polygon2D" parent="TreeLine" unique_id=517649412]
+[node name="@Polygon2D@52" type="Polygon2D" parent="TreeLine" unique_id=1351193887]
 color = Color(0.16436064, 0.2007967, 0.24366882, 1)
 polygon = PackedVector2Array(352.35754, 4, 393.33673, -115.03937, 434.31592, 4)
 
-[node name="@Polygon2D@53" type="Polygon2D" parent="TreeLine" unique_id=1141308673]
+[node name="@Polygon2D@53" type="Polygon2D" parent="TreeLine" unique_id=1149890281]
 color = Color(0.15891358, 0.19480494, 0.23658764, 1)
 polygon = PackedVector2Array(397.34805, 4, 432.8818, -90.683, 468.41556, 4)
 
-[node name="@Polygon2D@54" type="Polygon2D" parent="TreeLine" unique_id=1093048366]
+[node name="@Polygon2D@54" type="Polygon2D" parent="TreeLine" unique_id=2056273160]
 color = Color(0.12014922, 0.15216413, 0.18619397, 1)
 polygon = PackedVector2Array(410.66827, 4, 448.1603, -105.71968, 485.6523, 4)
 
-[node name="@Polygon2D@55" type="Polygon2D" parent="TreeLine" unique_id=1915377863]
+[node name="@Polygon2D@55" type="Polygon2D" parent="TreeLine" unique_id=1539738227]
 color = Color(0.11433424, 0.14576766, 0.1786345, 1)
 polygon = PackedVector2Array(418.5108, 4, 468.93372, -124.00039, 519.3566, 4)
 
-[node name="@Polygon2D@56" type="Polygon2D" parent="TreeLine" unique_id=326558786]
+[node name="@Polygon2D@56" type="Polygon2D" parent="TreeLine" unique_id=1941272368]
 color = Color(0.1353427, 0.16887696, 0.20594549, 1)
 polygon = PackedVector2Array(479.3455, 4, 503.2744, -61.7268, 527.20337, 4)
 
-[node name="@Polygon2D@57" type="Polygon2D" parent="TreeLine" unique_id=1643663777]
+[node name="@Polygon2D@57" type="Polygon2D" parent="TreeLine" unique_id=327444772]
 color = Color(0.17598891, 0.21358779, 0.25878555, 1)
 polygon = PackedVector2Array(480.7901, 4, 520.68665, -111.054436, 560.5832, 4)
 
-[node name="@Polygon2D@58" type="Polygon2D" parent="TreeLine" unique_id=1506959801]
+[node name="@Polygon2D@58" type="Polygon2D" parent="TreeLine" unique_id=878376083]
 color = Color(0.16750655, 0.20425719, 0.24775848, 1)
 polygon = PackedVector2Array(511.6594, 4, 542.20465, -73.24773, 572.75, 4)
 
-[node name="@Polygon2D@59" type="Polygon2D" parent="TreeLine" unique_id=1333339744]
+[node name="@Polygon2D@59" type="Polygon2D" parent="TreeLine" unique_id=205808401]
 color = Color(0.18967777, 0.22864553, 0.27658108, 1)
 polygon = PackedVector2Array(517.9923, 4, 558.9672, -101.93207, 599.9422, 4)
 
-[node name="@Polygon2D@60" type="Polygon2D" parent="TreeLine" unique_id=756206709]
+[node name="@Polygon2D@60" type="Polygon2D" parent="TreeLine" unique_id=1415376861]
 color = Color(0.13539492, 0.1689344, 0.20601338, 1)
 polygon = PackedVector2Array(550.59485, 4, 575.0018, -62.501373, 599.4087, 4)
 
-[node name="@Polygon2D@61" type="Polygon2D" parent="TreeLine" unique_id=1188890231]
+[node name="@Polygon2D@61" type="Polygon2D" parent="TreeLine" unique_id=1245689923]
 color = Color(0.14418775, 0.17860651, 0.21744406, 1)
 polygon = PackedVector2Array(560.6449, 4, 601.1485, -118.46205, 641.6521, 4)
 
-[node name="@Polygon2D@62" type="Polygon2D" parent="TreeLine" unique_id=179662558]
+[node name="@Polygon2D@62" type="Polygon2D" parent="TreeLine" unique_id=1063936252]
 color = Color(0.19985807, 0.23984386, 0.2898155, 1)
 polygon = PackedVector2Array(598.6666, 4, 617.55426, -55.816338, 636.4419, 4)
 
-[node name="@Polygon2D@63" type="Polygon2D" parent="TreeLine" unique_id=1727842675]
+[node name="@Polygon2D@63" type="Polygon2D" parent="TreeLine" unique_id=1553264767]
 color = Color(0.114792205, 0.14627142, 0.17922986, 1)
 polygon = PackedVector2Array(620.1453, 4, 645.5429, -74.39166, 670.9404, 4)
 
-[node name="@Polygon2D@64" type="Polygon2D" parent="TreeLine" unique_id=1536213125]
+[node name="@Polygon2D@64" type="Polygon2D" parent="TreeLine" unique_id=861966786]
 color = Color(0.15705448, 0.19275993, 0.23417082, 1)
 polygon = PackedVector2Array(650.13135, 4, 670.3915, -55.539616, 690.6516, 4)
 
-[node name="@Polygon2D@65" type="Polygon2D" parent="TreeLine" unique_id=395287527]
+[node name="@Polygon2D@65" type="Polygon2D" parent="TreeLine" unique_id=789999374]
 color = Color(0.19574726, 0.23532197, 0.28447142, 1)
 polygon = PackedVector2Array(658.9269, 4, 706.6065, -129.6181, 754.28613, 4)
 
-[node name="@Polygon2D@66" type="Polygon2D" parent="TreeLine" unique_id=1693640218]
+[node name="@Polygon2D@66" type="Polygon2D" parent="TreeLine" unique_id=589016655]
 color = Color(0.12022566, 0.15224822, 0.18629335, 1)
 polygon = PackedVector2Array(712.14886, 4, 733.03613, -57.344246, 753.92346, 4)
 
-[node name="@Polygon2D@67" type="Polygon2D" parent="TreeLine" unique_id=645324163]
+[node name="@Polygon2D@67" type="Polygon2D" parent="TreeLine" unique_id=602034013]
 color = Color(0.12378913, 0.15616804, 0.19092587, 1)
 polygon = PackedVector2Array(723.2719, 4, 771.5724, -129.85167, 819.87286, 4)
 
-[node name="@Polygon2D@68" type="Polygon2D" parent="TreeLine" unique_id=1238674013]
+[node name="@Polygon2D@68" type="Polygon2D" parent="TreeLine" unique_id=1263710988]
 color = Color(0.15867057, 0.19453761, 0.23627172, 1)
 polygon = PackedVector2Array(775.23956, 4, 809.29083, -89.33299, 843.3421, 4)
 
-[node name="@Polygon2D@69" type="Polygon2D" parent="TreeLine" unique_id=1721782466]
+[node name="@Polygon2D@69" type="Polygon2D" parent="TreeLine" unique_id=1553423544]
 color = Color(0.13954432, 0.17349875, 0.2114076, 1)
 polygon = PackedVector2Array(805.3594, 4, 833.0535, -70.793976, 860.74774, 4)
 
-[node name="@Polygon2D@70" type="Polygon2D" parent="TreeLine" unique_id=1689377215]
+[node name="@Polygon2D@70" type="Polygon2D" parent="TreeLine" unique_id=1138375379]
 color = Color(0.19901687, 0.23891853, 0.28872192, 1)
 polygon = PackedVector2Array(817.5648, 4, 853.9888, -107.09994, 890.41266, 4)
 
-[node name="@Polygon2D@71" type="Polygon2D" parent="TreeLine" unique_id=1272548987]
+[node name="@Polygon2D@71" type="Polygon2D" parent="TreeLine" unique_id=1649986012]
 color = Color(0.15530711, 0.19083782, 0.23189923, 1)
 polygon = PackedVector2Array(844.87646, 4, 884.7875, -106.28626, 924.6985, 4)
 
-[node name="@Polygon2D@72" type="Polygon2D" parent="TreeLine" unique_id=2108558710]
+[node name="@Polygon2D@72" type="Polygon2D" parent="TreeLine" unique_id=2035999462]
 color = Color(0.106926516, 0.13761915, 0.16900446, 1)
 polygon = PackedVector2Array(881.761, 4, 913.8143, -100.12352, 945.8675, 4)
 
-[node name="@Polygon2D@73" type="Polygon2D" parent="TreeLine" unique_id=1800530650]
+[node name="@Polygon2D@73" type="Polygon2D" parent="TreeLine" unique_id=2086374975]
 color = Color(0.12891701, 0.1618087, 0.19759211, 1)
 polygon = PackedVector2Array(924.3574, 4, 943.7859, -60.04345, 963.21436, 4)
 
-[node name="@Polygon2D@74" type="Polygon2D" parent="TreeLine" unique_id=661576923]
+[node name="@Polygon2D@74" type="Polygon2D" parent="TreeLine" unique_id=988368666]
 color = Color(0.11943613, 0.15137973, 0.18526697, 1)
 polygon = PackedVector2Array(934.46625, 4, 971.17255, -106.50567, 1007.87885, 4)
 
-[node name="@Polygon2D@75" type="Polygon2D" parent="TreeLine" unique_id=441981867]
+[node name="@Polygon2D@75" type="Polygon2D" parent="TreeLine" unique_id=1095740169]
 color = Color(0.17306119, 0.21036729, 0.25497952, 1)
 polygon = PackedVector2Array(984.9726, 4, 1006.2151, -57.34228, 1027.4575, 4)
 
-[node name="@Polygon2D@76" type="Polygon2D" parent="TreeLine" unique_id=2080153111]
+[node name="@Polygon2D@76" type="Polygon2D" parent="TreeLine" unique_id=1579316740]
 color = Color(0.17462724, 0.21208994, 0.25701538, 1)
 polygon = PackedVector2Array(1010.07684, 4, 1038.4506, -77.0116, 1066.8242, 4)
 
-[node name="@Polygon2D@77" type="Polygon2D" parent="TreeLine" unique_id=699276000]
+[node name="@Polygon2D@77" type="Polygon2D" parent="TreeLine" unique_id=654224778]
 color = Color(0.1328097, 0.16609067, 0.2026526, 1)
 polygon = PackedVector2Array(1028.4445, 4, 1073.7428, -109.00252, 1119.0413, 4)
 
-[node name="@Polygon2D@78" type="Polygon2D" parent="TreeLine" unique_id=946180119]
+[node name="@Polygon2D@78" type="Polygon2D" parent="TreeLine" unique_id=1961259734]
 color = Color(0.16376127, 0.20013738, 0.24288964, 1)
 polygon = PackedVector2Array(1089.7775, 4, 1109.2832, -60.30006, 1128.789, 4)
 
-[node name="@Polygon2D@79" type="Polygon2D" parent="TreeLine" unique_id=1134670407]
+[node name="@Polygon2D@79" type="Polygon2D" parent="TreeLine" unique_id=327316198]
 color = Color(0.12967348, 0.16264081, 0.19857551, 1)
 polygon = PackedVector2Array(1110.1785, 4, 1131.9568, -61.498093, 1153.7352, 4)
 
-[node name="@Polygon2D@80" type="Polygon2D" parent="TreeLine" unique_id=1699125520]
+[node name="@Polygon2D@80" type="Polygon2D" parent="TreeLine" unique_id=1921056226]
 color = Color(0.15014455, 0.185159, 0.2251879, 1)
 polygon = PackedVector2Array(1133.4985, 4, 1161.0443, -84.92351, 1188.59, 4)
 
-[node name="@Polygon2D@81" type="Polygon2D" parent="TreeLine" unique_id=2133063725]
+[node name="@Polygon2D@81" type="Polygon2D" parent="TreeLine" unique_id=1170485960]
 color = Color(0.1800498, 0.21805477, 0.26406473, 1)
 polygon = PackedVector2Array(1163.3906, 4, 1193.0704, -81.300865, 1222.7502, 4)
 
-[node name="@Polygon2D@82" type="Polygon2D" parent="TreeLine" unique_id=241553146]
+[node name="@Polygon2D@82" type="Polygon2D" parent="TreeLine" unique_id=1758522730]
 color = Color(0.11494787, 0.14644265, 0.17943223, 1)
 polygon = PackedVector2Array(1180.6968, 4, 1208.0837, -77.14191, 1235.4708, 4)
 
-[node name="@Polygon2D@83" type="Polygon2D" parent="TreeLine" unique_id=1090923066]
+[node name="@Polygon2D@83" type="Polygon2D" parent="TreeLine" unique_id=1791312450]
 color = Color(0.19498539, 0.23448393, 0.283481, 1)
 polygon = PackedVector2Array(1181.4623, 4, 1225.3901, -119.83259, 1269.3179, 4)
 
-[node name="@Polygon2D@84" type="Polygon2D" parent="TreeLine" unique_id=158198034]
+[node name="@Polygon2D@84" type="Polygon2D" parent="TreeLine" unique_id=1537503060]
 color = Color(0.17557222, 0.21312943, 0.25824386, 1)
 polygon = PackedVector2Array(1221.6465, 4, 1247.4202, -72.11733, 1273.1937, 4)
 
-[node name="@Polygon2D@85" type="Polygon2D" parent="TreeLine" unique_id=1439485195]
+[node name="@Polygon2D@85" type="Polygon2D" parent="TreeLine" unique_id=1846684443]
 color = Color(0.17309162, 0.21040076, 0.25501907, 1)
 polygon = PackedVector2Array(1248.0721, 4, 1274.138, -65.36566, 1300.2037, 4)
 
-[node name="@Polygon2D@86" type="Polygon2D" parent="TreeLine" unique_id=1679898452]
+[node name="@Polygon2D@86" type="Polygon2D" parent="TreeLine" unique_id=38606666]
 color = Color(0.10388686, 0.13427554, 0.1650529, 1)
 polygon = PackedVector2Array(1270.2743, 4, 1289.4398, -53.728928, 1308.6053, 4)
 
-[node name="@Polygon2D@87" type="Polygon2D" parent="TreeLine" unique_id=1928934068]
+[node name="@Polygon2D@87" type="Polygon2D" parent="TreeLine" unique_id=1408255885]
 color = Color(0.17959042, 0.21754944, 0.26346752, 1)
 polygon = PackedVector2Array(1295.8386, 4, 1325.7365, -78.93701, 1355.6343, 4)
 
-[node name="@Polygon2D@88" type="Polygon2D" parent="TreeLine" unique_id=149184445]
+[node name="@Polygon2D@88" type="Polygon2D" parent="TreeLine" unique_id=275887967]
 color = Color(0.17327885, 0.21060672, 0.2552625, 1)
 polygon = PackedVector2Array(1316.9054, 4, 1353.5248, -108.17053, 1390.1442, 4)
 
-[node name="@Polygon2D@89" type="Polygon2D" parent="TreeLine" unique_id=436865584]
+[node name="@Polygon2D@89" type="Polygon2D" parent="TreeLine" unique_id=477670725]
 color = Color(0.16439822, 0.20083803, 0.24371767, 1)
 polygon = PackedVector2Array(1347.4701, 4, 1381.7048, -82.13666, 1415.9395, 4)
 
-[node name="@Polygon2D@90" type="Polygon2D" parent="TreeLine" unique_id=2083417806]
+[node name="@Polygon2D@90" type="Polygon2D" parent="TreeLine" unique_id=186695664]
 color = Color(0.15419057, 0.18960962, 0.23044771, 1)
 polygon = PackedVector2Array(1387.0752, 4, 1418.5358, -77.818375, 1449.9963, 4)
 
-[node name="@Polygon2D@91" type="Polygon2D" parent="TreeLine" unique_id=1688703550]
+[node name="@Polygon2D@91" type="Polygon2D" parent="TreeLine" unique_id=1988906717]
 color = Color(0.143961, 0.1783571, 0.21714929, 1)
 polygon = PackedVector2Array(1426.794, 4, 1455.5558, -79.089676, 1484.3176, 4)
 
-[node name="@Polygon2D@92" type="Polygon2D" parent="TreeLine" unique_id=1883023411]
+[node name="@Polygon2D@92" type="Polygon2D" parent="TreeLine" unique_id=1254826815]
 color = Color(0.19264239, 0.23190662, 0.2804351, 1)
 polygon = PackedVector2Array(1457.2208, 4, 1480.6653, -61.663414, 1504.1097, 4)
 
-[node name="@Polygon2D@93" type="Polygon2D" parent="TreeLine" unique_id=1636217057]
+[node name="@Polygon2D@93" type="Polygon2D" parent="TreeLine" unique_id=1692259368]
 color = Color(0.13846262, 0.17230888, 0.2100014, 1)
 polygon = PackedVector2Array(1473.4268, 4, 1516.5134, -127.001785, 1559.6001, 4)
 
-[node name="@Polygon2D@94" type="Polygon2D" parent="TreeLine" unique_id=1506689343]
+[node name="@Polygon2D@94" type="Polygon2D" parent="TreeLine" unique_id=846901550]
 color = Color(0.12138371, 0.15352207, 0.18779881, 1)
 polygon = PackedVector2Array(1506.2505, 4, 1545.0352, -108.05326, 1583.8198, 4)
 
-[node name="@Polygon2D@95" type="Polygon2D" parent="TreeLine" unique_id=382442198]
+[node name="@Polygon2D@95" type="Polygon2D" parent="TreeLine" unique_id=1722580099]
 color = Color(0.16515753, 0.20167325, 0.24470475, 1)
 polygon = PackedVector2Array(1539.6814, 4, 1582.9716, -108.50267, 1626.2618, 4)
 
-[node name="@Polygon2D@96" type="Polygon2D" parent="TreeLine" unique_id=1466563187]
+[node name="@Polygon2D@96" type="Polygon2D" parent="TreeLine" unique_id=1129425347]
 color = Color(0.18836387, 0.22720024, 0.27487302, 1)
 polygon = PackedVector2Array(1571.0073, 4, 1616.6925, -119.75827, 1662.3777, 4)
 
-[node name="@Polygon2D@97" type="Polygon2D" parent="TreeLine" unique_id=802888925]
+[node name="@Polygon2D@97" type="Polygon2D" parent="TreeLine" unique_id=1422225772]
 color = Color(0.16033113, 0.19636424, 0.23843047, 1)
 polygon = PackedVector2Array(1619.856, 4, 1643.6412, -70.93768, 1667.4265, 4)
 
-[node name="@Polygon2D@98" type="Polygon2D" parent="TreeLine" unique_id=1588662591]
+[node name="@Polygon2D@98" type="Polygon2D" parent="TreeLine" unique_id=537191364]
 color = Color(0.15773612, 0.19350973, 0.23505694, 1)
 polygon = PackedVector2Array(1625.3467, 4, 1668.8688, -106.964516, 1712.3907, 4)
 
-[node name="@Polygon2D@99" type="Polygon2D" parent="TreeLine" unique_id=1517334801]
+[node name="@Polygon2D@99" type="Polygon2D" parent="TreeLine" unique_id=805899608]
 color = Color(0.16443214, 0.20087534, 0.24376175, 1)
 polygon = PackedVector2Array(1663.6971, 4, 1697.2899, -85.43866, 1730.8826, 4)
 
-[node name="@Polygon2D@100" type="Polygon2D" parent="TreeLine" unique_id=1947015916]
+[node name="@Polygon2D@100" type="Polygon2D" parent="TreeLine" unique_id=364519123]
 color = Color(0.17374586, 0.21112043, 0.2558696, 1)
 polygon = PackedVector2Array(1679.6125, 4, 1716.2858, -97.5595, 1752.9591, 4)
 
-[node name="@Polygon2D@101" type="Polygon2D" parent="TreeLine" unique_id=717331384]
+[node name="@Polygon2D@101" type="Polygon2D" parent="TreeLine" unique_id=667474607]
 color = Color(0.103325576, 0.13365813, 0.16432324, 1)
 polygon = PackedVector2Array(1708.8783, 4, 1734.9318, -68.81129, 1760.9854, 4)
 
-[node name="@Polygon2D@102" type="Polygon2D" parent="TreeLine" unique_id=1452660937]
+[node name="@Polygon2D@102" type="Polygon2D" parent="TreeLine" unique_id=390429100]
 color = Color(0.14090036, 0.17499039, 0.21317045, 1)
 polygon = PackedVector2Array(1729.607, 4, 1757.9541, -70.07297, 1786.3011, 4)
 
-[node name="@Polygon2D@103" type="Polygon2D" parent="TreeLine" unique_id=1649004437]
+[node name="@Polygon2D@103" type="Polygon2D" parent="TreeLine" unique_id=1916622129]
 color = Color(0.13966167, 0.17362784, 0.21156016, 1)
 polygon = PackedVector2Array(1735.3065, 4, 1778.3008, -126.063225, 1821.295, 4)
 
-[node name="@Polygon2D@104" type="Polygon2D" parent="TreeLine" unique_id=1809649528]
+[node name="@Polygon2D@104" type="Polygon2D" parent="TreeLine" unique_id=1476448904]
 color = Color(0.13202803, 0.16523083, 0.20163643, 1)
 polygon = PackedVector2Array(1760.5583, 4, 1807.2847, -116.28213, 1854.011, 4)
 
-[node name="@Polygon2D@105" type="Polygon2D" parent="TreeLine" unique_id=1096866005]
+[node name="@Polygon2D@105" type="Polygon2D" parent="TreeLine" unique_id=1236117377]
 color = Color(0.12043853, 0.15248238, 0.18657008, 1)
 polygon = PackedVector2Array(1803.3867, 4, 1827.525, -69.81964, 1851.6635, 4)
 
-[node name="@Polygon2D@106" type="Polygon2D" parent="TreeLine" unique_id=1477150012]
+[node name="@Polygon2D@106" type="Polygon2D" parent="TreeLine" unique_id=1299545153]
 color = Color(0.14430815, 0.17873895, 0.21760058, 1)
 polygon = PackedVector2Array(1817.8132, 4, 1848.5, -85.32506, 1879.1866, 4)
 
-[node name="@Polygon2D@107" type="Polygon2D" parent="TreeLine" unique_id=250316113]
+[node name="@Polygon2D@107" type="Polygon2D" parent="TreeLine" unique_id=726129945]
 color = Color(0.1481546, 0.18297005, 0.22260097, 1)
 polygon = PackedVector2Array(1843.5149, 4, 1877.3329, -102.480804, 1911.1509, 4)
 
-[node name="@Polygon2D@108" type="Polygon2D" parent="TreeLine" unique_id=1675717727]
+[node name="@Polygon2D@108" type="Polygon2D" parent="TreeLine" unique_id=2062912855]
 color = Color(0.17640078, 0.21404085, 0.259321, 1)
 polygon = PackedVector2Array(1871.3931, 4, 1907.7998, -87.20398, 1944.2065, 4)
 
-[node name="@Polygon2D@109" type="Polygon2D" parent="TreeLine" unique_id=1647211338]
+[node name="@Polygon2D@109" type="Polygon2D" parent="TreeLine" unique_id=1517984834]
 color = Color(0.14787528, 0.1826628, 0.22223786, 1)
 polygon = PackedVector2Array(1915.6547, 4, 1940.1196, -72.700745, 1964.5846, 4)
 
-[node name="@Polygon2D@110" type="Polygon2D" parent="TreeLine" unique_id=2105036875]
+[node name="@Polygon2D@110" type="Polygon2D" parent="TreeLine" unique_id=1447153340]
 color = Color(0.17317249, 0.21048972, 0.2551242, 1)
 polygon = PackedVector2Array(1937.4386, 4, 1962.5313, -72.809784, 1987.6238, 4)
 
-[node name="@Polygon2D@111" type="Polygon2D" parent="TreeLine" unique_id=1123396463]
+[node name="@Polygon2D@111" type="Polygon2D" parent="TreeLine" unique_id=2059188137]
 color = Color(0.19896998, 0.23886696, 0.28866094, 1)
 polygon = PackedVector2Array(1953.2192, 4, 1991.2312, -105.5143, 2029.2432, 4)
 
-[node name="SnowFall" type="CPUParticles2D" parent="." unique_id=862616195]
+[node name="SnowFall" type="CPUParticles2D" parent="." unique_id=180296013]
 position = Vector2(960, -20)
 amount = 260
 lifetime = 14.0
@@ -365,17 +365,17 @@ scale_amount_min = 1.5
 scale_amount_max = 3.5
 color = Color(1, 1, 1, 0.85)
 
-[node name="Center" type="CenterContainer" parent="." unique_id=786883024]
+[node name="Center" type="CenterContainer" parent="." unique_id=1455437841]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_bottom = -120.0
 
-[node name="VBox" type="VBoxContainer" parent="Center" unique_id=473248005]
+[node name="VBox" type="VBoxContainer" parent="Center" unique_id=1706103208]
 layout_mode = 2
 theme_override_constants/separation = 9
 
-[node name="Kicker" type="Label" parent="Center/VBox" unique_id=482572104]
+[node name="Kicker" type="Label" parent="Center/VBox" unique_id=290503126]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.85, 0.9, 0.97, 1)
@@ -384,7 +384,7 @@ theme_override_constants/outline_size = 3
 text = "TALVISOTA"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/VBox" unique_id=56166977]
+[node name="Title" type="Label" parent="Center/VBox" unique_id=1166566067]
 layout_mode = 2
 theme_override_font_sizes/font_size = 64
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -393,7 +393,7 @@ theme_override_constants/outline_size = 12
 text = "WINTER WAR: SUMMA"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center/VBox" unique_id=1901312315]
+[node name="Subtitle" type="Label" parent="Center/VBox" unique_id=1899382392]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.88, 0.91, 0.95, 1)
@@ -402,16 +402,16 @@ theme_override_constants/outline_size = 4
 text = "Battle of Summa  ·  Mannerheim Line  ·  1939–40"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="Center/VBox" unique_id=108983869]
+[node name="Spacer" type="Control" parent="Center/VBox" unique_id=159426591]
 custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 
-[node name="DifficultyRow" type="HBoxContainer" parent="Center/VBox" unique_id=1608583932]
+[node name="DifficultyRow" type="HBoxContainer" parent="Center/VBox" unique_id=1778230112]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Label" type="Label" parent="Center/VBox/DifficultyRow" unique_id=1362736712]
+[node name="Label" type="Label" parent="Center/VBox/DifficultyRow" unique_id=231945936]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.92, 0.94, 0.97, 1)
@@ -420,7 +420,7 @@ theme_override_constants/outline_size = 3
 text = "Difficulty"
 horizontal_alignment = 2
 
-[node name="DifficultyOption" type="OptionButton" parent="Center/VBox/DifficultyRow" unique_id=1002686328]
+[node name="DifficultyOption" type="OptionButton" parent="Center/VBox/DifficultyRow" unique_id=2039808008]
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 tooltip_text = "10 battles on every level.
@@ -436,20 +436,20 @@ popup/item_1/id = 1
 popup/item_2/text = "Hard"
 popup/item_2/id = 2
 
-[node name="SinglePlayerButton" type="Button" parent="Center/VBox" unique_id=364342569]
+[node name="SinglePlayerButton" type="Button" parent="Center/VBox" unique_id=46813965]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Single Player"
 
-[node name="TestModeButton" type="Button" parent="Center/VBox" unique_id=1258786206]
+[node name="TestModeButton" type="Button" parent="Center/VBox" unique_id=1840634437]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 tooltip_text = "Start at any battle (only shown in the Godot editor)"
 text = "Test Mode"
 
-[node name="HostCoopButton" type="Button" parent="Center/VBox" unique_id=998150203]
+[node name="HostCoopButton" type="Button" parent="Center/VBox" unique_id=19392126]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -457,7 +457,7 @@ tooltip_text = "Co-op is coming in a later version"
 disabled = true
 text = "Host Co-op"
 
-[node name="JoinCoopButton" type="Button" parent="Center/VBox" unique_id=909467695]
+[node name="JoinCoopButton" type="Button" parent="Center/VBox" unique_id=1498421998]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -465,32 +465,32 @@ tooltip_text = "Co-op is coming in a later version"
 disabled = true
 text = "Join Co-op"
 
-[node name="SettingsButton" type="Button" parent="Center/VBox" unique_id=2090921978]
+[node name="SettingsButton" type="Button" parent="Center/VBox" unique_id=674704272]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Settings"
 
-[node name="BenchmarkButton" type="Button" parent="Center/VBox" unique_id=1126180729]
+[node name="BenchmarkButton" type="Button" parent="Center/VBox" unique_id=275526202]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 tooltip_text = "A 60-second performance test"
 text = "Benchmark"
 
-[node name="CreditsButton" type="Button" parent="Center/VBox" unique_id=38049258]
+[node name="CreditsButton" type="Button" parent="Center/VBox" unique_id=1209062417]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Credits"
 
-[node name="QuitButton" type="Button" parent="Center/VBox" unique_id=641255356]
+[node name="QuitButton" type="Button" parent="Center/VBox" unique_id=329175652]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Quit"
 
-[node name="SettingsMenu" type="Control" parent="." unique_id=1946801301 instance=ExtResource("3_ei257")]
+[node name="SettingsMenu" type="Control" parent="." unique_id=1281414103 instance=ExtResource("3_ei257")]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -499,20 +499,20 @@ anchor_bottom = 1.0
 theme = ExtResource("1_rmr83")
 script = ExtResource("4_p8ri8")
 
-[node name="Credits" type="CenterContainer" parent="." unique_id=1288173181]
+[node name="Credits" type="CenterContainer" parent="." unique_id=1077945612]
 visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="PanelContainer" parent="Credits" unique_id=1221184871]
+[node name="Panel" type="PanelContainer" parent="Credits" unique_id=1786481868]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Credits/Panel" unique_id=744854899]
+[node name="VBox" type="VBoxContainer" parent="Credits/Panel" unique_id=1857645964]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Text" type="Label" parent="Credits/Panel/VBox" unique_id=794485091]
+[node name="Text" type="Label" parent="Credits/Panel/VBox" unique_id=2057203179]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
@@ -555,6 +555,18 @@ Sounds (Creative Commons Attribution 4.0)
 - \"Warfare gunshots – machine gun burst 001\" by soundscalpel.com
   https://freesound.org/s/110622/ – one round of it is the tank's DT machine gun.
 
+- Molotov cocktail breaking (glass + fire) by Benboncan
+  https://freesound.org/people/Benboncan/sounds/74899/ – shortened, made mono.
+
+- Lighting the rag (match / lighter) by AdamsArchive
+  https://freesound.org/people/AdamsArchive/sounds/379108/ – shortened, made mono.
+
+Sounds (Creative Commons 0 – no credit required, listed with thanks)
+- \"quick woosh\" by florianreichelt – https://freesound.org/people/florianreichelt/sounds/683101/
+  (a Molotov cocktail leaving the hand).
+- \"Ambiance_Fire_Bushes_Loop_Stereo\" by Nox_Sound –
+  https://freesound.org/people/Nox_Sound/sounds/564621/ (burning fuel, made mono and looped).
+
 Photographs (Creative Commons Attribution 4.0)
 - Wartime photographs from the Finnish Wartime Photograph Archive: **SA-kuva**
   (https://sa-kuva.fi/), used under CC BY 4.0. Shown on the day screen between waves; made
@@ -570,26 +582,26 @@ Everything else
 Terrain, trees, textures, sounds and soldiers are generated by the project's own scripts."
 autowrap_mode = 3
 
-[node name="BackButton" type="Button" parent="Credits/Panel/VBox" unique_id=1943573514]
+[node name="BackButton" type="Button" parent="Credits/Panel/VBox" unique_id=873559927]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Back"
 
-[node name="TestMode" type="CenterContainer" parent="." unique_id=1022232338]
+[node name="TestMode" type="CenterContainer" parent="." unique_id=1335366471]
 visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="PanelContainer" parent="TestMode" unique_id=1844322540]
+[node name="Panel" type="PanelContainer" parent="TestMode" unique_id=1779996636]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="TestMode/Panel" unique_id=247178896]
+[node name="VBox" type="VBoxContainer" parent="TestMode/Panel" unique_id=225485448]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="TestMode/Panel/VBox" unique_id=1741793492]
+[node name="Title" type="Label" parent="TestMode/Panel/VBox" unique_id=1201067856]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
@@ -598,12 +610,12 @@ theme_override_constants/outline_size = 6
 text = "TEST MODE"
 horizontal_alignment = 1
 
-[node name="WaveRow" type="HBoxContainer" parent="TestMode/Panel/VBox" unique_id=1358181255]
+[node name="WaveRow" type="HBoxContainer" parent="TestMode/Panel/VBox" unique_id=954210727]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Label" type="Label" parent="TestMode/Panel/VBox/WaveRow" unique_id=1782803548]
+[node name="Label" type="Label" parent="TestMode/Panel/VBox/WaveRow" unique_id=718556049]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.92, 0.94, 0.97, 1)
@@ -612,14 +624,14 @@ theme_override_constants/outline_size = 3
 text = "Start at battle"
 horizontal_alignment = 2
 
-[node name="WaveSpin" type="SpinBox" parent="TestMode/Panel/VBox/WaveRow" unique_id=1757555363]
+[node name="WaveSpin" type="SpinBox" parent="TestMode/Panel/VBox/WaveRow" unique_id=1886423371]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 min_value = 1.0
 max_value = 10.0
 value = 1.0
 
-[node name="Info" type="Label" parent="TestMode/Panel/VBox" unique_id=121642484]
+[node name="Info" type="Label" parent="TestMode/Panel/VBox" unique_id=1703735586]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.8, 0.84, 0.9, 1)
@@ -628,19 +640,19 @@ theme_override_constants/outline_size = 3
 text = "Difficulty: Normal"
 horizontal_alignment = 1
 
-[node name="StartButton" type="Button" parent="TestMode/Panel/VBox" unique_id=1360351498]
+[node name="StartButton" type="Button" parent="TestMode/Panel/VBox" unique_id=1162417254]
 custom_minimum_size = Vector2(240, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Start"
 
-[node name="BackButton" type="Button" parent="TestMode/Panel/VBox" unique_id=1915962836]
+[node name="BackButton" type="Button" parent="TestMode/Panel/VBox" unique_id=1519741719]
 custom_minimum_size = Vector2(240, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Back"
 
-[node name="Version" type="Label" parent="." unique_id=596935339]
+[node name="Version" type="Label" parent="." unique_id=339294947]
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0

@@ -145,7 +145,7 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   0–5 s fine, 5–8 s bigger flame + warning, 8+ s burns the hand + may slip at your feet. A lit
   bottle can't be put away. Engine deck hit → BURNING (stops, no fire, 3 crew bail out and run
   in panic) → DESTROYED after 20 s; elsewhere on the tank = crew blinded 4 s; ground = burning
-  fuel 6 s (hurts players and soldiers). No sounds yet (RecordedSounds hooks only).
+  fuel 6 s (hurts players and soldiers). Sounds: owner's Freesound picks (see T2 section).
 - [ ] T3 tank as an event: `WaveData.tanks`, engine heard before it shows in the haze, the
   wreck stays as cover (cover point soldiers run to).
 
@@ -595,8 +595,14 @@ Notes for Claude (and any other AI assistant) working on this project. Read this
   (runs, never fights or goes prone meanwhile, then normal from its nearest attack point);
   `burn_time` 20 s → `destroy()` (fire removed, wreck smoke). Other hits: `_blind_until` 4 s (no
   DT, no main gun).
-- Sounds: none recorded yet. `RecordedSounds` prefixes `molotov_ignite`, `molotov_throw`,
-  `molotov_break`, `fire_loop` (should be a looping file) – silent until the owner adds files.
+- Sounds (`RecordedSounds` prefixes, files in `assets/audio/recorded/`, made by
+  `tools/make_molotov_sounds.py` from the owner's downloads in `assets_source/`):
+  `molotov_break.ogg` (Freesound 74899 Benboncan; glass + whoosh, 4.5 s), `molotov_ignite.ogg`
+  (379108 AdamsArchive; plays when lighting starts, stopped if cancelled; local player only),
+  `molotov_throw.ogg` (683101 florianreichelt, CC0), `fire_loop.ogg` (564621 Nox_Sound, CC0;
+  `loop=true` in its .import; ground fires, burning tank, rag in the hand at −8 dB). All in
+  CREDITS.md. The licences of 74899 / 379108 could not be read from the cloud (freesound.org
+  blocked) – credited as attribution; the owner was asked to confirm.
 - `tools/test_t2.gd`, `tools/shots_t2.gd` (box, held, lighting, aimed, flight, burning tank,
   crew, ground fire). `check_web_pack.gd` T2 checks.
 
@@ -670,6 +676,6 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   poses, sprays), `shots_battle.gd` (a wave from the trench), `make_buses.gd` (audio buses),
   `check_web_pack.gd` (checks the exported pck, see gotchas),
   `test_t1.gd`, `shots_t1.gd` (tank), `make_tank_sounds.py` (tank sounds from assets_source/),
-  `test_t2.gd`, `shots_t2.gd` (Molotov cocktail),
+  `test_t2.gd`, `shots_t2.gd` (Molotov cocktail), `make_molotov_sounds.py`,
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

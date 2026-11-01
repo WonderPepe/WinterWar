@@ -41,6 +41,8 @@ func run() -> void:
 		[(load("res://assets/audio/tank/engine_a.ogg") as AudioStreamOggVorbis).loop, "T1: tank engine loop in the export"],
 		[ResourceLoader.exists("res://assets/audio/tank/dt_shot.ogg") and ResourceLoader.exists("res://assets/audio/tank/gun_bang.ogg"), "T1: tank gun sounds in the export"],
 		[ResourceLoader.exists("res://scenes/props/molotov_crate.tscn"), "T2: Molotov box in the export"],
+		[RecordedSounds.pick("molotov_break") != null and RecordedSounds.pick("molotov_ignite") != null and RecordedSounds.pick("molotov_throw") != null, "T2: Molotov sounds in the export"],
+		[(RecordedSounds.pick("fire_loop") as AudioStreamOggVorbis).loop, "T2: fire loop loops in the export"],
 		[(load("res://scenes/player.tscn") as PackedScene).instantiate().get_node_or_null("Molotov") is MolotovHandler, "T2: player's Molotov handler in the export"],
 		[(load("res://scenes/game.tscn") as PackedScene).instantiate().get_node_or_null("Molotovs") is MolotovManager, "T2: Molotov manager in the export"],
 	]:

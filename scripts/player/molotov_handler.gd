@@ -270,6 +270,8 @@ func _on_phase_changed(was: Phase, now: Phase) -> void:
 			_play(_flame_audio, crackle)
 	if was == Phase.LIT:
 		_flame_audio.stop()
+	if was == Phase.IGNITING and now == Phase.HELD:
+		_ignite_audio.stop() # let go too early: the match goes out
 	if now == Phase.HELD and was == Phase.THROWING:
 		_hand_t = 0.0 # the next bottle comes up from below
 

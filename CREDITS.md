@@ -34,6 +34,18 @@ the game; the models are otherwise unchanged.
 - "Warfare gunshots – machine gun burst 001" by soundscalpel.com
   https://freesound.org/s/110622/ – one round of it is the tank's DT machine gun.
 
+- Molotov cocktail breaking (glass + fire) by Benboncan
+  https://freesound.org/people/Benboncan/sounds/74899/ – shortened, made mono.
+
+- Lighting the rag (match / lighter) by AdamsArchive
+  https://freesound.org/people/AdamsArchive/sounds/379108/ – shortened, made mono.
+
+## Sounds (Creative Commons 0 – no credit required, listed with thanks)
+- "quick woosh" by florianreichelt – https://freesound.org/people/florianreichelt/sounds/683101/
+  (a Molotov cocktail leaving the hand).
+- "Ambiance_Fire_Bushes_Loop_Stereo" by Nox_Sound –
+  https://freesound.org/people/Nox_Sound/sounds/564621/ (burning fuel, made mono and looped).
+
 ## Photographs (Creative Commons Attribution 4.0)
 - Wartime photographs from the Finnish Wartime Photograph Archive: **SA-kuva**
   (https://sa-kuva.fi/), used under CC BY 4.0. Shown on the day screen between waves; made
