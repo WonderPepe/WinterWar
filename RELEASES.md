@@ -27,6 +27,7 @@ Notes:
 ## Versions
 | Version | Content |
 |---|---|
+| 0.2.4 | DP-27 machine-gun teams follow their riflemen 5–10 m behind, open fire from 80–130 m off the trench and move up in bounds; when all the riflemen are dead they storm the trench too (no more hunting for the last enemy). Loading screen: only the tip and "Click to start the battle" at the end. |
 | 0.2.3 | Browser: closing the tab during a battle (Ctrl+W – easy to hit with W + Ctrl) first asks "Leave site?"; in fullscreen (Chrome/Edge) Ctrl+W is blocked and Esc must be held to leave fullscreen (a notice says so). Fixes: soldiers no longer stop far from the trench after a match was left during an artillery barrage; the crew of a burning tank now count as enemies of the battle. |
 | 0.2.2 | Controls screen (main menu and pause menu) listing every key; tanks stop 3 m closer to the trench; in the first tank battle a hint shows where the Molotov cocktails are and how to throw them. |
 | 0.2.1 | Fix: the Credits list scrolls, so Back (or Esc) closes it again. |
