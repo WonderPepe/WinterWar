@@ -21,7 +21,7 @@ func _init() -> void:
 	var s := ProjectSettings
 	s.set_setting("application/config/description", "Winter War 1939-40 FPS prototype - Battle of Summa")
 	# The version players see (main menu). Raise it for every public release – see RELEASES.md.
-	s.set_setting("application/config/version", "0.2.2")
+	s.set_setting("application/config/version", "0.2.3")
 	s.set_setting("application/run/main_scene", "res://ui/main_menu.tscn")
 	s.set_setting("application/config/features", PackedStringArray(["4.7", "GL Compatibility"]))
 
