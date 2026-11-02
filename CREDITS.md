@@ -34,6 +34,13 @@ the game; the models are otherwise unchanged.
 - "Warfare gunshots – machine gun burst 001" by soundscalpel.com
   https://freesound.org/s/110622/ – one round of it is the tank's DT machine gun.
 
+- "Gear spinning loop" by newagesoup – https://freesound.org/s/336328/ – the tank turret's gears
+  (made mono, looped). LICENSE TO CONFIRM by the owner.
+- "doorlatch" by zabuhailo – https://freesound.org/s/144824/ – the turret's metal clunks
+  (cut into single hits, made mono). LICENSE TO CONFIRM by the owner.
+- "turn-crank squeak old metal machine loop" by aslakhostaker – https://freesound.org/s/395041/ –
+  the turret's hand crank (made mono, looped). LICENSE TO CONFIRM by the owner.
+
 - "Molotov.wav" by Benboncan
   https://freesound.org/s/74899/ – a Molotov cocktail breaking (shortened, made mono).
 

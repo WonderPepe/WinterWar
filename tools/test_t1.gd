@@ -100,7 +100,7 @@ func run() -> void:
 	check(ok, "player in sight → SUPPRESS")
 	ok = await wait_for(func() -> bool: return tank.state == Tank.State.SUPPRESS and tank.drive_speed <= tank.suppress_speed + 0.01, 8.0)
 	check(ok, "drives slower while firing (%.2f m/s)" % tank.drive_speed)
-	ok = await wait_for(func() -> bool: return tank.dt_rounds_fired >= 10, 12.0)
+	ok = await wait_for(func() -> bool: return tank.dt_rounds_fired >= 10, 40.0) # slow turret (T4): the hull keeps turning under it
 	check(ok, "DT fires at the player (%d rounds)" % tank.dt_rounds_fired)
 	check(tank._aim_error_deg(tank.dt_muzzle) < 6.0, "turret turned towards the player (%.1f° off)" % tank._aim_error_deg(tank.dt_muzzle))
 	ok = await wait_for(func() -> bool: return p.health < hp or p.is_dead, 10.0)
@@ -120,7 +120,12 @@ func run() -> void:
 	check(tank.state != Tank.State.DESTROYED, "rifle bullets don't hurt the tank")
 	check(ImpactEffects.surface_of(tank, Vector3.UP) == "metal", "tank surface = metal (sparks)")
 
-	# --- Stop and fire the 45 mm gun.
+	# --- Stop and fire the 45 mm gun. (The slow turret may have taken a while: stand 40 m ahead again.)
+	p.god_mode = false
+	stand = tank.global_position + Vector3(4, 0, 40)
+	stand.y = terrain.get_height(stand.x, stand.z) + 0.1
+	p.global_position = stand
+	p.god_mode = true
 	tank._next_halt = 0.0
 	ok = await wait_for(func() -> bool: return tank.state == Tank.State.HALT_FIRE, 6.0)
 	check(ok, "stops to fire the main gun (HALT_FIRE)")

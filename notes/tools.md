@@ -23,6 +23,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_t1.gd`, `shots_t1.gd` (tank), `make_tank_sounds.py` (tank sounds from assets_source/),
   `test_t2.gd`, `shots_t2.gd` (Molotov cocktail), `make_molotov_sounds.py`,
   `test_t3.gd`, `shots_t3.gd` (tanks in the waves, forest lane),
+  `test_turret.gd` (T4 turret speeds / delays), `make_turret_sounds.py`,
   `test_controls.gd`, `shots_controls.gd` (Controls screen, tank route ends, Molotov hint),
   `web_guard_test.py` (web export: Leave-site warning, fullscreen "hold Esc" notice),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).

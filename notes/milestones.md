@@ -107,6 +107,11 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   counts); wrecks stay as cover but only the newest 3 are kept (older ones vanish behind the black
   day screen); soldiers using wrecks as cover moved to a later milestone (with "field cover",
   idea 0). Tanks start 40 m back in the forest (cleared lanes) – the engine is heard first.
+- [x] T4 tank turret feel (owner's numbers): the turret is hand-cranked – idle 4, tracking 8,
+  emergency (target < 25 m) 12 deg/s max; 1.5 s from standstill to top speed and the same to
+  brake; 0.3–0.6 s reaction after spotting; a target behind the hull (> 100°) costs 0.8–1.5 s more;
+  inside 10 m the top speed shrinks to 50 %. Turret sounds from the owner's Freesound picks.
+  Details: `tank-and-molotov.md`.
 - [x] Controls screen + tank 3 m closer + Molotov hint (owner): a **Controls** button in the
   main menu and the pause menu opens `ui/controls_panel.tscn` (`ControlsPanel`, rows filled from
   the Input Map – change a key there and the list follows; F-key test keys only in the editor;

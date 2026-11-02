@@ -31,6 +31,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   or chest, noticed after `spot_time` 1.5 s (×2 crouching, ×0.5 once fighting), forgotten after
   4 s out of sight. Gun depression −10° (real T-26 ≈ −6°; needed to reach into the trench from the
   edge). A crouching player in the trench is out of sight; standing up he is seen.
+- Turret traverse: see "Turret feel (T4)" below (the old flat 24°/s is gone).
 - DT: bursts 5–12 at 0.1 s, 63-round pan, 5 s reload, fires when the turret is within 3° of the
   target; spread like the soldiers (× `Enemy.spread_multiplier`, wider while driving), damage
   25 × `Enemy.damage_multiplier`, `bullet_passed` cracks. RPC `show_dt_effects` (unreliable).
@@ -138,3 +139,28 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (where the BATTLE banner was) shows "TANKS ARE COMING!" + where the Molotov boxes are and the
   keys (read from the Input Map via `ControlsPanel.key_text`). It waits until the banner has
   faded, stays `tank_hint_time` 14 s, once per match (`_tank_hint_shown`). Local UI only.
+
+## Turret feel (T4) – how it is built
+- `Tank._aim()` → `_traverse()`: the host keeps a signed `_turret_vel` (rad/s). Top speed:
+  `turret_idle_deg` 4 (no target / trench sweep, whose swing peaks at exactly 4), `turret_track_deg` 8,
+  `turret_emergency_deg` 12 when the target is closer than `emergency_range_m` 25 (hard cap 12).
+  Inside `close_range_m` 10 the top speed scales down to `close_efficiency` 0.5 at point-blank.
+  Speed changes by at most top / `turret_ramp_time` (1.5 s) per second; the wanted speed is
+  min(top, sqrt(2·a·error)) so it brakes in time and stops on the mark; a reversal passes through zero.
+- Reaction (`_update_reaction`): a NEW target → hold `react_min..max` 0.3–0.6 s (turret coasts to a
+  stop, no cranking); if he is further round than `behind_angle_deg` 100° (from the hull's front, or
+  from the turret) add `reacquire_min..max` 0.8–1.5 s. The same target slipping behind the hull
+  triggers the reacquire delay once (20° hysteresis). `_turret_hold_until` is in `_clock` time.
+- Consequences: the hull turns under the turret (up to 22°/s) and the turret can't follow, so the DT
+  often loses the aim on bends; a sprinter circling inside 10 m can't be tracked. Gun elevation
+  speed is unchanged (14°/s). "Emergency after a Molotov hit" was NOT built (emergency = range only).
+- Sounds (`assets/audio/tank/`, made by `tools/make_turret_sounds.py`, players built in code by
+  `_setup_turret_sounds()` under `TurretPivot`, NOT in the scene): `turret_gear.ogg` (336328
+  newagesoup, loop), `turret_crank.ogg` (395041 aslakhostaker, loop), `turret_clunk_1..3.ogg` +
+  `turret_stop.ogg` (144824 zabuhailo "doorlatch": three clunks; the stop clunk is the end of the
+  recording). Every computer works out the speed from the synced `turret_yaw` (smoothed), so
+  volume/pitch follow the real speed; a clunk at start, a stop clunk (after > 0.8 s of turning) and a
+  random clunk every 2–5 s. Loops are set in code (`.loop = true`). `RecordedSounds` prefixes
+  `tank_turret` (gear loop) / `tank_clunk` (clunks) override them.
+- `tools/test_turret.gd` (speeds, ramp, delays, behind, close range, reversal smoothness, sprinter).
+  Flaky BEFORE T4 too (random): test_t1 "DT bullets hurt" / "HALT_FIRE", test_m3 "soldiers advance".

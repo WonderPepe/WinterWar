@@ -31,7 +31,18 @@ const SOUNDS_DIR := "res://assets/audio/tank/"
 @export var track_half_width: float = 1.0 ## ...and this far to the sides (for tilting over bumps).
 
 @export_group("Turret and sight")
-@export var turret_speed_deg: float = 24.0 ## Turret traverse (hand-cranked).
+@export var turret_idle_deg: float = 4.0 ## Turret traverse (hand-cranked) while searching: deg/s.
+@export var turret_track_deg: float = 8.0 ## ...while following a target.
+@export var turret_emergency_deg: float = 12.0 ## ...fastest possible: target close (see emergency_range_m).
+@export var turret_ramp_time: float = 1.5 ## Seconds from standstill to top speed (braking takes as long).
+@export var emergency_range_m: float = 25.0 ## Closer than this the crew cranks flat out.
+@export var close_range_m: float = 10.0 ## Closer than this the crew can't keep up: top speed shrinks...
+@export var close_efficiency: float = 0.5 ## ...to this fraction at point-blank.
+@export var react_min: float = 0.3 ## Seconds between spotting someone and the first turn of the crank.
+@export var react_max: float = 0.6
+@export var behind_angle_deg: float = 100.0 ## A target further round than this (from the hull's front) is "behind"...
+@export var reacquire_min: float = 0.8 ## ...and costs the crew this long to work out where he went.
+@export var reacquire_max: float = 1.5
 @export var gun_speed_deg: float = 14.0 ## Gun elevation speed.
 @export var gun_min_deg: float = -14.0 ## (The real T-26 managed about -6°; more so it can fire into the trench from 3 m closer.)
 @export var gun_max_deg: float = 22.0
@@ -117,6 +128,10 @@ var _last_seen_time: float = -100.0
 var _next_halt: float = 0.0
 var _halt_started: float = 0.0
 var _aim_steady: float = 0.0
+var _turret_vel: float = 0.0 # rad/s, signed (host)
+var _turret_hold_until: float = 0.0 # the crew is still reacting: no turning before this
+var _aimed_target: Player = null
+var _was_behind: bool = false
 var _next_gun_shot: float = 0.0
 var _after_shot_until: float = -1.0
 var _dt_burst_left: int = 0
@@ -139,6 +154,17 @@ var _turret_offset: Transform3D
 var _gun_offset: Transform3D
 var _last_smoke: float = 0.0
 var _wreck_smoke: CPUParticles3D
+var _turret_gear: AudioStreamPlayer3D # turret sounds (all computers, from the synced turret_yaw)
+var _turret_crank: AudioStreamPlayer3D
+var _turret_clunk: AudioStreamPlayer3D
+var _clunks: Array[AudioStream] = []
+var _turret_stop_sound: AudioStream
+var _prev_turret_yaw: float = 0.0
+var _turret_rate: float = 0.0 # smoothed |deg/s| heard as sound
+var _turret_moving: bool = false
+var _turret_moved_since: float = 0.0
+var _next_clunk: float = 0.0
+var _sound_clock: float = 0.0
 
 @onready var model: Node3D = $Model
 @onready var turret_pivot: Node3D = $TurretPivot
@@ -197,6 +223,41 @@ func _setup_sounds() -> void:
 	var dt: AudioStream = RecordedSounds.pick("tank_dt")
 	dt_sound.stream = dt if dt else load(SOUNDS_DIR + "dt_shot.ogg")
 	engine_sound.play(randf() * 5.0)
+	_setup_turret_sounds()
+
+
+## Gears, hand crank and metal clunks of the turret. Built here (not in the scene) so the scene
+## builder needn't be re-run. A recording called tank_turret… / tank_clunk… in assets/audio/recorded/
+## replaces the gear loop / the clunks (see RecordedSounds).
+func _setup_turret_sounds() -> void:
+	var gear: AudioStream = RecordedSounds.pick("tank_turret")
+	_turret_gear = _make_turret_player("TurretGear", gear if gear else load(SOUNDS_DIR + "turret_gear.ogg"), 14.0)
+	_turret_crank = _make_turret_player("TurretCrank", load(SOUNDS_DIR + "turret_crank.ogg"), 10.0)
+	_turret_clunk = _make_turret_player("TurretClunk", null, 25.0)
+	_turret_clunk.max_polyphony = 3
+	var custom: Array[AudioStream] = RecordedSounds.get_sounds("tank_clunk")
+	if custom.is_empty():
+		for i in 3:
+			_clunks.append(load(SOUNDS_DIR + "turret_clunk_%d.ogg" % (i + 1)))
+	else:
+		_clunks = custom
+	_turret_stop_sound = load(SOUNDS_DIR + "turret_stop.ogg")
+	_prev_turret_yaw = turret_yaw
+
+
+func _make_turret_player(node_name: String, stream: AudioStream, unit: float) -> AudioStreamPlayer3D:
+	var p := AudioStreamPlayer3D.new()
+	p.name = node_name
+	p.bus = &"SFX"
+	p.unit_size = unit
+	p.attenuation_filter_cutoff_hz = 3500.0
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+	elif stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	p.stream = stream
+	turret_pivot.add_child(p)
+	return p
 
 
 func _physics_process(delta: float) -> void:
@@ -216,8 +277,9 @@ func _physics_process(delta: float) -> void:
 	_fire_dt()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_apply_pivots()
+	_update_turret_sound(delta)
 	if _engine_fire:
 		var light := _engine_fire.get_node("FireLight") as OmniLight3D
 		light.light_energy = 1.6 + randf() * 0.9 # flickering flames
@@ -405,9 +467,12 @@ func _ground(terrain: TerrainGenerator, p: Vector3) -> float:
 
 
 # ------------------------------------------------------------------ turret (host)
+## The turret is cranked by hand: it speeds up and brakes slowly (turret_ramp_time), never
+## snaps to the target, and the crew needs a moment to react to a new target.
 func _aim(delta: float) -> void:
 	var want_yaw: float = 0.0
 	var want_pitch: float = 0.0
+	var top_deg: float = turret_idle_deg
 	var has_point: bool = _target != null
 	if has_point:
 		# Turn the turret (around the hull's up axis) towards the target, then raise the gun.
@@ -417,17 +482,70 @@ func _aim(delta: float) -> void:
 		var gun_origin: Vector3 = turret_pivot.position + Basis(Vector3.UP, want_yaw) * gun_pivot.position
 		var d: Vector3 = local - gun_origin
 		want_pitch = atan2(d.y, Vector2(d.x, d.z).length())
+		top_deg = _tracking_speed_deg(Vector2(from_pivot.x, from_pivot.z).length())
+		_update_reaction(want_yaw)
 	elif state == State.AT_TRENCH:
-		# Nobody in sight: slowly search left and right along the trench.
-		_sweep_phase += delta * 0.18
+		# Nobody in sight: slowly search left and right along the trench. The swing's fastest
+		# point is exactly the idle speed.
+		_sweep_phase += delta * deg_to_rad(turret_idle_deg) / deg_to_rad(sweep_angle_deg)
 		want_yaw = sin(_sweep_phase) * deg_to_rad(sweep_angle_deg)
 		want_pitch = deg_to_rad(-4.0)
-	turret_yaw = rotate_toward(turret_yaw, want_yaw, deg_to_rad(turret_speed_deg) * delta)
+		_aimed_target = null
+		_was_behind = false
+	else:
+		_aimed_target = null
+		_was_behind = false
+	_traverse(delta, want_yaw, top_deg, _clock < _turret_hold_until)
 	gun_pitch = move_toward(gun_pitch, clampf(want_pitch, deg_to_rad(gun_min_deg), deg_to_rad(gun_max_deg)), deg_to_rad(gun_speed_deg) * delta)
 	if has_point and _target_visible and _aim_error_deg(muzzle) < gun_aim_tolerance_deg:
 		_aim_steady += delta
 	else:
 		_aim_steady = 0.0
+
+
+## Top traverse speed (deg/s) against a target `dist` metres away: tracking speed, flat out when
+## it is close, but inside close_range_m the crew can't keep the sight on him.
+func _tracking_speed_deg(dist: float) -> float:
+	var top: float = turret_emergency_deg if dist < emergency_range_m else turret_track_deg
+	if dist < close_range_m:
+		top *= lerpf(close_efficiency, 1.0, dist / close_range_m)
+	return minf(top, turret_emergency_deg)
+
+
+## A new target costs the crew a reaction time; if he is behind the tank (or the turret has to
+## swing right round) they also have to find him first.
+func _update_reaction(want_yaw: float) -> void:
+	var hull_angle: float = absf(wrapf(want_yaw, -PI, PI))
+	var behind_rad: float = deg_to_rad(behind_angle_deg)
+	if _target != _aimed_target:
+		_aimed_target = _target
+		var delay: float = _rng.randf_range(react_min, react_max)
+		if absf(wrapf(want_yaw - turret_yaw, -PI, PI)) > behind_rad or hull_angle > behind_rad:
+			delay += _rng.randf_range(reacquire_min, reacquire_max)
+		_turret_hold_until = maxf(_turret_hold_until, _clock + delay)
+		_was_behind = hull_angle > behind_rad
+		return
+	# Same target, but he has slipped round behind the hull (hysteresis: 20° back to be "in front" again).
+	if hull_angle > behind_rad and not _was_behind:
+		_was_behind = true
+		_turret_hold_until = maxf(_turret_hold_until, _clock + _rng.randf_range(reacquire_min, reacquire_max))
+	elif hull_angle < behind_rad - deg_to_rad(20.0):
+		_was_behind = false
+
+
+## Moves the turret towards `want_yaw` with inertia: speed changes by at most top/turret_ramp_time
+## per second, and the turret brakes early enough to stop on the mark. `hold`: the crew is not
+## cranking yet (the turret coasts to a stop).
+func _traverse(delta: float, want_yaw: float, top_deg: float, hold: bool) -> void:
+	var top: float = deg_to_rad(top_deg)
+	var accel: float = top / maxf(turret_ramp_time, 0.1)
+	var err: float = wrapf(want_yaw - turret_yaw, -PI, PI)
+	var want_vel: float = 0.0
+	if not hold:
+		want_vel = signf(err) * minf(top, sqrt(2.0 * accel * absf(err)))
+	# A change of direction passes through zero at the same rate: no sudden reversals.
+	_turret_vel = move_toward(_turret_vel, want_vel, accel * delta)
+	turret_yaw += _turret_vel * delta
 
 
 ## Angle between where `from` points (its -z) and the line to the target.
@@ -436,6 +554,54 @@ func _aim_error_deg(from: Node3D) -> float:
 	if to_target.length() < 0.1:
 		return 0.0
 	return rad_to_deg((-from.global_basis.z).angle_to(to_target))
+
+
+# ------------------------------------------------------------------ turret sound (everyone)
+## Loudness follows how fast the turret really turns (read from the synced turret_yaw, so
+## it works the same on every computer). Clunks: when it starts, when it stops, now and then in between.
+func _update_turret_sound(delta: float) -> void:
+	if _turret_gear == null:
+		return
+	_sound_clock += delta
+	if state == State.DESTROYED or state == State.BURNING or delta <= 0.0:
+		_turret_gear.stop()
+		_turret_crank.stop()
+		_prev_turret_yaw = turret_yaw
+		return
+	var rate: float = minf(rad_to_deg(absf(angle_difference(_prev_turret_yaw, turret_yaw))) / delta, 30.0)
+	_prev_turret_yaw = turret_yaw
+	_turret_rate = lerpf(_turret_rate, rate, 1.0 - exp(-delta * 6.0))
+	var moving: bool = _turret_rate > 0.6 if not _turret_moving else _turret_rate > 0.3
+	var t: float = clampf(_turret_rate / turret_emergency_deg, 0.0, 1.0)
+	if moving:
+		if not _turret_moving:
+			_turret_moving = true
+			_turret_moved_since = _sound_clock
+			_next_clunk = _sound_clock + randf_range(1.5, 4.0)
+			_play_clunk(_clunks[randi() % _clunks.size()], -9.0)
+		if not _turret_gear.playing:
+			_turret_gear.play(randf() * 4.0)
+			_turret_crank.play(randf() * 3.0)
+		_turret_gear.volume_db = lerpf(-22.0, -7.0, t)
+		_turret_gear.pitch_scale = lerpf(0.75, 1.1, t)
+		_turret_crank.volume_db = lerpf(-20.0, -9.0, t)
+		_turret_crank.pitch_scale = lerpf(0.7, 1.15, t) # a faster crank turns faster
+		if _sound_clock >= _next_clunk:
+			_next_clunk = _sound_clock + randf_range(2.0, 5.0)
+			_play_clunk(_clunks[randi() % _clunks.size()], randf_range(-14.0, -8.0))
+	elif _turret_moving:
+		_turret_moving = false
+		_turret_gear.stop()
+		_turret_crank.stop()
+		if _sound_clock - _turret_moved_since > 0.8: # a proper stop, not a twitch
+			_play_clunk(_turret_stop_sound, -3.0)
+
+
+func _play_clunk(stream: AudioStream, volume_db: float) -> void:
+	_turret_clunk.stream = stream
+	_turret_clunk.volume_db = volume_db
+	_turret_clunk.pitch_scale = randf_range(0.92, 1.06)
+	_turret_clunk.play()
 
 
 # ------------------------------------------------------------------ DT machine gun (host)
