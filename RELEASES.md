@@ -27,6 +27,7 @@ Notes:
 ## Versions
 | Version | Content |
 |---|---|
+| 0.2.5 | The T-26 turret is now heavy and hand-cranked: it turns slowly (4 / 8 / 12°/s), speeds up and brakes over 1.5 s, the crew needs a moment to react to a new target (more if you get behind the tank), and it can't keep up with a player running close to it – so side and rear Molotov attacks are easier. Gear, hand-crank and metal-clunk sounds. |
 | 0.2.4 | DP-27 machine-gun teams follow their riflemen 5–10 m behind, open fire from 80–130 m off the trench and move up in bounds; when all the riflemen are dead they storm the trench too (no more hunting for the last enemy). Loading screen: only the tip and "Click to start the battle" at the end. |
 | 0.2.3 | Browser: closing the tab during a battle (Ctrl+W – easy to hit with W + Ctrl) first asks "Leave site?"; in fullscreen (Chrome/Edge) Ctrl+W is blocked and Esc must be held to leave fullscreen (a notice says so). Fixes: soldiers no longer stop far from the trench after a match was left during an artillery barrage; the crew of a burning tank now count as enemies of the battle. |
 | 0.2.2 | Controls screen (main menu and pause menu) listing every key; tanks stop 3 m closer to the trench; in the first tank battle a hint shows where the Molotov cocktails are and how to throw them. |
