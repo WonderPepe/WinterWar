@@ -56,6 +56,13 @@ var mg_ammo: int = 0           ## Machine-gunner: rounds left in the pan.
 var whistle_count: int = 0     ## Officer: how many times he has whistled (tests, statistics).
 ## Machine-gunner: sent forward like a rifleman (all the riflemen of the wave are dead).
 var mg_released: bool = false
+var _mg_final_goal: Vector3      # gunner: his last position, 5–10 m behind the riflemen's attack point
+var _mg_fire_range: float = 100.0 # gunner: opens fire within this distance of the trench (80–130 m)
+var _mg_follow_back: float = 7.0  # gunner: stays this far behind his riflemen
+var _mg_follow_timer: float = 0.0
+var _mg_no_deploy_before_z: float = -INF # gunner: moving up – don't lie down again before this z
+var _mg_hurry: bool = false        # gunner: far behind his riflemen – hurry to catch up
+var _mg_deployed_at: float = 0.0   # gunner: when the gun was last set up
 
 # --- Host-only memory ---
 var _state_time: float = 0.0
@@ -123,6 +130,9 @@ func _ready() -> void:
 	_whistle_timer = _rng.randf_range(0.0, 3.0)
 	_hold_offset = _rng.randf_range(-8.0, 0.0)
 	mg_ammo = data.mg_magazine
+	_mg_final_goal = attack_point
+	_mg_fire_range = _rng.randf_range(data.mg_fire_range_min_m, data.mg_fire_range_max_m)
+	_mg_follow_back = _rng.randf_range(data.mg_follow_back_min_m, data.mg_follow_back_max_m)
 	_setup_sounds()
 	_update_visuals()
 
@@ -177,6 +187,8 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_suppression(delta)
 
+	if data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
+		_mg_follow(delta) # fire, then move up behind the riflemen
 	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
 		_mg_deployed(delta) # in position: no walking, only bursts
 		_fall_and_slide(delta)
@@ -489,7 +501,12 @@ func is_in_trench() -> bool:
 ## At the jump-off point in front of the trench: fire for a while, then rush in.
 func _hold_at_goal(delta: float) -> void:
 	if data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
-		_deploy() # the gun team doesn't rush the trench while there are riflemen to cover
+		# The gun team doesn't rush the trench while there are riflemen to cover. At its last
+		# position it sets up the gun anyway; on the way it waits behind its riflemen.
+		if _at_final_gun_position():
+			_deploy()
+		else:
+			is_kneeling = true
 		return
 	if barrage_hold_z < INF:
 		is_kneeling = true # waiting for the barrage to lift – no rush now
@@ -812,6 +829,7 @@ func _deploy() -> void:
 	if _deployed:
 		return
 	_deployed = true
+	_mg_deployed_at = _now()
 	_stop()
 	is_kneeling = false
 	if is_instance_valid(mg_assistant):
@@ -870,14 +888,73 @@ func _gunner_lost() -> void:
 	_hold_time = 0.0
 
 
-## Gunner in the ATTACK state but not yet in position: get close enough, then go down.
+## Gunner in the ATTACK state, gun not set up: he sees a Finn and is within his fire range of the
+## trench (80–130 m) → down and open fire. Otherwise keep following the riflemen.
 func _mg_attack(delta: float) -> void:
-	var dist: float = global_position.distance_to(_target.global_position)
-	if (_can_see_target and dist <= data.mg_deploy_range_m) or global_position.distance_to(attack_point) < 3.0:
+	var may_deploy: bool = global_position.z >= _mg_no_deploy_before_z
+	if (_can_see_target and may_deploy and distance_to_trench() <= _mg_fire_range) or _at_final_gun_position():
 		_deploy()
 		return
-	_move_to(attack_point, data.walk_speed)
+	if _move_to(attack_point, data.walk_speed):
+		is_kneeling = true # caught up with the riflemen: wait for them to go on
 	_face_towards(_last_known_position, delta)
+
+
+## Metres from the front edge of the Finnish trench (positive = in front of it).
+func distance_to_trench() -> float:
+	return TRENCH_FRONT_Z - global_position.z
+
+
+func _at_final_gun_position() -> bool:
+	return global_position.distance_to(_mg_final_goal) < 3.0
+
+
+## Gunner (host, ~1×/s): "fire, then move up" (owner). The team keeps `_mg_follow_back` (5–10 m)
+## behind the nearest of its riflemen, never closer to the trench than its last position (5–10 m
+## behind the riflemen's attack point). Lying at the gun: once the riflemen are `mg_move_up_m`
+## further forward (and the pan isn't being changed), the team gets up and catches up.
+func _mg_follow(delta: float) -> void:
+	_mg_follow_timer -= delta
+	if _mg_follow_timer > 0.0:
+		return
+	_mg_follow_timer = 1.0
+	var goal: Vector3 = _mg_final_goal
+	var leader: Enemy = _mg_leader()
+	if leader:
+		goal.z = minf(_mg_final_goal.z, leader.global_position.z - _mg_follow_back)
+	if not _deployed:
+		goal.z = maxf(goal.z, minf(global_position.z, _mg_final_goal.z)) # never back towards the forest
+	var terrain := get_tree().get_first_node_in_group("terrain") as TerrainGenerator
+	if terrain:
+		goal.y = terrain.get_height(goal.x, goal.z)
+	if _deployed:
+		if leader == null or goal.z - global_position.z < data.mg_move_up_m or _now() < _mg_reload_until \
+				or _now() - _mg_deployed_at < data.mg_min_fire_time:
+			return # the riflemen are still close enough (or none left outside the trench): keep firing
+		_deployed = false # up, and after them
+		_mg_burst_left = 0
+		_mg_no_deploy_before_z = goal.z - 2.0
+	attack_point = goal
+	_mg_hurry = goal.z - global_position.z > 8.0 # well behind his riflemen: hurry
+	if is_instance_valid(mg_assistant):
+		mg_assistant._deployed = false
+		mg_assistant.attack_point = goal + Vector3(1.5, 0.0, -1.0)
+
+
+## The nearest living soldier of the wave who isn't in a gun team, isn't fleeing and isn't in the
+## trench yet (the riflemen the gun team covers), or null.
+func _mg_leader() -> Enemy:
+	var best: Enemy = null
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e == null or e == self or e.state == State.DEAD or e.is_mg_team_member() or e.is_panicking() or e.is_in_trench():
+			continue
+		var d: float = e.global_position.distance_to(global_position)
+		if d < best_dist:
+			best = e
+			best_dist = d
+	return best
 
 
 ## Gunner in position: bursts at whoever he can see, pauses, new pan when empty.
@@ -933,6 +1010,8 @@ func _move_to(destination: Vector3, speed: float) -> bool:
 		# Our own guns are shelling the trench: hurry forward behind the shells, but stop short.
 		destination.z = minf(destination.z, barrage_hold_z + _hold_offset)
 		speed = maxf(speed, data.hurry_speed)
+	if _mg_hurry and not _deployed and data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
+		speed = maxf(speed, data.hurry_speed) # catching up with his riflemen
 	if nav_agent.target_position.distance_to(destination) > 0.5:
 		nav_agent.target_position = destination
 	if nav_agent.is_navigation_finished():

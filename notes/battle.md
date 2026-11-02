@@ -69,9 +69,17 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `RecordedSounds.pick("officer_whistle")` or `assets/audio/officer_whistle_placeholder.wav`
   (`tools/make_whistle.py`, own RNG – make_sounds.py untouched).
 - MG team: the spawner links `gunner.mg_assistant` / `helper.mg_gunner` (host-only references; the
-  helper is a rifleman scene). Gun goal = attack point − 5…10 m in z (`mg_position_back_min_m` /
-  `_max_m`; was 35 m – owner 2026-11-02). Gunner `_deploy()`s at his goal (`mg_deploy_range_m` is
-  0 now; at 170 m he lay down far out the moment he saw a Finn and had to be hunted); deployed → own branch
+  helper is a rifleman scene). Final gun position (`_mg_final_goal`) = attack point − 5…10 m in z
+  (`mg_position_back_min_m` / `_max_m`; was 35 m). "Fire, then move up" (owner 2026-11-02, replaced
+  the old "lie down at first sight ≤ 170 m"): `_mg_follow()` (~1×/s) keeps the team
+  `mg_follow_back_min/max_m` (5–10 m, random per team) behind the nearest living rifleman/officer
+  outside the trench (`_mg_leader()`), never past the final position, never back towards the
+  forest, hurrying (`_mg_hurry`) when > 8 m behind. ATTACK + sees a Finn + within its fire range
+  of the trench (`mg_fire_range_min/max_m` 80–130 m, random per team; `distance_to_trench()`) →
+  `_deploy()`. Deployed: after ≥ `mg_min_fire_time` 8 s (and not changing the pan), once the
+  leader is `mg_move_up_m` 20 m further on, the team gets up, catches up (no redeploy before
+  `_mg_no_deploy_before_z`) and sets up again. No leader → stays put / walks to the final
+  position; at the final position it deploys even without a target. Deployed → own branch
   `_mg_deployed()` in `_physics_process` (bursts `mg_burst_min…max` at `mg_shot_interval`, pause,
   47-round pan, reload 3.5 s helped / 6 s alone). Deploying moves the helper's attack point next to
   the gun; the helper lies down there (`_deployed`) and never assaults while the gunner lives;

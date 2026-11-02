@@ -125,9 +125,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   pick the key change). Reaches players only with the next release. See `graphics-and-web.md`.
 
 - [x] DP-27 teams closer + sent forward (2026-11-02, owner, from a player's report "no hunting
-  for the last enemy"): guns set up 5–10 m behind the riflemen (was 35 m, and lay down at first
-  sight up to 170 m out); when all the other soldiers are dead the gun teams advance and assault
-  like riflemen. See `battle.md`.
+  for the last enemy"): gun teams follow their riflemen 5–10 m behind, open fire once they see a
+  Finn 80–130 m from the trench, and move up again when the riflemen are 20 m further on ("fire,
+  then move up" – owner's choice; last position 5–10 m behind the attack points, was 35 m); when
+  all the other soldiers are dead the gun teams advance and assault like riflemen. See `battle.md`.
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

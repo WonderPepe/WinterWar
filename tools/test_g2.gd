@@ -290,7 +290,9 @@ func run() -> void:
 	check(near_ok, "the gun is set up 5–10 m behind the riflemen's attack point (not 35 m)")
 	await frames(2)
 	var normal_gunner: EnemyData = load("res://resources/enemies/soviet_mg_gunner.tres")
-	check(normal_gunner.mg_deploy_range_m <= 0.0, "the gunner doesn't lie down far out when he first sees a Finn")
+	check(normal_gunner.mg_fire_range_min_m == 80.0 and normal_gunner.mg_fire_range_max_m == 130.0
+			and normal_gunner.mg_follow_back_min_m == 5.0 and normal_gunner.mg_follow_back_max_m == 10.0,
+			"gun teams: fire from 80–130 m off the trench, follow 5–10 m behind the riflemen")
 	var g2: Enemy = spawn("soviet_mg_gunner", ground(10, -30), ground(10, 25))
 	var h2: Enemy = spawn("soviet_rifleman", ground(12, -31), ground(11, 25))
 	g2.mg_assistant = h2
@@ -332,6 +334,60 @@ func run() -> void:
 	check(g2.state == Enemy.State.ASSAULT, "at the trench he rushes in like a rifleman (%s)" % Enemy.State.keys()[g2.state])
 	g2.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
 	h2.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+
+	# --- 4c. Fire, then move up (owner): open fire 80–130 m from the trench, catch up with the riflemen ---
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if (e as Enemy).state != Enemy.State.DEAD:
+			(e as Enemy).take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+	p.global_position = ground(-30, 40) + Vector3(0, 0.2, 0)
+	var g3: Enemy = spawn("soviet_mg_gunner", ground(-30, -62), ground(-30, 30))
+	var h3: Enemy = spawn("soviet_rifleman", ground(-28, -63), ground(-29, 30))
+	g3.mg_assistant = h3
+	h3.mg_gunner = g3
+	await physics(3)
+	check(g3._mg_fire_range >= 80.0 and g3._mg_fire_range <= 130.0 and g3._mg_follow_back >= 5.0 and g3._mg_follow_back <= 10.0,
+			"each team gets its own fire range (%.0f m) and distance behind (%.1f m)" % [g3._mg_fire_range, g3._mg_follow_back])
+	g3._mg_fire_range = 120.0
+	g3.state = Enemy.State.PATROL
+	h3.state = Enemy.State.PATROL
+	t0 = Time.get_ticks_msec()
+	while not g3.is_deployed() and Time.get_ticks_msec() - t0 < 15000:
+		await seconds(0.2)
+	check(g3.is_deployed() and g3.distance_to_trench() > 95.0,
+			"sees a Finn within his range: the gun opens up far out (%.0f m from the trench)" % g3.distance_to_trench())
+	var g4: Enemy = spawn("soviet_mg_gunner", ground(-50, -100), ground(-50, 30))
+	await physics(3)
+	g4._mg_fire_range = 100.0
+	g4.state = Enemy.State.PATROL
+	var deployed_far: bool = false
+	t0 = Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 6000:
+		if g4.is_deployed() and g4.distance_to_trench() > 101.0:
+			deployed_far = true
+		await seconds(0.2)
+	check(not deployed_far and g4.global_position.z > -98.0,
+			"further out than his range: no fire yet, he walks on (%.0f m from the trench)" % g4.distance_to_trench())
+	g4.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+	# His riflemen are 30 m further forward: the team gets up and catches up.
+	var lead: Enemy = spawn("soviet_rifleman", ground(-30, g3.global_position.z + 32.0))
+	await physics(3)
+	lead.set_physics_process(false) # stands still: an easy rifleman to follow
+	var z_fire: float = g3.global_position.z
+	t0 = Time.get_ticks_msec()
+	while g3.is_deployed() and Time.get_ticks_msec() - t0 < 5000:
+		await seconds(0.2)
+	await seconds(1.2)
+	check(not g3.is_deployed() and g3.attack_point.z > z_fire + 15.0 and not h3.is_deployed()
+			and h3.attack_point.distance_to(g3.attack_point) < 3.0,
+			"riflemen 30 m ahead: gunner and helper get up and follow (goal z %.0f, gun was at %.0f)" % [g3.attack_point.z, z_fire])
+	t0 = Time.get_ticks_msec()
+	while not (g3.is_deployed() and g3.global_position.z > z_fire + 15.0) and Time.get_ticks_msec() - t0 < 25000:
+		await seconds(0.2)
+	var behind: float = lead.global_position.z - g3.global_position.z
+	check(g3.is_deployed() and behind > 2.0 and behind < 14.0,
+			"…and set up the gun again behind them (%.1f m behind the rifleman)" % behind)
+	for e in [g3, h3, lead]:
+		(e as Enemy).take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
 
 	# --- Wave list ---
 	var director: MatchDirector = get_tree().get_first_node_in_group("match_director")
