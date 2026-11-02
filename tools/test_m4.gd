@@ -43,7 +43,8 @@ func run() -> void:
 			break
 		await seconds(0.1)
 	var ls_wait := get_tree().root.get_node_or_null("LoadingScreen") as LoadingScreen
-	check(ls_wait != null and ls_wait.start_label.visible and not get_tree().root.get_node("Game/PauseMenu").is_open,
+	check(ls_wait != null and ls_wait.start_label.visible and not ls_wait.bar.visible and not ls_wait.status.visible \
+			and not get_tree().root.get_node("Game/PauseMenu").is_open,
 		"browser: 'click to start' instead of the pause menu")
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT

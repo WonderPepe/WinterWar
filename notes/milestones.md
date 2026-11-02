@@ -30,6 +30,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   ends with "CLICK TO START THE BATTLE" (pauses single player, locks the mouse in `_input` on the
   click) instead of the old paused pause menu. PauseMenu stays closed while `LoadingScreen` exists.
   Benchmark: `LoadingScreen.go(tree, scene, false)` (no click).
+  2026-11-02 (owner): while it waits for the click, the status line ("The battlefield is ready.")
+  and the full 100 % bar are hidden – only the title, the tip and CLICK TO START THE BATTLE.
 - [x] G2 "pressure" (owner chose parts 1, 3, 4 of the plan): enemy suppression + prone, officer
   with whistle, DP-27 MG teams, wave composition list (needed to send officers/MG teams).
   Artillery was dropped by the owner. Field cover (rocks, wire, craters, cover points) was

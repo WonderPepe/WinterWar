@@ -119,8 +119,10 @@ func _run() -> void:
 	await _frames(2)
 	if click_to_start and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		# Browser: one click is needed to lock the mouse. The battle waits (single player)
-		# and shows through the screen.
-		status.text = "The battlefield is ready."
+		# and shows through the screen. The status line and the full bar are hidden then:
+		# "CLICK TO START THE BATTLE" says it all (owner).
+		status.visible = false
+		bar.visible = false
 		start_label.visible = true
 		background.modulate.a = 0.55
 		if NetworkManager.is_single_player():
