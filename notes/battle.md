@@ -69,12 +69,21 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `RecordedSounds.pick("officer_whistle")` or `assets/audio/officer_whistle_placeholder.wav`
   (`tools/make_whistle.py`, own RNG – make_sounds.py untouched).
 - MG team: the spawner links `gunner.mg_assistant` / `helper.mg_gunner` (host-only references; the
-  helper is a rifleman scene). Gun goal = attack point − `mg_position_back_m` (35 m) in z. Gunner
-  `_deploy()`s at his goal or when he sees a target ≤ `mg_deploy_range_m`; deployed → own branch
+  helper is a rifleman scene). Gun goal = attack point − 5…10 m in z (`mg_position_back_min_m` /
+  `_max_m`; was 35 m – owner 2026-11-02). Gunner `_deploy()`s at his goal (`mg_deploy_range_m` is
+  0 now; at 170 m he lay down far out the moment he saw a Finn and had to be hunted); deployed → own branch
   `_mg_deployed()` in `_physics_process` (bursts `mg_burst_min…max` at `mg_shot_interval`, pause,
   47-round pan, reload 3.5 s helped / 6 s alone). Deploying moves the helper's attack point next to
   the gun; the helper lies down there (`_deployed`) and never assaults while the gunner lives;
   gunner dead → `_gunner_lost()` → helper goes to his `home_point` as a normal rifleman.
+- Owner (2026-11-02): when every soldier of the wave who is NOT in a gun team is dead (riflemen,
+  officers, tank crews; whole wave out of the forest), the gun teams go for the trench like
+  riflemen: `WaveSpawner.release_mg_teams_if_alone()` (FIGHTING phase, every
+  `mg_release_check` 0.5 s) → `Enemy.advance_as_rifleman()`: `mg_released` (host), not
+  deployed, `attack_point = home_point` (the riflemen's attack point; spawner sets it for both),
+  helper `_gunner_lost()`. A released gunner skips `_mg_attack` / `_mg_deployed` / the deploy in
+  `_hold_at_goal`, fires single shots like a rifleman, rushes the trench, `can_join_assault()`.
+  `Enemy.is_mg_team_member()`. Checks in test_g2 (4b).
   Enemy smoke puffs at most every 0.25 s (bursts).
 - Waves: `WaveData` (riflemen, officers, mg_teams); `DifficultyData.waves` (builder `WAVE_LISTS`);
   `MatchDirector` copies it to `WaveSpawner.wave_list` (empty = old riflemen formula; the

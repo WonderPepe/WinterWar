@@ -20,7 +20,11 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 @export var enemy_scene: PackedScene ## Rifleman.
 @export var officer_scene: PackedScene
 @export var mg_gunner_scene: PackedScene
-@export var mg_position_back_m: float = 35.0 ## MG teams set up this far behind the riflemen's attack points.
+## MG teams set up this far behind the riflemen's attack points (a random distance between the two;
+## owner: 5–10 m, close enough to be found – it was 35 m).
+@export var mg_position_back_min_m: float = 5.0
+@export var mg_position_back_max_m: float = 10.0
+@export var mg_release_check: float = 0.5 ## Seconds between "are all the riflemen dead?" checks.
 @export var enemies_root: Node3D
 @export var first_wave_delay: float = 5.0
 @export var base_enemies: int = 6 ## Soldiers in wave 1.
@@ -59,6 +63,7 @@ var _spawned_total: int = 0
 var _rng := RandomNumberGenerator.new()
 var _tank_times: Array[float] = [] # T3: wave clock times when the next tanks set off
 var _wave_clock: float = 0.0
+var _release_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -86,6 +91,10 @@ func _process(delta: float) -> void:
 			if _left_to_spawn <= 0:
 				_phase = Phase.FIGHTING
 		Phase.FIGHTING:
+			_release_timer -= delta
+			if _release_timer <= 0.0:
+				_release_timer = mg_release_check
+				release_mg_teams_if_alone()
 			if alive_count <= 0 and tanks_in_fight() == 0:
 				_phase = Phase.WAITING
 				_timer = time_between_waves
@@ -125,6 +134,27 @@ func _start_wave() -> void:
 	wave_started.emit(wave_number, _left_to_spawn)
 	_phase = Phase.SPAWNING
 	_timer = 0.0
+
+
+## Host: once every soldier who is NOT in a machine-gun team is dead (and the whole wave is out of
+## the forest), the DP-27 teams get up and go for the trench like riflemen (owner) – nobody has
+## to hunt for a gun team lying far out in the snow. Returns how many teams were sent.
+func release_mg_teams_if_alone() -> int:
+	if _left_to_spawn > 0:
+		return 0
+	var gunners: Array[Enemy] = []
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e == null or e.state == Enemy.State.DEAD:
+			continue
+		if e.is_mg_team_member():
+			if e.data.kind == EnemyData.Kind.MG_GUNNER:
+				gunners.append(e)
+		else:
+			return 0 # a rifleman (or officer, or tank crewman) still fights: the guns stay put
+	for g in gunners:
+		g.advance_as_rifleman()
+	return gunners.size()
 
 
 ## T3: tanks of this wave still to come + those still fighting (not burning, not a wreck)
@@ -224,7 +254,7 @@ func _spawn_group() -> bool:
 func _spawn_mg_team(near: Vector3, targets: Array) -> void:
 	var target: Node3D = targets[(_mg_count * 3 + 1) % targets.size()]
 	_mg_count += 1
-	var gun_goal: Vector3 = target.global_position + Vector3(0, 0, -mg_position_back_m)
+	var gun_goal: Vector3 = target.global_position + Vector3(0, 0, -_rng.randf_range(mg_position_back_min_m, mg_position_back_max_m))
 	var gunner: Enemy = _spawn_enemy(near, gun_goal, mg_gunner_scene)
 	var helper: Enemy = _spawn_enemy(near + Vector3(1.5, 0, -1.0), gun_goal + Vector3(1.3, 0, 0.5))
 	if gunner and helper:
@@ -235,6 +265,7 @@ func _spawn_mg_team(near: Vector3, targets: Array) -> void:
 		if terrain:
 			home.y = terrain.get_height(home.x, home.z)
 		helper.home_point = home
+		gunner.home_point = home + Vector3(-1.5, 0.0, 0.0) # where he goes if the team is sent forward
 
 
 func _spawn_enemy(near: Vector3, goal: Vector3, scene: PackedScene = null) -> Enemy:

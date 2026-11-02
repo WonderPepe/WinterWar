@@ -274,6 +274,65 @@ func run() -> void:
 	check(gunner.is_prone and gunner.state == Enemy.State.DEAD, "dead gunner stays lying (no fall-over)")
 	helper.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
 
+	# --- 4b. DP-27 team close behind the riflemen, sent forward when the riflemen are dead (owner) ---
+	var points := get_tree().get_nodes_in_group("attack_point")
+	var near_ok: bool = true
+	for i in 6:
+		var aim: Node3D = points[(spawner._mg_count * 3 + 1) % points.size()]
+		var count0: int = spawner.alive_count
+		spawner._spawn_mg_team(ground(0, -100), points)
+		var g: Enemy = spawner.enemies_root.get_child(spawner.enemies_root.get_child_count() - 2) as Enemy # gunner, then helper
+		var back: float = aim.global_position.z - g.attack_point.z # (± 2 m random spread per soldier)
+		near_ok = near_ok and g.data.kind == EnemyData.Kind.MG_GUNNER and back >= 3.0 and back <= 12.0
+		g.queue_free()
+		g.mg_assistant.queue_free()
+		spawner.alive_count = count0
+	check(near_ok, "the gun is set up 5–10 m behind the riflemen's attack point (not 35 m)")
+	await frames(2)
+	var normal_gunner: EnemyData = load("res://resources/enemies/soviet_mg_gunner.tres")
+	check(normal_gunner.mg_deploy_range_m <= 0.0, "the gunner doesn't lie down far out when he first sees a Finn")
+	var g2: Enemy = spawn("soviet_mg_gunner", ground(10, -30), ground(10, 25))
+	var h2: Enemy = spawn("soviet_rifleman", ground(12, -31), ground(11, 25))
+	g2.mg_assistant = h2
+	h2.mg_gunner = g2
+	g2.home_point = ground(9, 35)
+	h2.home_point = ground(11, 35)
+	var rifleman: Enemy = spawn("soviet_rifleman", ground(20, -30))
+	await physics(3)
+	g2._deploy()
+	for e in get_tree().get_nodes_in_group("enemies"):
+		var en := e as Enemy
+		if en != g2 and en != h2 and en != rifleman and en.state != Enemy.State.DEAD:
+			en.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+	spawner._left_to_spawn = 0
+	check(spawner.release_mg_teams_if_alone() == 0 and not g2.mg_released and g2.is_deployed(),
+			"a rifleman still fights: the gun team stays in position")
+	rifleman.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+	check(spawner.release_mg_teams_if_alone() == 1 and g2.mg_released and not g2.is_deployed()
+			and g2.attack_point.distance_to(g2.home_point) < 0.01 and h2.mg_gunner == null
+			and h2.attack_point.distance_to(h2.home_point) < 0.01,
+			"riflemen all dead: gunner and helper get up and go for the trench")
+	check(not g2.is_mg_team_member() and not h2.is_mg_team_member() and spawner.release_mg_teams_if_alone() == 0,
+			"…once (they count as riflemen now)")
+	g2.state = Enemy.State.PATROL
+	h2.state = Enemy.State.PATROL
+	var gz0: float = g2.global_position.z
+	t0 = Time.get_ticks_msec()
+	while g2.global_position.z < gz0 + 4.0 and Time.get_ticks_msec() - t0 < 15000:
+		await seconds(0.2)
+	check(g2.global_position.z > gz0 + 4.0, "the gunner walks forward (z %.0f → %.0f)" % [gz0, g2.global_position.z])
+	check(g2.can_join_assault() or g2.is_pinned(), "an officer could now send him into the trench too")
+	g2._hold_time = 0.0
+	g2._assault_after = 0.0
+	g2.global_position = g2.home_point + Vector3(0, 0.1, 0)
+	g2.suppression = 0.0
+	g2.is_prone = false
+	await physics(2)
+	g2._hold_at_goal(0.1)
+	check(g2.state == Enemy.State.ASSAULT, "at the trench he rushes in like a rifleman (%s)" % Enemy.State.keys()[g2.state])
+	g2.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+	h2.take_damage(500.0, 1, Vector3.ZERO, Vector3.UP)
+
 	# --- Wave list ---
 	var director: MatchDirector = get_tree().get_first_node_in_group("match_director")
 	check(spawner.wave_list.size() == director.waves_to_win, "wave list: one entry per wave (%d)" % spawner.wave_list.size())

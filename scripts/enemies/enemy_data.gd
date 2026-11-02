@@ -80,7 +80,9 @@ enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
 @export var leaderless_extra_hold: float = 8.0 ## ...and slower to rush the trench.
 
 @export_group("Machine gun (G2)")
-@export var mg_deploy_range_m: float = 170.0 ## Lies down and opens fire when a target is this close.
+## Lies down and opens fire when a target is this close (0 = only at his gun position, 5–10 m behind
+## the riflemen – owner, 2026-11-02: at 170 m the team lay far back and had to be hunted).
+@export var mg_deploy_range_m: float = 0.0
 @export var mg_magazine: int = 47 ## Rounds in a DP-27 pan.
 @export var mg_shot_interval: float = 0.11 ## Seconds between rounds in a burst (~550 rounds/min).
 @export var mg_burst_min: int = 4

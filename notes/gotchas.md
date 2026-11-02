@@ -59,5 +59,6 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   console). Ask for a string instead: `FullscreenNotice._js_yes()` evaluates `(expr) ? 'yes' : 'no'`.
 - Playwright: `page.close(run_before_unload=True)` showed no `beforeunload` dialog here; navigating
   away (`page.goto("about:blank")`) after a click does. Software WebGL is slow: give it 30 s.
+- `test_t1.gd` "DT bullets hurt the player" can miss once under load (random spread); re-run.
 - `test_m1.gd` deep-snow / exit-ramp checks failed once (3 FAILs) under heavy load in the cloud,
   then passed 4× in a row (also without the change being tested) – re-run before suspecting code.

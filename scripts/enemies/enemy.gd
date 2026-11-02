@@ -51,9 +51,11 @@ var attack_point: Vector3 = Vector3.ZERO
 var suppression: float = 0.0
 var mg_gunner: Enemy = null    ## Machine-gun helper: the gunner he stays with.
 var mg_assistant: Enemy = null ## Machine-gunner: his helper.
-var home_point: Vector3        ## Helper: where he goes on his own if the gunner falls.
+var home_point: Vector3        ## MG team: where he goes as a rifleman (helper: gunner fell; both: team sent forward).
 var mg_ammo: int = 0           ## Machine-gunner: rounds left in the pan.
 var whistle_count: int = 0     ## Officer: how many times he has whistled (tests, statistics).
+## Machine-gunner: sent forward like a rifleman (all the riflemen of the wave are dead).
+var mg_released: bool = false
 
 # --- Host-only memory ---
 var _state_time: float = 0.0
@@ -175,7 +177,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_suppression(delta)
 
-	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER:
+	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
 		_mg_deployed(delta) # in position: no walking, only bursts
 		_fall_and_slide(delta)
 		return
@@ -313,7 +315,7 @@ func _attack(delta: float) -> void:
 		_target = null
 		state = State.PATROL
 		return
-	if data.kind == EnemyData.Kind.MG_GUNNER:
+	if data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
 		_mg_attack(delta)
 		return
 	_attack_phase_time += delta
@@ -486,8 +488,8 @@ func is_in_trench() -> bool:
 
 ## At the jump-off point in front of the trench: fire for a while, then rush in.
 func _hold_at_goal(delta: float) -> void:
-	if data.kind == EnemyData.Kind.MG_GUNNER:
-		_deploy() # the gun team never rushes the trench: it covers the others
+	if data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
+		_deploy() # the gun team doesn't rush the trench while there are riflemen to cover
 		return
 	if barrage_hold_z < INF:
 		is_kneeling = true # waiting for the barrage to lift – no rush now
@@ -508,7 +510,7 @@ func _hold_at_goal(delta: float) -> void:
 
 ## True if this soldier may be sent into the trench by an officer.
 func can_join_assault() -> bool:
-	return state in [State.PATROL, State.ALERT, State.ATTACK] and data.kind != EnemyData.Kind.MG_GUNNER \
+	return state in [State.PATROL, State.ALERT, State.ATTACK] and (data.kind != EnemyData.Kind.MG_GUNNER or mg_released) \
 			and not is_instance_valid(mg_gunner) and not is_pinned()
 
 
@@ -819,6 +821,45 @@ func _deploy() -> void:
 			spot.y = terrain.get_height(spot.x, spot.z)
 		mg_assistant.attack_point = spot
 		mg_assistant._deployed = false
+
+
+## True while he belongs to a DP-27 team that is still covering the riflemen (gunner or helper).
+func is_mg_team_member() -> bool:
+	if data.kind == EnemyData.Kind.MG_GUNNER:
+		return not mg_released
+	return is_instance_valid(mg_gunner)
+
+
+## Host, gunner: all the riflemen are dead – pick up the gun and go for the trench like a rifleman
+## (to his home point in front of the trench, fire from there, then rush in). His helper too.
+func advance_as_rifleman() -> void:
+	if not multiplayer.is_server() or state == State.DEAD or mg_released:
+		return
+	mg_released = true
+	_deployed = false
+	_hold_time = 0.0
+	_mg_burst_left = 0
+	attack_point = home_point if home_point != Vector3.ZERO else _nearest_attack_point()
+	if is_instance_valid(mg_assistant):
+		mg_assistant._gunner_lost() # the helper goes too, as a rifleman
+	mg_assistant = null
+	if state == State.IDLE:
+		state = State.PATROL
+
+
+## The riflemen's attack point nearest to him (on the ground), or a spot 15 m ahead.
+func _nearest_attack_point() -> Vector3:
+	var best: Vector3 = global_position + Vector3(0, 0, 15)
+	var best_dist: float = INF
+	for node in get_tree().get_nodes_in_group("attack_point"):
+		var pos: Vector3 = (node as Node3D).global_position
+		if pos.distance_to(global_position) < best_dist:
+			best_dist = pos.distance_to(global_position)
+			best = pos
+	var terrain := get_tree().get_first_node_in_group("terrain") as TerrainGenerator
+	if terrain:
+		best.y = terrain.get_height(best.x, best.z)
+	return best
 
 
 ## Helper: the gunner is dead – carry on as an ordinary rifleman.
