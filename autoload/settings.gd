@@ -39,7 +39,15 @@ func _ready() -> void:
 	# First start: Medium in a browser, High on desktop.
 	quality = Quality.MEDIUM if OS.has_feature("web") else Quality.HIGH
 	_load()
+	if OS.has_feature("web"):
+		# A browser only allows fullscreen after a click, so a saved "on" can't be applied at
+		# start-up (it would silently fail): start windowed, the player ticks it again.
+		fullscreen = false
 	apply()
+	# Browser: the "hold Esc to leave fullscreen" notice (menus and battle alike).
+	var notice: CanvasLayer = load("res://scripts/ui/fullscreen_notice.gd").new()
+	notice.name = "FullscreenNotice"
+	add_child(notice)
 
 
 ## The numbers for the current quality level.

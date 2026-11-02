@@ -5,6 +5,26 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 ## Web export limits (Compatibility renderer) – decisions already made
 - No volumetric fog → depth + height fog. No Decal node → pooled quads (`ImpactEffects`).
 - Crouch is **C** (Ctrl also bound, but Ctrl+W closes browser tabs).
+- Ctrl+W guard (2026-11-02, owner: "warning + true blocking in fullscreen"). A page can't cancel
+  Ctrl+W / Ctrl+T / Ctrl+N in a normal window, so:
+  - `export_presets.cfg` `html/head_include` (one line, single quotes only – the value sits in
+    double quotes) adds a `beforeunload` handler that asks "Leave site?" while
+    `window.summaLeaveWarning` is true. `Game.set_leave_warning()` (static) sets it: on in
+    `Game._ready()`, off in `Game._exit_tree()` and when `MatchDirector.result` ends the match.
+    Browsers only ask after the player has clicked/typed on the page (always true in a battle)
+    and choose the dialog text themselves.
+  - The same script calls `navigator.keyboard.lock()` (all keys) on `fullscreenchange` when the
+    page is fullscreen (Keyboard Lock: Chrome / Edge only; Firefox/Safari: Esc works as usual)
+    and `unlock()` when it leaves. Locked: Ctrl+W goes to the game, a short Esc goes to the game
+    (pause menu), the browser leaves fullscreen only when Esc is HELD.
+  - `scripts/ui/fullscreen_notice.gd` (CanvasLayer 100, made by the Settings autoload, polls
+    `document.fullscreenElement` 4×/s): entering fullscreen where Keyboard Lock exists shows
+    "FULLSCREEN / Hold [Esc] down to leave fullscreen. / (A short press opens the pause menu.)"
+    for 6 s; leaving fullscreen unticks `Settings.fullscreen`. On the web a saved
+    "fullscreen on" is ignored at start-up (browsers need a click for fullscreen).
+  - Test: `python3 tools/web_guard_test.py` after the web export (menu: no warning; battle:
+    warning on and `beforeunload` fires on leaving; fullscreen → notice). Real Ctrl+W can't be
+    pressed from Playwright – try it by hand in Chrome.
 - Snow = CPUParticles3D following the local player only. Trees = MultiMesh chunks with
   visibility ranges. One shadowed sun, short shadow distance. Only the local muzzle flash has
   a light. Export without threads. Navigation mesh is pre-baked (no runtime baking).

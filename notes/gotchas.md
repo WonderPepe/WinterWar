@@ -54,5 +54,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   → Bake NavigationMesh (saves `levels/test_level_navmesh.res`).
 - `test_artillery.gd` "out in the open: GET INTO THE TRENCH!" is flaky (fails ~1 run in 2, also
   before T3): only 0.3 s after moving the player; a re-run passes.
+- `JavaScriptBridge.eval()` in the web export did not return a JavaScript true/false as a
+  GDScript bool: comparing the result (`== true`) silently stopped the function (no error in the
+  console). Ask for a string instead: `FullscreenNotice._js_yes()` evaluates `(expr) ? 'yes' : 'no'`.
+- Playwright: `page.close(run_before_unload=True)` showed no `beforeunload` dialog here; navigating
+  away (`page.goto("about:blank")`) after a click does. Software WebGL is slow: give it 30 s.
 - `test_m1.gd` deep-snow / exit-ramp checks failed once (3 FAILs) under heavy load in the cloud,
   then passed 4× in a row (also without the change being tested) – re-run before suspecting code.

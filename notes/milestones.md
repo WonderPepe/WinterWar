@@ -114,10 +114,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
   no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
   of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at
-  99 HP, Space closes the day screen AND jumps, saved fullscreen can't apply in a browser
-  without a click, rifle fire timing / corpse timers use real time, "last enemy" hunt for a hidden
+  99 HP, Space closes the day screen AND jumps, rifle fire timing / corpse timers use real time, "last enemy" hunt for a hidden
   MG team, respawn next to Soviets in the trench, soldiers walk through Molotov fires,
   FOV / invert-Y options.
+
+- [x] Ctrl+W guard in the browser (2026-11-02, owner chose the warning + true blocking in
+  fullscreen + an info notice): "Leave site?" while a battle runs, Keyboard Lock in fullscreen
+  (Chrome/Edge), "hold Esc to leave fullscreen" notice. Crouch keeps Ctrl AND C (owner didn't
+  pick the key change). Reaches players only with the next release. See `graphics-and-web.md`.
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

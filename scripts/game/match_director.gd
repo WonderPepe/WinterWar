@@ -144,4 +144,5 @@ func _set_result(value: int) -> void:
 	var changed: bool = value != result
 	result = value
 	if changed and value != Result.PLAYING:
+		Game.set_leave_warning(false) # the battle is over: closing the tab needs no warning
 		match_ended.emit(value)

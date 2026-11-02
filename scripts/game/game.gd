@@ -17,6 +17,7 @@ var _start_points: Dictionary = {} ## Player name (peer id) -> the spawn point t
 
 func _ready() -> void:
 	add_to_group("game")
+	set_leave_warning(true) # browser: Ctrl+W / closing the tab asks "Leave site?" during the battle
 	if not multiplayer.is_server():
 		return
 	multiplayer.peer_connected.connect(_spawn_player)
@@ -77,3 +78,15 @@ func _pick_spawn_point(index: int) -> Node3D:
 ## All players currently in the game (never assume there is only one).
 func get_players() -> Array[Node]:
 	return get_tree().get_nodes_in_group("players")
+
+
+func _exit_tree() -> void:
+	set_leave_warning(false) # back in the menu: the tab may close without asking
+
+
+## Browser only: while `on`, closing the tab (Ctrl+W – easy to hit with W + Ctrl = forward +
+## crouch), reloading or leaving the page first asks "Leave site?". Pages can't block Ctrl+W
+## itself; the `beforeunload` handler in export_presets.cfg (`html/head_include`) reads this flag.
+static func set_leave_warning(on: bool) -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.summaLeaveWarning = %s;" % ("true" if on else "false"), true)
