@@ -7,7 +7,7 @@ extends Node3D
 ##    every bang in it (`shell_times`, found in the recording; louder bang = closer to you).
 ##    Anyone out in the open near a shell is hurt or killed; in the trench or the bunker you
 ##    are safe. Meanwhile the Soviets of the wave advance, but no closer than `hold_z`.
-## 3. END: "The barrage lifts" – every officer blows his whistle and the attack goes on.
+## 3. END: every officer blows his whistle and the attack goes on.
 ##
 ## The HOST decides everything (when, where shells land, who is hit); every computer shows the
 ## explosions and plays the sound (RPCs). Explosion visuals are pooled and made in code.
@@ -20,15 +20,20 @@ enum Phase { IDLE, WARNING, FIRING }
 @export var sound: AudioStream ## The barrage recording.
 @export var shell_times: PackedFloat32Array = PackedFloat32Array() ## Seconds into the recording of each bang.
 @export var shell_strengths: PackedFloat32Array = PackedFloat32Array() ## 0..1, how loud each bang is.
-@export var warning_time: float = 4.0 ## Seconds of "ARTILLERY!" before the first shell.
+@export var warning_sound: AudioStream ## Distant guns firing: plays during the warning, before the first shell lands.
+@export var close_sound: AudioStream ## A shell bursting close to you (played on that player's computer).
+@export var close_sound_range_m: float = 28.0 ## Shells landing closer than this to you play `close_sound`.
+@export var warning_time: float = 6.5 ## Seconds of "ARTILLERY!" before the first shell (the guns recording is ~5.9 s).
+@export var blast_scale: float = 1.5 ## Barrage shells look this much bigger than the tank's shells.
+@export var shake_range_m: float = 120.0 ## The ground shakes for players this close to a barrage shell.
 @export var hold_z: float = 0.0 ## The Soviets come no closer than this while it lasts (trench front at z ≈ 52).
 @export var zone_min: Vector2 = Vector2(-115.0, 16.0) ## Shells land inside this x/z area...
 @export var zone_max: Vector2 = Vector2(115.0, 110.0)
 @export var trench_rect: Rect2 = Rect2(-106.0, 50.0, 212.0, 22.0) ## ...but never inside the trench itself.
-@export var kill_radius_m: float = 3.5 ## Out in the open, this close = dead.
-@export var harm_radius_m: float = 12.0 ## Hurt up to this far.
-@export var near_damage: float = 90.0 ## Damage just outside the kill radius (falls to ~10 at the edge).
-@export var aimed_share: float = 0.45 ## Part of the shells aimed at people standing in the open.
+@export var kill_radius_m: float = 6.0 ## Out in the open, this close = dead.
+@export var harm_radius_m: float = 35.0 ## Hurt up to this far.
+@export var near_damage: float = 110.0 ## Damage just outside the kill radius (falls to ~10 at the edge).
+@export var aimed_share: float = 0.55 ## Part of the shells aimed at people standing in the open.
 @export var near_m: float = 10.0 ## The loudest bangs land this far from you (in the trench)...
 @export var far_m: float = 55.0 ## ...the quietest ones this far.
 @export var scorch_fade_time: float = 25.0 ## After the barrage the marks in the snow fade away.
@@ -42,6 +47,8 @@ var _next_shell: int = 0
 var _length: float = 28.0
 var _rng := RandomNumberGenerator.new()
 var _audio: AudioStreamPlayer
+var _warning_audio: AudioStreamPlayer
+var _close_audio: AudioStreamPlayer
 var _blasts: Array = [] # pooled [flash quad, light, earth, snow, smoke, plume]
 var _next_blast: int = 0
 var _scorches: Array[MeshInstance3D] = []
@@ -58,6 +65,16 @@ func _ready() -> void:
 	_audio.bus = &"SFX"
 	_audio.stream = sound
 	add_child(_audio)
+	_warning_audio = AudioStreamPlayer.new()
+	_warning_audio.name = "WarningGuns"
+	_warning_audio.bus = &"SFX"
+	_warning_audio.stream = warning_sound
+	add_child(_warning_audio)
+	_close_audio = AudioStreamPlayer.new()
+	_close_audio.name = "CloseBurst"
+	_close_audio.bus = &"SFX"
+	_close_audio.stream = close_sound
+	add_child(_close_audio)
 	if sound:
 		_length = sound.get_length()
 	_make_pool()
@@ -78,8 +95,32 @@ func is_active() -> bool:
 	return phase != Phase.IDLE
 
 
-## Down in the trench or inside the bunker = safe from the shells.
+## Down in the trench or inside the bunker = safe from the shells, but only CROUCHING:
+## standing up you are hit by the shrapnel flying over the trench edge.
+## In the bunker room only its two back corners are safe: in the middle or by the opening to
+## the trench the shrapnel flies in.
 static func is_covered(p: Player) -> bool:
+	if not (is_in_shelter(p) and p.is_crouching):
+		return false
+	if is_in_bunker(p):
+		return is_bunker_corner(p)
+	return true
+
+
+## The room dug into the slab behind the trench (x ±2.5, z 64.9…69.0), open towards the trench.
+static func is_in_bunker(p: Player) -> bool:
+	var pos: Vector3 = p.global_position
+	return pos.y < -0.5 and absf(pos.x) < 2.5 and pos.z > 64.9 and pos.z < 69.0
+
+
+## The two back corners of the bunker room (by the side walls, far from the opening).
+static func is_bunker_corner(p: Player) -> bool:
+	var pos: Vector3 = p.global_position
+	return absf(pos.x) >= 1.2 and pos.z >= 67.3
+
+
+## Inside the trench or the bunker (crouching or not).
+static func is_in_shelter(p: Player) -> bool:
 	var pos: Vector3 = p.global_position
 	return pos.y < -0.5 and pos.z > 48.0 and pos.z < 76.0 and absf(pos.x) < 108.0
 
@@ -138,6 +179,8 @@ func _finish(whistles: bool) -> void:
 func begin_warning() -> void:
 	phase = Phase.WARNING
 	shells_fired = 0
+	if warning_sound:
+		_warning_audio.play() # the guns open fire far away: time to get down
 	barrage_started.emit()
 
 
@@ -152,6 +195,7 @@ func begin_firing() -> void:
 func end_barrage() -> void:
 	phase = Phase.IDLE
 	_audio.stop()
+	_warning_audio.stop()
 	_scorch_fade = scorch_fade_time
 	barrage_ended.emit()
 
@@ -215,16 +259,17 @@ func _flat_offset(dist: float) -> Vector3:
 @rpc("authority", "call_local", "reliable")
 func explode(pos: Vector3, strength: float) -> void:
 	shells_fired += 1
-	show_explosion(pos, strength)
+	show_explosion(pos, strength, blast_scale, shake_range_m)
 	_scorch_fade = -1.0
+	_play_close_burst(pos)
 
 
 ## Only the look of a shell landing (this computer). Also used by the tank's 45 mm shells
 ## (T1); outside a barrage their scorch marks fade away after `scorch_fade_time`.
-func show_explosion(pos: Vector3, strength: float) -> void:
+func show_explosion(pos: Vector3, strength: float, scale_mul: float = 1.0, shake_range: float = 90.0) -> void:
 	var b: Array = _blasts[_next_blast]
 	_next_blast = (_next_blast + 1) % _blasts.size()
-	var size: float = lerpf(0.8, 1.3, strength)
+	var size: float = lerpf(0.8, 1.3, strength) * scale_mul
 	var flash := b[0] as MeshInstance3D
 	flash.global_position = pos + Vector3.UP * 1.5
 	flash.scale = Vector3.ONE * size
@@ -236,6 +281,7 @@ func show_explosion(pos: Vector3, strength: float) -> void:
 	for i in [2, 3, 4, 5]:
 		var p := b[i] as CPUParticles3D
 		p.global_position = pos
+		p.scale = Vector3.ONE * scale_mul # bigger clouds and clods for the barrage
 		p.restart()
 	var scorch := _scorches[_next_scorch]
 	_next_scorch = (_next_scorch + 1) % _scorches.size()
@@ -252,7 +298,21 @@ func show_explosion(pos: Vector3, strength: float) -> void:
 		var pl := node as Player
 		if pl.is_local_player():
 			var d: float = pl.global_position.distance_to(pos)
-			pl.add_shake(clampf(1.0 - d / 90.0, 0.0, 1.0) * (0.5 + strength))
+			pl.add_shake(clampf(1.0 - d / shake_range, 0.0, 1.0) * (0.5 + strength) * scale_mul)
+
+
+## A shell bursting close to the player on this computer: the loud explosion. The nearer, the louder.
+func _play_close_burst(pos: Vector3) -> void:
+	if close_sound == null:
+		return
+	for node in get_tree().get_nodes_in_group("players"):
+		var pl := node as Player
+		if pl.is_local_player():
+			var d: float = pl.global_position.distance_to(pos)
+			if d < close_sound_range_m:
+				_close_audio.volume_db = lerpf(0.0, -14.0, d / close_sound_range_m)
+				_close_audio.pitch_scale = _rng.randf_range(0.93, 1.07)
+				_close_audio.play()
 
 
 func _update_visuals(delta: float) -> void:

@@ -125,7 +125,16 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   losing (the end screen pauses before `_finish`) during a barrage kept it at 0, so the next
   match's soldiers stopped ~50 m short and never assaulted until a barrage ended.
   `ArtilleryBarrage._ready()` and `_exit_tree()` now set it back to INF (checked in test_artillery).
-- HUD `ArtilleryWarning` label (top centre): warning / "stay down" or "GET INTO THE TRENCH!" /
-  "The barrage lifts". `tools/test_artillery.gd`, `tools/shots_artillery.gd`.
+- HUD `ArtilleryWarning` label (top centre): warning, then only "GET INTO THE TRENCH!" for
+  anyone in the open; no text in the trench/bunker and none when it lifts. `tools/test_artillery.gd`, `tools/shots_artillery.gd`.
+- Artillery upgrade (2026-11-05): warning is 6.5 s and plays `guns_distant.ogg` (Freesound 345844,
+  distant gunshots, 5.9 s) on every computer so players can get down before the first shell.
+  `shell_close.ogg` (Freesound 256297, first 4 s of the loud explosion) plays for the LOCAL
+  player when a barrage shell lands within `close_sound_range_m` (28 m), louder when nearer
+  (`_play_close_burst`, from `explode()` only – the tank's `show_explosion` call is unchanged).
+  Bigger blasts: kill 6 m, harm 35 m (shrapnel; cover only while CROUCHING in the trench/bunker – `is_covered` = `is_in_shelter` + `is_crouching`; no HUD hint for crouching; in the bunker room only the two back corners count as cover: `is_bunker_corner` |x| ≥ 1.2, z ≥ 67.3 – middle/opening get shrapnel; no "stay down" text during the barrage, only the warning and "GET INTO THE TRENCH!" in the open), near_damage 110, aimed_share 0.55, `blast_scale` 1.5
+  (bigger flash/particles/scorch) and `shake_range_m` 120. Both sounds are set in
+  `scenes/game.tscn` (edited by hand, so rebuilding scenes would need the same two lines in
+  `build_scenes.gd`, which now has them). Trench/bunker still fully safe.
 - Sound: Freesound 486086 "Artillery Barrage" by Mozfoo (explosion by Steveygos93), CC-BY 4.0;
   mono, −4 dB + limiter, 1.3 s fade. Original WAV in `assets_source/`.

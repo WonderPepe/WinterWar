@@ -71,7 +71,19 @@ func run() -> void:
 	p.global_position = Vector3(-30, -1.3, 61)
 	p.input.crouch_held = true
 	await seconds(0.3)
-	check(ArtilleryBarrage.is_covered(p), "in the trench = under cover")
+	check(ArtilleryBarrage.is_covered(p), "in the trench, crouching = under cover")
+	p.global_position = Vector3(0, -2.5, 66.0)
+	check(not ArtilleryBarrage.is_covered(p), "bunker middle = NOT covered")
+	p.global_position = Vector3(0, -2.5, 65.2)
+	check(not ArtilleryBarrage.is_covered(p), "bunker opening = NOT covered")
+	p.global_position = Vector3(-2.0, -2.5, 68.4)
+	check(ArtilleryBarrage.is_covered(p), "bunker back corner (left) = covered")
+	p.global_position = Vector3(2.0, -2.5, 68.4)
+	check(ArtilleryBarrage.is_covered(p), "bunker back corner (right) = covered")
+	p.global_position = Vector3(-30, -1.3, 61)
+	p.is_crouching = false
+	check(not ArtilleryBarrage.is_covered(p) and ArtilleryBarrage.is_in_shelter(p), "standing in the trench = NOT covered (shrapnel)")
+	p.is_crouching = true
 
 	# Wave 4 starts → the barrage begins by itself.
 	spawner.wave_number = 3
@@ -80,10 +92,17 @@ func run() -> void:
 	check(arty.phase == ArtilleryBarrage.Phase.WARNING, "wave 4 starts with an artillery warning")
 	check(hud.artillery_label.visible and hud.artillery_label.text.begins_with("ARTILLERY!"), "HUD: '%s'" % hud.artillery_label.text)
 	check(Enemy.barrage_hold_z < INF, "the Soviets may not come closer than z %.0f meanwhile" % Enemy.barrage_hold_z)
+	check(arty._warning_audio.playing, "the distant guns are heard during the warning")
+	check(is_equal_approx(arty.warning_time, 6.5), "the warning lasts 6.5 s")
 	Engine.time_scale = 2.0
-	await seconds(5.0)
+	await seconds(7.5) # 6.5 s warning, then the first shells
 	check(arty.phase == ArtilleryBarrage.Phase.FIRING and arty.shells_fired > 0, "then the shells fall (%d so far)" % arty.shells_fired)
-	check(hud.artillery_label.text.contains("stay down"), "HUD in the trench: '%s'" % hud.artillery_label.text)
+	check(not hud.artillery_label.visible, "HUD: no text in the trench while the shells fall")
+	arty._play_close_burst(p.global_position + Vector3(5, 0, 0))
+	check(arty._close_audio.playing, "a shell bursting 5 m away plays the close explosion")
+	arty._close_audio.stop()
+	arty._play_close_burst(p.global_position + Vector3(60, 0, 0))
+	check(not arty._close_audio.playing, "a far shell does not")
 	var z_start: float = r.global_position.z
 	await seconds(9.0)
 	check(p.health == 100 and not p.is_dead, "in the trench nothing hits you (health %d)" % p.health)
@@ -106,7 +125,7 @@ func run() -> void:
 	check(Enemy.barrage_hold_z == INF, "the limit is gone")
 	await seconds(0.2)
 	check(o.whistle_count >= 1, "the officer blows his whistle when it lifts (%d)" % o.whistle_count)
-	check(hud.artillery_label.text == "The barrage lifts", "HUD: '%s'" % hud.artillery_label.text)
+	check(not hud.artillery_label.visible, "no text when the barrage lifts")
 	var z_end: float = maxf(r.global_position.z, o.global_position.z)
 	await seconds(6.0)
 	var z_now: float = maxf(r.global_position.z, o.global_position.z)

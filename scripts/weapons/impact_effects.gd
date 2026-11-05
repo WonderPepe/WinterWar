@@ -103,13 +103,13 @@ func _ready() -> void:
 
 
 ## Show a bullet hole and a spray (snow powder, wood splinters, cloth dust) where a bullet hit.
-func spawn_impact(pos: Vector3, normal: Vector3, surface: String, attach_to: Node3D = null) -> void:
+func spawn_impact(pos: Vector3, normal: Vector3, surface: String, attach_to: Node3D = null, silent: bool = false) -> void:
+	if not silent and (surface == "metal" or surface == "stone"): # a bullet whining off hard material
+		_play_ricochet(pos)
 	if not _sprays.has(surface):
 		surface = "snow"
 	var up: Vector3 = Vector3.RIGHT if absf(normal.y) > 0.99 else Vector3.UP
 	_spawn_spray(surface, pos, normal, up)
-	if surface == "metal":
-		_play_ricochet(pos)
 	if not HOLE_COLORS.has(surface):
 		return # no bullet holes on moving soldiers
 	var facing := Basis.looking_at(-normal, up) # quad's front (+Z) points along the normal

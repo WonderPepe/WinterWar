@@ -25,6 +25,15 @@ the game; the models are otherwise unchanged.
   https://freesound.org/s/486086/ – made mono and a little quieter for the game. One of its
   bangs is also the tank's 45 mm gun and its shell bursting.
 
+- "Kimmokkeita / ricochets" by YleArkisto
+  https://freesound.org/s/401921/ – the ricochets when bullets hit metal or stone (cut and made mono).
+
+- "Cannon, artillery, distant gunshots" by aegersum
+  https://freesound.org/s/345844/ – the guns heard before a barrage (made mono).
+
+- "Rajahdys, rajahde / Explosion, an echoing loud explosion, pattern, exterior" by YleArkisto
+  https://freesound.org/s/256297/ – a shell bursting close to you (shortened, made mono).
+
 - "War tank engine and crawlers – crawlers rattling and engine sounds 0004" by joniheinonen
   https://freesound.org/s/161894/ – the tank's engine and tracks (made mono, looped).
 

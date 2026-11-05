@@ -51,8 +51,6 @@ var _last_cleared: int = 0
 @onready var tank_hint: Label = $TankHint
 
 var _artillery: ArtilleryBarrage
-var _was_barrage: bool = false
-var _lifted_until: float = 0.0
 
 var _director: MatchDirector
 var _message: String = ""
@@ -266,7 +264,7 @@ func _update_waves(delta: float) -> void:
 	banner_sub.modulate.a = wave_banner.modulate.a
 
 
-## Artillery: warning, "stay in the trench" while it lasts, "the barrage lifts" at the end.
+## Artillery: warning, then "stay in the trench" while it lasts (nothing shown when it ends).
 func _update_artillery() -> void:
 	if _artillery == null or not is_instance_valid(_artillery):
 		_artillery = get_tree().get_first_node_in_group("artillery") as ArtilleryBarrage
@@ -278,17 +276,12 @@ func _update_artillery() -> void:
 	if _artillery.phase == ArtilleryBarrage.Phase.WARNING:
 		_show_artillery("ARTILLERY! GET DOWN INTO THE TRENCH!", Color(1.0, 0.45, 0.3), blink)
 	elif _artillery.phase == ArtilleryBarrage.Phase.FIRING:
-		if ArtilleryBarrage.is_covered(_player) or _player.is_dead:
-			_show_artillery("Artillery barrage – stay down", Color(1.0, 0.85, 0.7), 0.75)
+		if ArtilleryBarrage.is_in_shelter(_player) or _player.is_dead:
+			artillery_label.visible = false # no text while you are down in the trench
 		else:
 			_show_artillery("GET INTO THE TRENCH!", Color(1.0, 0.35, 0.25), blink)
-	elif _was_barrage:
-		_lifted_until = now + 3.0
-	elif now < _lifted_until:
-		_show_artillery("The barrage lifts", Color(0.92, 0.95, 1.0), clampf(_lifted_until - now, 0.0, 1.0))
 	else:
 		artillery_label.visible = false
-	_was_barrage = _artillery.is_active()
 
 
 func _show_artillery(text: String, color: Color, alpha: float) -> void:

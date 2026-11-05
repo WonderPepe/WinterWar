@@ -739,6 +739,8 @@ func _build_game() -> Node:
 	var arty: Node3D = _add(g, Node3D.new(), "ArtilleryBarrage")
 	arty.set_script(load("res://scripts/game/artillery_barrage.gd"))
 	arty.set("sound", load("res://assets/audio/artillery/barrage.ogg"))
+	arty.set("warning_sound", load("res://assets/audio/artillery/guns_distant.ogg"))
+	arty.set("close_sound", load("res://assets/audio/artillery/shell_close.ogg"))
 	arty.set("shell_times", PackedFloat32Array(BARRAGE_SHELLS[0]))
 	arty.set("shell_strengths", PackedFloat32Array(BARRAGE_SHELLS[1]))
 	# Background sounds: each flies over once per battle (a plane: YleArkisto, CC-BY 4.0).

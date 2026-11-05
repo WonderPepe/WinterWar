@@ -56,7 +56,7 @@ func _warm_up() -> void:
 	# Impacts on every surface type and another player's muzzle flash.
 	if effects:
 		for surface in ["snow", "wood", "cloth", "metal"]:
-			effects.spawn_impact(front, cam.global_basis.z, surface) # facing the camera
+			effects.spawn_impact(front, cam.global_basis.z, surface, null, true) # facing the camera, silent
 		effects.spawn_flash(front)
 		effects.spawn_smoke(front, -cam.global_basis.z)
 	# A soldier model (just its meshes, without the AI).
