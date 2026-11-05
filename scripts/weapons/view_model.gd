@@ -13,6 +13,11 @@ extends Node3D
 ## Parts of the imported model that should not be shown (e.g. loose cartridges).
 @export var hidden_part_names: PackedStringArray = PackedStringArray()
 @export var bolt_travel: float = 0.08 ## How far the bolt slides back (metres).
+## Bolt-action: the handle is turned up this far (degrees) before the bolt is pulled back.
+@export var bolt_roll_deg: float = 80.0
+## The bolt's own axis (a point on it, Model space): the bolt turns around the line through
+## this point along z. Mosin: measured from the glTF parts (x = 0 is the middle of the rifle).
+@export var bolt_roll_pivot: Vector3 = Vector3(0.0, 0.0447, 0.0)
 @export var flash_duration: float = 0.05
 @export var ads_eye_distance: float = 0.3 ## When aiming, the rear sight sits this far in front of the eye.
 @export var hip_offset: Vector3 = Vector3.ZERO ## Moves this gun from the standard hip position.
@@ -56,6 +61,8 @@ var _kick_back: float = 0.0
 var _kick_rotation: float = 0.0
 var _flash_until: float = 0.0
 var _bolt_rest: Vector3
+var _bolt_roll: float = 0.0   # radians the bolt handle is turned up (0 = handle to the right)
+var _bolt_slide: float = 0.0  # metres the bolt is pulled back
 var _tween: Tween
 var _hand_tween: Tween
 var _grip_r: Node3D
@@ -273,20 +280,49 @@ func play_fire(kick_back_m: float, kick_rotation_deg: float) -> void:
 	flash.rotation.z = randf() * TAU # vary the flash shape a little
 
 
-## Bolt-action: tilt the rifle and slide the bolt back and forward.
+## Bolt-action: the handle turns up, the bolt is pulled back, pushed forward, the handle turns
+## down again. The timing (fractions of `duration`) follows the clicks of the recorded sound
+## (bolt_mosin…), which starts 0.25 × duration into the cycle (WeaponController).
 func play_bolt_cycle(duration: float) -> void:
 	_restart_tween()
+	_tween.set_parallel(true)
+	# The rifle is canted a little while the bolt is worked.
 	var tilt := Vector3(0.0, 0.0, deg_to_rad(-20.0))
-	_tween.tween_property(self, "anim_rotation", tilt, duration * 0.2).set_delay(duration * 0.1)
+	_tween.tween_property(self, "anim_rotation", tilt, duration * 0.16).set_delay(duration * 0.08)
+	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * 0.16).set_delay(duration * 0.80)
 	if bolt:
-		_tween.tween_property(bolt, "position", _bolt_rest + Vector3(0, 0, bolt_travel), duration * 0.2)
-		_tween.tween_property(bolt, "position", _bolt_rest, duration * 0.2)
-	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * 0.2)
-	# The right hand leaves the grip, works the bolt and comes back.
+		var roll: float = deg_to_rad(bolt_roll_deg)
+		# 1. handle up   2. pull back (slows down at the end)   3. push forward (speeds up)   4. handle down
+		_tween.tween_method(_set_bolt_roll, 0.0, roll, duration * 0.096).set_delay(duration * 0.224)
+		_tween.tween_method(_set_bolt_slide, 0.0, bolt_travel, duration * 0.144) \
+				.set_delay(duration * 0.32).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_tween.tween_method(_set_bolt_slide, bolt_travel, 0.0, duration * 0.11) \
+				.set_delay(duration * 0.53).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		_tween.tween_method(_set_bolt_roll, roll, 0.0, duration * 0.112).set_delay(duration * 0.688)
+	# The right hand goes to the knob, rides along with the bolt and comes back.
 	if _bolt_grip:
 		_hand_tween = create_tween()
-		_hand_tween.tween_property(self, "bolt_hand", 1.0, duration * 0.2).set_delay(duration * 0.06)
-		_hand_tween.tween_property(self, "bolt_hand", 0.0, duration * 0.2).set_delay(duration * 0.44)
+		_hand_tween.tween_property(self, "bolt_hand", 1.0, duration * 0.16).set_delay(duration * 0.06)
+		_hand_tween.tween_property(self, "bolt_hand", 0.0, duration * 0.16).set_delay(duration * 0.58)
+
+
+func _set_bolt_roll(value: float) -> void:
+	_bolt_roll = value
+	_apply_bolt()
+
+
+func _set_bolt_slide(value: float) -> void:
+	_bolt_slide = value
+	_apply_bolt()
+
+
+## Puts the bolt where `_bolt_roll` / `_bolt_slide` say: turned around its own axis, then slid back.
+func _apply_bolt() -> void:
+	if bolt == null:
+		return
+	var turn := Basis(Vector3.BACK, _bolt_roll) # +z: the handle on the right (+x) swings up (+y)
+	bolt.basis = turn
+	bolt.position = _bolt_rest + bolt_roll_pivot - turn * bolt_roll_pivot + Vector3(0.0, 0.0, _bolt_slide)
 
 
 ## Reload: move and tilt the weapon (`reload_offset` / `reload_rotation_deg`), then bring it back.
@@ -328,8 +364,9 @@ func _restart_tween() -> void:
 	bolt_hand = 0.0
 	reload_hand = 0.0
 	magazine_progress = -1.0
-	if bolt:
-		bolt.position = _bolt_rest
+	_bolt_roll = 0.0
+	_bolt_slide = 0.0
+	_apply_bolt()
 	_tween = create_tween()
 
 

@@ -59,3 +59,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   lifts and rolls the gun −60° so the change is in view). `tools/shots_drum.gd`, checks in test_w2.
 - `tools/shots_w2.gd [prefix] [side]` (the "side" option adds a camera beside the player to
   check the grips), `tools/test_w2.gd`.
+
+## Mosin bolt cycle (after each shot)
+- `ViewModel.play_bolt_cycle()`: handle rolls up (`bolt_roll_deg` 80°, around the bolt axis
+  `bolt_roll_pivot`, measured from the glTF parts), bolt slides back `bolt_travel`, forward, handle
+  rolls down. Right hand rides on `BoltGrip`. Timings are fractions of `bolt_cycle_time` (1.25 s),
+  matched to the clicks of `assets/audio/recorded/bolt_mosin.ogg` (0.78 s, cut from
+  `assets_source/370345…mosin-nagant-bolt-action-cycle.wav` at 13.38 s; the sound starts at 25 % of the cycle).
