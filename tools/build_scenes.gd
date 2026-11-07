@@ -1144,8 +1144,8 @@ func _build_maxim(mats: Dictionary) -> Node:
 	gun.collision_layer = 0b1
 	gun.set_meta("surface", "wood")
 	gun.set("data", load("res://resources/weapons/maxim_m09_21.tres"))
-	gun.set("traverse_left_deg", 18.0)  # L2: the narrow hole (0.62 m outside) allows about +-18 deg
-	gun.set("traverse_right_deg", 18.0)
+	gun.set("traverse_left_deg", 21.0)  # L2: the narrow hole (0.76 m outside) allows about +-21 deg
+	gun.set("traverse_right_deg", 21.0)
 	gun.set("elevation_min_deg", -7.0)
 	gun.set("elevation_max_deg", 4.0)
 	gun.set("turning_part_names", PackedStringArray(["karabin_001_3", "Zapatka_4", "Cube_0",
@@ -2234,11 +2234,11 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	bunker.position = Vector3(0, 0, BUNKER_Z)
 	_csg_box(bunker, "Walls", Vector3(6, 1.0, 5.5), Vector3(0, 0.5, 0), mats.bunker_log)
 	_csg_box(bunker, "Inside", Vector3(5, 1.2, 4.5), Vector3(0, 0.5, 0), mats.bunker_log, SUB)
-	# L2: the firing hole in the front wall (wall z -2.75 ... -2.25): 0.62 m wide at the outside,
+	# L2: the firing hole in the front wall (wall z -2.75 ... -2.25): 0.76 m wide at the outside,
 	# widening in three steps to 1.6 m inside (like a real machine-gun embrasure), 0.45 m tall
 	# (y 0.1 ... 0.55). (A CSGPolygon3D did not subtract in the headless bake, so boxes.)
-	_csg_box(bunker, "FiringHoleOuter", Vector3(0.62, 0.45, 0.35), Vector3(0, 0.325, -2.675), mats.bunker_log, SUB)
-	_csg_box(bunker, "FiringHoleMid", Vector3(1.0, 0.45, 0.2), Vector3(0, 0.325, -2.4), mats.bunker_log, SUB)
+	_csg_box(bunker, "FiringHoleOuter", Vector3(0.76, 0.45, 0.35), Vector3(0, 0.325, -2.675), mats.bunker_log, SUB)
+	_csg_box(bunker, "FiringHoleMid", Vector3(1.1, 0.45, 0.2), Vector3(0, 0.325, -2.4), mats.bunker_log, SUB)
 	_csg_box(bunker, "FiringHoleInner", Vector3(1.6, 0.45, 0.25), Vector3(0, 0.325, -2.25), mats.bunker_log, SUB)
 	# The door in the back wall (the trench stub leads to it).
 	_csg_box(bunker, "BackDoor", Vector3(BUNKER_DOOR_W, 1.1, 0.8), Vector3(BUNKER_DOOR_X, 0.45, 2.5), mats.bunker_log, SUB)

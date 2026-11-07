@@ -18,7 +18,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   with `MountedGun.clamp_look()` (left/right traverse separate). Turning model parts are
   reparented under `Pivot` at runtime (`turning_part_names`); the glTF animation is unused.
 - Maxim placement: barrel at y 0.2 in the 0.5 m firing slit (y 0.1–0.6, made taller in W1),
-  gun at x = 0 behind the funnel hole of the front wall (L2; pivot 0.1 m behind the outer face). Limits ±18°,
+  gun at x = 0 behind the funnel hole of the front wall (L2; pivot 0.1 m behind the outer face). Limits ±21°,
   -7°…+4°: `test_w1.gd` checks every allowed aim fits through the slit.
 
 ## Arms and Maxim polish (W2) – how it is built
