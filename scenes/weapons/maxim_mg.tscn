@@ -49,7 +49,7 @@ properties/4/path = NodePath(".:is_overheated")
 properties/4/spawn = true
 properties/4/replication_mode = 2
 
-[node name="MaximMG" type="StaticBody3D" unique_id=695744086]
+[node name="MaximMG" type="StaticBody3D" unique_id=1791695284]
 script = ExtResource("1_6b113")
 data = ExtResource("2_j7gxs")
 traverse_left_deg = 21.0
@@ -63,89 +63,89 @@ metadata/surface = "wood"
 [node name="Model" type="Node3D" parent="." unique_id=1272906248 instance=ExtResource("3_tinhd")]
 transform = Transform3D(0.0135, 0, 0, 0, 0.0135, 0, 0, 0, 0.0135, 0, 0.36855, -0.44550002)
 
-[node name="Pivot" type="Node3D" parent="." unique_id=373986966]
+[node name="Pivot" type="Node3D" parent="." unique_id=2007401718]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28755, 0)
 
-[node name="Muzzle" type="Marker3D" parent="Pivot" unique_id=1461113069]
+[node name="Muzzle" type="Marker3D" parent="Pivot" unique_id=485869112]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Pivot/Muzzle" unique_id=1419344034]
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Pivot/Muzzle" unique_id=461104079]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.06)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_s6dld")
 
-[node name="SideFlash" type="MeshInstance3D" parent="Pivot/Muzzle/MuzzleFlash" unique_id=1182296094]
+[node name="SideFlash" type="MeshInstance3D" parent="Pivot/Muzzle/MuzzleFlash" unique_id=739563789]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, -0.05)
 cast_shadow = 0
 mesh = SubResource("QuadMesh_0ujeh")
 
-[node name="FlashLight" type="OmniLight3D" parent="Pivot/Muzzle" unique_id=1001937552]
+[node name="FlashLight" type="OmniLight3D" parent="Pivot/Muzzle" unique_id=1493870818]
 light_color = Color(1, 0.75, 0.45, 1)
 light_energy = 3.0
 omni_range = 7.0
 
-[node name="SightEye" type="Marker3D" parent="Pivot" unique_id=514129737]
+[node name="SightEye" type="Marker3D" parent="Pivot" unique_id=1469635857]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16942501, 0.68850005)
 
-[node name="GripR" type="Marker3D" parent="Pivot" unique_id=734402839]
+[node name="GripR" type="Marker3D" parent="Pivot" unique_id=1845865761]
 transform = Transform3D(0.95463604, 0.29777503, 0, -0.046441764, 0.14888752, -0.9877629, -0.29413116, 0.9429542, 0.15596259, 0.071550004, 0.054, 0.405)
 gizmo_extents = 0.03
 
-[node name="GripL" type="Marker3D" parent="Pivot" unique_id=772389798]
+[node name="GripL" type="Marker3D" parent="Pivot" unique_id=108412550]
 transform = Transform3D(0.95463604, -0.29777503, 0, 0.046441764, 0.14888752, -0.9877629, 0.29413116, 0.9429542, 0.15596259, -0.071550004, 0.054, 0.405)
 gizmo_extents = 0.03
 
-[node name="BeltGrip" type="Marker3D" parent="Pivot" unique_id=799379436]
+[node name="BeltGrip" type="Marker3D" parent="Pivot" unique_id=897190074]
 transform = Transform3D(0.9140435, 0.4056161, 0, -0.1349972, 0.3042121, -0.9429903, -0.38249207, 0.86193424, 0.33282012, 0.12825, 0.1215, 0.0405)
 gizmo_extents = 0.03
 
-[node name="SteamPoint" type="Marker3D" parent="Pivot" unique_id=625853114]
+[node name="SteamPoint" type="Marker3D" parent="Pivot" unique_id=839248703]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.110700004, -0.4185)
 
-[node name="SeatPoint" type="Marker3D" parent="." unique_id=508950824]
+[node name="SeatPoint" type="Marker3D" parent="." unique_id=1970591112]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.08, 0.8)
 
-[node name="ExitPoint" type="Marker3D" parent="." unique_id=1801145231]
+[node name="ExitPoint" type="Marker3D" parent="." unique_id=65296524]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, -1.212, 1)
 
-[node name="PlatformMesh" type="MeshInstance3D" parent="." unique_id=557710387]
+[node name="PlatformMesh" type="MeshInstance3D" parent="." unique_id=974349912]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_n0kws")
 
-[node name="PlatformCollision" type="CollisionShape3D" parent="." unique_id=1918765378]
+[node name="PlatformCollision" type="CollisionShape3D" parent="." unique_id=441608340]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.631, 0)
 shape = SubResource("BoxShape3D_1cjh1")
 
-[node name="StepMesh" type="MeshInstance3D" parent="." unique_id=29798512]
+[node name="StepMesh" type="MeshInstance3D" parent="." unique_id=14966831]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_aeunk")
 
-[node name="StepCollision" type="CollisionShape3D" parent="." unique_id=637400318]
+[node name="StepCollision" type="CollisionShape3D" parent="." unique_id=1875973995]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.171, 0.8)
 shape = SubResource("BoxShape3D_qqngv")
 
-[node name="GunCollision" type="CollisionShape3D" parent="." unique_id=1415348211]
+[node name="GunCollision" type="CollisionShape3D" parent="." unique_id=935265985]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.338, -0.05)
 shape = SubResource("BoxShape3D_x8dab")
 
-[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1553050919]
+[node name="ShotAudio" type="AudioStreamPlayer3D" parent="." unique_id=1175003004]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050449997, -0.73305)
 unit_size = 30.0
 max_polyphony = 6
 bus = &"SFX"
 
-[node name="MechAudio" type="AudioStreamPlayer3D" parent="." unique_id=1878615952]
+[node name="MechAudio" type="AudioStreamPlayer3D" parent="." unique_id=2083367319]
 unit_size = 6.0
 bus = &"SFX"
 
-[node name="SteamAudio" type="AudioStreamPlayer3D" parent="." unique_id=1249116180]
+[node name="SteamAudio" type="AudioStreamPlayer3D" parent="." unique_id=1478133183]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.39825, -0.4185)
 stream = ExtResource("6_ldrfo")
 unit_size = 4.0
 bus = &"SFX"
 
-[node name="GunSync" type="MultiplayerSynchronizer" parent="." unique_id=1658254489]
+[node name="GunSync" type="MultiplayerSynchronizer" parent="." unique_id=721036307]
 delta_interval = 0.1
 replication_config = SubResource("SceneReplicationConfig_1dvw6")

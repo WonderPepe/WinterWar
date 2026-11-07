@@ -137,7 +137,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - [x] L2 wooden bunker turned around (owner 2026-11-07): the bunker faces the enemy (front wall at
   z 56.75, open ground in front, no trench there); the trench line runs BEHIND it and a short open
   stub (x = 1.2) leads to a back door (1.4 m wide); the Maxim sits at x = 0 behind a funnel hole
-  (0.76 m outside, 1.6 m inside, 0.45 m tall), limited to ±21°. Artillery bunker corners are now the
+  (1.1 m outside, 1.6 m inside, 0.45 m tall), limited to ±21°; gun pivot 0.6 m behind the outer face so the barrel ends flush with the hole. Artillery bunker corners are now the
   two FRONT corners. Ammo crate in the bunker at (-1.9, 61.2). Constants `BUNKER_Z/DOOR_X/DOOR_W`.
   Tests: `test_m1/w1/artillery/m2/p2` adapted; `shots_l2.gd`.
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
