@@ -69,7 +69,7 @@ func run() -> void:
 
 	# L1: the firing position at x = -23.5 now stands in the line of fire from the spawn at x = -30,
 	# so he shoots from the straight at x = -10 (the targets keep their old spots).
-	p.global_position = Vector3(-10, -1.3, 61)
+	p.global_position = Vector3(-17, -1.3, 61)
 	p.velocity = Vector3.ZERO
 	await frames(10)
 

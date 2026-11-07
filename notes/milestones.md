@@ -134,6 +134,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   at ~±22° sideways / ±11° up-down he sees and is seen); crouching = fully hidden. Splash damage
   isn't blocked. (First version: a 3.5 m bay with a log step and a low wall – replaced.)
   Details/gotchas: `gotchas.md` (L1). Tests: `test_l1.gd`, `shots_l1.gd`.
+- [x] L2 wooden bunker turned around (owner 2026-11-07): the bunker faces the enemy (front wall at
+  z 56.75, open ground in front, no trench there); the trench line runs BEHIND it and a short open
+  stub (x = 1.2) leads to a back door (1.4 m wide); the Maxim sits at x = 0 behind a funnel hole
+  (0.62 m outside, 1.6 m inside, 0.45 m tall), limited to ±18°. Artillery bunker corners are now the
+  two FRONT corners. Ammo crate in the bunker at (-1.9, 61.2). Constants `BUNKER_Z/DOOR_X/DOOR_W`.
+  Tests: `test_m1/w1/artillery/m2/p2` adapted; `shots_l2.gd`.
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
   no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
   of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at

@@ -100,12 +100,12 @@ func run() -> void:
 		inside = inside and absf(pt(i).x) <= 100.0 and pt(i).y >= 55.0 and pt(i).y <= 66.0
 	print("  legs %d, longest %.1f m, shortest %.1f m, corners >25 deg: %d, length %.0f m" % [legs, longest, shortest, corners, length])
 	check(legs >= 40, "at least 40 legs (%d)" % legs)
-	check(longest <= 12.5 and shortest >= 2.9, "legs are 3 ... 12 m long (the long one is the bunker front)")
+	check(longest <= 12.5 and shortest >= 2.9, "legs are 3 ... 12 m long ")
 	var over_8 := 0
 	for i in legs:
 		if (pt(i + 1) - pt(i)).length() > 9.0:
 			over_8 += 1
-	check(over_8 <= 1, "only the bunker front is longer than 9 m (%d)" % over_8)
+	check(over_8 <= 1, "at most one leg is longer than 9 m (%d)" % over_8)
 	check(corners >= 35, "at least 35 real corners (%d)" % corners)
 	check(inside, "the whole line lies inside the earth slab")
 

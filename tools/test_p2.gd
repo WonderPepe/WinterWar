@@ -120,8 +120,8 @@ func run() -> void:
 
 	# --- Bullets flying past you crack ---
 	p.god_mode = true
-	p.global_position = Vector3(0, 0, 60)
-	e.global_position = Vector3(0, 0, 10)
+	p.global_position = Vector3(-12, 0, 60)
+	e.global_position = Vector3(-12, 0, 10)
 	e._target = p
 	e._last_known_position = p.global_position
 	e.data = e.data.duplicate()

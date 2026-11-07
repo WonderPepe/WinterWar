@@ -270,12 +270,12 @@ _data = {
 }
 point_count = 5
 
-[node name="TestLevel" type="Node3D" unique_id=1203438376]
+[node name="TestLevel" type="Node3D" unique_id=530399495]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=896365012 groups=["world_environment"]]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=455615751 groups=["world_environment"]]
 environment = SubResource("Environment_uu81q")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1192651224 groups=["sun"]]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1167684976 groups=["sun"]]
 transform = Transform3D(-0.8660254, 0.112475544, -0.4871851, 0, 0.97437006, 0.22495106, 0.50000006, 0.19481333, -0.8438292, 0, 0, 0)
 light_color = Color(1, 0.87, 0.72, 1)
 light_energy = 1.25
@@ -285,390 +285,390 @@ shadow_normal_bias = 2.5
 directional_shadow_mode = 1
 directional_shadow_max_distance = 70.0
 
-[node name="Terrain" type="StaticBody3D" parent="." unique_id=189615331 groups=["navigation_source", "terrain"]]
+[node name="Terrain" type="StaticBody3D" parent="." unique_id=980953992 groups=["navigation_source", "terrain"]]
 script = ExtResource("2_ra35m")
 noise = SubResource("FastNoiseLite_6wuxv")
 snow_material = ExtResource("3_x7oem")
 
-[node name="MapBounds" type="StaticBody3D" parent="." unique_id=115386987 groups=["navigation_source"]]
+[node name="MapBounds" type="StaticBody3D" parent="." unique_id=547280030 groups=["navigation_source"]]
 
-[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=144396024]
+[node name="Wall" type="CollisionShape3D" parent="MapBounds" unique_id=947009120]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -151)
 shape = SubResource("BoxShape3D_kaa6k")
 
-[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="MapBounds" unique_id=281312732]
+[node name="@CollisionShape3D@4" type="CollisionShape3D" parent="MapBounds" unique_id=1794471438]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 151)
 shape = SubResource("BoxShape3D_h8ll6")
 
-[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=78709540]
+[node name="@CollisionShape3D@5" type="CollisionShape3D" parent="MapBounds" unique_id=1735689281]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -151, 10, 0)
 shape = SubResource("BoxShape3D_4b7wo")
 
-[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=35905416]
+[node name="@CollisionShape3D@6" type="CollisionShape3D" parent="MapBounds" unique_id=792005948]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 151, 10, 0)
 shape = SubResource("BoxShape3D_x6sc1")
 
-[node name="Forest" type="Node3D" parent="." unique_id=680853418 groups=["navigation_source"]]
+[node name="Forest" type="Node3D" parent="." unique_id=763302924 groups=["navigation_source"]]
 script = ExtResource("4_ec2iw")
 trunk_material = ExtResource("5_ulql8")
 foliage_material = ExtResource("6_3i7yh")
 tree_line_material = ExtResource("7_5y2bn")
 
-[node name="Trench" type="StaticBody3D" parent="." unique_id=897653379 groups=["navigation_source"]]
+[node name="Trench" type="StaticBody3D" parent="." unique_id=1583412369 groups=["navigation_source"]]
 metadata/surface = "earthwork"
 
-[node name="Mesh" type="MeshInstance3D" parent="Trench" unique_id=863529031]
+[node name="Mesh" type="MeshInstance3D" parent="Trench" unique_id=1220089374]
 mesh = ExtResource("8_kbjoq")
 
-[node name="Collision" type="CollisionShape3D" parent="Trench" unique_id=1497219210]
+[node name="Collision" type="CollisionShape3D" parent="Trench" unique_id=213499751]
 shape = ExtResource("9_m2xr1")
 
-[node name="Bunker" type="StaticBody3D" parent="." unique_id=613263156 groups=["navigation_source"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 67.75)
+[node name="Bunker" type="StaticBody3D" parent="." unique_id=1990342970 groups=["navigation_source"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 59.5)
 metadata/surface = "wood"
 
-[node name="Mesh" type="MeshInstance3D" parent="Bunker" unique_id=1105797959]
+[node name="Mesh" type="MeshInstance3D" parent="Bunker" unique_id=549319438]
 mesh = ExtResource("10_hj2pq")
 
-[node name="Collision" type="CollisionShape3D" parent="Bunker" unique_id=1292030846]
+[node name="Collision" type="CollisionShape3D" parent="Bunker" unique_id=971605354]
 shape = ExtResource("11_04rbu")
 
-[node name="MaximMG" type="StaticBody3D" parent="." unique_id=86704605 instance=ExtResource("12_ndqk6")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.138, 65.88)
+[node name="MaximMG" type="StaticBody3D" parent="." unique_id=1129115703 instance=ExtResource("12_ndqk6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.138, 56.85)
 script = ExtResource("13_c5dyf")
 data = ExtResource("14_7doj7")
-traverse_left_deg = 14.0
-traverse_right_deg = 40.0
+traverse_left_deg = 18.0
+traverse_right_deg = 18.0
 elevation_min_deg = -7.0
 elevation_max_deg = 4.0
 turning_part_names = PackedStringArray("karabin_001_3", "Zapatka_4", "Cube_0", "pocisk_5", "pocisk_001_7", "pocisk_002_8", "pocisk_003_9", "pocisk_004_6", "pocisk_005_11", "pocisk_006_10", "pocisk_007_12", "pocisk_008_15", "pocisk_009_16", "pocisk_010_24", "pociskpusty_23", "pociskpusty_001_22", "pociskpusty_002_17", "pociskpusty_003_18", "pociskpusty_004_19", "pociskpusty_005_20", "pociskpusty_006_21")
 hidden_part_names = PackedStringArray("Cube_0")
 metadata/surface = "wood"
 
-[node name="FirePosts" type="Node3D" parent="." unique_id=2113489069]
+[node name="FirePosts" type="Node3D" parent="." unique_id=2130806538]
 
-[node name="FirePost1" type="StaticBody3D" parent="FirePosts" unique_id=16571252 groups=["fire_post", "navigation_source"]]
+[node name="FirePost1" type="StaticBody3D" parent="FirePosts" unique_id=249575029 groups=["fire_post", "navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64, 0, 57.4)
 metadata/surface = "earthwork"
 
-[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=638185610]
+[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=278239730]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.63, -0.29)
 shape = SubResource("BoxShape3D_w55l6")
 
-[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=1895214154]
+[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=1911913519]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_6p073")
 
-[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=301121297]
+[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=256768410]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_uwnq0")
 
-[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=221119668]
+[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=216244974]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_f6uq2")
 
-[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=1543074125]
+[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=1549157631]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_pes0k")
 
-[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=1102608788]
+[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=9880502]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_hy5fw")
 
-[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=2021910315]
+[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost1" unique_id=115425292]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_nv0f7")
 
-[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=1751117704]
+[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost1" unique_id=1513981658]
 mesh = SubResource("ArrayMesh_go7er")
 
-[node name="FirePost2" type="StaticBody3D" parent="FirePosts" unique_id=1965771036 groups=["fire_post", "navigation_source"]]
+[node name="FirePost2" type="StaticBody3D" parent="FirePosts" unique_id=1858465565 groups=["fire_post", "navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5, 0, 55.4)
 metadata/surface = "earthwork"
 
-[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=72322347]
+[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=345660679]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.63, -0.29)
 shape = SubResource("BoxShape3D_ayhfk")
 
-[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=20444443]
+[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=89621242]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_b8rxm")
 
-[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=160557274]
+[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=2018160949]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_uaiw1")
 
-[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=1713112979]
+[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=1370918205]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_mfdc8")
 
-[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=779916254]
+[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=1992753960]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_rbnud")
 
-[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=1754887512]
+[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=349591328]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_0uxjv")
 
-[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=46648637]
+[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost2" unique_id=1919093741]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_ggxi2")
 
-[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=715698802]
+[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost2" unique_id=1799953179]
 mesh = SubResource("ArrayMesh_dbk7q")
 
-[node name="FirePost3" type="StaticBody3D" parent="FirePosts" unique_id=932712788 groups=["fire_post", "navigation_source"]]
+[node name="FirePost3" type="StaticBody3D" parent="FirePosts" unique_id=554594001 groups=["fire_post", "navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 55.4)
 metadata/surface = "earthwork"
 
-[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=669979476]
+[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=2060892444]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.63, -0.29)
 shape = SubResource("BoxShape3D_uyaxq")
 
-[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=2003229718]
+[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=977479870]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_8jx51")
 
-[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=1484297018]
+[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=1840339988]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_n4bn4")
 
-[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=1133547591]
+[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=589699506]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_efofk")
 
-[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=1663520991]
+[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=655949956]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_12k8d")
 
-[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=2111123813]
+[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=160739462]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_p40nu")
 
-[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=1125233963]
+[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost3" unique_id=695807054]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_qyf1r")
 
-[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=1595694715]
+[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost3" unique_id=1211933919]
 mesh = SubResource("ArrayMesh_6w1ix")
 
-[node name="FirePost4" type="StaticBody3D" parent="FirePosts" unique_id=1712221891 groups=["fire_post", "navigation_source"]]
+[node name="FirePost4" type="StaticBody3D" parent="FirePosts" unique_id=1602562267 groups=["fire_post", "navigation_source"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 56.4)
 metadata/surface = "earthwork"
 
-[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=1636169665]
+[node name="LintelCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=887968470]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.63, -0.29)
 shape = SubResource("BoxShape3D_qby0i")
 
-[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=426389628]
+[node name="JambWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=1110970651]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_43mvn")
 
-[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=402755996]
+[node name="JambEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=942235083]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.21, -0.29)
 shape = SubResource("BoxShape3D_y2fgc")
 
-[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=465570233]
+[node name="EarthHeapWest" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=1992047838]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_q2crk")
 
-[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=328856979]
+[node name="EarthHeapWestCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=2020090389]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_s4an8")
 
-[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=2069855980]
+[node name="EarthHeapEast" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=1470388174]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 material_override = ExtResource("3_x7oem")
 mesh = SubResource("PrismMesh_2ceo5")
 
-[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=1909344967]
+[node name="EarthHeapEastCollision" type="CollisionShape3D" parent="FirePosts/FirePost4" unique_id=76358629]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.42, -0.29)
 shape = SubResource("ConvexPolygonShape3D_vjm2w")
 
-[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=965951449]
+[node name="Sandbags" type="MeshInstance3D" parent="FirePosts/FirePost4" unique_id=2147055129]
 mesh = SubResource("ArrayMesh_vxm0k")
 
-[node name="DeepSnowZones" type="Node3D" parent="." unique_id=76539269]
+[node name="DeepSnowZones" type="Node3D" parent="." unique_id=303121911]
 
-[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1885154146]
+[node name="DeepSnow1" type="Area3D" parent="DeepSnowZones" unique_id=1643017342]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 0, -20)
 script = ExtResource("17_qa1vt")
 size = Vector3(26, 4, 14)
 drift_material = ExtResource("18_q4mjk")
 
-[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=1595762665]
+[node name="DeepSnow2" type="Area3D" parent="DeepSnowZones" unique_id=688319883]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0, -55)
 script = ExtResource("17_qa1vt")
 size = Vector3(30, 4, 16)
 drift_material = ExtResource("18_q4mjk")
 
-[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=790299185]
+[node name="DeepSnow3" type="Area3D" parent="DeepSnowZones" unique_id=1298922164]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, -85)
 script = ExtResource("17_qa1vt")
 size = Vector3(24, 4, 18)
 drift_material = ExtResource("18_q4mjk")
 
-[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=1235417265]
+[node name="DeepSnow4" type="Area3D" parent="DeepSnowZones" unique_id=1504928045]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 5)
 script = ExtResource("17_qa1vt")
 size = Vector3(22, 4, 12)
 drift_material = ExtResource("18_q4mjk")
 
-[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=1315892998]
+[node name="DeepSnow5" type="Area3D" parent="DeepSnowZones" unique_id=1003012911]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
 script = ExtResource("17_qa1vt")
 size = Vector3(40, 4, 8)
 drift_material = ExtResource("18_q4mjk")
 
-[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=296949714]
+[node name="Navigation" type="NavigationRegion3D" parent="." unique_id=457190789]
 navigation_mesh = ExtResource("19_ap10w")
 
-[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=242156131]
+[node name="EnemySpawnPoints" type="Node3D" parent="." unique_id=1575981116]
 
-[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=1822470102 groups=["enemy_spawn"]]
+[node name="EnemySpawn1" type="Marker3D" parent="EnemySpawnPoints" unique_id=999541627 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -118)
 
-[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=2093659550 groups=["enemy_spawn"]]
+[node name="EnemySpawn2" type="Marker3D" parent="EnemySpawnPoints" unique_id=2146497539 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, -118)
 
-[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=283045219 groups=["enemy_spawn"]]
+[node name="EnemySpawn3" type="Marker3D" parent="EnemySpawnPoints" unique_id=756159976 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -118)
 
-[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=1727331037 groups=["enemy_spawn"]]
+[node name="EnemySpawn4" type="Marker3D" parent="EnemySpawnPoints" unique_id=226642298 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -118)
 
-[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=1481427869 groups=["enemy_spawn"]]
+[node name="EnemySpawn5" type="Marker3D" parent="EnemySpawnPoints" unique_id=1614758159 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, -118)
 
-[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=887421692 groups=["enemy_spawn"]]
+[node name="EnemySpawn6" type="Marker3D" parent="EnemySpawnPoints" unique_id=1192639157 groups=["enemy_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, -118)
 
-[node name="AttackPoints" type="Node3D" parent="." unique_id=179949209]
+[node name="AttackPoints" type="Node3D" parent="." unique_id=1997820037]
 
-[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=268638995 groups=["attack_point"]]
+[node name="AttackPoint1" type="Marker3D" parent="AttackPoints" unique_id=38585761 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84, 0, 38)
 
-[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=871744995 groups=["attack_point"]]
+[node name="AttackPoint2" type="Marker3D" parent="AttackPoints" unique_id=1208215995 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, 42)
 
-[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=922928128 groups=["attack_point"]]
+[node name="AttackPoint3" type="Marker3D" parent="AttackPoints" unique_id=667667335 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36, 0, 38)
 
-[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=622387302 groups=["attack_point"]]
+[node name="AttackPoint4" type="Marker3D" parent="AttackPoints" unique_id=1104733984 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 42)
 
-[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=1666749840 groups=["attack_point"]]
+[node name="AttackPoint5" type="Marker3D" parent="AttackPoints" unique_id=2106509270 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 38)
 
-[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=1563699029 groups=["attack_point"]]
+[node name="AttackPoint6" type="Marker3D" parent="AttackPoints" unique_id=486647878 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 42)
 
-[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=1522562706 groups=["attack_point"]]
+[node name="AttackPoint7" type="Marker3D" parent="AttackPoints" unique_id=618816997 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 38)
 
-[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=1895887733 groups=["attack_point"]]
+[node name="AttackPoint8" type="Marker3D" parent="AttackPoints" unique_id=2140090063 groups=["attack_point"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 84, 0, 42)
 
-[node name="TankRoutes" type="Node3D" parent="." unique_id=439982668]
+[node name="TankRoutes" type="Node3D" parent="." unique_id=1124066340]
 
-[node name="TankRoute1" type="Path3D" parent="TankRoutes" unique_id=1725862777 groups=["tank_route"]]
+[node name="TankRoute1" type="Path3D" parent="TankRoutes" unique_id=38465443 groups=["tank_route"]]
 curve = SubResource("Curve3D_6b5wa")
 
-[node name="TankRoute2" type="Path3D" parent="TankRoutes" unique_id=1622170448 groups=["tank_route"]]
+[node name="TankRoute2" type="Path3D" parent="TankRoutes" unique_id=179321386 groups=["tank_route"]]
 curve = SubResource("Curve3D_i2gpq")
 
-[node name="TankRoute3" type="Path3D" parent="TankRoutes" unique_id=682196317 groups=["tank_route"]]
+[node name="TankRoute3" type="Path3D" parent="TankRoutes" unique_id=399338727 groups=["tank_route"]]
 curve = SubResource("Curve3D_belkb")
 
-[node name="AmmoCrateTrench" type="StaticBody3D" parent="." unique_id=1108113677 instance=ExtResource("20_jhad0")]
+[node name="AmmoCrateTrench" type="StaticBody3D" parent="." unique_id=607443801 instance=ExtResource("20_jhad0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31, -1.4, 62.42)
 script = ExtResource("21_pd36w")
 metadata/surface = "wood"
 
-[node name="AmmoCrateBunker" type="StaticBody3D" parent="." unique_id=1441908688 instance=ExtResource("20_jhad0")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, -1.4, 68.35)
+[node name="AmmoCrateBunker" type="StaticBody3D" parent="." unique_id=1210866899 instance=ExtResource("20_jhad0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9, -1.4, 61.2)
 script = ExtResource("21_pd36w")
 metadata/surface = "wood"
 
-[node name="MolotovCrateWest" type="StaticBody3D" parent="." unique_id=1290867706 instance=ExtResource("22_61jrn")]
+[node name="MolotovCrateWest" type="StaticBody3D" parent="." unique_id=1674176087 instance=ExtResource("22_61jrn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, -1.4, 61.72)
 script = ExtResource("23_kbtcf")
 metadata/surface = "wood"
 
-[node name="MolotovCrateCentre" type="StaticBody3D" parent="." unique_id=488374557 instance=ExtResource("22_61jrn")]
+[node name="MolotovCrateCentre" type="StaticBody3D" parent="." unique_id=1198425737 instance=ExtResource("22_61jrn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, -1.4, 61.72)
 script = ExtResource("23_kbtcf")
 metadata/surface = "wood"
 
-[node name="TrenchEntries" type="Node3D" parent="." unique_id=390368304]
+[node name="TrenchEntries" type="Node3D" parent="." unique_id=1289024398]
 
-[node name="Entry1" type="NavigationLink3D" parent="TrenchEntries" unique_id=300365885 groups=["trench_entry"]]
+[node name="Entry1" type="NavigationLink3D" parent="TrenchEntries" unique_id=473052857 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(-88.5, 0, 55.7)
 end_position = Vector3(-88.5, -1.4, 57.9)
 
-[node name="Entry2" type="NavigationLink3D" parent="TrenchEntries" unique_id=569850228 groups=["trench_entry"]]
+[node name="Entry2" type="NavigationLink3D" parent="TrenchEntries" unique_id=2039855388 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(-69.048935, 0, 57.244663)
 end_position = Vector3(-69.480385, -1.4, 59.401943)
 
-[node name="Entry3" type="NavigationLink3D" parent="TrenchEntries" unique_id=382767806 groups=["trench_entry"]]
+[node name="Entry3" type="NavigationLink3D" parent="TrenchEntries" unique_id=1311197503 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(-49.5, 0, 56.7)
 end_position = Vector3(-49.5, -1.4, 58.9)
 
-[node name="Entry4" type="NavigationLink3D" parent="TrenchEntries" unique_id=1028611511 groups=["trench_entry"]]
+[node name="Entry4" type="NavigationLink3D" parent="TrenchEntries" unique_id=1111932374 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(-31, 0, 58.7)
 end_position = Vector3(-31, -1.4, 60.9)
 
-[node name="Entry5" type="NavigationLink3D" parent="TrenchEntries" unique_id=867473479 groups=["trench_entry"]]
+[node name="Entry5" type="NavigationLink3D" parent="TrenchEntries" unique_id=30532497 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(-13, 0, 58.7)
 end_position = Vector3(-13, -1.4, 60.9)
 
-[node name="Entry6" type="NavigationLink3D" parent="TrenchEntries" unique_id=140775221 groups=["trench_entry"]]
+[node name="Entry6" type="NavigationLink3D" parent="TrenchEntries" unique_id=1677914549 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(12.5, 0, 58.7)
 end_position = Vector3(12.5, -1.4, 60.9)
 
-[node name="Entry7" type="NavigationLink3D" parent="TrenchEntries" unique_id=1152231235 groups=["trench_entry"]]
+[node name="Entry7" type="NavigationLink3D" parent="TrenchEntries" unique_id=1316869642 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(34.683342, 0, 60.527767)
 end_position = Vector3(33.55145, -1.4, 62.41425)
 
-[node name="Entry8" type="NavigationLink3D" parent="TrenchEntries" unique_id=806399648 groups=["trench_entry"]]
+[node name="Entry8" type="NavigationLink3D" parent="TrenchEntries" unique_id=182837127 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(54.97141, 0, 57.942818)
 end_position = Vector3(55.95528, -1.4, 59.910557)
 
-[node name="Entry9" type="NavigationLink3D" parent="TrenchEntries" unique_id=1390513192 groups=["trench_entry"]]
+[node name="Entry9" type="NavigationLink3D" parent="TrenchEntries" unique_id=2025445352 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(72, 0, 58.7)
 end_position = Vector3(72, -1.4, 60.9)
 
-[node name="Entry10" type="NavigationLink3D" parent="TrenchEntries" unique_id=2070671826 groups=["trench_entry"]]
+[node name="Entry10" type="NavigationLink3D" parent="TrenchEntries" unique_id=234487095 groups=["trench_entry"]]
 bidirectional = false
 start_position = Vector3(90.5, 0, 58.7)
 end_position = Vector3(90.5, -1.4, 60.9)
 
-[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=1930389731]
+[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=1156759765]
 
-[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1779067153 groups=["player_spawn"]]
+[node name="Spawn1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1036815997 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -1.3, 61)
 
-[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1791020390 groups=["player_spawn"]]
+[node name="Spawn2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=2103517931 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -1.3, 61)
 
-[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=68742889 groups=["player_spawn"]]
+[node name="Spawn3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=742165253 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -1.3, 61)
 
-[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1099061222 groups=["player_spawn"]]
+[node name="Spawn4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=77640336 groups=["player_spawn"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, -1.3, 62.2)

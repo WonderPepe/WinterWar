@@ -105,11 +105,11 @@ func run() -> void:
 			[-gun.traverse_right_deg, gun.elevation_max_deg], [-gun.traverse_right_deg, gun.elevation_min_deg], [0.0, 0.0]]:
 		var dir := Basis.from_euler(Vector3(deg_to_rad(corner[1]), gun.get_base_yaw() + deg_to_rad(corner[0]), 0.0)) * Vector3.FORWARD
 		var from: Vector3 = gun.seat.global_position + Vector3(0, 1.6, 0)
-		var q := PhysicsRayQueryParameters3D.create(from, from + dir * 4.0, 0b1)
+		var q := PhysicsRayQueryParameters3D.create(from, from + dir * 2.0, 0b1)
 		q.exclude = [gun.get_rid()]
 		var h: Dictionary = p.get_world_3d().direct_space_state.intersect_ray(q)
 		if not h.is_empty():
-			blocked.append("%s at %.1f m" % [str(corner), from.distance_to(h.position)])
+			blocked.append("%s at %.1f m %s" % [str(corner), from.distance_to(h.position), str(h.collider)])
 	check(blocked.is_empty(), "every aim the gun allows fits through the slit %s" % str(blocked))
 
 	# Movement keys don't move you off the gun.

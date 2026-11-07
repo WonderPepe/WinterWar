@@ -68,8 +68,11 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   when editing it (`test_l1.gd` checks the rest). The 6 m straight at x = -34…-28 is the
   longest straight the walking-speed test can use; the targets of `test_m2.gd` are shot from x = -10
   because the firing position at x = -23.5 blocks the line from the spawn at x = -30.
-- The Maxim aims 14° / -7° at the extremes: the trench in front of the bunker is widened by
-  `MaximPitCut` (7 × 2.6 m extra), otherwise the front earth edge blocks the lowest aim (test_w1).
+- (L2) The bunker now faces the enemy on open ground (no pit); test_w1 rays from the gunner's eye are
+  only 2 m long (the ground in front would stop a longer -7° ray). Tests that shoot from / stand at
+  x = 0 on the ground (test_m2, test_p2) must stay out of the bunker (x -3…3, z 56.75…62.25).
+- (L2) A `CSGPolygon3D` used as a SUBTRACTION did NOT cut in the headless bake (no error, hole just
+  missing) – the funnel hole is made of three `CSGBox3D` steps instead.
 - A `MultiMesh` built in a headless builder run is saved WITHOUT its instance transforms (the
   dummy renderer has no buffer) – the sandbags would be invisible. Merge meshes into one `ArrayMesh`
   instead (`_bags_mesh()`).

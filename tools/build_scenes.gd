@@ -353,6 +353,12 @@ const POST_HOLE_TOP := 0.42    ## ... and 0.42 m tall, starting at the ground
 const SPURS := [Vector3(-54.5, 63.0, 5.0), Vector3(51.0, 61.0, 5.0)]
 const TRENCH_WIDTH := 2.0
 const DEPTH := 1.4
+## L2: the log bunker faces the enemy (its front wall with the Maxim's hole is at z = BUNKER_Z - 2.75,
+## open ground in front); the trench line runs behind it and a short stub of trench leads to the
+## door in its back wall.
+const BUNKER_Z := 59.5
+const BUNKER_DOOR_X := 1.2
+const BUNKER_DOOR_W := 1.4
 
 
 func _tcount() -> int:
@@ -551,13 +557,14 @@ func _build_level(mats: Dictionary) -> Node:
 	# meshes (much faster to load, especially in a browser). Until baked, the CSG is used.
 	if ResourceLoader.exists(BAKED_DIR + "trench_mesh.res"):
 		_baked_body(root, "Trench", Vector3.ZERO, "earthwork")
-		_baked_body(root, "Bunker", Vector3(0, 0, 67.75), "wood")
+		_baked_body(root, "Bunker", Vector3(0, 0, BUNKER_Z), "wood")
 	else:
 		_add(root, load(TRENCH_SOURCE).instantiate(), "TrenchCSG")
 
 	# --- Maxim machine gun in the bunker, firing through the slit ---
 	var maxim: Node3D = _add(root, load("res://scenes/weapons/maxim_mg.tscn").instantiate(), "MaximMG")
-	maxim.position = Vector3(-1.0, MAXIM_BARREL_Y - MAXIM_BARREL_HEIGHT, 65.88)
+	# L2: the turning point sits just behind the outer face of the front wall (z = BUNKER_Z - 2.75).
+	maxim.position = Vector3(0.0, MAXIM_BARREL_Y - MAXIM_BARREL_HEIGHT, BUNKER_Z - 2.65)
 
 	# --- L1: sandbag walls and earth banks in front of the four firing positions ---
 	_build_fire_posts(root, mats)
@@ -623,7 +630,7 @@ func _build_level(mats: Dictionary) -> Node:
 	crate1.position = Vector3(niche[0].x, -DEPTH, niche[0].y)
 	crate1.rotation.y = niche[1]
 	var crate2: Node3D = _add(root, crate_scene.instantiate(), "AmmoCrateBunker")
-	crate2.position = Vector3(1.75, -DEPTH, 68.35)
+	crate2.position = Vector3(-1.9, -DEPTH, BUNKER_Z + 1.7)
 	# T2: boxes of Molotov cocktails against the rear wall of two straight trench legs.
 	var bottle_scene: PackedScene = load("res://scenes/props/molotov_crate.tscn")
 	for spot: Array in [[-15.0, "MolotovCrateWest"], [12.5, "MolotovCrateCentre"]]:
@@ -1137,8 +1144,8 @@ func _build_maxim(mats: Dictionary) -> Node:
 	gun.collision_layer = 0b1
 	gun.set_meta("surface", "wood")
 	gun.set("data", load("res://resources/weapons/maxim_m09_21.tres"))
-	gun.set("traverse_left_deg", 14.0)  # the gun stands left of centre in the slit
-	gun.set("traverse_right_deg", 40.0)
+	gun.set("traverse_left_deg", 18.0)  # L2: the narrow hole (0.62 m outside) allows about +-18 deg
+	gun.set("traverse_right_deg", 18.0)
 	gun.set("elevation_min_deg", -7.0)
 	gun.set("elevation_max_deg", 4.0)
 	gun.set("turning_part_names", PackedStringArray(["karabin_001_3", "Zapatka_4", "Cube_0",
@@ -2210,11 +2217,13 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	_csg_box(trench, "AmmoNiche", Vector3(1.6, 3.6, 1.0), Vector3(niche_c.x, -0.8, niche_c.y), mats.trench_wall, SUB,
 		Vector3(0, niche[1], 0))
 
-	# Bunker room dug into the slab behind the trench at x = 0.
-	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.1), Vector3(0, -1.29, 66.95), mats.bunker_log, SUB)
-	# L1: the trench in front of the bunker is wider (a gun pit, 7 m x 2.6 m extra to the front),
-	# so the Maxim can still aim low through the slit.
-	_csg_box(trench, "MaximPitCut", Vector3(7.0, 3.6, 2.6), Vector3(0, -0.8, 62.7), mats.trench_wall, SUB)
+	# L2: the bunker room is dug into the slab (z = BUNKER_Z +- 2.25); the way in is a short open
+	# stub of trench from the trench line behind it to the door in the back wall.
+	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.5), Vector3(0, -1.29, BUNKER_Z), mats.bunker_log, SUB)
+	var stub_z0 := BUNKER_Z + 2.1
+	var stub_z1 := _line_z(BUNKER_DOOR_X)
+	_csg_box(trench, "BunkerDoorCut", Vector3(BUNKER_DOOR_W, 3.6, stub_z1 - stub_z0),
+		Vector3(BUNKER_DOOR_X, -0.8, (stub_z0 + stub_z1) / 2.0), mats.trench_wall, SUB)
 
 	# --- Log bunker (above-ground part) ---
 	var bunker: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Bunker")
@@ -2222,11 +2231,17 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	bunker.collision_layer = 0b1
 	bunker.set_meta("surface", "wood")
 	bunker.add_to_group("navigation_source", true)
-	bunker.position = Vector3(0, 0, 67.75)
+	bunker.position = Vector3(0, 0, BUNKER_Z)
 	_csg_box(bunker, "Walls", Vector3(6, 1.0, 5.5), Vector3(0, 0.5, 0), mats.bunker_log)
 	_csg_box(bunker, "Inside", Vector3(5, 1.2, 4.5), Vector3(0, 0.5, 0), mats.bunker_log, SUB)
-	# Firing slit: 3 m wide, 0.5 m tall (room for the Maxim and a view over its sights).
-	_csg_box(bunker, "FiringSlit", Vector3(3.0, 0.5, 1.0), Vector3(0, 0.35, -2.5), mats.bunker_log, SUB)
+	# L2: the firing hole in the front wall (wall z -2.75 ... -2.25): 0.62 m wide at the outside,
+	# widening in three steps to 1.6 m inside (like a real machine-gun embrasure), 0.45 m tall
+	# (y 0.1 ... 0.55). (A CSGPolygon3D did not subtract in the headless bake, so boxes.)
+	_csg_box(bunker, "FiringHoleOuter", Vector3(0.62, 0.45, 0.35), Vector3(0, 0.325, -2.675), mats.bunker_log, SUB)
+	_csg_box(bunker, "FiringHoleMid", Vector3(1.0, 0.45, 0.2), Vector3(0, 0.325, -2.4), mats.bunker_log, SUB)
+	_csg_box(bunker, "FiringHoleInner", Vector3(1.6, 0.45, 0.25), Vector3(0, 0.325, -2.25), mats.bunker_log, SUB)
+	# The door in the back wall (the trench stub leads to it).
+	_csg_box(bunker, "BackDoor", Vector3(BUNKER_DOOR_W, 1.1, 0.8), Vector3(BUNKER_DOOR_X, 0.45, 2.5), mats.bunker_log, SUB)
 	_csg_box(bunker, "Roof", Vector3(6.8, 0.5, 6.3), Vector3(0, 1.25, 0), mats.bunker_log)
 	_csg_box(bunker, "RoofSnow", Vector3(6.6, 0.25, 6.1), Vector3(0, 1.62, 0), mats.drift)
 	for i in 2: # two big logs along the front edge of the roof

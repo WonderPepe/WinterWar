@@ -113,20 +113,17 @@ func run() -> void:
 	check(p.global_position.z > 71.0 and absf(p.global_position.y - terrain.get_height(p.global_position.x, p.global_position.z)) < 0.2, "climbs out via exit ramp onto the ground")
 	set_input(Vector2.ZERO)
 
-	# Bunker at x=0: standing should be blocked by the low entrance, crouching gets in
-	teleport(Vector3(0, -1.3, 63.2), PI)
+	# Bunker at x=0 (L2): faces the enemy, the door is in its back wall. From the trench stub
+	# (x = 1.2, behind the bunker) a STANDING player walks in and can stand inside.
+	teleport(Vector3(1.2, -1.3, 63.3), 0.0)
 	await frames(20)
 	set_input(Vector2(0, -1))
-	await frames(120)
-	print("  standing in front of bunker: z=%.2f" % p.global_position.z)
-	check(p.global_position.z < 65.2, "standing player blocked by bunker entrance")
-	set_input(Vector2(0, -1), false, true)
-	await frames(180)
-	print("  crouching: z=%.2f y=%.2f" % [p.global_position.z, p.global_position.y])
-	check(p.global_position.z > 66.5, "crouching player enters bunker")
+	await frames(100)
+	print("  bunker: z=%.2f y=%.2f" % [p.global_position.z, p.global_position.y])
+	check(p.global_position.z < 61.5 and p.global_position.z > 57.3 and p.global_position.y < -1.0, "standing player walks in through the back door")
 	set_input(Vector2.ZERO)
-	await frames(60)
-	check(not p.is_crouching, "can stand up inside bunker (roof high enough)")
+	await frames(30)
+	check(not p.is_crouching, "can stand inside the bunker")
 
 	# Trench walls block walking out the front
 	teleport(Vector3(-30, -1.3, 61), 0.0)

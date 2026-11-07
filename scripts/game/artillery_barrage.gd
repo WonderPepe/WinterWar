@@ -97,7 +97,7 @@ func is_active() -> bool:
 
 ## Down in the trench or inside the bunker = safe from the shells, but only CROUCHING:
 ## standing up you are hit by the shrapnel flying over the trench edge.
-## In the bunker room only its two back corners are safe: in the middle or by the opening to
+## In the bunker room only its two front corners are safe: in the middle or by the door to
 ## the trench the shrapnel flies in.
 static func is_covered(p: Player) -> bool:
 	if not (is_in_shelter(p) and p.is_crouching):
@@ -107,16 +107,16 @@ static func is_covered(p: Player) -> bool:
 	return true
 
 
-## The room dug into the slab behind the trench (x ±2.5, z 64.9…69.0), open towards the trench.
+## The bunker room dug into the slab (x ±2.5, z 57.25…61.75); its door is in the back wall (x ≈ 1.2).
 static func is_in_bunker(p: Player) -> bool:
 	var pos: Vector3 = p.global_position
-	return pos.y < -0.5 and absf(pos.x) < 2.5 and pos.z > 64.9 and pos.z < 69.0
+	return pos.y < -0.5 and absf(pos.x) < 2.5 and pos.z > 57.25 and pos.z < 61.75
 
 
-## The two back corners of the bunker room (by the side walls, far from the opening).
+## The two front corners of the bunker room (by the side walls, far from the door).
 static func is_bunker_corner(p: Player) -> bool:
 	var pos: Vector3 = p.global_position
-	return absf(pos.x) >= 1.2 and pos.z >= 67.3
+	return absf(pos.x) >= 1.2 and pos.z <= 58.8
 
 
 ## Inside the trench or the bunker (crouching or not).
