@@ -62,3 +62,17 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - `test_t1.gd` "DT bullets hurt the player" can miss once under load (random spread); re-run.
 - `test_m1.gd` deep-snow / exit-ramp checks failed once (3 FAILs) under heavy load in the cloud,
   then passed 4× in a row (also without the change being tested) – re-run before suspecting code.
+- **Trench line (L1):** many tests teleport the player / soldiers to fixed trench spots
+  ((-30, 61), (-10, 61), (10, 61), (50/70/90, 61), bunker front x = -6…6 at z = 64, exits at
+  x = ±40 / ±80 at z = 64). The line in `TRENCH_XZ` deliberately passes all of them – keep that
+  when editing it (`test_l1.gd` checks the rest). The 6 m straight at x = -34…-28 is the
+  longest straight the walking-speed test can use; the targets of `test_m2.gd` are shot from x = -10
+  because the firing position at x = -23.5 blocks the line from the spawn at x = -30.
+- The Maxim aims 14° / -7° at the extremes: the trench in front of the bunker is widened by
+  `MaximPitCut` (7 × 2.6 m extra), otherwise the front earth edge blocks the lowest aim (test_w1).
+- A `MultiMesh` built in a headless builder run is saved WITHOUT its instance transforms (the
+  dummy renderer has no buffer) – the sandbags would be invisible. Merge meshes into one `ArrayMesh`
+  instead (`_bags_mesh()`).
+- `build_scenes.gd` also rewrites `scenes/game.tscn`, `player.tscn`, `suomi_viewmodel.tscn` and
+  `ui/main_menu.tscn` with real differences from the committed versions (hand edits / newer credits
+  text): after a build `git checkout` them – only `levels/` and the new materials should change.

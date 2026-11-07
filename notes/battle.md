@@ -14,7 +14,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   The benchmark disables the director (`set_process(false)`, `max_waves = 0`, spread 1.0).
 - Enemy `State.ASSAULT` (added at the END of the enum – it is synced as a number): PATROL/ALERT/
   ATTACK at the attack point → `_hold_at_goal()` for `assault_hold_min…max` s → `_begin_assault()`
-  picks the nearest `trench_entry` NavigationLink3D (one per zigzag leg, ground → floor, one-way;
+  picks the nearest `trench_entry` NavigationLink3D (10 of them, one per ~20 m of trench, chosen by `_entry_legs()`: ground → floor, one-way;
   the navmesh already had the trench floor as its own island) → runs there, the link makes the path
   drop into the trench → `_trench_fight()`: nearest living player, shoot when in sight (no spotting
   delay, `trench_fire_interval_*`), else follow the navmesh. Stuck > 1 s → step aside (landed on

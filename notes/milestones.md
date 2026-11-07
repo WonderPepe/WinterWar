@@ -118,6 +118,20 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   Back / Esc close it). Tanks park 3 m closer (routes end at z = 49, gun depression −14°). The
   first tank battle shows a Molotov hint after its banner. Details: `tank-and-molotov.md`.
 
+- [x] L1 trench line + protected firing positions (owner's request 2026-11-07: "more corners, not
+  long straight lines" and "around 4 places where the player can shoot, protected with ground and
+  sandbags"). The old 10-leg zigzag (21 m legs) is now `TRENCH_XZ` in `tools/build_scenes.gd`:
+  43 legs of 3–8 m (the 12 m stretch in front of the bunker is the only long one), 39 real
+  corners, jogs and 45° bends, two dead-end branches to the rear (`SPURS`), the Maxim pit
+  (`MaximPitCut`) widens the trench in front of the bunker. Four **firing positions** (`POST_X`
+  = -64, -23.5, 24, 64; group `fire_post`, nodes `FirePosts/FirePost1…4`): a 3.5 m bay juts
+  4.6 m forward from the line, with a log firing step (top y = -0.8) reached by a ramp; in front of
+  it an earth bank + a 0.6 m sandbag wall + two low flank walls (one merged mesh per post, 2 surfaces).
+  Standing on the step the eyes are 0.2 m above the sandbags (you shoot over them), crouching or on
+  the trench floor you are hidden; bullets stop at the sandbags (surface `earthwork`). Crates,
+  exits, spawns (x = -30, -10, 10, 33) and the 10 trench entries moved onto the new line.
+  Details/gotchas: `gotchas.md` (L1). Tests: `test_l1.gd`, `shots_l1.gd`.
+
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
   no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
   of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at

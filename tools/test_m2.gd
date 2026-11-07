@@ -67,6 +67,12 @@ func run() -> void:
 	check(wc.loadout[0].cycle_sound == null and (wc.loadout[0].get_cycle_sound() == null or not RecordedSounds.get_sounds("bolt_mosin").is_empty()),
 			"Mosin bolt: no generated sound (only a real recording, if one is added)")
 
+	# L1: the firing position at x = -23.5 now stands in the line of fire from the spawn at x = -30,
+	# so he shoots from the straight at x = -10 (the targets keep their old spots).
+	p.global_position = Vector3(-10, -1.3, 61)
+	p.velocity = Vector3.ZERO
+	await frames(10)
+
 	# --- Mosin: aimed shot at 25 m target ---
 	var t25 := target("Target_25m")
 	p.input.aim_held = true

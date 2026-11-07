@@ -53,10 +53,11 @@ func run() -> void:
 	print("terrain height range %.2f .. %.2f" % [lo, hi])
 
 	# Walk along the trench (x direction) -> yaw -90deg faces +x
-	teleport(Vector3(-30, -1.3, 61), 0.0)
+	# (L1: the trench has short legs now - start at the west end of the 6 m straight at x = -34 … -28)
+	teleport(Vector3(-33.6, -1.3, 61), 0.0)
 	await frames(20)
 	set_input(Vector2(1, 0))  # strafe right = +x
-	await frames(60)
+	await frames(36)
 	check(absf(p.get_speed() - p.walk_speed) < 0.4, "walk speed %.2f" % p.get_speed())
 
 	# Sprint forward in open field

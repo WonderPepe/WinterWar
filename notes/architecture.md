@@ -34,10 +34,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
   `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`, `match_director`, `ammo_crates`,
   `trench_entry`, `day_screen`, `tanks`, `tank_route`, `tank_spawner`, `tank_wrecks`, `molotovs`,
-  `molotov_crates`.
+  `molotov_crates`, `fire_post`.
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers.
 - Surface metadata `surface` = `snow` (default) / `wood` / `earthwork` / `cloth`; meta
   `attach_holes` makes bullet holes stick to moving targets.
 - Hearing: `get_tree().call_group("enemies", "hear_noise", source, interest, radius)`.
 - Map: 300 × 300 m, origin in the centre. Finnish trench at z ≈ 52–70 (floor y = -1.4,
-  ground y = 0); enemies come from the south forest (z ≈ -118) towards +z. Forward is -z.
+  ground y = 0; the centre line is `TRENCH_XZ` in `tools/build_scenes.gd`, z ≈ 58–64, see L1 in milestones.md); enemies come from the south forest (z ≈ -118) towards +z. Forward is -z.

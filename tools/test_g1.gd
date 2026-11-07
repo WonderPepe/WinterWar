@@ -144,10 +144,10 @@ func run() -> void:
 
 	# --- Assault: a soldier at his jump-off point rushes the trench and jumps in ---
 	p.god_mode = true
-	p.global_position = Vector3(-10, -1.3, 61) # one zigzag leg further
+	p.global_position = Vector3(-10, -1.3, 61) # on the straight at x = -10
 	await physics(3)
 	var link := get_tree().get_first_node_in_group("trench_entry") as NavigationLink3D
-	check(get_tree().get_nodes_in_group("trench_entry").size() == 10, "10 trench entries (one per zigzag leg)")
+	check(get_tree().get_nodes_in_group("trench_entry").size() == 10, "10 trench entries (one per ~20 m of trench)")
 	var entry: NavigationLink3D = get_tree().get_nodes_in_group("trench_entry")[3]
 	var jump_off: Vector3 = entry.global_transform * entry.start_position + Vector3(0, 0.1, -12)
 	var e := spawn_enemy(jump_off)
@@ -172,7 +172,7 @@ func run() -> void:
 		"in the trench he goes for the player (%.1f m away, %d shots)" % [e.global_position.distance_to(p.global_position), e._shots_at_target])
 
 	# --- Defeat: 4 in the trench at once ---
-	for x in [50.0, 70.0, 90.0]: # trench centre line (legs 40…60, 60…80, 80…100)
+	for x in [50.0, 70.0, 90.0]: # on the trench centre line (the line passes z = 61 at x = 50, 70, 90)
 		spawn_enemy(Vector3(x, -1.3, 61)).state = Enemy.State.ASSAULT
 	await seconds(1.0)
 	check(director.result == MatchDirector.Result.DEFEAT, "4 Soviets in the trench: the line is broken")

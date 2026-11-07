@@ -114,6 +114,8 @@ func _make_materials() -> Dictionary:
 		"cross_red": _mat("first_aid_red.tres", Color(0.62, 0.07, 0.06), 0.6),
 		"bottle_glass": _mat("bottle_glass.tres", Color(0.16, 0.24, 0.13), 0.15),
 		"rag_cloth": _mat("rag_cloth.tres", Color(0.78, 0.74, 0.62), 1.0),
+		"sandbag": _mat("sandbag.tres", Color(0.6, 0.52, 0.38), 1.0),
+		"sandbag_snow": _mat("sandbag_snow.tres", Color(0.74, 0.72, 0.66), 1.0),
 	}
 
 
@@ -319,26 +321,128 @@ func _build_player(mats: Dictionary) -> Node:
 
 # ---------------------------------------------------------------- level
 const NAVMESH_PATH := "res://levels/test_level_navmesh.res"
-const ZIG_X := [-100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100]
-const ZIG_FRONT_Z := 58.0
-const ZIG_REAR_Z := 64.0
+## L1: the trench centre line as x, z pairs, west -> east (+z = towards the rear, -z = towards
+## the enemy). Short legs (3-8 m) with many corners: bays and traverses like a real trench.
+## The line deliberately passes the spots other code and the tests use: (-30, 61), (-10, 61),
+## (10, 61), (50, 61), (70, 61), (90, 61), the bunker front (x = -6 ... 6, z = 64) and the
+## exit spots (x = +-40 and +-80, z = 64).
+const TRENCH_XZ := [
+	-100, 61, -94, 61, -91, 58, -86, 58, -83, 61, -83, 64,
+	-77, 64, -72, 59, -67, 60, -61, 60, -57, 63, -52, 63,
+	-52, 59, -47, 59, -47, 63, -43, 64, -37, 64, -34, 61,
+	-28, 61, -26, 58, -21, 58, -17, 61, -9, 61, -6, 64,
+	6, 64, 9, 61, 16, 61, 21, 58, 28, 58, 31, 61,
+	36, 64, 44, 64, 47, 61, 54, 61, 58, 59, 67, 59,
+	70, 61, 74, 61, 77, 64, 84, 64, 87, 61, 94, 61,
+	94, 58, 100, 58,
+]
+## L1: protected firing positions: x of each bay (it juts forward from the front of the line).
+const POST_X := [-64.0, -23.5, 24.0, 64.0]
+const POST_BAY_W := 3.5      ## width of the bay (m)
+const POST_BAY_DEPTH := 4.6  ## from the centre line to the front wall of the bay (m)
+const POST_STEP_LEN := 1.3   ## flat firing step at the front of the bay (m)
+const POST_STEP_TOP := -0.8  ## height of the firing step (trench floor is -1.4)
+## L1: two short dead-end branches to the rear: x, z of the line they leave, length (m).
+const SPURS := [Vector3(-54.5, 63.0, 5.0), Vector3(51.0, 61.0, 5.0)]
 const TRENCH_WIDTH := 2.0
 const DEPTH := 1.4
 
 
-func _zig_point(i: int) -> Vector2:
-	return Vector2(ZIG_X[i], ZIG_FRONT_Z if i % 2 == 0 else ZIG_REAR_Z)
+func _tcount() -> int:
+	return TRENCH_XZ.size() / 2 - 1  # number of legs
 
 
-## G1: the ammo niche in the rear wall of the trench leg x = -40 … -20 (next to the first
+func _tp(i: int) -> Vector2:
+	return Vector2(TRENCH_XZ[i * 2], TRENCH_XZ[i * 2 + 1])
+
+
+func _leg_dir(i: int) -> Vector2:
+	return (_tp(i + 1) - _tp(i)).normalized()
+
+
+## The side of leg i that points to the rear of the trench (+z for a leg running west -> east).
+func _leg_rear(i: int) -> Vector2:
+	var d := _leg_dir(i)
+	return Vector2(-d.y, d.x)
+
+
+## z of the centre line at x (first leg that crosses x).
+func _line_z(x: float) -> float:
+	for i in _tcount():
+		var a := _tp(i)
+		var b := _tp(i + 1)
+		if not is_equal_approx(a.x, b.x) and x >= minf(a.x, b.x) - 0.001 and x <= maxf(a.x, b.x) + 0.001:
+			return lerpf(a.y, b.y, (x - a.x) / (b.x - a.x))
+	return _tp(0).y
+
+
+## Index of the straight east-west leg (constant z) that covers x, or -1.
+func _flat_leg_at(x: float) -> int:
+	for i in _tcount():
+		var a := _tp(i)
+		var b := _tp(i + 1)
+		if is_equal_approx(a.y, b.y) and x >= a.x and x <= b.x:
+			return i
+	return -1
+
+
+func _dist_to_leg(p: Vector2, j: int) -> float:
+	var a := _tp(j)
+	var b := _tp(j + 1)
+	var d := b - a
+	var t := clampf((p - a).dot(d) / d.length_squared(), 0.0, 1.0)
+	return p.distance_to(a + d * t)
+
+
+## Is the ground point p (in front of a leg) solid ground, i.e. not above another part of the
+## trench, a bay or a branch?
+func _front_clear(p: Vector2, leg: int) -> bool:
+	if p.y < 52.6:
+		return false
+	for j in _tcount():
+		if j != leg and _dist_to_leg(p, j) < TRENCH_WIDTH / 2.0 + 0.8:
+			return false
+	for x: float in POST_X:
+		var zc := _line_z(x)
+		if absf(p.x - x) < POST_BAY_W / 2.0 + 1.5 and p.y < zc and p.y > zc - POST_BAY_DEPTH - 3.0:
+			return false
+	for s: Vector3 in SPURS:
+		if absf(p.x - s.x) < 2.5 and p.y > s.z - 1.0 and p.y < s.z + s.y + 1.5:
+			return false
+	return true
+
+
+## G1/L1: the legs that get a trench entry (one per ~20 m): mostly east-west legs of at
+## least 4 m with open ground in front.
+func _entry_legs() -> Array[int]:
+	var used: Array[int] = []
+	for tx in range(-90, 91, 20):
+		var best := -1
+		var best_d := 1e9
+		for i in _tcount():
+			if i in used:
+				continue
+			var d := _tp(i + 1) - _tp(i)
+			if d.length() < 4.0 or absf(d.y) > absf(d.x) * 0.8:
+				continue
+			var mid := (_tp(i) + _tp(i + 1)) / 2.0
+			if not _front_clear(mid - _leg_rear(i) * (TRENCH_WIDTH / 2.0 + 1.3), i):
+				continue
+			if absf(mid.x - tx) < best_d:
+				best_d = absf(mid.x - tx)
+				best = i
+		assert(best >= 0, "no trench entry leg near x = %d" % tx)
+		used.append(best)
+	return used
+
+
+## G1: the ammo niche in the rear wall of the straight leg at x = -31 (next to the first
 ## player spawn). Returns [crate centre (x, z), yaw, rear direction].
 func _ammo_niche() -> Array:
-	var a := _zig_point(3)
-	var b := _zig_point(4)
-	var dir := (b - a).normalized()
-	var rear := Vector2(-dir.y, dir.x)
-	var mid := (a + b) / 2.0
-	return [mid + rear * (TRENCH_WIDTH / 2.0 + 0.42), atan2(-(b - a).y, (b - a).x), rear]
+	var i := _flat_leg_at(-31.0)
+	var rear := _leg_rear(i)
+	var dir := _leg_dir(i)
+	return [Vector2(-31.0, _tp(i).y) + rear * (TRENCH_WIDTH / 2.0 + 0.42), atan2(-dir.y, dir.x), rear]
 
 
 func _csg_box(parent: Node, n: String, size: Vector3, pos: Vector3, mat: Material,
@@ -448,6 +552,9 @@ func _build_level(mats: Dictionary) -> Node:
 	var maxim: Node3D = _add(root, load("res://scenes/weapons/maxim_mg.tscn").instantiate(), "MaximMG")
 	maxim.position = Vector3(-1.0, MAXIM_BARREL_Y - MAXIM_BARREL_HEIGHT, 65.88)
 
+	# --- L1: sandbag walls and earth banks in front of the four firing positions ---
+	_build_fire_posts(root, mats)
+
 	# --- Deep snow ---
 	var zones: Node3D = _add(root, Node3D.new(), "DeepSnowZones")
 	var zone_data := [
@@ -510,28 +617,25 @@ func _build_level(mats: Dictionary) -> Node:
 	crate1.rotation.y = niche[1]
 	var crate2: Node3D = _add(root, crate_scene.instantiate(), "AmmoCrateBunker")
 	crate2.position = Vector3(1.75, -DEPTH, 68.35)
-	# T2: boxes of Molotov cocktails against the rear wall of two trench legs.
+	# T2: boxes of Molotov cocktails against the rear wall of two straight trench legs.
 	var bottle_scene: PackedScene = load("res://scenes/props/molotov_crate.tscn")
-	for spot: Array in [[3, 0.2, "MolotovCrateWest"], [5, 0.3, "MolotovCrateCentre"]]:
-		var a := _zig_point(spot[0])
-		var b := _zig_point(spot[0] + 1)
-		var dir := (b - a).normalized()
-		var rear := Vector2(-dir.y, dir.x)
-		var at: Vector2 = a.lerp(b, spot[1]) + rear * (TRENCH_WIDTH / 2.0 - 0.28)
-		var box: Node3D = _add(root, bottle_scene.instantiate(), spot[2])
+	for spot: Array in [[-15.0, "MolotovCrateWest"], [12.5, "MolotovCrateCentre"]]:
+		var li := _flat_leg_at(spot[0])
+		var rear := _leg_rear(li)
+		var at: Vector2 = Vector2(spot[0], _tp(li).y) + rear * (TRENCH_WIDTH / 2.0 - 0.28)
+		var box: Node3D = _add(root, bottle_scene.instantiate(), spot[1])
 		box.position = Vector3(at.x, -DEPTH, at.y)
-		box.rotation.y = atan2(-(b - a).y, (b - a).x)
+		box.rotation.y = 0.0
 
-	# --- G1: trench entries: where the Soviets jump down into the trench (one per zigzag leg).
+	# --- G1/L1: trench entries: where the Soviets jump down into the trench (one per ~20 m).
 	# A NavigationLink3D joins the walkable ground in front to the trench floor.
 	var entries: Node3D = _add(root, Node3D.new(), "TrenchEntries")
-	for i in ZIG_X.size() - 1:
-		var a := _zig_point(i)
-		var b := _zig_point(i + 1)
-		var dir := (b - a).normalized()
-		var rear := Vector2(-dir.y, dir.x) # points back (+z), away from the enemy
-		var mid := (a + b) / 2.0
-		var link: NavigationLink3D = _add(entries, NavigationLink3D.new(), "Entry%d" % (i + 1))
+	var entry_no := 1
+	for i in _entry_legs():
+		var rear := _leg_rear(i) # points back (+z), away from the enemy
+		var mid := (_tp(i) + _tp(i + 1)) / 2.0
+		var link: NavigationLink3D = _add(entries, NavigationLink3D.new(), "Entry%d" % entry_no)
+		entry_no += 1
 		var start := mid - rear * (TRENCH_WIDTH / 2.0 + 1.3)
 		var land := mid - rear * 0.1
 		link.start_position = Vector3(start.x, 0.0, start.y)
@@ -541,9 +645,10 @@ func _build_level(mats: Dictionary) -> Node:
 
 	# --- Player spawn points inside the trench (facing the enemy, -z) ---
 	var spawns: Node3D = _add(root, Node3D.new(), "PlayerSpawnPoints")
+	var spawn_x := [-30.0, -10.0, 10.0, 33.0]
 	for i in 4:
 		var m: Marker3D = _add(spawns, Marker3D.new(), "Spawn%d" % (i + 1))
-		m.position = Vector3(-30 + i * 20, -DEPTH + 0.1, 61)
+		m.position = Vector3(spawn_x[i], -DEPTH + 0.1, _line_z(spawn_x[i]))
 		m.add_to_group("player_spawn", true)
 	return root
 
@@ -2048,7 +2153,7 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	DirAccess.make_dir_recursive_absolute("res://levels/source")
 	var root := Node3D.new()
 	root.name = "TrenchCSG"
-	# --- Trench: a CSG earth slab with the zigzag trench cut out of it ---
+	# --- Trench: a CSG earth slab with the trench line (TRENCH_XZ) and its bays cut out of it ---
 	var trench: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Trench")
 	trench.use_collision = true
 	trench.collision_layer = 0b1
@@ -2056,14 +2161,25 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	trench.add_to_group("navigation_source", true)
 	_csg_box(trench, "EarthSlab", Vector3(210, 2.5, 18), Vector3(0, -1.25, 61), mats.snow)
 	var SUB := CSGShape3D.OPERATION_SUBTRACTION
-	for i in ZIG_X.size() - 1:
-		var a := _zig_point(i)
-		var b := _zig_point(i + 1)
+	for i in _tcount():
+		var a := _tp(i)
+		var b := _tp(i + 1)
 		var d := b - a
 		var length := d.length() + TRENCH_WIDTH  # overlap at the corners
 		var mid := (a + b) / 2.0
 		_csg_box(trench, "TrenchCut%d" % (i + 1), Vector3(length, 3.6, TRENCH_WIDTH),
 			Vector3(mid.x, -0.8, mid.y), mats.trench_wall, SUB, Vector3(0, atan2(-d.y, d.x), 0))
+	# L1: the bays of the four firing positions and two dead-end branches to the rear.
+	for k in POST_X.size():
+		var zc := _line_z(POST_X[k])
+		var zf := zc - POST_BAY_DEPTH
+		var z1 := zc + 0.5
+		_csg_box(trench, "FirePostCut%d" % (k + 1), Vector3(POST_BAY_W, 3.6, z1 - zf),
+			Vector3(POST_X[k], -0.8, (zf + z1) / 2.0), mats.trench_wall, SUB)
+	for k in SPURS.size():
+		var sp: Vector3 = SPURS[k]
+		_csg_box(trench, "SpurCut%d" % (k + 1), Vector3(1.6, 3.6, sp.z),
+			Vector3(sp.x, -0.8, sp.y + sp.z / 2.0), mats.trench_wall, SUB)
 
 	# Exits: short cuts going back (+z) with a ramp up to ground level.
 	# The ramp rises from the trench floor (z = 65) to just above ground level (z = 69.5),
@@ -2089,6 +2205,24 @@ func _build_trench_source(mats: Dictionary) -> Node:
 
 	# Bunker room dug into the slab behind the trench at x = 0.
 	_csg_box(trench, "BunkerRoomCut", Vector3(5, 2.62, 4.1), Vector3(0, -1.29, 66.95), mats.bunker_log, SUB)
+	# L1: the trench in front of the bunker is wider (a gun pit, 7 m x 2.6 m extra to the front),
+	# so the Maxim can still aim low through the slit.
+	_csg_box(trench, "MaximPitCut", Vector3(7.0, 3.6, 2.6), Vector3(0, -0.8, 62.7), mats.trench_wall, SUB)
+
+	# L1: the firing step of each bay (log platform) and a ramp up to it. Added after all the
+	# cuts, so it stays. The player stands on the step to shoot over the sandbags.
+	var lift: float = POST_STEP_TOP - (-DEPTH) # 0.6
+	var ramp_run := 1.8
+	var tilt := atan2(lift, ramp_run)
+	for k in POST_X.size():
+		var zf := _line_z(POST_X[k]) - POST_BAY_DEPTH
+		_csg_box(trench, "FirePostStep%d" % (k + 1), Vector3(POST_BAY_W, lift, POST_STEP_LEN),
+			Vector3(POST_X[k], -DEPTH + lift / 2.0, zf + POST_STEP_LEN / 2.0), mats.bunker_log)
+		var zmid := zf + POST_STEP_LEN + ramp_run / 2.0
+		var thick := 0.3
+		_csg_box(trench, "FirePostRamp%d" % (k + 1), Vector3(POST_BAY_W - 0.1, thick, sqrt(ramp_run * ramp_run + lift * lift) + 0.1),
+			Vector3(POST_X[k], -DEPTH + lift / 2.0 - thick / 2.0 * cos(tilt), zmid - thick / 2.0 * sin(tilt)),
+			mats.bunker_log, CSGShape3D.OPERATION_UNION, Vector3(tilt, 0, 0))
 
 	# --- Log bunker (above-ground part) ---
 	var bunker: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Bunker")
@@ -2113,6 +2247,115 @@ func _build_trench_source(mats: Dictionary) -> Node:
 		log_node.material = mats.bunker_log
 
 	return root
+
+
+## L1: what stands on the ground in front of each firing position (the bay and the firing step
+## are part of the CSG trench): an earth bank, a wall of sandbags and two low flank walls.
+## All sandbags of a post are one MultiMesh (one draw call per material); the collision is a few
+## simple boxes. A standing player on the step (eye 0.8 m above the ground) sees and shoots over
+## the sandbags (top 0.6 m); crouching, or standing on the trench floor, he is hidden behind them.
+func _build_fire_posts(root: Node, mats: Dictionary) -> void:
+	var posts: Node3D = _add(root, Node3D.new(), "FirePosts")
+	var bag := SphereMesh.new()
+	bag.radius = 0.5
+	bag.height = 1.0
+	bag.radial_segments = 6
+	bag.rings = 3
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1940
+	var hw := 2.5 # half width of the front wall
+	for k in POST_X.size():
+		var zf := _line_z(POST_X[k]) - POST_BAY_DEPTH
+		var body: StaticBody3D = _add(posts, StaticBody3D.new(), "FirePost%d" % (k + 1))
+		body.position = Vector3(POST_X[k], 0.0, zf)
+		body.collision_layer = 0b1
+		body.set_meta("surface", "earthwork")
+		body.add_to_group("navigation_source", true)
+		body.add_to_group("fire_post", true)
+
+		# Earth bank: a wedge in front of the sandbags (profile: z, y).
+		var prof := [Vector2(-0.65, 0.0), Vector2(-0.65, 0.45), Vector2(-2.4, 0.0)]
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var v: Array[Vector3] = []
+		for sx in [-hw, hw]:
+			for pr: Vector2 in prof:
+				v.append(Vector3(sx, pr.y, pr.x))
+		# v[0..2] west end, v[3..5] east end. Slope (v1, v2 -> v4, v5) and the two end triangles.
+		for tri in [[1, 2, 4], [2, 5, 4], [0, 2, 1], [3, 4, 5]]:
+			for idx: int in tri:
+				st.add_vertex(v[idx])
+		st.generate_normals()
+		var bank := MeshInstance3D.new()
+		bank.mesh = st.commit()
+		bank.material_override = mats.snow
+		_add(body, bank, "Bank")
+		var bank_shape := ConvexPolygonShape3D.new()
+		bank_shape.points = PackedVector3Array(v)
+		var bank_col: CollisionShape3D = _add(body, CollisionShape3D.new(), "BankCollision")
+		bank_col.shape = bank_shape
+
+		# Collision of the sandbag walls: front wall and two flank walls (simple boxes).
+		for w: Array in [["WallCollision", Vector3(hw * 2.0, 0.6, 0.6), Vector3(0, 0.3, -0.35)],
+				["FlankWestCollision", Vector3(0.6, 0.4, 2.65), Vector3(-2.15, 0.2, 0.675)],
+				["FlankEastCollision", Vector3(0.6, 0.4, 2.65), Vector3(2.15, 0.2, 0.675)]]:
+			var box := BoxShape3D.new()
+			box.size = w[1]
+			var cs: CollisionShape3D = _add(body, CollisionShape3D.new(), w[0])
+			cs.shape = box
+			cs.position = w[2]
+
+		# The sandbags themselves (body bags and the snowy top layer).
+		var plain: Array[Transform3D] = []
+		var snowy: Array[Transform3D] = []
+		for layer in 3: # front wall: 3 layers, 2 bags deep, staggered like brickwork
+			for row in 2:
+				for c in 10:
+					var x := -2.25 + c * 0.5 + (0.25 if layer % 2 == 1 else 0.0)
+					var t := _bag_transform(rng, Vector3(x, 0.1 + layer * 0.2, -0.5 + row * 0.3), 0.0)
+					(snowy if layer == 2 else plain).append(t)
+		for side in [-1.0, 1.0]: # flank walls: 2 layers, bags lying along z
+			for layer in 2:
+				for col in 2:
+					for r in 5:
+						var z := -0.4 + r * 0.5 + (0.25 if layer == 1 else 0.0)
+						var t := _bag_transform(rng, Vector3(side * 2.15 + (col - 0.5) * 0.3, 0.1 + layer * 0.2, z), PI / 2.0)
+						(snowy if layer == 1 else plain).append(t)
+		# One mesh with two surfaces (sandbag colour, snowy top layer) = 2 draw calls per post.
+		# (A MultiMesh would be lighter, but it can't be saved when the builder runs headless.)
+		var bags := MeshInstance3D.new()
+		bags.mesh = _bags_mesh(bag, plain, snowy, mats.sandbag, mats.sandbag_snow)
+		_add(body, bags, "Sandbags")
+
+
+func _bag_transform(rng: RandomNumberGenerator, pos: Vector3, yaw: float) -> Transform3D:
+	var s := rng.randf_range(0.95, 1.05)
+	var basis := Basis(Vector3.UP, yaw + rng.randf_range(-0.07, 0.07)) * Basis.from_scale(Vector3(0.52 * s, 0.21, 0.31 * s))
+	return Transform3D(basis, pos + Vector3(rng.randf_range(-0.015, 0.015), 0.0, rng.randf_range(-0.015, 0.015)))
+
+
+## Merges copies of `bag` (one per transform) into one mesh: surface 0 = plain, surface 1 = snowy.
+func _bags_mesh(bag: Mesh, plain: Array[Transform3D], snowy: Array[Transform3D], mat_plain: Material, mat_snowy: Material) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	var arr := bag.surface_get_arrays(0)
+	var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var norms: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+	var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+	for group: Array in [[plain, mat_plain], [snowy, mat_snowy]]:
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var base := 0
+		for t: Transform3D in group[0]:
+			var nb := t.basis.inverse().transposed()
+			for i in verts.size():
+				st.set_normal((nb * norms[i]).normalized())
+				st.add_vertex(t * verts[i])
+			for i in idx:
+				st.add_index(base + i)
+			base += verts.size()
+		st.commit(mesh)
+		mesh.surface_set_material(mesh.get_surface_count() - 1, group[1])
+	return mesh
 
 
 ## A StaticBody3D using the mesh and collision shape baked from the CSG combiner `n`.
