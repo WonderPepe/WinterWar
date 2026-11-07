@@ -9,7 +9,7 @@ var fails := 0
 var xz: Array = []   # TRENCH_XZ from the level builder
 var posts: Array = []
 var bay_depth := 0.0
-var step_top := 0.0
+var bay_w := 0.0
 
 
 func check(cond: bool, msg: String) -> void:
@@ -49,6 +49,12 @@ func dist_to_line(q: Vector2) -> float:
 	return best
 
 
+func hit(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3) -> Dictionary:
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	q.collision_mask = 1
+	return space.intersect_ray(q)
+
+
 func line_z(x: float) -> float:
 	for i in xz.size() / 2 - 1:
 		var a := pt(i)
@@ -75,7 +81,7 @@ func run() -> void:
 	xz = consts["TRENCH_XZ"]
 	posts = consts["POST_X"]
 	bay_depth = consts["POST_BAY_DEPTH"]
-	step_top = consts["POST_STEP_TOP"]
+	bay_w = consts["POST_BAY_W"]
 
 	# --- The line: many short legs and corners, nothing long and straight ---
 	var legs: int = xz.size() / 2 - 1
@@ -152,36 +158,38 @@ func run() -> void:
 		check(p.global_position.z > 71.0, "exit ramp at x = %d leads out (z %.1f)" % [x, p.global_position.z])
 		set_input(Vector2.ZERO)
 
-	# --- The four firing positions ---
+	# --- The four firing positions: a narrow bay + a sandbag wall with a loophole ---
 	var nodes := get_tree().get_nodes_in_group("fire_post")
 	check(nodes.size() == 4, "4 firing positions (group fire_post)")
+	check(bay_w <= 1.5, "the bay is narrow: one soldier (%.1f m)" % bay_w)
 	var space := p.get_world_3d().direct_space_state
 	for k in posts.size():
 		var x: float = posts[k]
 		var zc := line_z(x)
 		var zf := zc - bay_depth
 		var tag := "post %d (x = %.1f)" % [k + 1, x]
-		# Eye heights: standing 1.6 m, crouching 0.95 m above the feet.
-		var eye_stand := Vector3(x, step_top + 1.6, zf + 0.5)
-		var eye_crouch := Vector3(x, step_top + 0.95, zf + 0.5)
-		var eye_floor := Vector3(x, -1.4 + 1.6, zf + 2.5)
-		var q := PhysicsRayQueryParameters3D.create(eye_stand, eye_stand + Vector3(0, 0, -12))
-		q.collision_mask = 1
-		check(space.intersect_ray(q).is_empty(), tag + ": standing on the step you see over the sandbags")
-		q = PhysicsRayQueryParameters3D.create(eye_crouch, eye_crouch + Vector3(0, 0, -12))
-		q.collision_mask = 1
-		var hit := space.intersect_ray(q)
-		check(not hit.is_empty() and hit.position.z > zf - 3.0, tag + ": crouching you are hidden behind the sandbags")
-		q = PhysicsRayQueryParameters3D.create(eye_floor, eye_floor + Vector3(0, 0, -12))
-		q.collision_mask = 1
-		hit = space.intersect_ray(q)
-		check(not hit.is_empty() and hit.position.z > zf - 3.0, tag + ": from the trench floor you see only earth")
-		# Sideways: a ray along the front, level with the sandbags, is stopped by the flank wall.
-		q = PhysicsRayQueryParameters3D.create(Vector3(x - 6.0, 0.3, zf - 0.3), Vector3(x + 6.0, 0.3, zf - 0.3))
-		q.collision_mask = 1
-		check(not space.intersect_ray(q).is_empty(), tag + ": a bullet along the sandbag wall is stopped")
+		# Standing, the eyes are 1.6 m above the trench floor = 0.2 m above the ground, at the hole.
+		var eye := Vector3(x, 0.2, zf + 0.4)
+		var eye_crouch := Vector3(x, -1.4 + 0.95, zf + 0.4)
+		check(hit(space, eye, eye + Vector3(0, 0, -12)).is_empty(), tag + ": through the loophole you see straight out")
+		for deg in [-35.0, 35.0]:
+			var d := Vector3(sin(deg_to_rad(deg)), 0, -cos(deg_to_rad(deg)))
+			var h := hit(space, eye, eye + d * 12.0)
+			check(not h.is_empty() and eye.distance_to(h.position) < 2.0, tag + ": %d deg to the side the sandbags block the view" % int(deg))
+		for deg in [18.0, -25.0]:
+			var d := Vector3(0, sin(deg_to_rad(deg)), -cos(deg_to_rad(deg)))
+			var h := hit(space, eye, eye + d * 12.0)
+			check(not h.is_empty() and eye.distance_to(h.position) < 3.0, tag + ": %d deg up/down the view is blocked" % int(deg))
+		var hc := hit(space, eye_crouch, eye_crouch + Vector3(0, 0, -12))
+		check(not hc.is_empty() and eye_crouch.distance_to(hc.position) < 2.0, tag + ": crouching you are hidden")
+		# An enemy far out in front: the line to the HEAD goes through the hole, the line to the
+		# chest and the legs is stopped by the wall / the ground.
+		var far := Vector3(x, 0.2, zf - 40.0)
+		check(hit(space, far, eye).is_empty(), tag + ": an enemy straight ahead can hit the head (through the hole)")
+		check(not hit(space, far, Vector3(x, -0.5, zf + 0.4)).is_empty(), tag + ": ... but not the chest")
+		check(not hit(space, far + Vector3(30, 0, 0), eye).is_empty(), tag + ": ... and nobody far off to the side (36 deg)")
 
-		# Walk up the ramp onto the step and stop at the front wall.
+		# Walk into the bay: it fits a player, he stops at the front wall.
 		teleport(Vector3(x, -1.3, zc), 0.0)
 		await frames(20)
 		set_input(Vector2(0, -1))
@@ -189,18 +197,18 @@ func run() -> void:
 		set_input(Vector2.ZERO)
 		await frames(30)
 		print("  ", tag, " player at ", p.global_position)
-		check(absf(p.global_position.y - step_top) < 0.15 and p.global_position.z < zf + 1.4 and p.global_position.z > zf,
-			tag + ": the player walks up onto the firing step (y %.2f z %.2f)" % [p.global_position.y, p.global_position.z])
-		check(p.camera.global_position.y > 0.6, tag + ": standing, the eyes are above the sandbags (%.2f)" % p.camera.global_position.y)
+		check(absf(p.global_position.x - x) < 0.5 and p.global_position.z < zf + 0.8 and p.global_position.z > zf and absf(p.global_position.y + 1.4) < 0.15,
+			tag + ": the player walks into the bay and stops at the front (z %.2f)" % p.global_position.z)
+		check(absf(p.camera.global_position.y - 0.2) < 0.1, tag + ": his eyes are at the loophole (%.2f)" % p.camera.global_position.y)
+		var cam := p.camera.global_position
+		check(hit(space, cam, cam + Vector3(0, 0, -12)).is_empty(), tag + ": his view is clear through the hole")
 		set_input(Vector2.ZERO, true)
 		await frames(60)
-		check(p.camera.global_position.y < 0.45, tag + ": crouching, the eyes are behind the sandbags (%.2f)" % p.camera.global_position.y)
+		cam = p.camera.global_position
+		var hh := hit(space, cam, cam + Vector3(0, 0, -12))
+		check(cam.y < -0.2 and not hh.is_empty(), tag + ": crouching, he is behind the wall (eye %.2f)" % cam.y)
 		set_input(Vector2.ZERO, false)
 		await frames(40)
-
-		# Reachable for the Soviets who jump into the trench.
-		var closest := NavigationServer3D.map_get_closest_point(map, Vector3(x, step_top, zf + 0.6))
-		check(Vector2(closest.x, closest.z).distance_to(Vector2(x, zf + 0.6)) < 0.8, tag + ": the step is on the navigation mesh")
 
 	print("RESULT: ", "OK (0 failures)" if fails == 0 else "FAILED (%d failures)" % fails)
 	get_tree().quit(1 if fails > 0 else 0)

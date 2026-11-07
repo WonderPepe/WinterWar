@@ -33,7 +33,8 @@ func _ready() -> void:
 	await _view(Vector3(50, 70, 61), Vector3(50, 0, 61.5), "l1_top_east", 55.0, Vector3(0, 0, -1))
 
 	# 2. A firing position from the enemy side (x = -23.5), and from behind.
-	await _view(Vector3(-28, 1.7, 30), Vector3(-23.5, 0.2, 52.5), "l1_post2_front")
+	await _view(Vector3(-21.0, 1.0, 44.0), Vector3(-23.5, 0.3, 55.0), "l1_post2_front")
+	await _view(Vector3(-28, 1.7, 30), Vector3(-23.5, 0.2, 52.5), "l1_post2_far")
 	await _view(Vector3(-23.5, 4.5, 64), Vector3(-23.5, -0.6, 55.5), "l1_post2_back")
 	await _view(Vector3(64, 1.7, 33), Vector3(64, 0.2, 53.5), "l1_post4_front")
 	await _view(Vector3(-64, 3.0, 62), Vector3(-64, -0.5, 55.5), "l1_post1_back")

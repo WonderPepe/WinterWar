@@ -336,12 +336,19 @@ const TRENCH_XZ := [
 	70, 61, 74, 61, 77, 64, 84, 64, 87, 61, 94, 61,
 	94, 58, 100, 58,
 ]
-## L1: protected firing positions: x of each bay (it juts forward from the front of the line).
+## L1: protected firing positions: x of each bay (a narrow slot, one soldier wide, that juts
+## forward from the front of the line; in front of it a sandbag wall with a loophole, like
+## the photo SA_Kuva_a_8).
 const POST_X := [-64.0, -23.5, 24.0, 64.0]
-const POST_BAY_W := 3.5      ## width of the bay (m)
-const POST_BAY_DEPTH := 4.6  ## from the centre line to the front wall of the bay (m)
-const POST_STEP_LEN := 1.3   ## flat firing step at the front of the bay (m)
-const POST_STEP_TOP := -0.8  ## height of the firing step (trench floor is -1.4)
+const POST_BAY_W := 1.3      ## width of the bay (m): one soldier
+const POST_BAY_DEPTH := 2.6  ## from the centre line to the front wall of the bay (m)
+## The sandbag wall (local to the bay's front edge; -z = towards the enemy):
+const POST_WALL_BACK := 0.02   ## rear face
+const POST_WALL_FRONT := -0.6  ## front face (0.62 m thick)
+const POST_WALL_HALF_W := 1.4  ## half width of the wall
+const POST_WALL_TOP := 0.84    ## top (m above the ground)
+const POST_HOLE_HALF_W := 0.4  ## the loophole is 0.8 m wide ...
+const POST_HOLE_TOP := 0.42    ## ... and 0.42 m tall, starting at the ground
 ## L1: two short dead-end branches to the rear: x, z of the line they leave, length (m).
 const SPURS := [Vector3(-54.5, 63.0, 5.0), Vector3(51.0, 61.0, 5.0)]
 const TRENCH_WIDTH := 2.0
@@ -2209,21 +2216,6 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	# so the Maxim can still aim low through the slit.
 	_csg_box(trench, "MaximPitCut", Vector3(7.0, 3.6, 2.6), Vector3(0, -0.8, 62.7), mats.trench_wall, SUB)
 
-	# L1: the firing step of each bay (log platform) and a ramp up to it. Added after all the
-	# cuts, so it stays. The player stands on the step to shoot over the sandbags.
-	var lift: float = POST_STEP_TOP - (-DEPTH) # 0.6
-	var ramp_run := 1.8
-	var tilt := atan2(lift, ramp_run)
-	for k in POST_X.size():
-		var zf := _line_z(POST_X[k]) - POST_BAY_DEPTH
-		_csg_box(trench, "FirePostStep%d" % (k + 1), Vector3(POST_BAY_W, lift, POST_STEP_LEN),
-			Vector3(POST_X[k], -DEPTH + lift / 2.0, zf + POST_STEP_LEN / 2.0), mats.bunker_log)
-		var zmid := zf + POST_STEP_LEN + ramp_run / 2.0
-		var thick := 0.3
-		_csg_box(trench, "FirePostRamp%d" % (k + 1), Vector3(POST_BAY_W - 0.1, thick, sqrt(ramp_run * ramp_run + lift * lift) + 0.1),
-			Vector3(POST_X[k], -DEPTH + lift / 2.0 - thick / 2.0 * cos(tilt), zmid - thick / 2.0 * sin(tilt)),
-			mats.bunker_log, CSGShape3D.OPERATION_UNION, Vector3(tilt, 0, 0))
-
 	# --- Log bunker (above-ground part) ---
 	var bunker: CSGCombiner3D = _add(root, CSGCombiner3D.new(), "Bunker")
 	bunker.use_collision = true
@@ -2249,21 +2241,25 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	return root
 
 
-## L1: what stands on the ground in front of each firing position (the bay and the firing step
-## are part of the CSG trench): an earth bank, a wall of sandbags and two low flank walls.
-## All sandbags of a post are one MultiMesh (one draw call per material); the collision is a few
-## simple boxes. A standing player on the step (eye 0.8 m above the ground) sees and shoots over
-## the sandbags (top 0.6 m); crouching, or standing on the trench floor, he is hidden behind them.
+## L1: what stands on the ground in front of each firing position (the narrow bay is part of the
+## CSG trench): a wall of sandbags with a loophole at head height (0.8 x 0.42 m, starting at the
+## ground) and an earth heap on each side, like the photo SA_Kuva_a_8. The collision is a few simple
+## boxes with the hole left open, so the protection is real: a bullet only reaches the soldier
+## through the hole. Standing on the trench floor his eyes (0.2 m above the ground) are at the
+## hole; crouching, he is hidden. All sandbags of a post are one mesh (2 surfaces).
 func _build_fire_posts(root: Node, mats: Dictionary) -> void:
 	var posts: Node3D = _add(root, Node3D.new(), "FirePosts")
 	var bag := SphereMesh.new()
 	bag.radius = 0.5
 	bag.height = 1.0
-	bag.radial_segments = 6
-	bag.rings = 3
+	bag.radial_segments = 8
+	bag.rings = 4
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1940
-	var hw := 2.5 # half width of the front wall
+	var thick: float = POST_WALL_BACK - POST_WALL_FRONT
+	var zmid: float = (POST_WALL_BACK + POST_WALL_FRONT) / 2.0
+	var hw := POST_WALL_HALF_W
+	var hh := POST_HOLE_HALF_W
 	for k in POST_X.size():
 		var zf := _line_z(POST_X[k]) - POST_BAY_DEPTH
 		var body: StaticBody3D = _add(posts, StaticBody3D.new(), "FirePost%d" % (k + 1))
@@ -2273,56 +2269,52 @@ func _build_fire_posts(root: Node, mats: Dictionary) -> void:
 		body.add_to_group("navigation_source", true)
 		body.add_to_group("fire_post", true)
 
-		# Earth bank: a wedge in front of the sandbags (profile: z, y).
-		var prof := [Vector2(-0.65, 0.0), Vector2(-0.65, 0.45), Vector2(-2.4, 0.0)]
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var v: Array[Vector3] = []
-		for sx in [-hw, hw]:
-			for pr: Vector2 in prof:
-				v.append(Vector3(sx, pr.y, pr.x))
-		# v[0..2] west end, v[3..5] east end. Slope (v1, v2 -> v4, v5) and the two end triangles.
-		for tri in [[1, 2, 4], [2, 5, 4], [0, 2, 1], [3, 4, 5]]:
-			for idx: int in tri:
-				st.add_vertex(v[idx])
-		st.generate_normals()
-		var bank := MeshInstance3D.new()
-		bank.mesh = st.commit()
-		bank.material_override = mats.snow
-		_add(body, bank, "Bank")
-		var bank_shape := ConvexPolygonShape3D.new()
-		bank_shape.points = PackedVector3Array(v)
-		var bank_col: CollisionShape3D = _add(body, CollisionShape3D.new(), "BankCollision")
-		bank_col.shape = bank_shape
-
-		# Collision of the sandbag walls: front wall and two flank walls (simple boxes).
-		for w: Array in [["WallCollision", Vector3(hw * 2.0, 0.6, 0.6), Vector3(0, 0.3, -0.35)],
-				["FlankWestCollision", Vector3(0.6, 0.4, 2.65), Vector3(-2.15, 0.2, 0.675)],
-				["FlankEastCollision", Vector3(0.6, 0.4, 2.65), Vector3(2.15, 0.2, 0.675)]]:
+		# Collision: lintel above the hole and a jamb on each side of it.
+		var lintel_h: float = POST_WALL_TOP - POST_HOLE_TOP
+		for w: Array in [["LintelCollision", Vector3(hw * 2.0, lintel_h, thick), Vector3(0, POST_HOLE_TOP + lintel_h / 2.0, zmid)],
+				["JambWestCollision", Vector3(hw - hh, POST_HOLE_TOP, thick), Vector3(-(hw + hh) / 2.0, POST_HOLE_TOP / 2.0, zmid)],
+				["JambEastCollision", Vector3(hw - hh, POST_HOLE_TOP, thick), Vector3((hw + hh) / 2.0, POST_HOLE_TOP / 2.0, zmid)]]:
 			var box := BoxShape3D.new()
 			box.size = w[1]
 			var cs: CollisionShape3D = _add(body, CollisionShape3D.new(), w[0])
 			cs.shape = box
 			cs.position = w[2]
 
-		# The sandbags themselves (body bags and the snowy top layer).
+		# Earth heaps on both sides of the wall (a triangular prism sloping down and away).
+		for side in [-1.0, 1.0]:
+			var heap := PrismMesh.new()
+			heap.size = Vector3(1.3, POST_WALL_TOP, 1.0)
+			heap.left_to_right = 1.0 if side < 0.0 else 0.0 # the steep side faces the wall
+			var mi := MeshInstance3D.new()
+			mi.mesh = heap
+			mi.material_override = mats.snow
+			_add(body, mi, "EarthHeapWest" if side < 0.0 else "EarthHeapEast")
+			mi.position = Vector3(side * (hw + 0.65 - 0.05), POST_WALL_TOP / 2.0, zmid)
+			var col: CollisionShape3D = _add(body, CollisionShape3D.new(), "EarthHeapWestCollision" if side < 0.0 else "EarthHeapEastCollision")
+			col.shape = heap.create_convex_shape()
+			col.position = mi.position
+
+		# The sandbags: 4 layers of 0.21 m, 2 bags deep. The two lower layers leave the hole open.
 		var plain: Array[Transform3D] = []
 		var snowy: Array[Transform3D] = []
-		for layer in 3: # front wall: 3 layers, 2 bags deep, staggered like brickwork
+		for layer in 4:
+			var y := 0.105 + layer * 0.21
 			for row in 2:
-				for c in 10:
-					var x := -2.25 + c * 0.5 + (0.25 if layer % 2 == 1 else 0.0)
-					var t := _bag_transform(rng, Vector3(x, 0.1 + layer * 0.2, -0.5 + row * 0.3), 0.0)
-					(snowy if layer == 2 else plain).append(t)
-		for side in [-1.0, 1.0]: # flank walls: 2 layers, bags lying along z
-			for layer in 2:
-				for col in 2:
-					for r in 5:
-						var z := -0.4 + r * 0.5 + (0.25 if layer == 1 else 0.0)
-						var t := _bag_transform(rng, Vector3(side * 2.15 + (col - 0.5) * 0.3, 0.1 + layer * 0.2, z), PI / 2.0)
-						(snowy if layer == 1 else plain).append(t)
-		# One mesh with two surfaces (sandbag colour, snowy top layer) = 2 draw calls per post.
-		# (A MultiMesh would be lighter, but it can't be saved when the builder runs headless.)
+				var z: float = POST_WALL_FRONT + 0.155 + row * 0.31
+				var xs: Array[float] = []
+				if y < POST_HOLE_TOP: # jambs: bags beside the hole
+					for side in [-1.0, 1.0]:
+						xs.append(side * (hh + 0.26))
+						xs.append(side * (hh + 0.78))
+				else: # full width above the hole
+					var shift := 0.25 if (layer + row) % 2 == 1 else 0.0
+					for c in 6:
+						var x := -1.25 + c * 0.5 + shift
+						if absf(x) <= hw - 0.1:
+							xs.append(x)
+				for x in xs:
+					var t := _bag_transform(rng, Vector3(x, y, z), 0.0)
+					(snowy if layer == 3 else plain).append(t)
 		var bags := MeshInstance3D.new()
 		bags.mesh = _bags_mesh(bag, plain, snowy, mats.sandbag, mats.sandbag_snow)
 		_add(body, bags, "Sandbags")

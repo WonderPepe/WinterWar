@@ -123,15 +123,17 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   sandbags"). The old 10-leg zigzag (21 m legs) is now `TRENCH_XZ` in `tools/build_scenes.gd`:
   43 legs of 3–8 m (the 12 m stretch in front of the bunker is the only long one), 39 real
   corners, jogs and 45° bends, two dead-end branches to the rear (`SPURS`), the Maxim pit
-  (`MaximPitCut`) widens the trench in front of the bunker. Four **firing positions** (`POST_X`
-  = -64, -23.5, 24, 64; group `fire_post`, nodes `FirePosts/FirePost1…4`): a 3.5 m bay juts
-  4.6 m forward from the line, with a log firing step (top y = -0.8) reached by a ramp; in front of
-  it an earth bank + a 0.6 m sandbag wall + two low flank walls (one merged mesh per post, 2 surfaces).
-  Standing on the step the eyes are 0.2 m above the sandbags (you shoot over them), crouching or on
-  the trench floor you are hidden; bullets stop at the sandbags (surface `earthwork`). Crates,
-  exits, spawns (x = -30, -10, 10, 33) and the 10 trench entries moved onto the new line.
+  (`MaximPitCut`) widens the trench in front of the bunker. Exits, spawns (x = -30, -10, 10, 33),
+  crates and the 10 trench entries sit on the new line.
+  **Firing positions, 2nd version (owner, after the photo SA_Kuva_a_8):** four narrow bays
+  (`POST_X` = -64, -23.5, 24, 64; group `fire_post`, nodes `FirePosts/FirePost1…4`) – 1.3 m wide
+  (one soldier), 1.6 m deep beyond the trench edge, no firing step. In front a sandbag wall
+  0.62 m thick and 0.84 m high with a loophole 0.8 × 0.42 m starting at the ground: the standing
+  soldier's eyes (0.2 m above the ground) are at the hole, a lintel of sandbags covers his head, earth
+  heaps on both sides. Only a bullet through the hole can hit him (the walls are real collision;
+  at ~±22° sideways / ±11° up-down he sees and is seen); crouching = fully hidden. Splash damage
+  isn't blocked. (First version: a 3.5 m bay with a log step and a low wall – replaced.)
   Details/gotchas: `gotchas.md` (L1). Tests: `test_l1.gd`, `shots_l1.gd`.
-
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
   no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
   of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at
