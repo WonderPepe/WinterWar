@@ -132,7 +132,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `shell_close.ogg` (Freesound 256297, first 4 s of the loud explosion) plays for the LOCAL
   player when a barrage shell lands within `close_sound_range_m` (28 m), louder when nearer
   (`_play_close_burst`, from `explode()` only – the tank's `show_explosion` call is unchanged).
-  Bigger blasts: kill 6 m, harm 35 m (shrapnel; cover only while CROUCHING in the trench/bunker – `is_covered` = `is_in_shelter` + `is_crouching`; no HUD hint for crouching; the whole bunker room (`is_in_bunker`) is always safe, standing or on the Maxim (owner decision, L2d); no "stay down" text during the barrage, only the warning and "GET INTO THE TRENCH!" in the open), near_damage 110, aimed_share 0.55, `blast_scale` 1.5
+  Bigger blasts: kill 6 m, harm 35 m (shrapnel; cover only while CROUCHING in the trench/bunker – `is_covered` = `is_in_shelter` + `is_crouching`; no HUD hint for crouching; the whole bunker room (`is_in_bunker`) is safe, standing or crouching, but NOT while mounted on the Maxim (L2d/L2e: gunner is hit by shells landing in front of the bunker); no "stay down" text during the barrage, only the warning and "GET INTO THE TRENCH!" in the open), near_damage 110, aimed_share 0.55, `blast_scale` 1.5
   (bigger flash/particles/scorch) and `shake_range_m` 120. Both sounds are set in
   `scenes/game.tscn` (edited by hand, so rebuilding scenes would need the same two lines in
   `build_scenes.gd`, which now has them). Trench/bunker still fully safe.

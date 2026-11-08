@@ -83,8 +83,19 @@ func run() -> void:
 	p.is_crouching = false
 	p.global_position = Vector3(0, -1.3, 59.5)
 	check(ArtilleryBarrage.is_covered(p), "standing in the bunker = covered")
+	var gun: Node = get_tree().get_first_node_in_group("mounted_guns")
+	p.global_position = gun.seat.global_position
+	p.input.request_interact()
+	await seconds(0.3)
+	check(p.get_mounted_gun() != null and not ArtilleryBarrage.is_covered(p), "mounted on the Maxim = NOT covered")
+	p.input.request_interact() # leave the gun again
+	await seconds(0.3)
+	check(p.get_mounted_gun() == null, "left the gun")
+	p.input.crouch_held = false
+	p.is_crouching = false
 	p.global_position = Vector3(-30, -1.3, 61)
 	check(not ArtilleryBarrage.is_covered(p) and ArtilleryBarrage.is_in_shelter(p), "standing in the trench = NOT covered (shrapnel)")
+	p.input.crouch_held = true
 	p.is_crouching = true
 
 	# Wave 4 starts → the barrage begins by itself.

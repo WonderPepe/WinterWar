@@ -97,12 +97,14 @@ func is_active() -> bool:
 
 ## Down in the trench or inside the bunker = safe from the shells, but only CROUCHING:
 ## standing up you are hit by the shrapnel flying over the trench edge.
-## Inside the bunker room you are always safe (standing, crouching or on the Maxim): the log
-## roof and walls stop the shrapnel. In the open trench you are covered only while CROUCHING:
+## Inside the bunker room you are safe (standing or crouching) – but NOT while mounted on the
+## Maxim: the gunner at the firing hole is hit by shells landing in front of the bunker. In the open trench you are covered only while CROUCHING:
 ## standing up you are hit by the shrapnel flying over the trench edge.
 static func is_covered(p: Player) -> bool:
 	if is_in_bunker(p):
-		return true
+		# The gunner at the firing hole is the exception: shells landing in front of the bunker
+		# reach him through the hole (see _fire_shell). Anywhere else in the room is safe.
+		return p.get_mounted_gun() == null
 	return is_in_shelter(p) and p.is_crouching
 
 
@@ -203,6 +205,9 @@ func _fire_shell(strength: float) -> void:
 	for node in get_tree().get_nodes_in_group("players"):
 		var p := node as Player
 		if p.is_dead or is_covered(p):
+			continue
+		# A gunner behind the bunker's front wall is only exposed to shells in FRONT of it.
+		if is_in_bunker(p) and pos.z > p.global_position.z:
 			continue
 		var d: float = p.global_position.distance_to(pos)
 		if d > harm_radius_m:
