@@ -441,17 +441,18 @@ func run() -> void:
 			"wave 4 spawns %d riflemen + %d officer + %d gun team (got R%d O%d G%d, %d helpers)" % [w4.riflemen, w4.officers, w4.mg_teams, kinds[0], kinds[1], kinds[2], teamed])
 	check(spawner.alive_count == w4.total_soldiers(), "alive count %d = wave size" % spawner.alive_count)
 
-	# --- Front reports after each cleared wave ---
+	# --- Battle briefings (B1): the next battle's briefing after each cleared wave ---
 	var reports: FrontReports = load("res://resources/front_reports.tres")
-	check(reports.dates.size() == 10 and reports.texts.size() == 10 and reports.dates[0] == "21.12.1939" and reports.dates[7] == "28.12.1939" and reports.dates[9] == "01.01.1940",
-			"10 front reports, 21.12.1939 … 01.01.1940")
-	check(reports.get_report(9)[0] == "31.12.1939" and reports.get_report(10)[1].ends_with("Puolustajien taistelutahto on horjumaton.\""),
-			"Hard: wave 9 → 31.12.1939, wave 10 → 01.01.1940")
-	check(reports.get_report(11).is_empty(), "no report after wave 11 (none written)")
+	check(reports.dates.size() == 10 and reports.texts.size() == 10 and reports.weathers.size() == 10 and reports.dates[0] == "30 November 1939"
+			and reports.dates[8] == "13 February 1940" and reports.dates[9] == "15 February 1940",
+			"10 briefings, 30 November 1939 … 15 February 1940")
+	check(reports.get_report(9)[0] == "13 February 1940" and reports.get_report(10)[1].ends_with("wounded to escape.")
+			and reports.get_weather(7).contains("Dense Fog") and reports.get_weather(2).contains("Visibility: Poor"),
+			"battle 9 → 13 February 1940, battle 10 → 15 February 1940, weather lines")
+	check(reports.get_report(9)[1] == reports.get_report(8)[1], "battle 9 text = battle 8 text (until the owner writes his own)")
+	check(reports.get_report(11).is_empty(), "no briefing for battle 11")
 	check(reports.photos.size() == 10 and reports.get_photo(1) != null and reports.get_photo(7).get_height() > reports.get_photo(7).get_width(),
 			"a photo for every day (day 7 is the upright one)")
-	check(DayScreen.long_date("21.12.1939") == "21. joulukuuta 1939" and DayScreen.long_date("01.01.1940") == "1. tammikuuta 1940",
-			"dates written out in Finnish")
 	var day: DayScreen = hud.day_screen
 	check(not day.is_open and not day.visible, "no day screen while a wave is on")
 	check(not Settings.has_method("set_show_front_reports"), "front reports always on (no setting)")
@@ -462,8 +463,9 @@ func run() -> void:
 	spawner._timer = 50.0
 	director.waves_cleared = 1
 	await seconds(0.4)
-	check(day.is_open and day.visible and day.date_label.text == "21. joulukuuta 1939" and day.tele_date.text == "21.12.1939"
-			and day.tele_text.text.begins_with("\"Täällä Kannaksen rintama."), "wave 1 cleared: the day screen for 21.12.1939")
+	check(day.is_open and day.visible and day.date_label.text == "17 December 1939" and day.day_label.text.ends_with("2")
+			and day.tele_date.text.begins_with("Weather: Heavy Snowfall") and day.tele_text.text.begins_with("After hours of artillery fire"),
+			"battle 1 cleared: the day screen shows the briefing of battle 2 (17 December 1939)")
 	check(day.photo.texture != null and day.frame.visible, "…with its photo")
 	check(hud.wave_banner.text == "BATTLE 1 COMPLETED" and hud.wave_banner.modulate.a > 0.9 and day.black.color.a < 0.01,
 			"first 'BATTLE 1 COMPLETED' over the battlefield (screen not dark yet)")
@@ -489,7 +491,7 @@ func run() -> void:
 	spawner._timer = saved_timer
 	director.waves_cleared = 2
 	await seconds(0.4)
-	check(day.is_open and day.tele_date.text == "22.12.1939" and day.tele_text.text.contains("etenemisyritykset on torjuttu"), "wave 2 cleared: 22.12.1939")
+	check(day.is_open and day.date_label.text == "19 December 1939" and day.tele_text.text.contains("Enemy armor has broken through"), "battle 2 cleared: briefing of battle 3, 19 December 1939")
 	spawner.wave_number += 1
 	await seconds(1.6)
 	check(not day.is_open, "the day screen goes away when the next wave starts")
@@ -499,8 +501,8 @@ func run() -> void:
 	director.waves_cleared = director.waves_to_win
 	director.end_match(MatchDirector.Result.VICTORY)
 	await seconds(0.5)
-	check(not day.is_open and hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text.begins_with("01.01.1940"),
-			"victory on Normal: no day screen, the end screen shows the report of 01.01.1940")
+	check(not day.is_open and hud.end_screen.visible and hud.end_screen.report.visible and hud.end_screen.report.text == "15 February 1940",
+			"victory on Normal: no day screen, the end screen shows the date of the last battle")
 	get_tree().paused = false
 	var menu: Control = load("res://ui/settings_menu.tscn").instantiate()
 	add_child(menu)

@@ -9,6 +9,10 @@ extends CanvasLayer
 ## In a browser the mouse can only be "locked" to the game after a click, so when loading is
 ## done it asks for one click ("Click to start the battle") – that click locks the mouse and the
 ## battle begins (no pause menu in between). On desktop the mouse is locked straight away.
+##
+## B1: under the title it shows the briefing of the first battle (an old photo, the date, the
+## weather and the briefing text) from resources/front_reports.tres. Built in code, so the
+## scene file does not change. The benchmark (no click) shows no briefing.
 
 const SCENE_PATH: String = "res://ui/loading_screen.tscn"
 const TIPS: Array[String] = [
@@ -20,6 +24,8 @@ const TIPS: Array[String] = [
 	"Crouch (C) in the trench: you are harder to spot and to hit.",
 	"Soldiers kneel to fire, then rush forward. Shoot them while they kneel.",
 ]
+
+const PHOTO_BOX: Vector2 = Vector2(520, 340) ## Largest size of the briefing photo.
 
 ## The scene to load next (set by go()).
 static var target_scene: String = "res://scenes/game.tscn"
@@ -48,9 +54,81 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # keeps going even if the game pauses underneath
 	layer = 60 # above the game's own screens (HUD, pause menu, shader warm-up)
 	tip.text = "Tip: " + TIPS.pick_random()
+	if click_to_start:
+		_add_briefing()
 	bar.value = 0.0
 	start_label.visible = false
 	_run()
+
+
+## The briefing of the battle the match starts at (battle 1, or the Test Mode battle).
+func _add_briefing() -> void:
+	var reports := load("res://resources/front_reports.tres") as FrontReports
+	if reports == null:
+		return
+	var battle: int = clampi(MatchDirector.test_start_wave, 1, maxi(reports.dates.size(), 1))
+	var r: PackedStringArray = reports.get_report(battle)
+	if r.size() != 2:
+		return
+	var vbox: Control = tip.get_parent()
+	var row := HBoxContainer.new()
+	row.name = "Briefing"
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# The photo as an old print (same look as the day screen).
+	var tex: Texture2D = reports.get_photo(battle)
+	if tex:
+		var box := VBoxContainer.new()
+		box.add_theme_constant_override("separation", 4)
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var frame := PanelContainer.new()
+		var print_style := StyleBoxFlat.new()
+		print_style.bg_color = Color(0.88, 0.86, 0.8)
+		for side in ["left", "right", "top", "bottom"]:
+			print_style.set("content_margin_" + side, 8)
+		frame.add_theme_stylebox_override("panel", print_style)
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var pic := TextureRect.new()
+		pic.texture = tex
+		pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pic.stretch_mode = TextureRect.STRETCH_SCALE
+		var k: float = minf(PHOTO_BOX.x / tex.get_width(), PHOTO_BOX.y / tex.get_height())
+		pic.custom_minimum_size = (tex.get_size() * k).round()
+		pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://resources/shaders/old_photo.gdshader")
+		pic.material = mat
+		frame.add_child(pic)
+		box.add_child(frame)
+		var credit := Label.new()
+		credit.text = "Kuva: SA-kuva"
+		credit.add_theme_font_size_override("font_size", 13)
+		credit.add_theme_color_override("font_color", Color(0.7, 0.72, 0.76))
+		box.add_child(credit)
+		row.add_child(box)
+	# Date, weather, briefing.
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	col.custom_minimum_size = Vector2(430, 0)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(_briefing_label(r[0], 32, Color(0.95, 0.92, 0.85)))
+	col.add_child(_briefing_label(reports.get_weather(battle), 18, Color(0.78, 0.84, 0.92)))
+	col.add_child(_briefing_label(r[1], 20, Color(0.92, 0.94, 0.97)))
+	row.add_child(col)
+	vbox.add_child(row)
+	vbox.move_child(row, 1) # right under the title
+
+
+func _briefing_label(text: String, size: int, color: Color) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return l
 
 
 func _process(delta: float) -> void:

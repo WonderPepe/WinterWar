@@ -26,11 +26,11 @@ func open(director: MatchDirector, player: Player, reports: FrontReports = null)
 	title.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0) if won else Color(1.0, 0.55, 0.45))
 	subtitle.text = ("Dusk falls over Summa. The attack has failed." if won
 			else "The Soviets are in the trench. The position is lost.")
-	# Victory: the front report of the last day held (if there is one for it).
+	# Victory: the date of the last battle held (the briefings are shown before the battles).
 	var r: PackedStringArray = reports.get_report(director.waves_cleared) if reports and won else PackedStringArray()
 	report.visible = r.size() == 2
 	if report.visible:
-		report.text = "%s\n%s" % [r[0], r[1]]
+		report.text = r[0]
 	var shots: int = player.weapons.shots_fired
 	var accuracy: int = roundi(100.0 * player.weapons.shots_hit / shots) if shots > 0 else 0
 	var minutes: int = int(director.match_time) / 60

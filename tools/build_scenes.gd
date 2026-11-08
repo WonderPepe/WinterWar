@@ -1312,9 +1312,10 @@ func _make_difficulty_data() -> void:
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
 
-## After each cleared wave the HUD shows the next front report (the owner's texts).
-## [date, the owner's own text (never reword), SA-kuva photo in assets/photos/ (CC BY 4.0)].
-const FRONT_REPORTS := [
+## The owner's ten Finnish front reports (21.12.1939 … 01.01.1940), shown after each cleared
+## battle until B1. NOT shown any more (the battles now have real dates), kept here unchanged –
+## never reword. [date, text, SA-kuva photo].
+const OLD_FRONT_REPORTS := [
 	["21.12.1939", "\"Täällä Kannaksen rintama. Summan suunnalla on havaittu vihollisen tiedustelu- ja jalkaväkiosastoja. Etumaastossa on käyty päivän aikana tulitaisteluita. Puolustusasemamme ovat säilyneet lujina.\"", "sa_kuva_144612"],
 	["22.12.1939", "\"Täällä Kannaksen rintama. Summan lohkolla vihollinen on lisännyt hyökkäystoimintaansa ja tuonut uusia joukkoja etulinjaan. Useat etenemisyritykset on torjuttu. Joukkojen mieliala on hyvä.\"", "sa_kuva_117623"],
 	["23.12.1939", "\"Rintamatiedotus Kannakselta. Summan suunnalla vihollinen on tukenut hyökkäyksiään voimakkaalla konekivääritulella. Kovista hyökkäyksistä huolimatta asemamme ovat edelleen hallussamme.\"", "sa_kuva_a_4"],
@@ -1328,17 +1329,48 @@ const FRONT_REPORTS := [
 ]
 
 
+## The ten battles (B1): real dates, weather and the briefing, shown BEFORE each battle (loading
+## screen for battle 1, the day screen after each cleared battle for the next one).
+## [date, weather lines, briefing text, SA-kuva photo in assets/photos/ (CC BY 4.0)].
+## Battle 9's text is a copy of battle 8's until the owner writes his own.
+const MISSIONS := [
+	["30 November 1939", "Weather: Light Snowfall",
+		"Soviet forces have crossed the border. All units are ordered to battle stations. Prepare the defenses and repel enemy reconnaissance patrols.", "sa_kuva_144612"],
+	["17 December 1939", "Weather: Heavy Snowfall\nVisibility: Poor",
+		"After hours of artillery fire, Soviet infantry and tanks are advancing against the line. Hold your position at all costs.", "sa_kuva_117623"],
+	["19 December 1939", "Weather: Clear and Bitterly Cold",
+		"Enemy armor has broken through the obstacles. Finnish defenders must stop the tanks before the breach widens.", "sa_kuva_a_4"],
+	["22 December 1939", "Weather: Clear Skies",
+		"Days of relentless attacks have failed to break the line. One more assault is expected before the enemy withdraws.", "sa_kuva_a_511"],
+	["1 February 1940", "Weather: Snow and Artillery Smoke",
+		"The Soviet artillery barrage has begun. Shells rain down across the front as the enemy prepares a new offensive.", "sa_kuva_a_126"],
+	["6 February 1940", "Weather: Overcast",
+		"Enemy attacks continue day and night. Ammunition is running low and casualties are mounting.", "sa_kuva_a_125"],
+	["11 February 1940", "Weather: Dense Fog\nTemperature: ~−20°C",
+		"The largest offensive of the war has begun. Hundreds of guns support waves of infantry and tanks. Hold the line.", "sa_kuva_a_8"],
+	["12 February 1940", "Weather: Fog Clearing",
+		"Enemy forces have broken into key defensive positions. Delay the advance while neighboring units withdraw.", "sa_kuva_a_123"],
+	["13 February 1940", "Weather: Low Cloud and Fog\nVisibility: Moderate",
+		"Enemy forces have broken into key defensive positions. Delay the advance while neighboring units withdraw.", "sa_kuva_144607"],
+	["15 February 1940", "Weather: Snowfall at Dusk",
+		"Orders have arrived. Summa must be abandoned. Hold long enough for the remaining troops and wounded to escape.", "sa_kuva_a_129"],
+]
+
+
 func _make_front_reports() -> void:
 	var r := FrontReports.new()
 	var dates := PackedStringArray()
 	var texts := PackedStringArray()
+	var weathers := PackedStringArray()
 	var photos := PackedStringArray()
-	for f: Array in FRONT_REPORTS:
-		dates.append(f[0])
-		texts.append(f[1])
-		photos.append("res://assets/photos/%s.jpg" % f[2] if f.size() > 2 else "")
+	for m: Array in MISSIONS:
+		dates.append(m[0])
+		weathers.append(m[1])
+		texts.append(m[2])
+		photos.append("res://assets/photos/%s.jpg" % m[3] if m.size() > 3 else "")
 	r.dates = dates
 	r.texts = texts
+	r.weathers = weathers
 	r.photos = photos
 	ResourceSaver.save(r, "res://resources/front_reports.tres")
 

@@ -1,4 +1,25 @@
-# Front reports and the day screen
+# Battle briefings (B1) and the day screen
+
+**B1 (2026-11-08, owner):** the ten battles have REAL DATES now (30 Nov, 17 Dec, 19 Dec, 22 Dec 1939,
+1 Feb, 6 Feb, 11 Feb, 12 Feb, 13 Feb, 15 Feb 1940), weather lines and a briefing text – the owner's
+table, no place names, no times (his choice: only date, weather, briefing). Battle 9 (13 Feb) has a
+COPY of battle 8's text until the owner writes his own. Data: `MISSIONS` in `tools/build_scenes.gd`
+→ `resources/front_reports.tres` (class `FrontReports` kept: `dates`, `texts`, `weathers`,
+`photos`; `get_report(n)` / `get_weather(n)` / `get_photo(n)` for BATTLE n). Photos are the old
+order (battle n = the old day n's photo). Gameplay/wave lists unchanged.
+- Battle 1: the briefing is on the loading screen (`LoadingScreen._add_briefing()`, built in code
+  under the title: old-print photo, date, weather, text; also for the Test Mode battle; none for
+  the benchmark). Battles 2+: after battle n is cleared the day screen shows the briefing of
+  battle n+1 (`DayScreen.open(cleared)` reads n+1; title "B A T T L E n", header "B R I E F I N G",
+  weather lines + text typed out, "[Space] Continue", English). The after-battle front reports
+  are not shown any more; the victory screen shows only the date of the last battle.
+- The owner's ten Finnish front reports (21.12.1939 … 01.01.1940) are kept unchanged as
+  `OLD_FRONT_REPORTS` in the builder – NEVER reword them; they can come back, e.g. with new dates.
+- Weather/time are TEXT only for now (the scene is the same clear day turning to dusk) – next
+  milestone: weather + time of day per battle. Tests: `test_b1.gd`, `test_g2.gd`;
+  screenshots `shots_briefing.gd`, `shots_reports.gd`.
+
+# (older) Front reports and the day screen (before B1)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 

@@ -9,7 +9,7 @@ you work on. Update this file and the right note at the end of every milestone.
   Soviet attacks. Long-term: real Summa terrain (Copernicus
   GLO-30 DEM – Finnish NLS data doesn't cover today's Russia), WebRTC co-op for 2–4 players.
 - Godot **4.7.2**, **GDScript only**, **Compatibility renderer** (must export to web/HTML5), Jolt.
-- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint; public
+- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle); public
   v0.2.x on GitHub Pages.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
@@ -71,7 +71,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery
-- `day-screen.md` – front reports, photos, day screen
+- `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4)
 - `gotchas.md` – full list of lessons learned
 - `tools.md` – helper tools and tests

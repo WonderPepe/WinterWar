@@ -1,8 +1,8 @@
 class_name DayScreen
 extends Control
-## "A new day" between waves: the screen goes dark, a wartime photo (SA-kuva) fades in, the
-## date comes up and the day's front report types itself out as a telegram, with radio static
-## for the first seconds. Space / Enter continues, otherwise it closes by itself after reading time.
+## Between battles (B1): the screen goes dark, a wartime photo (SA-kuva) fades in, the date comes
+## up and the NEXT battle's weather and briefing type themselves out as a telegram, with radio
+## static for the first seconds. (Battle 1's briefing is on the loading screen.) Space / Enter continues, otherwise it closes by itself after reading time.
 ##
 ## Part of the HUD (only reads the synced `MatchDirector.waves_cleared`), so co-op players see it
 ## too. On the host it holds the next wave's countdown (`WaveSpawner.hold`) while it is open.
@@ -24,7 +24,7 @@ signal closed
 const FADE_OUT: float = 1.2 # seconds: content goes first, then the black
 
 var is_open: bool = false
-var wave: int = 0 ## The wave whose day is shown.
+var wave: int = 0 ## The battle that was just cleared (the briefing shown is for wave + 1).
 
 var _t: float = 0.0
 var _total: float = 0.0
@@ -41,16 +41,12 @@ var _typed: float = 0.0
 @onready var photo: TextureRect = $Content/PhotoFrame/Clip/Photo
 @onready var credit: Label = $Content/Credit
 @onready var telegram: Control = $Content/Telegram
+@onready var tele_header: Label = $Content/Telegram/VBox/Header
 @onready var tele_date: Label = $Content/Telegram/VBox/Date
 @onready var tele_text: Label = $Content/Telegram/VBox/Text
 @onready var type_sound: AudioStreamPlayer = $Content/Telegram/TypeSound
 @onready var hint: Label = $Content/Hint
 @onready var static_player: AudioStreamPlayer = $Static
-
-const MONTHS: PackedStringArray = ["tammikuuta", "helmikuuta", "maaliskuuta", "huhtikuuta",
-		"toukokuuta", "kesäkuuta", "heinäkuuta", "elokuuta", "syyskuuta", "lokakuuta",
-		"marraskuuta", "joulukuuta"]
-
 
 func _ready() -> void:
 	add_to_group("day_screen")
@@ -64,17 +60,21 @@ func is_black() -> bool:
 	return is_open and black.color.a >= 0.99
 
 
-## Shows the day after wave `cleared_wave`. Returns false if there is no report for it.
+## Shows the briefing of the battle after `cleared_wave`. Returns false if there is none.
 func open(cleared_wave: int, reports: FrontReports) -> bool:
-	var r: PackedStringArray = reports.get_report(cleared_wave) if reports else PackedStringArray()
+	var next: int = cleared_wave + 1
+	var r: PackedStringArray = reports.get_report(next) if reports else PackedStringArray()
 	if r.size() != 2:
 		return false
 	wave = cleared_wave
-	day_label.text = "T A I S T E L U   %d" % cleared_wave
-	date_label.text = long_date(r[0])
-	tele_date.text = r[0]
+	day_label.text = "B A T T L E   %d" % next
+	date_label.text = r[0]
+	tele_header.text = "B R I E F I N G"
+	tele_date.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	tele_date.text = reports.get_weather(next) + "\n" # (a blank line before the briefing)
 	tele_text.text = r[1]
-	_set_photo(reports.get_photo(cleared_wave))
+	hint.text = "[Space] Continue"
+	_set_photo(reports.get_photo(next))
 	_typed = 0.0
 	_t = -intro_delay # negative = the battlefield is still visible (the HUD shows "BATTLE n COMPLETED")
 	_closing = -1.0
@@ -96,17 +96,6 @@ func close() -> void:
 func close_now() -> void:
 	if is_open:
 		_finish()
-
-
-## "21.12.1939" → "21. joulukuuta 1939".
-static func long_date(date: String) -> String:
-	var p: PackedStringArray = date.split(".")
-	if p.size() != 3 or not p[1].is_valid_int():
-		return date
-	var m: int = p[1].to_int()
-	if m < 1 or m > 12:
-		return date
-	return "%d. %s %s" % [p[0].to_int(), MONTHS[m - 1], p[2]]
 
 
 func _set_photo(tex: Texture2D) -> void:
