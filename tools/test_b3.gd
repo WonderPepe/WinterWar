@@ -64,6 +64,7 @@ func run() -> void:
 	var sun := get_tree().get_first_node_in_group("sun") as DirectionalLight3D
 	var preset: Dictionary = Settings.preset()
 	check(dusk.battle == 1 and dusk.look.title == looks[0].title, "the game starts with battle 1's look")
+	check(is_equal_approx(Enemy.visibility_limit, 150.0), "battle 1: the enemy sees 150 m through the twilight")
 	check(is_equal_approx(env.fog_density, preset.fog_density * looks[0].fog_scale), "fog density = quality preset × the look's fog_scale (%.4f)" % env.fog_density)
 	check(p.snow_particles.amount == int(round(preset.snow_amount * looks[0].snowfall)) and p.snow_particles.emitting,
 			"falling snow = preset × the look's snowfall (%d flakes)" % p.snow_particles.amount)
@@ -79,10 +80,39 @@ func run() -> void:
 	await seconds(0.8)
 	check(dusk.battle == 3 and dusk.look.title == looks[2].title, "…then it changes by itself after the timeout (no day screen) – battle 3's look")
 	check(p.snow_particles.emitting == false, "battle 3: no falling snow")
+	check(Enemy.visibility_limit == INF, "battle 3 (clear): no limit on the enemy's sight")
+	# --- Fog limits what the enemy sees (B3) ---
+	var enemy: Enemy = spawner._spawn_enemy(Vector3(-30, 0, -60), Vector3(-30, 0, 20))
+	p.global_position = Vector3(-30, 0.0, 40) # 100 m south of him, in the open
+	await seconds(0.5)
+	enemy.global_position = Vector3(-30, enemy.global_position.y, -60)
+	enemy.rotation.y = PI
+	await seconds(0.2)
+	check(enemy._find_visible_player() == p, "clear weather: a soldier sees you at 100 m")
+	Enemy.visibility_limit = 150.0
+	check(enemy._find_visible_player() == p, "150 m of visibility: still sees you at 100 m")
+	Enemy.visibility_limit = 80.0
+	check(enemy._find_visible_player() == null, "80 m of visibility (heavy snow): does NOT see you at 100 m")
+	p.global_position = Vector3(-30, 0.0, 0.0) # 60 m away
+	await seconds(0.2)
+	check(enemy._find_visible_player() == p, "…but sees you at 60 m")
+	Enemy.visibility_limit = INF
+	enemy.queue_free()
+	# The tank's sight is limited the same way.
+	var tank_spawner := get_tree().get_first_node_in_group("tank_spawner") as TankSpawner
+	var tank: Tank = tank_spawner.spawn_tank(0)
+	await seconds(0.3)
+	p.global_position = tank.global_position + Vector3(0, 0.0, 90.0)
+	await seconds(0.2)
+	var tank_sees: bool = tank._can_see(p)
+	Enemy.visibility_limit = 60.0
+	check(tank_sees and not tank._can_see(p), "tank: sees you at 90 m in clear weather, not with 60 m visibility")
+	Enemy.visibility_limit = INF
+	tank.queue_free()
 	# Fog clears during battle 8, in battle 3 nothing changes.
 	director.waves_cleared = 7
 	await seconds(1.0)
-	check(dusk.battle == 8, "battle 8's look")
+	check(dusk.battle == 8 and is_equal_approx(Enemy.visibility_limit, 60.0), "battle 8's look: dense fog, the enemy sees 60 m")
 	var fog_start: float = env.fog_density
 	spawner.wave_number = 8 # the battle has begun
 	dusk.set_process(true)
@@ -91,8 +121,10 @@ func run() -> void:
 	dusk.battle_clock = looks[7].change_seconds * 0.5
 	await seconds(0.3)
 	check(env.fog_density < fog_start * 0.8 and env.fog_density > preset.fog_density * 0.99, "halfway through battle 8 the fog is thinning (%.4f → %.4f)" % [fog_start, env.fog_density])
+	check(Enemy.visibility_limit > 100.0 and Enemy.visibility_limit < 900.0, "halfway: the enemy's sight grows with the clearing fog (%.0f m)" % Enemy.visibility_limit)
 	dusk.battle_clock = looks[7].change_seconds + 5.0
 	await seconds(0.3)
+	check(Enemy.visibility_limit == INF, "fog gone: no limit on the enemy's sight")
 	check(is_equal_approx(env.fog_density, preset.fog_density * looks[7].end_look.fog_scale), "at the end of the change time the fog is clear (%.4f)" % env.fog_density)
 	# Battle 10: dusk deepens, no snow.
 	director.waves_cleared = 9
@@ -121,5 +153,8 @@ func run() -> void:
 	Settings.quality = Settings.Quality.HIGH
 	Settings.apply()
 
+	game.queue_free()
+	await seconds(0.3)
+	check(Enemy.visibility_limit == INF, "the limit does not outlive the match")
 	print("RESULT: %s (%d failed)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit(1 if fails > 0 else 0)

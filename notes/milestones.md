@@ -178,8 +178,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   battles 1–2, clear 3–4, smoke 5, overcast 6, dense fog 7, fog clearing DURING battle 8, low cloud
   9, dusk without snow deepening during battle 10), snowfall and wind per battle, wind sound. The
   old slow sunset over the ten battles is gone (battle 10 = its end). Visual only – enemy sight and
-  ranges unchanged. Details: `graphics-and-web.md`. Next (Prio 3): different gameplay per battle
-  (fog helping the defenders, etc.).
+  ranges unchanged. Details: `graphics-and-web.md`. Next (Prio 3): different gameplay per battle.
+- [x] B3b (owner): battle 10's briefing says "Weather: Dusk" (no snowfall); FOG LIMITS ENEMY SIGHT
+  (`WeatherData.visibility_m`, `Enemy.visibility_limit`; soldiers and tanks; numbers in
+  `graphics-and-web.md`). Tests in `test_b3.gd`.
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

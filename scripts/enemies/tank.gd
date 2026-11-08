@@ -333,7 +333,7 @@ func _update_senses(dt: float) -> void:
 
 func _can_see(p: Player) -> bool:
 	var from: Vector3 = eye.global_position
-	if from.distance_to(p.head.global_position) > vision_range_m:
+	if from.distance_to(p.head.global_position) > minf(vision_range_m, Enemy.visibility_limit): # (weather: B3)
 		return false
 	return _clear_line(from, p.head.global_position) or _clear_line(from, _chest_of(p))
 

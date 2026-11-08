@@ -31,6 +31,9 @@ extends Resource
 @export var fog_scale: float = 1.0 ## × the quality preset's fog density (1 = the old clear day).
 @export var fog_color: Color = Color(0.74, 0.81, 0.9)
 @export var fog_sky_affect: float = 0.15 ## 1 = the sky fades into the fog too.
+## How far the ENEMY can see through this weather (soldiers and tanks): their sight is the smaller
+## of their own range and this. 1000 or more = no limit. Your own shots still make noise.
+@export var visibility_m: float = 1000.0
 
 @export_group("Snow and wind")
 @export var snowfall: float = 0.0 ## × the quality preset's falling snow (0 = none).

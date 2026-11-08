@@ -113,6 +113,7 @@ func _apply(w: WeatherData) -> void:
 		_sky.set_shader_parameter("sun_size_deg", w.sun_size_deg)
 		_sky.set_shader_parameter("sun_brightness", w.sun_brightness)
 		_sky.set_shader_parameter("star_strength", w.star_strength)
+	Enemy.visibility_limit = w.visibility_m if w.visibility_m < 1000.0 else INF
 	apply_quality()
 	var amb := get_parent().get_node_or_null("Ambience") as Ambience
 	if amb:
@@ -139,3 +140,7 @@ func apply_quality() -> void:
 		var fx := pl.get_node_or_null("PlayerFX") as PlayerFX
 		if fx:
 			fx.set_drift_amount(int(round(float(p.drift_amount) * look.drift_scale)))
+
+
+func _exit_tree() -> void:
+	Enemy.visibility_limit = INF # (a static: it must not outlive the match)

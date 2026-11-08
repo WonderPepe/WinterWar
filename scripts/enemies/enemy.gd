@@ -26,6 +26,8 @@ static var spread_multiplier: float = 1.0
 static var damage_multiplier: float = 1.0
 ## Host: while an artillery barrage falls on the trench, nobody comes closer than this z
 ## (INF = no barrage). They hurry up to it, wait there, and go on when it lifts.
+## B3: how far the weather lets soldiers see (set by DuskLight; INF = no limit). Host AI only.
+static var visibility_limit: float = INF
 static var barrage_hold_z: float = INF
 
 static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
@@ -274,7 +276,7 @@ func _find_visible_player() -> Player:
 			continue
 		var to_player: Vector3 = p.head.global_position - eyes.global_position
 		var distance: float = to_player.length()
-		if distance > data.vision_range_m or distance > best_distance:
+		if distance > minf(data.vision_range_m, visibility_limit) or distance > best_distance:
 			continue
 		var flat := Vector3(to_player.x, 0.0, to_player.z)
 		if distance > 5.0 and forward.angle_to(flat) > half_angle:

@@ -22,6 +22,7 @@ sun_brightness = 0.0
 fog_scale = 7.0
 fog_color = Color(0.24, 0.29, 0.42, 1)
 fog_sky_affect = 0.8
+visibility_m = 80.0
 snowfall = 1.2
 snow_wind = 1.6
 drift_scale = 1.5

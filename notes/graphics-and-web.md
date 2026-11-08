@@ -52,6 +52,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   is the costly part). `apply_quality()` (also called by QualityApplier, Settings.changed and each
   new Player) sets fog density and the players' snow amount / wind / drift = preset × weather; the
   flake amount is only touched when it changes (that restarts the particles).
+- Fog limits the ENEMY's sight (owner, B3b): `WeatherData.visibility_m` (1000+ = no limit) →
+  `DuskLight._apply` sets the static `Enemy.visibility_limit` (INF = none; reset in
+  `DuskLight._exit_tree`, like the other statics). Soldiers (`_find_visible_player`) and tanks
+  (`Tank._can_see`) see `min(own range, limit)`; the spot-time scale and the trench fight (< 60 m)
+  are unchanged; gunshots still make noise (`hear_noise`). Values: battle 1 150 m, 2 80, 5 110,
+  7 60, 8 60 → none as the fog clears (blends with the look), 9 120, the rest none. MG teams only
+  fire at a Finn they can see, so in dense fog they stay quiet until their final position.
+  Possible tuning: battle 7 may now be easier than 6 and 8.
 - Heavy snowfall is ×1.2 of the preset (battle 2): 1080 flakes on High (was 900); Low 300.
 - Tests: `test_b3.gd`; screenshots of all ten looks: `shots_weather.gd`.
 

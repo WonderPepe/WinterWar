@@ -30,6 +30,7 @@ sun_brightness = 0.0
 fog_scale = 9.0
 fog_color = Color(0.74, 0.78, 0.83, 1)
 fog_sky_affect = 1.0
+visibility_m = 60.0
 wind_db = -3.0
 end_look = SubResource("Resource_rjevq")
 change_seconds = 75.0

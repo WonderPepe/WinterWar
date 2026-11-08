@@ -24,5 +24,6 @@ star_strength = 0.7
 fog_scale = 1.6
 fog_color = Color(0.32, 0.38, 0.52, 1)
 fog_sky_affect = 0.3
+visibility_m = 150.0
 snowfall = 0.35
 drift_scale = 0.5
