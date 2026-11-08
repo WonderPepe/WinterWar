@@ -73,15 +73,17 @@ func run() -> void:
 	await seconds(0.3)
 	check(ArtilleryBarrage.is_covered(p), "in the trench, crouching = under cover")
 	p.global_position = Vector3(0, -2.5, 59.5)
-	check(not ArtilleryBarrage.is_covered(p), "bunker middle = NOT covered")
+	check(ArtilleryBarrage.is_covered(p), "bunker middle = covered")
 	p.global_position = Vector3(1.2, -2.5, 61.5)
-	check(not ArtilleryBarrage.is_covered(p), "bunker door = NOT covered")
+	check(ArtilleryBarrage.is_covered(p), "bunker door side = covered")
 	p.global_position = Vector3(-2.0, -2.5, 58.0)
 	check(ArtilleryBarrage.is_covered(p), "bunker front corner (left) = covered")
 	p.global_position = Vector3(2.0, -2.5, 58.0)
 	check(ArtilleryBarrage.is_covered(p), "bunker front corner (right) = covered")
-	p.global_position = Vector3(-30, -1.3, 61)
 	p.is_crouching = false
+	p.global_position = Vector3(0, -1.3, 59.5)
+	check(ArtilleryBarrage.is_covered(p), "standing in the bunker = covered")
+	p.global_position = Vector3(-30, -1.3, 61)
 	check(not ArtilleryBarrage.is_covered(p) and ArtilleryBarrage.is_in_shelter(p), "standing in the trench = NOT covered (shrapnel)")
 	p.is_crouching = true
 

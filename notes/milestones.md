@@ -140,6 +140,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (1.1 m outside, 1.6 m inside, 0.45 m tall), limited to ±21°; gun pivot 0.6 m behind the outer face so the barrel ends flush with the hole. Artillery bunker corners are now the
   two FRONT corners. Ammo crate in the bunker at (-1.9, 61.2). Constants `BUNKER_Z/DOOR_X/DOOR_W`.
   Tests: `test_m1/w1/artillery/m2/p2` adapted; `shots_l2.gd`.
+  L2d (owner tested: died in the bunker during a barrage): the whole bunker room is now a safe zone for
+  artillery, standing or on the Maxim (`ArtilleryBarrage.is_covered`; `is_bunker_corner` removed).
 - [x] Bug fixes from the code review (2026-11-01, owner asked for 1 and 2): artillery hold line
   no longer survives into the next match (`battle.md`); bailed-out tank crews count as soldiers
   of the battle (`tank-and-molotov.md`). Review leftovers (not approved): bandage usable at
