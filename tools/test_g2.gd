@@ -449,6 +449,7 @@ func run() -> void:
 	check(reports.get_report(9)[0] == "13 February 1940" and reports.get_report(10)[1].ends_with("wounded to escape.")
 			and reports.get_weather(7).contains("Dense Fog") and reports.get_weather(2).contains("Visibility: Poor"),
 			"battle 9 → 13 February 1940, battle 10 → 15 February 1940, weather lines")
+	check(reports.get_weather(10) == "Weather: Dusk" and not reports.get_weather(10).contains("Snow"), "battle 10 briefing: dusk, no snowfall (the game has none then)")
 	check(reports.get_report(9)[1] == reports.get_report(8)[1], "battle 9 text = battle 8 text (until the owner writes his own)")
 	check(reports.get_report(11).is_empty(), "no briefing for battle 11")
 	check(reports.photos.size() == 10 and reports.get_photo(1) != null and reports.get_photo(7).get_height() > reports.get_photo(7).get_width(),

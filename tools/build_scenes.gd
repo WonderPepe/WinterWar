@@ -1353,7 +1353,7 @@ const MISSIONS := [
 		"Enemy forces have broken into key defensive positions. Delay the advance while neighboring units withdraw.", "sa_kuva_a_123"],
 	["13 February 1940", "Weather: Low Cloud and Fog\nVisibility: Moderate",
 		"Enemy forces have broken into key defensive positions. Delay the advance while neighboring units withdraw.", "sa_kuva_144607"],
-	["15 February 1940", "Weather: Snowfall at Dusk",
+	["15 February 1940", "Weather: Dusk",
 		"Orders have arrived. Summa must be abandoned. Hold long enough for the remaining troops and wounded to escape.", "sa_kuva_a_129"],
 ]
 
