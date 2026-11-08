@@ -13,6 +13,7 @@ uniform float sun_size_deg = 0.8;
 uniform float sun_brightness = 12.0;
 uniform float cloud_cover : hint_range(0.0, 1.0) = 0.35;
 uniform vec3 cloud_color : source_color = vec3(1.0, 0.98, 0.96);
+uniform float star_strength : hint_range(0.0, 1.0) = 0.0; // B3: a few stars on the night battles.
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -69,6 +70,17 @@ void sky() {
 	} else {
 		// Below the horizon (hidden by the ground and the fog, but never black).
 		col = mix(horizon_color, ground_color, clamp(-h * 4.0, 0.0, 1.0));
+	}
+
+	// Stars: tiny bright dots in the upper sky, hidden by clouds.
+	if (star_strength > 0.0 && h > 0.05 && !AT_CUBEMAP_PASS) {
+		vec2 sp = dir.xz / (h + 0.4) * 60.0;
+		vec2 cell = floor(sp);
+		float rnd = hash(cell + 7.0);
+		vec2 off = vec2(hash(cell + 1.3), hash(cell + 5.1)) * 0.6 + 0.2;
+		float d = length(fract(sp) - off);
+		float star = step(0.93, rnd) * (1.0 - smoothstep(0.03, 0.09, d));
+		col += vec3(0.85, 0.9, 1.0) * star * star_strength * smoothstep(0.05, 0.3, h) * (1.0 - clamp(cloud_cover, 0.0, 1.0) * 0.8);
 	}
 
 	// The sun disk itself (not in the reflection/ambient pass: it would make shiny spots).

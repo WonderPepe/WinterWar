@@ -15,6 +15,7 @@ const ARTILLERY: Array[String] = ["res://assets/audio/artillery_far_1.wav", "res
 const MACHINE_GUNS: Array[String] = ["res://assets/audio/mg_far_1.wav", "res://assets/audio/mg_far_2.wav"]
 
 var _wind: AudioStreamPlayer
+var _wind_offset_db: float = 0.0 ## From the battle's weather (B3).
 var _far: Array[AudioStreamPlayer3D] = []
 var _next_far: int = 0
 var _timer: float = 3.0
@@ -33,7 +34,7 @@ func _ready() -> void:
 	_wind = AudioStreamPlayer.new()
 	_wind.stream = wind_stream
 	_wind.bus = &"Ambience"
-	_wind.volume_db = -14.0 # quiet: you should notice the cold wind, not listen to it
+	_wind.volume_db = -14.0 + _wind_offset_db # quiet: you should notice the cold wind, not listen to it
 	add_child(_wind)
 	_wind.play()
 	for path in ARTILLERY:
@@ -52,6 +53,13 @@ func _ready() -> void:
 	var bus: int = AudioServer.get_bus_index(&"Ambience")
 	if bus >= 0 and AudioServer.get_bus_effect_count(bus) > 0:
 		_muffle = AudioServer.get_bus_effect(bus, 0) as AudioEffectLowPassFilter
+
+
+## Louder wind in a snowstorm, quieter in fog (B3).
+func set_wind_offset(db: float) -> void:
+	_wind_offset_db = db
+	if _wind:
+		_wind.volume_db = -14.0 + db
 
 
 func _process(delta: float) -> void:

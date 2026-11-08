@@ -20,11 +20,7 @@ func apply() -> void:
 	if forest:
 		forest.set_visibility_end(p.tree_distance)
 		forest.set_detail_distance(p.tree_detail_distance)
-	var world := get_tree().get_first_node_in_group("world_environment") as WorldEnvironment
-	if world and world.environment:
-		world.environment.fog_density = p.fog_density
-	for node in get_tree().get_nodes_in_group("players"):
-		(node as Player).snow_particles.amount = p.snow_amount
-		var fx := node.get_node_or_null("PlayerFX") as PlayerFX
-		if fx:
-			fx.set_drift_amount(p.drift_amount)
+	# Fog density and falling / drifting snow depend on the battle's weather too (B3): DuskLight.
+	var weather := get_tree().get_first_node_in_group("weather") as DuskLight
+	if weather:
+		weather.apply_quality()

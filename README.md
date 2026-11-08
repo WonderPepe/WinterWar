@@ -114,7 +114,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 - **Supplies:** two ammo crates (a niche in the trench next to the first spawn point, and the
   bunker): **F** refills spare ammo and bandages. **B** = bandage (+50 health, 3 s, no shooting).
   Everyone is patched up to full health when a wave is cleared.
-- **Dusk:** after every cleared wave the sun sinks and the light turns to evening.
+- **Weather and time of day:** every battle has its own look – moonlit before dawn, clear, smoke, overcast, dense fog (clearing during battle 8), low cloud, and dusk in the last battle (fading to violet).
 - **End screen:** victory / defeat with waves held, kills, deaths, hit percentage, time;
   Play again or Main menu.
 - **Difficulty:** chosen in the main menu (saved). The numbers are in

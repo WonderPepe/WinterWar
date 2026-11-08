@@ -19,6 +19,7 @@ func _initialize() -> void:
 	_make_enemy_data()
 	_make_difficulty_data()
 	_make_front_reports()
+	load("res://tools/make_weather.gd").write_all() # B3: the weather of the ten battles
 	DirAccess.make_dir_recursive_absolute("res://scenes/props")
 	_save(_build_ammo_crate(mats), "res://scenes/props/ammo_crate.tscn")
 	_save(_build_molotov_crate(mats), "res://scenes/props/molotov_crate.tscn")

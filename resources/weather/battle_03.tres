@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_gc6ge"]
+
+[resource]
+script = ExtResource("1_gc6ge")
+title = "Clear and bitterly cold"

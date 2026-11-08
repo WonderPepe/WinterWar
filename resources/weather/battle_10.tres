@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_3s16v"]
+
+[sub_resource type="Resource" id="Resource_bmsch"]
+script = ExtResource("1_3s16v")
+title = "Dusk, orange fading to violet (end)"
+sun_pitch_deg = -1.5
+sun_yaw_deg = -128.0
+sun_color = Color(0.85, 0.4, 0.5, 1)
+sun_energy = 0.3
+ambient_energy = 0.6
+ambient_color = Color(0.5, 0.48, 0.8, 1)
+zenith_color = Color(0.05, 0.06, 0.18, 1)
+horizon_color = Color(0.5, 0.3, 0.5, 1)
+ground_color = Color(0.28, 0.27, 0.38, 1)
+glow_color = Color(0.8, 0.3, 0.45, 1)
+glow_strength = 0.7
+cloud_cover = 0.4
+cloud_color = Color(0.5, 0.38, 0.55, 1)
+sun_size_deg = 1.0
+sun_brightness = 4.0
+star_strength = 0.5
+fog_scale = 1.5
+fog_color = Color(0.4, 0.36, 0.5, 1)
+change_seconds = 200.0
+
+[resource]
+script = ExtResource("1_3s16v")
+title = "Dusk, orange fading to violet"
+sun_pitch_deg = -5.0
+sun_yaw_deg = -140.0
+sun_color = Color(1, 0.56, 0.34, 1)
+sun_energy = 0.8
+ambient_energy = 0.4
+ambient_color = Color(0.62, 0.55, 0.78, 1)
+zenith_color = Color(0.11, 0.16, 0.33, 1)
+horizon_color = Color(0.93, 0.62, 0.45, 1)
+ground_color = Color(0.48, 0.45, 0.52, 1)
+glow_color = Color(1, 0.5, 0.25, 1)
+glow_strength = 0.9
+cloud_cover = 0.4
+cloud_color = Color(0.95, 0.72, 0.62, 1)
+fog_scale = 1.2
+fog_color = Color(0.6, 0.55, 0.6, 1)
+end_look = SubResource("Resource_bmsch")
+change_seconds = 200.0

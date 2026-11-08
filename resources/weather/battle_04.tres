@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_myibt"]
+
+[resource]
+script = ExtResource("1_myibt")
+title = "Clear skies, golden low sun"
+sun_pitch_deg = -8.0
+sun_yaw_deg = -165.0
+sun_color = Color(1, 0.76, 0.5, 1)
+sun_energy = 1.3
+zenith_color = Color(0.2, 0.36, 0.64, 1)
+horizon_color = Color(0.9, 0.8, 0.74, 1)
+glow_color = Color(1, 0.7, 0.45, 1)
+cloud_cover = 0.12
+fog_color = Color(0.85, 0.78, 0.76, 1)
+wind_db = -2.0

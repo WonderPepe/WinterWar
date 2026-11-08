@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_cximj"]
+
+[resource]
+script = ExtResource("1_cximj")
+title = "Dark pre-dawn, heavy snowfall"
+sun_pitch_deg = -38.0
+sun_yaw_deg = -120.0
+sun_color = Color(0.62, 0.72, 1, 1)
+sun_energy = 0.32
+ambient_color = Color(0.45, 0.55, 0.85, 1)
+zenith_color = Color(0.05, 0.07, 0.14, 1)
+horizon_color = Color(0.22, 0.27, 0.4, 1)
+ground_color = Color(0.22, 0.27, 0.38, 1)
+glow_color = Color(0.6, 0.68, 0.9, 1)
+glow_strength = 0.3
+cloud_cover = 0.95
+cloud_color = Color(0.22, 0.26, 0.38, 1)
+sun_size_deg = 1.5
+sun_brightness = 0.0
+fog_scale = 7.0
+fog_color = Color(0.24, 0.29, 0.42, 1)
+fog_sky_affect = 0.8
+snowfall = 1.2
+snow_wind = 1.6
+drift_scale = 1.5
+wind_db = 5.0

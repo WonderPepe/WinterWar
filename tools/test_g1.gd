@@ -102,16 +102,15 @@ func run() -> void:
 	# --- Healing between waves, wave counter, dusk ---
 	p.health = 35
 	var dusk: DuskLight = game.get_node("Dusk")
-	dusk.transition_time = 0.2
 	var sun := get_tree().get_first_node_in_group("sun") as DirectionalLight3D
-	var energy_before: float = sun.light_energy
+	var look3: WeatherData = dusk.look # (the look before the cleared battle)
 	spawner.wave_number = 3
 	await frames(2) # the HUD sees battle 3 start first (as in a real game), else it closes the day screen
 	director._on_wave_cleared(3)
 	await seconds(1.0)
 	check(p.health == 100, "everyone patched up when a wave is cleared")
 	check(hud.wave_label.text == "BATTLE 3 / 10", "HUD shows the battle out of 10 ('%s')" % hud.wave_label.text)
-	check(dusk.progress > 0.25 and sun.light_energy < energy_before - 0.1, "evening comes: the sun sinks (energy %.2f → %.2f)" % [energy_before, sun.light_energy])
+	check(dusk.look == look3, "while 'BATTLE 3 COMPLETED' shows the light does not change yet (B3)")
 
 	# --- New battle: everyone back at the start spot, fresh, behind the black day screen ---
 	var start: Node3D = get_tree().get_nodes_in_group("player_spawn")[0]
@@ -125,7 +124,8 @@ func run() -> void:
 	check(hud.day_screen.is_black() and p.global_position.distance_to(start.global_position) < 0.5,
 			"new battle: player back at the start spot while the screen is black (%.1f m away)" % p.global_position.distance_to(start.global_position))
 	check(not p.is_crouching and p.bandages == p.max_bandages and p.weapons.reserve_ammo[0] > 0, "new battle: standing, ammo and bandages refilled")
-	check(is_equal_approx(dusk.progress, 0.3), "new battle opens with its own light (%.2f)" % dusk.progress)
+	check(dusk.battle == 4 and dusk.look != look3 and dusk.look.title == "Clear skies, golden low sun",
+			"new battle opens with its own weather behind the black screen (battle %d: %s)" % [dusk.battle, dusk.look.title])
 	# A dead player comes back at once, and the old respawn timer does nothing later.
 	p.take_damage(1000.0, -1, p.global_position, Vector3.UP)
 	check(p.is_dead, "player killed before battle 4 is cleared")
@@ -215,7 +215,7 @@ func run() -> void:
 	var dusk7: DuskLight = game.get_node("Dusk")
 	check(director.test_wave == 7 and director.waves_cleared == 6 and spawner.wave_number == 6,
 			"test mode: waves 1–6 count as held (cleared %d, spawner at %d)" % [director.waves_cleared, spawner.wave_number])
-	check(is_equal_approx(dusk7.progress, 0.6), "test mode: the evening light starts at wave 7's (%.2f)" % dusk7.progress)
+	check(dusk7.battle == 7 and dusk7.look.title == "Dense fog", "test mode: the weather starts at battle 7's (%s)" % dusk7.look.title)
 	check(not hud.day_screen.is_open and hud.wave_banner.modulate.a < 0.01, "test mode: no day screen or banner for the skipped waves")
 	check(hud.test_tag.visible, "test mode: HUD shows TEST MODE")
 	spawner.set_process(true)

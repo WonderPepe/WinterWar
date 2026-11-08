@@ -99,6 +99,9 @@ func _ready() -> void:
 	body_mesh.visible = not local          # don't see your own body from inside
 	snow_particles.emitting = local        # each player only simulates their own snowfall
 	snow_particles.amount = Settings.preset().snow_amount
+	var weather := get_tree().get_first_node_in_group("weather") as DuskLight
+	if weather:
+		weather.apply_quality() # this battle's snowfall and wind (B3)
 
 
 ## Peer id of the person controlling this player.

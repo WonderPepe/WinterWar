@@ -18,6 +18,7 @@ func _ready() -> void:
 	var sun: DirectionalLight3D = get_tree().get_first_node_in_group("sun")
 	var forest: ForestScatter = get_tree().get_first_node_in_group("forest")
 	var env: Environment = (get_tree().get_first_node_in_group("world_environment") as WorldEnvironment).environment
+	var look: WeatherData = (get_tree().get_first_node_in_group("weather") as DuskLight).look # battle 1's weather (B3)
 	var chunk: MultiMeshInstance3D = null # a far (simple trees) chunk
 	var near_chunk: MultiMeshInstance3D = null # a near (detailed trees) chunk
 	for c in forest.get_children():
@@ -36,14 +37,14 @@ func _ready() -> void:
 	var near_mat: ShaderMaterial = forest._near_materials[0]
 	check(is_equal_approx(far_mat.get_shader_parameter("view_distance"), 140.0) and chunk.visibility_range_end >= 140.0, "Low: trees drawn to 140 m")
 	check(is_equal_approx(near_mat.get_shader_parameter("lod_distance"), 35.0) and near_chunk.visibility_range_end >= 35.0, "Low: detailed trees only to 35 m")
-	check(p.snow_particles.amount == 250, "Low: less snow (%d)" % p.snow_particles.amount)
+	check(p.snow_particles.amount == int(round(250 * look.snowfall)), "Low: less snow (%d)" % p.snow_particles.amount)
 	check(is_equal_approx(get_tree().root.scaling_3d_scale, 0.75), "Low: 75 % render scale")
-	check(is_equal_approx(env.fog_density, 0.006), "Low: denser fog hides the shorter view")
+	check(is_equal_approx(env.fog_density, 0.006 * look.fog_scale), "Low: denser fog hides the shorter view")
 
 	Settings.set_quality(Settings.Quality.HIGH)
 	await get_tree().process_frame
 	check(sun.shadow_enabled and is_equal_approx(sun.directional_shadow_max_distance, 70.0), "High: shadows to 70 m")
-	check(is_equal_approx(far_mat.get_shader_parameter("view_distance"), 220.0) and p.snow_particles.amount == 900, "High: trees to 220 m, full snow")
+	check(is_equal_approx(far_mat.get_shader_parameter("view_distance"), 220.0) and p.snow_particles.amount == int(round(900 * look.snowfall)), "High: trees to 220 m, full snow (weather-scaled)")
 	check(is_equal_approx(near_mat.get_shader_parameter("lod_distance"), 70.0) and near_chunk.visibility_range_end >= 70.0, "High: detailed trees to 70 m")
 	await get_tree().process_frame
 	var cam_pos: Vector3 = get_viewport().get_camera_3d().global_position

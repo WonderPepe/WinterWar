@@ -37,7 +37,8 @@ func _ready() -> void:
 	# Dusk (last wave cleared, before the end screen opens).
 	var dusk: DuskLight = game.get_node("Dusk")
 	dusk.set_process(false)
-	dusk._apply(1.0)
+	dusk._show_battle(10)
+	dusk._apply_blend(1.0)
 	p.global_position = Vector3(-30, 0.0, 40)
 	p.input.look_yaw = deg_to_rad(150.0)
 	p.input.look_pitch = deg_to_rad(4.0)

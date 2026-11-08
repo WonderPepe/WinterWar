@@ -31,6 +31,30 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - CSG trench/bunker should be converted to static meshes before the web export (M5).
 - Max 16 enemies alive; enemy senses run ~5×/s; no RVO avoidance.
 
+## Weather and time of day (B3) – how it is built
+- Every battle has its own look: `WeatherData` (`scripts/game/weather_data.gd`) in
+  `resources/weather/battle_01…10.tres`, written by `tools/make_weather.gd` (the table `LOOKS` is
+  the place to tune; run `godot --headless --path . --script tools/make_weather.gd`; the builder
+  calls it too). Anything not listed = the old clear freezing day (battle 3 is exactly that).
+  Fields: sun/moon (the level's one DirectionalLight3D: pitch, yaw, colour, energy), ambient, sky
+  colours + `cloud_cover` + `sun_brightness` (0 = no disc) + `star_strength` (new in winter_sky),
+  fog (`fog_scale` × the quality preset density: ~5 → 120 m view, ~8 → 80 m, ~11 → 60 m), snow
+  (`snowfall` × preset amount, `snow_wind` sideways gravity, `drift_scale`), `wind_db` (Ambience).
+- Owner's choices: battles 1 and 2 (06:45, 05:30) are lit by the MOON (dim bluish light, stars in 1,
+  clouded moon + heavy snow in 2) – readable, not truly dark; weather changes the LOOK only, enemy
+  vision/ranges are unchanged (fog does not hide soldiers from the AI – maybe a later step);
+  battle 8 starts in dense fog that clears (`end_look`, 75 s); battle 10 is dusk WITHOUT snowfall,
+  orange → violet and dark over 200 s. Times are not shown in the game (owner), only used as mood.
+- `DuskLight` (class and node name kept): battle = `waves_cleared + 1`; a new battle's look is set
+  when the day screen is black (or after `wait_for_black` 6 s; test mode / joining late: at once).
+  `battle_clock` runs while `WaveSpawner.wave_number >= battle`; with an `end_look` the shown look is
+  `base.mixed(end_look, clock / change_seconds)`, re-applied every `step` 0.01 (re-lighting the sky
+  is the costly part). `apply_quality()` (also called by QualityApplier, Settings.changed and each
+  new Player) sets fog density and the players' snow amount / wind / drift = preset × weather; the
+  flake amount is only touched when it changes (that restarts the particles).
+- Heavy snowfall is ×1.2 of the preset (battle 2): 1080 flakes on High (was 900); Low 300.
+- Tests: `test_b3.gd`; screenshots of all ten looks: `shots_weather.gd`.
+
 ## Graphics settings & web build
 - Quality presets live in `autoload/settings.gd` (`PRESETS`); `scripts/game/quality_applier.gd`
   applies them (groups `sun`, `forest`, `world_environment`, players' snow).

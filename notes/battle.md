@@ -28,11 +28,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   WeaponController can't fire/aim while bandaging and lowers the gun.
 - StateSync now also syncs `is_dead`, `kills`, `deaths` (were missing – would have broken co-op),
   WeaponSync `shots_fired` / `shots_hit` (end-screen statistics, counted in `resolve_shot`).
-- `DuskLight` (Game/Dusk) duplicates the Environment, Sky and sky ShaderMaterial at start
-  (never edit the saved resources at runtime – they are cached across "Play again"), then lerps
-  sun pitch/yaw/colour/energy, ambient, fog colour and sky colours by `waves_cleared/waves_to_win`,
-  `transition_time` s per wave, only re-applying when it changed > 0.004 (sky re-draws are costly).
-  While the day screen is black it jumps straight to the new value (`DayScreen.is_black()`).
+- `DuskLight` (Game/Dusk) – since B3 it applies the WEATHER of the current battle, not a slow sunset:
+  see `graphics-and-web.md` ("Weather and time of day (B3)"). It still duplicates the Environment,
+  Sky and sky ShaderMaterial at start (never edit the saved resources at runtime – they are cached
+  across "Play again"), and changes the look while the day screen is black (`DayScreen.is_black()`).
 - `tools/test_g1.gd`, `tools/soak_g1.gd` (real waves at 3× speed vs a god-mode player: with nobody
   shooting, wave 1 breaks the line after ~2.5 min), `tools/shots_g1.gd`.
 - Measured (G1, xvfb): ~177 draw calls average (crates add a few).

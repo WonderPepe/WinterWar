@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_eage6"]
+
+[resource]
+script = ExtResource("1_eage6")
+title = "Low cloud and fog"
+sun_pitch_deg = -10.0
+sun_color = Color(0.95, 0.9, 0.85, 1)
+sun_energy = 0.45
+ambient_energy = 0.85
+ambient_color = Color(0.62, 0.68, 0.8, 1)
+zenith_color = Color(0.5, 0.55, 0.63, 1)
+horizon_color = Color(0.68, 0.72, 0.78, 1)
+ground_color = Color(0.7, 0.74, 0.8, 1)
+glow_strength = 0.1
+cloud_cover = 1.0
+cloud_color = Color(0.6, 0.63, 0.68, 1)
+sun_brightness = 0.0
+fog_scale = 5.5
+fog_color = Color(0.64, 0.68, 0.74, 1)
+fog_sky_affect = 0.9
+snowfall = 0.1
+snow_wind = 0.3
+wind_db = -2.0

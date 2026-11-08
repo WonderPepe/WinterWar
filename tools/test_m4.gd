@@ -43,9 +43,9 @@ func run() -> void:
 			break
 		await seconds(0.1)
 	var ls_wait := get_tree().root.get_node_or_null("LoadingScreen") as LoadingScreen
-	check(ls_wait != null and ls_wait.start_label.visible and not ls_wait.bar.visible and not ls_wait.status.visible \
+	check(ls_wait != null and ls_wait.start_label.visible and not ls_wait.bar.visible and ls_wait.status.visible and ls_wait.status.text == LoadingScreen.ALARM_TEXT \
 			and not get_tree().root.get_node("Game/PauseMenu").is_open,
-		"browser: 'click to start' instead of the pause menu")
+		"browser: soldier at the goal, ALARM line and 'click to start' instead of the pause menu (B2)")
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true

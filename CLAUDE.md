@@ -9,7 +9,7 @@ you work on. Update this file and the right note at the end of every milestone.
   Soviet attacks. Long-term: real Summa terrain (Copernicus
   GLO-30 DEM – Finnish NLS data doesn't cover today's Russia), WebRTC co-op for 2–4 players.
 - Godot **4.7.2**, **GDScript only**, **Compatibility renderer** (must export to web/HTML5), Jolt.
-- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle), B2 (loading screen with a marching soldier); public
+- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle), B2 (loading screen with a marching soldier), B3 (weather and time of day per battle); public
   v0.2.x on GitHub Pages.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
@@ -67,7 +67,7 @@ you work on. Update this file and the right note at the end of every milestone.
 ## Notes index (`notes/`, ignored by Godot)
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
 - `architecture.md` – multiplayer architecture, conventions, groups, physics layers, map coordinates
-- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD)
+- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery

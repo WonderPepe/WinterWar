@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://scripts/game/weather_data.gd" id="1_nw8va"]
+
+[sub_resource type="Resource" id="Resource_rjevq"]
+script = ExtResource("1_nw8va")
+title = "Fog clearing (end)"
+sun_color = Color(1, 0.88, 0.74, 1)
+sun_energy = 1.2
+ambient_energy = 0.55
+zenith_color = Color(0.26, 0.44, 0.72, 1)
+cloud_cover = 0.3
+change_seconds = 75.0
+
+[resource]
+script = ExtResource("1_nw8va")
+title = "Fog clearing"
+sun_pitch_deg = -11.0
+sun_color = Color(1, 0.9, 0.8, 1)
+sun_energy = 0.6
+ambient_energy = 0.9
+ambient_color = Color(0.7, 0.75, 0.85, 1)
+zenith_color = Color(0.6, 0.67, 0.76, 1)
+horizon_color = Color(0.76, 0.8, 0.85, 1)
+ground_color = Color(0.76, 0.8, 0.85, 1)
+glow_strength = 0.2
+cloud_cover = 0.7
+cloud_color = Color(0.8, 0.83, 0.87, 1)
+sun_brightness = 0.0
+fog_scale = 9.0
+fog_color = Color(0.74, 0.78, 0.83, 1)
+fog_sky_affect = 1.0
+wind_db = -3.0
+end_look = SubResource("Resource_rjevq")
+change_seconds = 75.0
