@@ -37,6 +37,7 @@ enum Phase { IDLE, WARNING, FIRING }
 @export var near_m: float = 10.0 ## The loudest bangs land this far from you (in the trench)...
 @export var far_m: float = 55.0 ## ...the quietest ones this far.
 @export var scorch_fade_time: float = 25.0 ## After the barrage the marks in the snow fade away.
+@export var pool_size: int = 6 ## How many blasts can show at once (the air raid needs more: a stick of bombs lands within seconds).
 
 ## Synced by the RPCs: what the barrage is doing now (the HUD reads it).
 var phase: Phase = Phase.IDLE
@@ -264,7 +265,9 @@ func explode(pos: Vector3, strength: float) -> void:
 
 ## Only the look of a shell landing (this computer). Also used by the tank's 45 mm shells
 ## (T1); outside a barrage their scorch marks fade away after `scorch_fade_time`.
-func show_explosion(pos: Vector3, strength: float, scale_mul: float = 1.0, shake_range: float = 90.0) -> void:
+## `height_mul` > 1 throws the earth and snow higher and keeps it in the air longer (air-raid bombs).
+func show_explosion(pos: Vector3, strength: float, scale_mul: float = 1.0, shake_range: float = 90.0,
+		height_mul: float = 1.0) -> void:
 	var b: Array = _blasts[_next_blast]
 	_next_blast = (_next_blast + 1) % _blasts.size()
 	var size: float = lerpf(0.8, 1.3, strength) * scale_mul
@@ -280,6 +283,10 @@ func show_explosion(pos: Vector3, strength: float, scale_mul: float = 1.0, shake
 		var p := b[i] as CPUParticles3D
 		p.global_position = pos
 		p.scale = Vector3.ONE * scale_mul # bigger clouds and clods for the barrage
+		var base_speed: Vector2 = p.get_meta("base_speed")
+		p.initial_velocity_min = base_speed.x * height_mul
+		p.initial_velocity_max = base_speed.y * height_mul
+		p.lifetime = float(p.get_meta("base_life")) * height_mul
 		p.restart()
 	var scorch := _scorches[_next_scorch]
 	_next_scorch = (_next_scorch + 1) % _scorches.size()
@@ -333,7 +340,7 @@ func _update_visuals(delta: float) -> void:
 
 func _make_pool() -> void:
 	var soft: Texture2D = ImpactEffects.make_soft_texture()
-	for i in 6:
+	for i in pool_size:
 		var flash := MeshInstance3D.new()
 		var q := QuadMesh.new()
 		q.size = Vector2(10.0, 10.0)
@@ -413,6 +420,8 @@ func _burst(amount: int, lifetime: float, speed: Vector2, spread: float, gravity
 	p.one_shot = true
 	p.amount = amount
 	p.lifetime = lifetime
+	p.set_meta("base_speed", speed) # show_explosion scales these for taller plumes
+	p.set_meta("base_life", lifetime)
 	p.explosiveness = 0.95
 	p.local_coords = false
 	p.direction = Vector3.UP

@@ -183,6 +183,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (`WeatherData.visibility_m`, `Enemy.visibility_limit`; soldiers and tanks; numbers in
   `graphics-and-web.md`). Tests in `test_b3.gd`.
 
+- [x] A1 air raid (owner 2026-11-08): three Tupolev SB-2 bombers in battles 4 and 8 - distant engines,
+  planes overhead, bomb sticks in front of / behind / around the positions, big snow and earth plumes,
+  planes leave. Same danger rules as the artillery; after the barrage in those waves. Sounds: the
+  existing plane recording for the engines, generated PLACEHOLDERS for whistle and boom until the owner
+  adds real `raid_*` recordings. Details: `battle.md`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

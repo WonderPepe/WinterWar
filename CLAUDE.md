@@ -9,7 +9,7 @@ you work on. Update this file and the right note at the end of every milestone.
   Soviet attacks. Long-term: real Summa terrain (Copernicus
   GLO-30 DEM – Finnish NLS data doesn't cover today's Russia), WebRTC co-op for 2–4 players.
 - Godot **4.7.2**, **GDScript only**, **Compatibility renderer** (must export to web/HTML5), Jolt.
-- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle), B2 (loading screen with a marching soldier), B3 (weather and time of day per battle); public
+- Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle), B2 (loading screen with a marching soldier), B3 (weather and time of day per battle), A1 (air raid of three SB-2 bombers in battles 4 and 8); public
   v0.4.0 on GitHub Pages.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
@@ -70,7 +70,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
-- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery
+- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4)
 - `gotchas.md` – full list of lessons learned

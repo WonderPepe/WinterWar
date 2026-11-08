@@ -51,6 +51,7 @@ var _last_cleared: int = 0
 @onready var tank_hint: Label = $TankHint
 
 var _artillery: ArtilleryBarrage
+var _raid: AirRaid
 
 var _director: MatchDirector
 var _message: String = ""
@@ -273,6 +274,17 @@ func _update_artillery() -> void:
 			return
 	var now: float = Time.get_ticks_msec() / 1000.0
 	var blink: float = 0.6 + 0.4 * sin(now * 9.0)
+	if _raid == null or not is_instance_valid(_raid):
+		_raid = get_tree().get_first_node_in_group("air_raid") as AirRaid
+	if _raid and _raid.phase == AirRaid.Phase.APPROACH:
+		_show_artillery("AIR RAID! GET INTO THE TRENCH!", Color(1.0, 0.45, 0.3), blink)
+		return
+	if _raid and _raid.phase == AirRaid.Phase.BOMBING:
+		if ArtilleryBarrage.is_in_shelter(_player) or _player.is_dead:
+			artillery_label.visible = false
+		else:
+			_show_artillery("GET INTO THE TRENCH!", Color(1.0, 0.35, 0.25), blink)
+		return
 	if _artillery.phase == ArtilleryBarrage.Phase.WARNING:
 		_show_artillery("ARTILLERY! GET DOWN INTO THE TRENCH!", Color(1.0, 0.45, 0.3), blink)
 	elif _artillery.phase == ArtilleryBarrage.Phase.FIRING:

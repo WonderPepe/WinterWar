@@ -137,3 +137,32 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `build_scenes.gd`, which now has them). Trench/bunker still fully safe.
 - Sound: Freesound 486086 "Artillery Barrage" by Mozfoo (explosion by Steveygos93), CC-BY 4.0;
   mono, −4 dB + limiter, 1.3 s fade. Original WAV in `assets_source/`.
+
+## Air raid (A1, owner 2026-11-08)
+- `AirRaid` (Game/AirRaid, `scripts/game/air_raid.gd`, group `air_raid`). Three Tupolev SB-2 bombers in
+  waves/battles 4 and 8 (`raid_waves`; battle n = wave n). Owner's choice: same danger as the artillery
+  (`ArtilleryBarrage.is_covered`: open ground deadly, crouching in the trench / the bunker safe, the
+  Maxim gunner exposed to bombs in front), bigger bombs (kill 9 m, harm 50 m, near_damage 120).
+- Those waves also have an artillery barrage on Easy/Normal, so the raid waits for `barrage_ended`
+  and starts `after_barrage_delay` (5 s) later WITHOUT a hold line (the attack is already moving).
+  A wave without a barrage (Hard): the raid starts at the wave start and holds the Soviets at z 0
+  (`Enemy.barrage_hold_z`, reset in `_exit_tree` like the barrage); officers whistle at the end.
+- Phases APPROACH (HUD "AIR RAID! GET INTO THE TRENCH!", engines far away) -> BOMBING (first bomb in the
+  air, "GET INTO THE TRENCH!" only for people in the open) -> LEAVING -> IDLE. ~38 s.
+- Host makes the plan (`_make_plan`) and sends it once (`begin_raid` RPC: plane data + every bomb's
+  landing time/position/strength); every computer runs its own clock from it, only the host hurts
+  players (`_land`). Plane i flies along x at its lane z (front 24-40, just behind 74-80, far 96-115),
+  110 m/s, ~300 m up, direction random; 8 +-1 bombs per plane, 25 m apart, each lands right under its
+  plane `fall_time` (6 s) after release; none inside `trench_rect`.
+- Looks: the camera far plane is 600 m, so planes and falling bombs are drawn closer and smaller in the
+  same direction (`_cheat`, `cheat_distance` 480); the sounds use the real position. Planes are code-built
+  (capsules/boxes, unshaded dark, twin fins). Blasts reuse `ArtilleryBarrage.show_explosion` with
+  `blast_scale` 2.3 and the new `height_mul` (1.7: earth and snow go higher and stay up longer); the
+  barrage's pool is now `pool_size` 12 (was 6; set in game.tscn + builder).
+- Sounds: engine = the existing plane recording (`plane_flyover_viima.ogg`, loudest 10.9 s in, started per
+  plane so its peak is at the pass; pitches 1.0/0.94/1.07) or any `raid_engine*` in `recorded/` (then set
+  `engine_overhead_at`); whistle = `raid_whistle*` or the generated placeholder (ends exactly at the
+  impact, length capped at the fall time); boom = `raid_boom*` or placeholder; plus the artillery's
+  `shell_close` for bombs within 45 m. Placeholders: `tools/make_raid_sounds.py` -> `assets/audio/air_raid/`.
+- Tests: `tools/test_airraid.gd` (plan, no bomb in the trench, hurt in the open, hold line, after-barrage
+  start), `tools/shots_airraid.gd` (xvfb; aims at plane 1).
