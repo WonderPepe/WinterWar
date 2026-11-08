@@ -27,6 +27,7 @@ Notes:
 ## Versions
 | Version | Content |
 |---|---|
+| 0.3.0 | New trench line with many short legs and corners, four narrow one-soldier firing positions with sandbag loopholes, and the log bunker turned to face the enemy: trench behind it with a back door, the Maxim behind a narrow firing hole (±21°). The bunker room is a safe zone for artillery, except the gunner on the Maxim. |
 | 0.2.6 | Artillery barrages are much more dangerous and dramatic: distant guns are heard 6.5 s before the first shell lands, shells bursting close to you have a loud explosion, bigger blasts and screen shake, shrapnel reaches 35 m (6 m = instant death). Only crouching in the trench is safe, and in the bunker only its two back corners. Also: ricochet sounds for bullets hitting metal and stone, new Suomi gunshot. |
 | 0.2.5 | The T-26 turret is now heavy and hand-cranked: it turns slowly (4 / 8 / 12°/s), speeds up and brakes over 1.5 s, the crew needs a moment to react to a new target (more if you get behind the tank), and it can't keep up with a player running close to it – so side and rear Molotov attacks are easier. Gear, hand-crank and metal-clunk sounds. |
 | 0.2.4 | DP-27 machine-gun teams follow their riflemen 5–10 m behind, open fire from 80–130 m off the trench and move up in bounds; when all the riflemen are dead they storm the trench too (no more hunting for the last enemy). Loading screen: only the tip and "Click to start the battle" at the end. |
