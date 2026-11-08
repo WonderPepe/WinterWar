@@ -28,6 +28,19 @@ func _ready() -> void:
 			and texts.any(func(t: String) -> bool: return t.begins_with("Soviet forces have crossed the border")),
 			"…date, weather and text of 30 November 1939")
 	check(_has_photo(row), "…with its photo")
+	# B2: the marching path, the phrases, the snow.
+	check(ls.get_node_or_null("Root/Center/VBox/MarchPath") != null and ls.get_node_or_null("Root/Center/VBox/Percent") != null
+			and ls.get_node_or_null("Root/Snow") != null and not ls.bar.visible, "marching path, percentage and snow built; old bar hidden")
+	check(LoadingScreen.phrase_for(0) == "Drafting recruits..." and LoadingScreen.phrase_for(5.9) == "Drafting recruits..."
+			and LoadingScreen.phrase_for(6) == "Mixing Molotov cocktails in the local brewery..."
+			and LoadingScreen.phrase_for(50) == "Cleaning the Pystykorva rifle barrels..."
+			and LoadingScreen.phrase_for(97) == "Jamming enemy tanks with logs..."
+			and LoadingScreen.phrase_for(99) == "Cocking the Suomi submachine gun..."
+			and LoadingScreen.phrase_for(100) == "ALARM! TO THE POSITIONS!", "phrases follow the percentage; 100 % = ALARM")
+	check(ls.status.text == "Drafting recruits...", "status line starts with the first phrase")
+	# The soldier never gets ahead of the minimum march time.
+	await get_tree().create_timer(1.0).timeout
+	check(ls._shown > 10.0 and ls._shown < 40.0, "after ~1 s the soldier has walked a quarter of the minimum time (%.0f %%)" % ls._shown)
 	ls.free()
 
 	MatchDirector.test_start_wave = 9
@@ -45,6 +58,7 @@ func _ready() -> void:
 	add_child(ls)
 	await get_tree().process_frame
 	check(ls.get_node_or_null("Root/Center/VBox/Briefing") == null, "benchmark (no click prompt): no briefing")
+	check(ls.get_node_or_null("Root/Center/VBox/MarchPath") == null and ls.bar.visible, "benchmark: the old bar, no marching path")
 	ls.free()
 	LoadingScreen.click_to_start = true
 

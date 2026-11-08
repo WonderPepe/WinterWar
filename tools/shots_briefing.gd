@@ -16,5 +16,20 @@ func _ready() -> void:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://briefing_%d.png" % b)
 		ls.free()
+	# B2: the marching path at 5 %, 50 % and 100 % (the minimum march time is faked).
 	MatchDirector.test_start_wave = 0
+	for pct in [5, 50, 100]:
+		LoadingScreen.target_scene = "res://ui/controls_panel.tscn"
+		var ls: Node = load("res://ui/loading_screen.tscn").instantiate()
+		get_tree().root.add_child(ls)
+		ls._elapsed = LoadingScreen.MIN_MARCH * pct / 100.0 - 0.001
+		ls.set_process(false)
+		ls.bar.value = 100.0
+		ls._update_march(0.5)
+		ls._elapsed = LoadingScreen.MIN_MARCH * pct / 100.0
+		ls._update_march(0.5)
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png("user://march_%d.png" % pct)
+		ls.free()
 	get_tree().quit()

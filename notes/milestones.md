@@ -165,6 +165,15 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   no longer shown (kept in the builder). Details: `day-screen.md`. Next (Prio 2): weather and
   time of day per battle (fog, snowfall, light), then different gameplay per battle.
 
+- [x] B2 loading screen march (owner 2026-11-08, his HTML example): the loading bar became a snowy
+  marching path with a little code-drawn soldier (legs swing, body bobs, rifle + backpack, a post
+  with a pennant as the goal), snow falling over the whole screen, the owner's 18 phrases by
+  percentage (`LoadingScreen.PHRASES`, `phrase_for()`), the percentage below, and at 100 % the
+  soldier stops and the line turns red "ALARM! TO THE POSITIONS!". Owner's decisions: the soldier
+  and the ALARM line STAY visible at "CLICK TO START THE BATTLE" (replaces the old "hide status
+  and bar" rule); the march takes at least `MIN_MARCH` 4 s (real game only; benchmark keeps the
+  plain bar) and he stands 0.7 s at the end on desktop. Details: `day-screen.md`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

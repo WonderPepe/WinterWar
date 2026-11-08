@@ -19,6 +19,15 @@ order (battle n = the old day n's photo). Gameplay/wave lists unchanged.
   milestone: weather + time of day per battle. Tests: `test_b1.gd`, `test_g2.gd`;
   screenshots `shots_briefing.gd`, `shots_reports.gd`.
 
+**B2 (loading screen march):** everything is built in `loading_screen.gd` (no scene change, no new
+class): `_add_march()` adds `Root/Snow` (40 flakes, normalised positions, drawn by the `draw` signal),
+`Root/Center/VBox/MarchPath` (96 px tall, soldier drawn in a 50 × 100 box with `Transform2D` helpers
+`_soldier_rect` / `_turn_about`, colours from the owner's HTML example) and `Percent`; the old
+`ProgressBar` stays (hidden) and counts, `_shown = min(bar.value, elapsed / MIN_MARCH * 100)` is what
+the soldier, the percentage and the phrase use. `_step()` no longer writes the status text while
+marching. Photo box 520 × 300 so the whole stack (706 px with the click prompt) fits 720.
+Tests in `test_b1.gd`, screenshots `shots_briefing.gd` (`march_5/50/100.png`).
+
 # (older) Front reports and the day screen (before B1)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
