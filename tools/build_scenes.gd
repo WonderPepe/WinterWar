@@ -865,10 +865,9 @@ func _build_game() -> Node:
 	arty.set("shell_times", PackedFloat32Array(BARRAGE_SHELLS[0]))
 	arty.set("shell_strengths", PackedFloat32Array(BARRAGE_SHELLS[1]))
 	# Air raid (A1): three SB-2 bombers in waves 4 and 8. Sounds are found by the script itself
-	# (recorded/raid_* or the placeholders in assets/audio/air_raid/, the engine is the plane recording).
+	# (recorded/raid_whistle*, raid_boom*; the engine is the plane recording).
 	var raid: Node3D = _add(g, Node3D.new(), "AirRaid")
 	raid.set_script(load("res://scripts/game/air_raid.gd"))
-	raid.set("close_sound", load("res://assets/audio/artillery/shell_close.ogg"))
 	# Background sounds: each flies over once per battle (a plane: YleArkisto, CC-BY 4.0).
 	var bg: Node = _add(g, Node.new(), "BackgroundSounds")
 	bg.set_script(load("res://scripts/game/background_sounds.gd"))

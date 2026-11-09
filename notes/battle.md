@@ -159,10 +159,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (capsules/boxes, unshaded dark, twin fins). Blasts reuse `ArtilleryBarrage.show_explosion` with
   `blast_scale` 2.3 and the new `height_mul` (1.7: earth and snow go higher and stay up longer); the
   barrage's pool is now `pool_size` 12 (was 6; set in game.tscn + builder).
-- Sounds: engine = the existing plane recording (`plane_flyover_viima.ogg`, loudest 10.9 s in, started per
-  plane so its peak is at the pass; pitches 1.0/0.94/1.07) or any `raid_engine*` in `recorded/` (then set
-  `engine_overhead_at`); whistle = `raid_whistle*` or the generated placeholder (ends exactly at the
-  impact, length capped at the fall time); boom = `raid_boom*` or placeholder; plus the artillery's
-  `shell_close` for bombs within 45 m. Placeholders: `tools/make_raid_sounds.py` -> `assets/audio/air_raid/`.
+- Sounds (owner's recordings, `assets/audio/recorded/`, originals in `assets_source/`): engine = the
+  existing plane recording (`plane_flyover_viima.ogg`, loudest 10.9 s in, started per plane so its peak
+  is at the pass; pitches 1.0/0.94/1.07) or any `raid_engine*` (then set `engine_overhead_at`);
+  `raid_whistle.ogg` = Freesound 479924 (craigsmith, CC0), 5.5 s cut from the 12.7 s steady whistle,
+  fade in, rising level, ends exactly at the impact (length is capped at `fall_time` 6 s, so keep it
+  shorter); `raid_boom_1/2.ogg` = Freesound 256297 / 256299 (YleArkisto), first 6 s, mono, a random one
+  per bomb (`_boom_sounds`). No generated placeholders any more; no recording = silence. The artillery's
+  `shell_close` layer was dropped (it is the same recording as raid_boom_1); `close_sound` is still an
+  export if wanted.
 - Tests: `tools/test_airraid.gd` (plan, no bomb in the trench, hurt in the open, hold line, after-barrage
   start), `tools/shots_airraid.gd` (xvfb; aims at plane 1).

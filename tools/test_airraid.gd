@@ -35,8 +35,9 @@ func run() -> void:
 	var hud: HUD = game.get_node("HUD")
 	check(raid != null and raid.raid_waves.size() == 2 and raid.raid_waves[0] == 4 and raid.raid_waves[1] == 8, "air raid in battles 4 and 8")
 	check(arty.pool_size == 12 and arty._blasts.size() == 12, "12 blasts in the pool")
-	check(raid.engine_sound != null and raid.whistle_sound != null and raid.boom_sound != null and raid.close_sound != null,
-			"all four sounds are set (engine, whistle, boom, close burst)")
+	check(raid.engine_sound != null and raid.whistle_sound != null and raid._boom_sounds.size() >= 2,
+			"sounds set: engine, whistle, %d different booms" % raid._boom_sounds.size())
+	check(raid.whistle_sound.get_length() <= raid.fall_time, "the whistle (%.1f s) is not longer than the fall" % raid.whistle_sound.get_length())
 	check(raid._plane_nodes.size() == 3 and raid._engines.size() == 3, "three SB-2s with an engine each")
 
 	# Which waves.

@@ -41,7 +41,7 @@ enum Phase { IDLE, APPROACH, BOMBING, LEAVING }
 @export var engine_volume_db: float = 4.0
 @export var engine_unit_size: float = 220.0
 @export var whistle_sound: AudioStream ## Falling bomb. Should END at the impact.
-@export var boom_sound: AudioStream ## The bomb exploding (deep).
+@export var boom_sound: AudioStream ## One bomb sound for all bombs (normally empty: the `raid_boom*` recordings are used, a random one per bomb).
 @export var close_sound: AudioStream ## Extra crack when a bomb lands close to you.
 @export var close_sound_range_m: float = 45.0
 @export var blast_scale: float = 2.3
@@ -84,6 +84,7 @@ var _next_whistle: int = 0
 var _next_boom: int = 0
 var _close_audio: AudioStreamPlayer
 var _whistle_len: float = 2.6
+var _boom_sounds: Array[AudioStream] = []
 
 
 func _ready() -> void:
@@ -95,12 +96,10 @@ func _ready() -> void:
 		engine_sound = load("res://assets/audio/background/plane_flyover_viima.ogg") as AudioStream
 	if whistle_sound == null:
 		whistle_sound = RecordedSounds.pick("raid_whistle")
-	if whistle_sound == null and ResourceLoader.exists("res://assets/audio/air_raid/raid_whistle_placeholder.wav"):
-		whistle_sound = load("res://assets/audio/air_raid/raid_whistle_placeholder.wav") as AudioStream
-	if boom_sound == null:
-		boom_sound = RecordedSounds.pick("raid_boom")
-	if boom_sound == null and ResourceLoader.exists("res://assets/audio/air_raid/raid_boom_placeholder.wav"):
-		boom_sound = load("res://assets/audio/air_raid/raid_boom_placeholder.wav") as AudioStream
+	if boom_sound:
+		_boom_sounds = [boom_sound]
+	else:
+		_boom_sounds = RecordedSounds.get_sounds("raid_boom")
 	if whistle_sound:
 		_whistle_len = minf(whistle_sound.get_length(), fall_time)
 	_make_nodes()
@@ -365,8 +364,9 @@ func _land(b: int, arty: ArtilleryBarrage) -> void:
 	bombs_landed += 1
 	if arty:
 		arty.show_explosion(pos, strength, blast_scale, shake_range_m, blast_height)
-	if boom_sound:
+	if not _boom_sounds.is_empty():
 		var bm := _booms[_next_boom]
+		bm.stream = _boom_sounds[_rng.randi() % _boom_sounds.size()]
 		_next_boom = (_next_boom + 1) % _booms.size()
 		bm.global_position = pos + Vector3.UP * 2.0
 		bm.pitch_scale = _rng.randf_range(0.9, 1.05)
@@ -425,10 +425,9 @@ func _make_nodes() -> void:
 		var bm := AudioStreamPlayer3D.new()
 		bm.name = "Boom%d" % i
 		bm.bus = &"SFX"
-		bm.stream = boom_sound
 		bm.unit_size = 90.0
 		bm.max_distance = 0.0
-		bm.volume_db = 4.0
+		bm.volume_db = 2.0
 		add_child(bm)
 		_booms.append(bm)
 	_close_audio = AudioStreamPlayer.new()

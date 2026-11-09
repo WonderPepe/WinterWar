@@ -157,7 +157,6 @@ shell_strengths = PackedFloat32Array(0.18, 0.27, 0.24, 0.19, 0.14, 0.3, 0.59, 0.
 
 [node name="AirRaid" type="Node3D" parent="." unique_id=1774300311]
 script = ExtResource("22_raid1")
-close_sound = ExtResource("21_clos1")
 
 [node name="BackgroundSounds" type="Node" parent="." unique_id=1157412885]
 script = ExtResource("22_rm0al")
