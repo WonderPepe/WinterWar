@@ -213,3 +213,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 9. Real sound recordings (CC0) to replace the generated ones; shouts; menu music.
 10. Options: field of view, key rebinding, gamepad.
 11. Lahti-Saloranta (slot 3) if a usable model turns up, or built from shapes.
+
+## R1 – battles rebalanced, tank-route fix, release v0.5.0 (2026-11-10)
+Owner's new Easy wave lists (Normal +1, Hard +2 riflemen), air raid in battles 4/8/10, tanks in 3/5/7, barrages in 5–8 and 10, new
+battle 2 briefing; details in `battle.md` ("Wave lists rebalanced"). Tank routes: see `tank-and-molotov.md` (no tank on a wreck).
+All tests pass (tests adjusted to the new lists). Released as v0.5.0.
