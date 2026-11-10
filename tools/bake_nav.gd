@@ -9,6 +9,8 @@ func run(level: Node) -> void:
 	for i in 5:
 		await physics_frame
 	var region: NavigationRegion3D = level.get_node("Navigation")
+	# Enemy side + (L3) the communication trenches behind the line (same box as in build_scenes.gd).
+	region.navigation_mesh.filter_baking_aabb = AABB(Vector3(-150, -10, -150), Vector3(300, 30, 268))
 	var t := Time.get_ticks_msec()
 	region.bake_navigation_mesh(false)
 	var nm := region.navigation_mesh

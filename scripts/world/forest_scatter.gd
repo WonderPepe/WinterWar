@@ -26,7 +26,8 @@ extends Node3D
 ## Areas where trees must never grow (trench earthworks + a little space around) and, T3, three
 ## lanes through the southern forest where the tanks drive out (x = start of TankRoute1..3 ± 6.5 m).
 @export var keep_clear: Array[Rect2] = [Rect2(-110, 46, 220, 32), Rect2(-74.5, -151, 13, 47),
-		Rect2(-0.5, -151, 13, 47), Rect2(67.5, -151, 13, 47)]
+		Rect2(-0.5, -151, 13, 47), Rect2(67.5, -151, 13, 47),
+		Rect2(-50, 64, 20, 54), Rect2(30, 64, 20, 54)] # L3: the two communication trenches
 @export var min_scale: float = 1.0
 @export var max_scale: float = 1.8
 @export var chunk_size: float = 50.0

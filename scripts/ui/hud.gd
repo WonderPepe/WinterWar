@@ -17,6 +17,7 @@ var _last_wave: int = 0
 var _banner_left: float = 0.0
 var _death_time: float = -1.0
 var _last_cleared: int = 0
+var _was_retaking: bool = false # L3: battle 6 – the players are retaking the trench
 
 @onready var crosshair: Crosshair = $Crosshair
 @onready var hit_marker: HitMarker = $HitMarker
@@ -224,8 +225,12 @@ func _update_waves(delta: float) -> void:
 		wave_label.text = "BATTLE %d" % waves.wave_number
 	# Soviets inside the trench: the line breaks when there are too many at once.
 	var inside: int = _director.in_trench if _director else 0
-	trench_label.visible = inside > 0
-	if inside > 0:
+	trench_label.visible = inside > 0 or waves.retaking
+	if waves.retaking:
+		# L3: the Soviets hold the west half of the trench – take it back.
+		trench_label.text = "RETAKE THE TRENCH – SOVIETS LEFT: %d" % waves.alive_count
+		trench_label.modulate.a = 0.85
+	elif inside > 0:
 		trench_label.text = "SOVIETS IN THE TRENCH: %d / %d" % [inside, _director.trench_limit]
 		trench_label.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / 110.0)
 	enemies_label.text = "Enemies: %d" % waves.alive_count
@@ -243,7 +248,9 @@ func _update_waves(delta: float) -> void:
 		day_screen.close() # the day screen makes way for the new wave
 		wave_banner.text = "BATTLE %d" % _last_wave
 		banner_sub.text = ""
-		if _last_wave == 1 and total > 0:
+		if waves.retaking:
+			banner_sub.text = "Retake the trench!"
+		elif _last_wave == 1 and total > 0:
 			banner_sub.text = "Hold the line through %d battles" % total
 		elif total > 0 and _last_wave == total:
 			banner_sub.text = "The last battle – hold on!"
@@ -254,6 +261,13 @@ func _update_waves(delta: float) -> void:
 		_banner_left = wave_banner_time + (1.5 if banner_sub.text != "" else 0.0)
 		if waves.wave_tanks > 0 and not _tank_hint_shown:
 			_show_tank_hint()
+	# L3: the last Soviet in the trench is dead (owner's text, on two lines so it fits the banner).
+	if _was_retaking and not waves.retaking and waves.wave_number == _last_wave \
+			and not (_director and _director.is_over()):
+		wave_banner.text = "Trench Retaken!"
+		banner_sub.text = "Prepare for Counterattack!"
+		_banner_left = wave_banner_time + 1.5
+	_was_retaking = waves.retaking
 	_banner_left = maxf(_banner_left - delta, 0.0)
 	if _tank_hint_wait > 0.0:
 		_tank_hint_wait = maxf(_tank_hint_wait - delta, 0.0)

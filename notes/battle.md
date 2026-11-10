@@ -177,3 +177,26 @@ Easy [riflemen, officers, MG teams, barrage, tanks]: 1 [8,1,0,-,0]; 2 [10,1,2,-,
 10 [22,2,2,barrage,0] + raid. Normal = Easy + 1 rifleman per battle, Hard = Easy + 2. Barrages, tanks, officers, MGs and
 raids are the same on every difficulty. Wave sizes now exceed `max_alive` 16 (e.g. battle 10 Hard = 24+2+4): groups come
 in as others die. Battle 2 briefing text rewritten by the owner. Edited in `resources/difficulty/*.tres` + builder `WAVE_LISTS`/`MISSIONS`.
+
+## Retake the trench (L3, battle 6)
+- `WaveData.occupy_riflemen / occupy_officers / occupy_mg_teams` (builder `RETAKE_LISTS`; only battle 6:
+  Easy 7/1/1, Normal 8/1/1, Hard 9/1/1). `has_retake()`.
+- WaveSpawner `_start_wave()`: a retake wave → `_start_retake()`: `retaking = true` (synced in WaveSync,
+  for the HUD), `Phase.RETAKE` (appended), `_spawn_occupiers()` on the `retake_point` markers (sorted
+  west → east, every second spot first; a 2nd man on a spot moves 1.6 m along onto the navmesh; DP-27
+  gunner + helper near the east end of the stretch, NOT linked as a team). `wave_started` is NOT emitted
+  yet (so no barrage / air raid). All dead → `retaking = false`, `trench_retaken` signal, `retake_pause`
+  (8 s) → `_launch_wave()` = the normal wave (emits `wave_started`, barrage, tanks).
+- Enemy `State.HOLD` (appended) – `start_holding(at)`: `_hold_senses()` nearest player in line of sight
+  (no view cone, no spotting delay; first shot after the reaction time) within `hold_sight_m` 30 m, or
+  `hold_alert_sight_m` 40 m for `hold_alert_time` 8 s after a hit / a bullet close past (not after
+  mere noise – else the rear spawns, 34–42 m away, would be under fire). `_hold()`: fire (trench
+  fire interval; the gunner bursts with his pan), kneel (= hidden) while suppressed ≥ prone threshold,
+  never prone; a Finn in the trench out of sight within `hold_chase_m` 14 m and within `hold_leash_m`
+  18 m of his spot → goes for him; else back to his spot facing the rear (+z). hear_noise ignored.
+- MatchDirector: while `spawner.retaking` no trench count / no DEFEAT (`in_trench` = 0).
+- Game: `_start_point()` / `reset_players_to_start()` → west rear spawns when the coming battle is a
+  retake (`next_wave_is_retake()`); `_start_points` keeps the trench spot for later battles. Respawn:
+  always a random rear spawn; during a retake the west one farthest from living Soviets.
+- HUD: battle banner sub "Retake the trench!" + occupiers; TrenchAlert line "RETAKE THE TRENCH – SOVIETS
+  LEFT: n"; when `retaking` goes false: "Trench Retaken!" / "Prepare for Counterattack!" (owner's text).

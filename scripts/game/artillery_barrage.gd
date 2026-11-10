@@ -115,10 +115,26 @@ static func is_in_bunker(p: Player) -> bool:
 	return pos.y < -0.5 and absf(pos.x) < 2.5 and pos.z > 57.25 and pos.z < 61.75
 
 
-## Inside the trench or the bunker (crouching or not).
+## Inside the trench or the bunker (crouching or not). L3: the communication trenches too.
 static func is_in_shelter(p: Player) -> bool:
 	var pos: Vector3 = p.global_position
-	return pos.y < -0.5 and pos.z > 48.0 and pos.z < 76.0 and absf(pos.x) < 108.0
+	if pos.y >= -0.5:
+		return false
+	if pos.z > 48.0 and pos.z < 76.0 and absf(pos.x) < 108.0:
+		return true
+	return in_comm_trench_area(pos)
+
+
+## L3: the earth strips of the two communication trenches (TerrainGenerator.extra_trench_areas).
+const COMM_TRENCH_AREAS: Array[Rect2] = [Rect2(-47, 68, 14, 45.5), Rect2(33, 68, 14, 45.5)]
+
+
+## L3: inside the strip of a communication trench (shells and bombs never land there).
+static func in_comm_trench_area(pos: Vector3) -> bool:
+	for r in COMM_TRENCH_AREAS:
+		if r.has_point(Vector2(pos.x, pos.z)):
+			return true
+	return false
 
 
 func _on_wave_started(number: int, _count: int) -> void:
@@ -242,7 +258,7 @@ func _pick_landing(strength: float) -> Vector3:
 			pos = centre + _flat_offset(dist)
 		pos.x = clampf(pos.x, zone_min.x, zone_max.x)
 		pos.z = clampf(pos.z, zone_min.y, zone_max.y)
-		if not trench_rect.has_point(Vector2(pos.x, pos.z)):
+		if not trench_rect.has_point(Vector2(pos.x, pos.z)) and not in_comm_trench_area(pos):
 			return pos
 	return Vector3(_rng.randf_range(zone_min.x, zone_max.x), 0.0, _rng.randf_range(20.0, 44.0))
 

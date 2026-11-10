@@ -40,6 +40,9 @@ riflemen = 15
 officers = 2
 mg_teams = 1
 barrage = true
+occupy_riflemen = 8
+occupy_officers = 1
+occupy_mg_teams = 1
 
 [sub_resource type="Resource" id="Resource_3yum6"]
 script = ExtResource("2_ckvit")

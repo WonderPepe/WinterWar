@@ -52,6 +52,9 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath(".:wave_tanks")
 properties/5/spawn = true
 properties/5/replication_mode = 2
+properties/6/path = NodePath(".:retaking")
+properties/6/spawn = true
+properties/6/replication_mode = 2
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_n8ral"]
 properties/0/path = NodePath(".:difficulty")

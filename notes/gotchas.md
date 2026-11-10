@@ -64,7 +64,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   then passed 4× in a row (also without the change being tested) – re-run before suspecting code.
 - **Trench line (L1):** many tests teleport the player / soldiers to fixed trench spots
   ((-30, 61), (-10, 61), (10, 61), (50/70/90, 61), bunker front x = -6…6 at z = 64, exits at
-  x = ±40 / ±80 at z = 64). The line in `TRENCH_XZ` deliberately passes all of them – keep that
+  x = ±40 / ±80 at z = 64; L3: at ±40 the communication trenches start, the exit ramps are only at ±80). The line in `TRENCH_XZ` deliberately passes all of them – keep that
   when editing it (`test_l1.gd` checks the rest). The 6 m straight at x = -34…-28 is the
   longest straight the walking-speed test can use; the targets of `test_m2.gd` are shot from x = -10
   because the firing position at x = -23.5 blocks the line from the spawn at x = -30.
@@ -79,3 +79,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - `build_scenes.gd` also rewrites `scenes/game.tscn`, `player.tscn`, `suomi_viewmodel.tscn` and
   `ui/main_menu.tscn` with real differences from the committed versions (hand edits / newer credits
   text): after a build `git checkout` them – only `levels/` and the new materials should change.
+- (L3) The navmesh bake box (`filter_baking_aabb`) is stored in `test_level_navmesh.res`: once that file
+  exists the builder reuses it, so changing the box in `build_scenes.gd` alone does nothing – `bake_nav.gd`
+  sets it before baking (keep both the same). It now reaches z = 118 (communication trenches), which
+  also covers the forest behind the line: ~5300 navmesh vertices (was ~3000).
+- (L3) The builder re-saves `resources/difficulty/*.tres` WITHOUT their uids – edit those by hand
+  (keep the uid lines) and restore the builder's versions; same for `muzzle_flash.tres`,
+  `winter_sky.tres`, `winter_theme.tres` (only noise). `scenes/game.tscn` is hand-edited too (WaveSync
+  got `retaking`).
+- (L3) Soldiers standing in the trench see over the edge (eyes ~0.2 m above the ground): across the
+  flat ground a head is visible far away. That is why HOLD sight is short (30/40 m) – the rear spawns
+  would otherwise be shot at from the line.

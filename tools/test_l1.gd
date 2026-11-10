@@ -149,8 +149,8 @@ func run() -> void:
 		entry_ok = entry_ok and dist_to_line(Vector2(t.x, t.z)) < 0.5 and dist_to_line(Vector2(s.x, s.z)) > 1.8
 	check(entry_ok, "10 trench entries: they land on the line and start on solid ground")
 
-	# --- Exits: the four ramps still lead out ---
-	for x in [-80.0, -40.0, 40.0, 80.0]:
+	# --- Exits: the two outer ramps still lead out (L3: at x = +-40 the communication trenches, see test_l3) ---
+	for x in [-80.0, 80.0]:
 		teleport(Vector3(x, -1.3, 64.0), PI)
 		await frames(20)
 		set_input(Vector2(0, -1))

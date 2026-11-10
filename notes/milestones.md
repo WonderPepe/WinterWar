@@ -189,6 +189,19 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   existing plane recording for the engines, generated PLACEHOLDERS for whistle and boom until the owner
   adds real `raid_*` recordings. Details: `battle.md`.
 
+- [x] L3 communication trenches + battle 6 "retake the trench" (owner 2026-11-10): two zigzag
+  communication trenches leave the line at x = -40 and +40 (they replace those two exit ramps; the
+  ramps at ±80 stay) and run ~45 m back into the forest (legs 3–8.5 m with 45° bends, ramp up to the
+  ground at z ≈ 107–111.5). Rear spawn points at their far end: players RESPAWN there in every
+  battle (the start of a battle is still the trench line). Later: the way up for support / friendly
+  soldiers. Battle 6 (owner's choices: "retake, then hold", the WEST half is taken): the Soviets
+  hold x -100 … -5 (Easy 7 / Normal 8 / Hard 9 riflemen + 1 officer + 1 DP-27 team – Easy only fewer
+  riflemen), the players start at the rear of the west trench; no "line broken" defeat meanwhile;
+  when the last one is dead the owner's banner "Trench Retaken! / Prepare for Counterattack!"
+  (two lines so it fits), 8 s later the normal battle 6 wave + barrage attacks. Owner's new battle 6
+  briefing text. Details: `battle.md` (Retake), `architecture.md` (map). Tests: `test_l3.gd`,
+  `shots_l3.gd`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

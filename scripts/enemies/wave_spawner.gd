@@ -14,8 +14,9 @@ extends Node
 
 signal wave_started(number: int, enemy_count: int)
 signal wave_cleared(number: int)
+signal trench_retaken(number: int) ## L3: the last Soviet holding the trench is dead (host).
 
-enum Phase { WAITING, SPAWNING, FIGHTING }
+enum Phase { WAITING, SPAWNING, FIGHTING, RETAKE } # RETAKE (L3): clearing the captured trench first
 
 @export var enemy_scene: PackedScene ## Rifleman.
 @export var officer_scene: PackedScene
@@ -38,6 +39,8 @@ enum Phase { WAITING, SPAWNING, FIGHTING }
 @export var max_waves: int = 0 ## Stop after this many waves (0 = endless). Set by the MatchDirector.
 @export var first_tank_delay: float = 12.0 ## T3: seconds after the wave starts before the first tank sets off in the forest.
 @export var tank_interval: float = 18.0 ## T3: seconds between the tanks of one wave.
+## L3: seconds from "Trench Retaken!" until the counterattack comes out of the forest.
+@export var retake_pause: float = 8.0
 
 ## False = no more waves (the battle is over).
 var active: bool = true
@@ -53,6 +56,8 @@ var wave_riflemen: int = 0
 var wave_officers: int = 0
 var wave_mg_teams: int = 0
 var wave_tanks: int = 0 ## T3
+## L3: true while the players must first clear the Soviets out of the trench (battle 6).
+var retaking: bool = false
 
 var _phase: Phase = Phase.WAITING
 var _timer: float = 0.0
@@ -64,6 +69,7 @@ var _rng := RandomNumberGenerator.new()
 var _tank_times: Array[float] = [] # T3: wave clock times when the next tanks set off
 var _wave_clock: float = 0.0
 var _release_timer: float = 0.0
+var _retake_cleared: bool = false # L3: the trench is ours again – waiting `retake_pause` for the wave
 
 
 func _ready() -> void:
@@ -84,6 +90,8 @@ func _process(delta: float) -> void:
 		Phase.WAITING:
 			if _timer <= 0.0:
 				_start_wave()
+		Phase.RETAKE:
+			_update_retake()
 		Phase.SPAWNING:
 			if _timer <= 0.0 and alive_count < max_alive:
 				if _spawn_group():
@@ -115,9 +123,112 @@ func get_time_to_next_wave() -> float:
 	return maxf(_timer, 0.0) if _phase == Phase.WAITING else 0.0
 
 
+## L3: true when the coming battle (not started yet) begins with the Soviets in the trench –
+## the players then start at the rear (Game).
+func next_wave_is_retake() -> bool:
+	return _phase == Phase.WAITING and get_composition(wave_number + 1).has_retake()
+
+
 func _start_wave() -> void:
 	wave_number += 1
 	var w: WaveData = get_composition(wave_number)
+	if w.has_retake():
+		_start_retake(w)
+		return
+	_launch_wave(w)
+
+
+## L3: the battle starts with the Soviets already holding the west half of the trench.
+func _start_retake(w: WaveData) -> void:
+	wave_riflemen = w.occupy_riflemen
+	wave_officers = w.occupy_officers
+	wave_mg_teams = w.occupy_mg_teams
+	wave_tanks = 0
+	_retake_cleared = false
+	retaking = true
+	_phase = Phase.RETAKE
+	_spawn_occupiers(w)
+
+
+func _update_retake() -> void:
+	if not _retake_cleared:
+		if alive_count > 0:
+			return
+		_retake_cleared = true
+		retaking = false
+		_timer = retake_pause
+		trench_retaken.emit(wave_number)
+		return
+	if _timer <= 0.0:
+		_launch_wave(get_composition(wave_number)) # the counterattack
+
+
+## L3: puts the occupiers on the `retake_point` markers (west half of the trench, west → east):
+## riflemen spread along it, the officer in the middle, the DP-27 teams near the east end (they
+## cover the stretch the Finns will come along from the middle). More men than spots: a second
+## man stands a little way along the trench (moved onto the navigation mesh).
+func _spawn_occupiers(w: WaveData) -> void:
+	var points: Array[Vector3] = []
+	for node in get_tree().get_nodes_in_group("retake_point"):
+		points.append((node as Node3D).global_position)
+	if points.is_empty():
+		push_warning("WaveSpawner: no retake_point markers - nobody holds the trench.")
+		return
+	points.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.x < b.x)
+	var kinds: Array[String] = []
+	for i in w.occupy_riflemen:
+		kinds.append("R")
+	for i in w.occupy_officers:
+		kinds.insert(mini(kinds.size(), (kinds.size() * (i + 1)) / (w.occupy_officers + 1)), "O")
+	# Spots used in this order: every second one first, so they are spread over the whole stretch.
+	var order: Array[int] = []
+	for i in range(0, points.size(), 2):
+		order.append(i)
+	for i in range(1, points.size(), 2):
+		order.append(i)
+	var mg_spots: Array[int] = []
+	for i in w.occupy_mg_teams:
+		mg_spots.append(clampi(points.size() - 3 - i * 2, 0, points.size() - 1))
+	var used: Dictionary = {} # spot index -> men there
+	var n: int = 0
+	for kind in kinds:
+		var idx: int = order[n % order.size()]
+		n += 1
+		_place_occupier(kind, points[idx], used.get(idx, 0))
+		used[idx] = used.get(idx, 0) + 1
+	for idx in mg_spots:
+		_place_occupier("MG", points[idx], used.get(idx, 0))
+		used[idx] = used.get(idx, 0) + 1
+		_place_occupier("R", points[idx], used.get(idx, 0))
+		used[idx] = used.get(idx, 0) + 1
+
+
+func _place_occupier(kind: String, spot: Vector3, already: int) -> void:
+	var pos: Vector3 = spot
+	if already > 0:
+		var map: RID = get_tree().root.get_world_3d().navigation_map
+		var off := Vector3((1.6 if already % 2 == 1 else -1.6) * ceilf(already / 2.0), 0.0, 0.0)
+		var on_mesh: Vector3 = NavigationServer3D.map_get_closest_point(map, spot + off)
+		if on_mesh != Vector3.ZERO and on_mesh.distance_to(spot) < 4.0 and on_mesh.y < -0.6:
+			pos = Vector3(on_mesh.x, spot.y, on_mesh.z)
+	var scene: PackedScene = enemy_scene
+	if kind == "O":
+		scene = officer_scene
+	elif kind == "MG":
+		scene = mg_gunner_scene
+	_spawned_total += 1
+	var enemy: Enemy = scene.instantiate()
+	enemy.name = "Enemy_%d" % _spawned_total
+	enemy.position = pos + Vector3(0, 0.1, 0)
+	enemy.rotation.y = PI # facing the rear (+z), where the counterattack comes from
+	enemy.start_holding(pos)
+	enemy.died.connect(_on_enemy_died)
+	enemies_root.add_child(enemy, true)
+	alive_count += 1
+
+
+## Sends the soldiers (and tanks) of wave `wave_number` out of the forest.
+func _launch_wave(w: WaveData) -> void:
 	wave_riflemen = w.riflemen
 	wave_officers = w.officers
 	wave_mg_teams = w.mg_teams

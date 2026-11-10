@@ -35,6 +35,9 @@ extends StaticBody3D
 ## Area (x, z, width, depth) covered by the CSG "earth slab" of the trench.
 ## Inside it the ground is lowered to become the trench floor.
 @export var trench_area: Rect2 = Rect2(-105, 52, 210, 18)
+## L3: the earth strips of the two communication trenches that zigzag back from the line
+## (same idea: inside them the ground is lowered to the trench floor).
+@export var extra_trench_areas: Array[Rect2] = [Rect2(-47, 68, 14, 45.5), Rect2(33, 68, 14, 45.5)]
 @export var trench_depth: float = 1.4 ## Trench floor is this far below the ground level (y = 0).
 @export var blend_margin: float = 14.0 ## Metres over which hills fade into the flat trench area.
 
@@ -49,11 +52,12 @@ func _ready() -> void:
 ## (forest, snow drifts, enemies later) use this to place things on the ground.
 func get_height(x: float, z: float) -> float:
 	var natural: float = _natural_height(x, z)
-	var outside: float = _distance_outside(trench_area, x, z)
+	var outside: float = INF
+	for r in _all_trench_areas():
+		outside = minf(outside, _distance_outside(r, x, z))
 	if outside <= 0.0:
-		# Inside the slab: lowered floor, except the outermost edge (hidden inside the slab walls).
-		var inner: Rect2 = trench_area.grow(-0.5)
-		return -trench_depth if inner.has_point(Vector2(x, z)) else 0.0
+		# Inside a slab: lowered floor, except the outermost edge (hidden inside the slab walls).
+		return -trench_depth if _on_trench_floor(x, z) else 0.0
 	var t: float = smoothstep(0.0, 1.0, outside / blend_margin)
 	return lerpf(0.0, natural, t)
 
@@ -84,6 +88,20 @@ func build() -> void:
 	_add_mesh(heights, n, half)
 	_add_collision(heights, n)
 	_add_horizon(half)
+
+
+func _all_trench_areas() -> Array[Rect2]:
+	var list: Array[Rect2] = [trench_area]
+	list.append_array(extra_trench_areas)
+	return list
+
+
+## Inside one of the earth slabs (not its outer 0.5 m edge): the ground is the trench floor here.
+func _on_trench_floor(x: float, z: float) -> bool:
+	for r in _all_trench_areas():
+		if r.grow(-0.5).has_point(Vector2(x, z)):
+			return true
+	return false
 
 
 func _natural_height(x: float, z: float) -> float:
@@ -130,7 +148,6 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 	uvs.resize(n * n)
 	# Vertex colours tell the snow shader what is where:
 	# red below 1 = ice on the bog, green below 1 = trampled, dirty snow (trench floor).
-	var trench_floor: Rect2 = trench_area.grow(-0.5)
 	for iz in n:
 		for ix in n:
 			var i: int = iz * n + ix
@@ -146,7 +163,7 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 			# Icy patches on the bog (wind has blown the snow away), trampled snow in the trench.
 			var patch: float = smoothstep(0.05, 0.35, noise.get_noise_2d(x * 3.0 + 500.0, z * 3.0))
 			var ice: float = patch * _bog_weight(z) * 0.85
-			var dirt: float = 0.7 if trench_floor.has_point(Vector2(x, z)) else 0.0
+			var dirt: float = 0.7 if _on_trench_floor(x, z) else 0.0
 			colors[i] = Color(1.0 - ice, 1.0 - dirt, 1.0)
 			uvs[i] = Vector2(x, z) * 0.25
 

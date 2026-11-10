@@ -3,6 +3,9 @@ extends CharacterBody3D
 ## A Soviet rifleman, controlled by a simple "state machine".
 ##
 ## The soldier is always in exactly ONE state (Idle, Patrol, Alert, Attack, Dead, Assault).
+## Hold (L3, battle 6): he is one of the Soviets who took part of the Finnish trench – he stays at
+## his spot in it and fires at any Finn he sees, goes for a Finn close by round a corner, but never
+## leaves his stretch of trench.
 ## Assault (G1): after firing for a while from his jump-off point in front of the trench, he
 ## rushes the trench, jumps in (NavigationLink3D "trench entries") and fights inside it.
 ## Each state has its own behaviour and rules for switching to another state.
@@ -15,7 +18,7 @@ extends CharacterBody3D
 signal died(enemy: Enemy)
 signal whistled ## An officer blew his whistle (host).
 
-enum State { IDLE, PATROL, ALERT, ATTACK, DEAD, ASSAULT } # (new states go at the end: synced as numbers)
+enum State { IDLE, PATROL, ALERT, ATTACK, DEAD, ASSAULT, HOLD } # (new states go at the end: synced as numbers)
 
 const TRENCH_FLOOR_BELOW: float = -0.85 ## Below this height (and behind z = 48) = inside the trench.
 const TRENCH_FRONT_Z: float = 48.0
@@ -35,6 +38,16 @@ static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
 @export var data: EnemyData
 @export var corpse_time: float = 20.0 ## Seconds before a dead body is removed.
 @export var near_miss_distance: float = 3.0 ## A bullet this close to your head makes a crack.
+@export_group("Holding the trench (L3)")
+## HOLD: sees and fires at Finns up to this far (fog can limit it) – short, so the rear spawn
+## points (34–42 m away) are out of reach and the Finns can work their way up to the line...
+@export var hold_sight_m: float = 30.0
+## ...but a Finn who shoots AT them (a hit or a bullet close past) is seen up to this far for a while.
+@export var hold_alert_sight_m: float = 40.0
+@export var hold_alert_time: float = 8.0
+@export var hold_chase_m: float = 14.0 ## HOLD: goes for a Finn in the trench this close who is out of sight...
+@export var hold_leash_m: float = 18.0 ## ...but only this far from his spot.
+@export_group("")
 
 # --- Synced from the host by StateSync ---
 var state: State = State.IDLE:
@@ -47,6 +60,9 @@ var health: float = 100.0
 
 ## Set by the WaveSpawner: the place in front of the trench this soldier advances to.
 var attack_point: Vector3 = Vector3.ZERO
+## L3: HOLD – his spot in the captured trench (set by the WaveSpawner with `start_holding`).
+var hold_point: Vector3 = Vector3.ZERO
+var _hold_alert_until: float = -100.0 # HOLD: shot at – looking further for the shooter until then
 
 # --- G2, host only ---
 ## 0 = calm … 1 = can't lift his head. Close bullets raise it, it wears off by itself.
@@ -189,6 +205,10 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_suppression(delta)
 
+	if state == State.HOLD:
+		_hold(delta) # L3: holding the captured trench (also the DP-27 gunner: no team, no moving up)
+		_fall_and_slide(delta)
+		return
 	if data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
 		_mg_follow(delta) # fire, then move up behind the riflemen
 	if _deployed and data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
@@ -232,6 +252,9 @@ func _update_senses(dt: float) -> void:
 	_officer_near = _find_officer_near() != null
 	if data.kind == EnemyData.Kind.OFFICER:
 		_officer_think(dt)
+	if state == State.HOLD:
+		_hold_senses()
+		return
 	if state == State.ASSAULT:
 		# In the final rush there is no careful spotting: in the trench, anyone in sight is shot at.
 		_can_see_target = is_in_trench() and _target != null and is_instance_valid(_target) \
@@ -300,7 +323,7 @@ func _chest_of(p: Player) -> Vector3:
 ## Called (through the "enemies" group) whenever a shot is fired.
 ## `source` is where the sound came from, `interest` is where to look.
 func hear_noise(source: Vector3, interest: Vector3, radius: float) -> void:
-	if not multiplayer.is_server() or state == State.DEAD or state == State.ATTACK or state == State.ASSAULT:
+	if not multiplayer.is_server() or state in [State.DEAD, State.ATTACK, State.ASSAULT, State.HOLD]:
 		return
 	if global_position.distance_to(source) > radius:
 		return
@@ -478,7 +501,12 @@ func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_n
 	for node in get_tree().get_nodes_in_group("players"):
 		if (node as Player).get_peer_id() == attacker_id:
 			attacker = node
-	if attacker and state == State.ASSAULT:
+	if attacker and state == State.HOLD:
+		_hold_alert_until = _now() + hold_alert_time
+		if not _can_see_target:
+			_set_target(attacker) # turns towards whoever shot him (and goes for him if he is close)
+			_last_known_position = attacker.global_position
+	elif attacker and state == State.ASSAULT:
 		if not is_in_trench():
 			pass # still rushing: keep running
 		elif _target == null or not is_instance_valid(_target) or _target.is_dead:
@@ -617,6 +645,106 @@ func _trench_fight(delta: float) -> void:
 		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
 
 
+# ------------------------------------------------------------------ L3: holding the captured trench
+## Host: from now on he holds `at` (a spot on the trench floor) – see State.HOLD.
+func start_holding(at: Vector3) -> void:
+	hold_point = at
+	attack_point = at
+	_reaction_delay = _rng.randf_range(data.reaction_time_min, data.reaction_time_max)
+	state = State.HOLD
+
+
+## HOLD senses (~5×/s): the nearest Finn in sight (no view cone – he is watching for the
+## counterattack, and no slow spotting: the first shot still waits for his reaction time).
+## Nobody in sight: he remembers the last one (to go for him round a corner).
+func _hold_senses() -> void:
+	var best: Player = null
+	var sight: float = hold_alert_sight_m if _now() < _hold_alert_until else hold_sight_m
+	var best_distance: float = minf(sight, visibility_limit)
+	for node in get_tree().get_nodes_in_group("players"):
+		var p := node as Player
+		if p == null or p.is_dead:
+			continue
+		var distance: float = eyes.global_position.distance_to(p.head.global_position)
+		if distance > best_distance:
+			continue
+		if _has_line_of_sight(p.head.global_position) or _has_line_of_sight(_chest_of(p)):
+			best = p
+			best_distance = distance
+	if best:
+		if best != _target:
+			_set_target(best)
+		_last_known_position = best.global_position
+		_can_see_target = true
+		return
+	_can_see_target = false
+	if _target != null and (not is_instance_valid(_target) or _target.is_dead):
+		_target = null
+
+
+## HOLD (host): fire at a Finn in sight (ducking while bullets fly close), go for one who is close
+## but round a corner, otherwise back to his spot, watching the rear where the Finns will come from.
+func _hold(delta: float) -> void:
+	var has_target: bool = _target != null and is_instance_valid(_target) and not _target.is_dead
+	if has_target and _can_see_target:
+		_stop()
+		is_kneeling = suppression >= data.prone_threshold # head down behind the trench wall
+		_face_towards(_target.global_position, delta)
+		if is_kneeling or not _in_fire_range():
+			_aim_time = 0.0
+			_mg_burst_left = 0
+			return
+		_aim_time += delta
+		if _aim_time >= _reaction_delay:
+			_hold_fire()
+		return
+	_aim_time = 0.0
+	_mg_burst_left = 0
+	if has_target and _target.global_position.y < TRENCH_FLOOR_BELOW \
+			and _target.global_position.distance_to(hold_point) < hold_leash_m \
+			and global_position.distance_to(_target.global_position) < hold_chase_m:
+		_move_to(_target.global_position, data.hurry_speed)
+		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+		return
+	var to_post: Vector3 = hold_point - global_position
+	to_post.y = 0.0
+	if to_post.length() > 1.0:
+		_move_to(hold_point, data.walk_speed)
+		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+		return
+	_stop()
+	is_kneeling = suppression >= data.prone_threshold
+	var look: Vector3 = _last_known_position if has_target else global_position + Vector3(0, 0, 30)
+	_face_towards(look, delta)
+
+
+## HOLD: one rifle shot – or, for the DP-27 gunner, the next round of a burst.
+func _hold_fire() -> void:
+	var now: float = _now()
+	if data.kind != EnemyData.Kind.MG_GUNNER:
+		if now >= _next_shot_time:
+			_shoot()
+			_next_shot_time = now + _rng.randf_range(data.trench_fire_interval_min, data.trench_fire_interval_max) * _fire_interval_factor()
+		return
+	if now < _mg_reload_until:
+		return
+	if mg_ammo <= 0:
+		_mg_reload_until = now + data.mg_reload_time
+		mg_ammo = data.mg_magazine
+		_mg_burst_left = 0
+		return
+	if _mg_burst_left <= 0 and now >= _mg_next_burst:
+		_mg_burst_left = _rng.randi_range(data.mg_burst_min, data.mg_burst_max)
+	if _mg_burst_left > 0 and now >= _mg_next_round:
+		_shoot()
+		mg_ammo -= 1
+		_mg_burst_left -= 1
+		_mg_next_round = now + data.mg_shot_interval
+		if _mg_burst_left <= 0 or mg_ammo <= 0:
+			_mg_burst_left = 0
+			_mg_next_burst = now + _rng.randf_range(data.mg_burst_pause_min, data.mg_burst_pause_max) * _fire_interval_factor()
+
+
 func _set_target(p: Player) -> void:
 	_target = p
 	_shots_at_target = 0
@@ -670,6 +798,8 @@ func bullet_near(from: Vector3, to: Vector3, strength: float) -> void:
 	var distance: float = closest.distance_to(centre)
 	if distance > data.suppression_radius_m:
 		return
+	if state == State.HOLD:
+		_hold_alert_until = _now() + hold_alert_time # L3: someone is shooting at us – look for him
 	add_suppression(strength * (1.0 - 0.7 * distance / data.suppression_radius_m))
 
 
@@ -709,8 +839,8 @@ func _update_suppression(delta: float) -> void:
 	var prone: bool = is_prone
 	if _deployed:
 		prone = true
-	elif state == State.ASSAULT and is_in_trench():
-		prone = false
+	elif (state == State.ASSAULT and is_in_trench()) or state == State.HOLD:
+		prone = false # (HOLD: ducks behind the trench wall instead, see _hold)
 	elif now < _dash_until and not is_pinned():
 		prone = false # making a dash for it
 	elif suppression >= data.prone_threshold:

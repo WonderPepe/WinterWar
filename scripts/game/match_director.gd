@@ -5,7 +5,8 @@ extends Node
 ## Runs on the HOST (in co-op the others only read the synced values below, via MatchSync):
 ## - applies the difficulty chosen in the main menu (DifficultyData),
 ## - wins the match when the last wave is cleared,
-## - loses it when too many Soviets are inside the trench at the same time,
+## - loses it when too many Soviets are inside the trench at the same time (not while the players
+##   are retaking a captured trench, L3 battle 6 – the Soviets are in it then by definition),
 ## - patches everyone up (full health) after every cleared wave,
 ## - puts everyone back at their start spot for the next battle (behind the black day screen).
 
@@ -95,6 +96,9 @@ func _process(delta: float) -> void:
 	if _check_timer > 0.0:
 		return
 	_check_timer = check_interval
+	if spawner.retaking:
+		in_trench = 0 # L3: they hold it – the players are taking it back, no "line broken" defeat
+		return
 	var count: int = 0
 	for node in get_tree().get_nodes_in_group("enemies"):
 		var e := node as Enemy

@@ -41,3 +41,9 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Hearing: `get_tree().call_group("enemies", "hear_noise", source, interest, radius)`.
 - Map: 300 × 300 m, origin in the centre. Finnish trench at z ≈ 52–70 (floor y = -1.4,
   ground y = 0; the centre line is `TRENCH_XZ` in `tools/build_scenes.gd`, z ≈ 58–64, see L1 in milestones.md); enemies come from the south forest (z ≈ -118) towards +z. Forward is -z.
+  L3: two communication trenches zigzag back from the line at x = -40 / +40 to z ≈ 107 (ramp out to
+  z ≈ 113), `COMM_XZ` (west; east = mirror) and `COMM_AREAS` in the builder; the same rects are
+  `TerrainGenerator.extra_trench_areas` (ground lowered to the floor), `ArtilleryBarrage.COMM_TRENCH_AREAS`
+  (shelter, no shells/bombs land there) and keep_clear rects in `ForestScatter` – keep all four in step.
+  Groups: `rear_spawn` (8 Marker3D, meta `side` west/east, respawns), `retake_point` (10 spots in the
+  west half for battle 6's occupiers).

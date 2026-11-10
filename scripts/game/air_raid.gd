@@ -186,7 +186,7 @@ func _make_plan() -> void:
 		for j in n:
 			var along: float = (j - (n - 1) * 0.5) * bomb_spacing * _rng.randf_range(0.85, 1.15)
 			var pos := Vector3(pass_x + _dir * along, 0.0, lanes[i] + _rng.randf_range(-5.0, 5.0))
-			if trench_rect.has_point(Vector2(pos.x, pos.z)):
+			if trench_rect.has_point(Vector2(pos.x, pos.z)) or ArtilleryBarrage.in_comm_trench_area(pos):
 				continue # straddles the trench: that one goes over
 			pos.y = terrain.get_height(pos.x, pos.z) if terrain else 0.0
 			_b_plane.append(i)

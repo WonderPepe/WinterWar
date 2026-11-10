@@ -352,6 +352,23 @@ const POST_HOLE_HALF_W := 0.4  ## the loophole is 0.8 m wide ...
 const POST_HOLE_TOP := 0.42    ## ... and 0.42 m tall, starting at the ground
 ## L1: two short dead-end branches to the rear: x, z of the line they leave, length (m).
 const SPURS := [Vector3(-54.5, 63.0, 5.0), Vector3(51.0, 61.0, 5.0)]
+## L3: two communication trenches zigzag back (+z) from the line at x = -40 and x = +40 into the
+## forest behind it: the way up for reinforcements and the safe rear spawn points. The west one's
+## centre line as x, z pairs (the east one is its mirror image, x -> -x); short legs with 45-degree
+## bends so nobody sees (or shoots) far along it. At the end a ramp leads up to the ground.
+const COMM_XZ := [
+	-40, 64, -40, 69, -44, 73, -44, 79, -38, 85, -38, 91,
+	-43, 96, -43, 101, -40, 104, -40, 107,
+]
+const COMM_RAMP_Z := 107.0  ## the ramp up to the ground starts here (end of the last leg) ...
+const COMM_RAMP_RUN := 4.5  ## ... and reaches the ground this far behind
+## The earth strip each one is cut into (x, z, width, depth) - the same rects as
+## TerrainGenerator.extra_trench_areas (the ground is lowered to the floor inside them).
+const COMM_AREAS := [Rect2(-47, 68, 14, 45.5), Rect2(33, 68, 14, 45.5)]
+## L3: rear spawn points (x, z) near the end of the west trench; the east ones are mirrored.
+const REAR_SPAWN_XZ := [Vector2(-40, 105.5), Vector2(-41.5, 102.5), Vector2(-43, 99.5), Vector2(-43, 97.0)]
+## L3 battle 6: where the Soviets who took the west half of the line wait (x on the trench line).
+const RETAKE_X := [-95.0, -88.0, -80.0, -69.0, -59.0, -49.5, -45.0, -31.0, -19.0, -12.0]
 const TRENCH_WIDTH := 2.0
 const DEPTH := 1.4
 ## L2: the log bunker faces the enemy (its front wall with the Maxim's hole is at z = BUNKER_Z - 2.75,
@@ -360,6 +377,15 @@ const DEPTH := 1.4
 const BUNKER_Z := 59.5
 const BUNKER_DOOR_X := 1.2
 const BUNKER_DOOR_W := 1.4
+
+
+## L3: the centre-line points of communication trench k (0 = west, 1 = east).
+func _comm_points(k: int) -> Array[Vector2]:
+	var pts: Array[Vector2] = []
+	var sx: float = -1.0 if k == 1 else 1.0
+	for i in COMM_XZ.size() / 2:
+		pts.append(Vector2(COMM_XZ[i * 2] * sx, COMM_XZ[i * 2 + 1]))
+	return pts
 
 
 func _tcount() -> int:
@@ -532,6 +558,9 @@ func _build_level(mats: Dictionary) -> Node:
 	noise.fractal_octaves = 3
 	terrain.set("noise", noise)
 	terrain.set("snow_material", mats.snow)
+	var comm_areas: Array[Rect2] = []
+	comm_areas.assign(COMM_AREAS)
+	terrain.set("extra_trench_areas", comm_areas) # L3: communication trenches
 
 	# --- Invisible walls at the map border ---
 	var bounds: StaticBody3D = _add(root, StaticBody3D.new(), "MapBounds")
@@ -602,7 +631,7 @@ func _build_level(mats: Dictionary) -> Node:
 		nm.geometry_collision_mask = 0b1
 		nm.geometry_source_geometry_mode = NavigationMesh.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN
 		nm.geometry_source_group_name = &"navigation_source"
-		nm.filter_baking_aabb = AABB(Vector3(-150, -10, -150), Vector3(300, 30, 225)) # enemy side only
+		nm.filter_baking_aabb = AABB(Vector3(-150, -10, -150), Vector3(300, 30, 268)) # enemy side + (L3) the communication trenches
 		nav.navigation_mesh = nm
 
 	# --- Enemy spawn points (southern forest edge) and attack points (in front of the trench) ---
@@ -665,6 +694,21 @@ func _build_level(mats: Dictionary) -> Node:
 		var m: Marker3D = _add(spawns, Marker3D.new(), "Spawn%d" % (i + 1))
 		m.position = Vector3(spawn_x[i], -DEPTH + 0.1, _line_z(spawn_x[i]))
 		m.add_to_group("player_spawn", true)
+	# --- L3: rear spawn points near the far end of each communication trench (respawn here) ---
+	var rear_spawns: Node3D = _add(root, Node3D.new(), "RearSpawnPoints")
+	for k in 2:
+		for j in REAR_SPAWN_XZ.size():
+			var xz: Vector2 = REAR_SPAWN_XZ[j] * Vector2(-1.0 if k == 1 else 1.0, 1.0)
+			var m: Marker3D = _add(rear_spawns, Marker3D.new(), "RearSpawn%s%d" % ["W" if k == 0 else "E", j + 1])
+			m.position = Vector3(xz.x, -DEPTH + 0.1, xz.y)
+			m.add_to_group("rear_spawn", true)
+			m.set_meta("side", "west" if k == 0 else "east")
+	# --- L3 battle 6: where the Soviets holding the west half of the line wait ---
+	var retake: Node3D = _add(root, Node3D.new(), "RetakePoints")
+	for i in RETAKE_X.size():
+		var m: Marker3D = _add(retake, Marker3D.new(), "RetakePoint%d" % (i + 1))
+		m.position = Vector3(RETAKE_X[i], -DEPTH, _line_z(RETAKE_X[i]))
+		m.add_to_group("retake_point", true)
 	return root
 
 
@@ -834,6 +878,7 @@ func _build_game() -> Node:
 		[".:wave_officers", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:wave_mg_teams", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:wave_tanks", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
+		[".:retaking", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE], # L3
 	])
 
 	# G1: the rules of the battle (difficulty, victory, defeat) and the evening light.
@@ -1295,6 +1340,13 @@ const WAVE_LISTS := {
 	"Hard": [[10, 1, 0, 0, 0], [12, 1, 2, 0, 0], [12, 1, 0, 0, 2], [16, 1, 2, 0, 0], [12, 1, 1, 1, 1],
 		[16, 2, 1, 1, 0], [18, 2, 1, 1, 2], [20, 2, 0, 1, 0], [22, 2, 2, 0, 0], [24, 2, 2, 1, 0]],
 }
+## L3: battles that start with the Soviets holding the west half of the trench: battle number ->
+## [riflemen, officers, DP-27 teams] per difficulty (Easy fewer riflemen only, like the waves).
+const RETAKE_LISTS := {
+	"Easy": {6: [7, 1, 1]},
+	"Normal": {6: [8, 1, 1]},
+	"Hard": {6: [9, 1, 1]},
+}
 
 
 func _make_difficulty_data() -> void:
@@ -1314,7 +1366,11 @@ func _make_difficulty_data() -> void:
 		r.enemy_damage_multiplier = d[7]
 		var waves: Array[WaveData] = []
 		for w: Array in WAVE_LISTS[d[0]]:
-			waves.append(WaveData.new().make(w[0], w[1], w[2], w[3] == 1, w[4]))
+			var wd: WaveData = WaveData.new().make(w[0], w[1], w[2], w[3] == 1, w[4])
+			var occ: Array = RETAKE_LISTS[d[0]].get(waves.size() + 1, [])
+			if not occ.is_empty():
+				wd.occupy(occ[0], occ[1], occ[2])
+			waves.append(wd)
 		r.waves = waves
 		ResourceSaver.save(r, "res://resources/difficulty/%s.tres" % (d[0] as String).to_lower())
 
@@ -1352,7 +1408,7 @@ const MISSIONS := [
 	["1 February 1940", "Weather: Snow and Artillery Smoke",
 		"The Soviet artillery barrage has begun. Shells rain down across the front as the enemy prepares a new offensive.", "sa_kuva_a_126"],
 	["6 February 1940", "Weather: Overcast",
-		"Enemy attacks continue day and night. Ammunition is running low and casualties are mounting.", "sa_kuva_a_125"],
+		"A Soviet night assault has seized part of our trench line. Counterattack immediately, recapture the position, and restore the front.", "sa_kuva_a_125"],
 	["11 February 1940", "Weather: Dense Fog\nTemperature: ~−20°C",
 		"The largest offensive of the war has begun. Hundreds of guns support waves of infantry and tanks. Hold the line.", "sa_kuva_a_8"],
 	["12 February 1940", "Weather: Fog Clearing",
@@ -2240,7 +2296,7 @@ func _build_trench_source(mats: Dictionary) -> Node:
 	var rise := DEPTH + 0.05
 	var run := 4.5
 	var slope := atan(rise / run)
-	for x in [-80, -40, 40, 80]:
+	for x in [-80, 80]: # (L3: at x = +-40 the communication trenches lead back instead)
 		_csg_box(trench, "ExitCut_x%d" % x, Vector3(1.6, 3.6, 7.0), Vector3(x, -0.8, 67.5),
 			mats.trench_wall, SUB)
 		var normal := Vector3(0, cos(slope), -sin(slope))
@@ -2248,6 +2304,32 @@ func _build_trench_source(mats: Dictionary) -> Node:
 		_csg_box(trench, "ExitRamp_x%d" % x, Vector3(1.6, 0.6, sqrt(run * run + rise * rise) + 0.1),
 			top_center - normal * 0.3, mats.snow, CSGShape3D.OPERATION_UNION, Vector3(-slope, 0, 0))
 		_csg_box(trench, "ExitLanding_x%d" % x, Vector3(1.6, 0.4, 2.0), Vector3(x, -0.15, 70.4),
+			mats.snow)
+
+	# L3: the two communication trenches: an earth strip each, the zigzag cut into it and a ramp
+	# up to the ground at the far end (same build as the exits).
+	for k in 2:
+		var side: String = "West" if k == 0 else "East"
+		var area: Rect2 = COMM_AREAS[k]
+		_csg_box(trench, "CommSlab%s" % side, Vector3(area.size.x, 2.5, area.size.y),
+			Vector3(area.get_center().x, -1.25, area.get_center().y), mats.snow)
+		var pts := _comm_points(k)
+		for i in pts.size() - 1:
+			var d: Vector2 = pts[i + 1] - pts[i]
+			var mid: Vector2 = (pts[i] + pts[i + 1]) / 2.0
+			_csg_box(trench, "CommCut%s%d" % [side, i + 1], Vector3(d.length() + TRENCH_WIDTH, 3.6, TRENCH_WIDTH),
+				Vector3(mid.x, -0.8, mid.y), mats.trench_wall, SUB, Vector3(0, atan2(-d.y, d.x), 0))
+		var ex: float = pts[pts.size() - 1].x
+		var cut_z0: float = COMM_RAMP_Z - 1.0
+		var cut_z1: float = area.end.y + 0.1
+		_csg_box(trench, "CommExitCut%s" % side, Vector3(1.6, 3.6, cut_z1 - cut_z0), Vector3(ex, -0.8, (cut_z0 + cut_z1) / 2.0),
+			mats.trench_wall, SUB)
+		var normal := Vector3(0, cos(slope), -sin(slope))
+		var top_center := Vector3(ex, -DEPTH + rise / 2.0, COMM_RAMP_Z + COMM_RAMP_RUN / 2.0)
+		_csg_box(trench, "CommRamp%s" % side, Vector3(1.6, 0.6, sqrt(COMM_RAMP_RUN * COMM_RAMP_RUN + rise * rise) + 0.1),
+			top_center - normal * 0.3, mats.snow, CSGShape3D.OPERATION_UNION, Vector3(-slope, 0, 0))
+		var land_z0: float = COMM_RAMP_Z + COMM_RAMP_RUN - 0.1
+		_csg_box(trench, "CommLanding%s" % side, Vector3(1.6, 0.4, cut_z1 - land_z0), Vector3(ex, -0.15, (land_z0 + cut_z1) / 2.0),
 			mats.snow)
 
 	# G1: a niche in the rear wall for the ammo crate.
