@@ -140,12 +140,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 
 ## Air raid (A1, owner 2026-11-08)
 - `AirRaid` (Game/AirRaid, `scripts/game/air_raid.gd`, group `air_raid`). Three Tupolev SB-2 bombers in
-  waves/battles 4 and 8 (`raid_waves`; battle n = wave n). Owner's choice: same danger as the artillery
+  waves/battles 4, 8 and 10 (`raid_waves`; battle n = wave n; 10 added 2026-11-09). Owner's choice: same danger as the artillery
   (`ArtilleryBarrage.is_covered`: open ground deadly, crouching in the trench / the bunker safe, the
   Maxim gunner exposed to bombs in front), bigger bombs (kill 9 m, harm 50 m, near_damage 120).
-- Those waves also have an artillery barrage on Easy/Normal, so the raid waits for `barrage_ended`
+- Battles 8 and 10 also have an artillery barrage (since 2026-11-09 on every difficulty), so the raid waits for `barrage_ended`
   and starts `after_barrage_delay` (5 s) later WITHOUT a hold line (the attack is already moving).
-  A wave without a barrage (Hard): the raid starts at the wave start and holds the Soviets at z 0
+  A wave without a barrage (battle 4): the raid starts at the wave start and holds the Soviets at z 0
   (`Enemy.barrage_hold_z`, reset in `_exit_tree` like the barrage); officers whistle at the end.
 - Phases APPROACH (HUD "AIR RAID! GET INTO THE TRENCH!", engines far away) -> BOMBING (first bomb in the
   air, "GET INTO THE TRENCH!" only for people in the open) -> LEAVING -> IDLE. ~38 s.
@@ -170,3 +170,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   export if wanted.
 - Tests: `tools/test_airraid.gd` (plan, no bomb in the trench, hurt in the open, hold line, after-barrage
   start), `tools/shots_airraid.gd` (xvfb; aims at plane 1).
+
+## Wave lists rebalanced (owner 2026-11-09)
+Easy [riflemen, officers, MG teams, barrage, tanks]: 1 [8,1,0,-,0]; 2 [10,1,2,-,0]; 3 [10,1,0,-,2]; 4 [14,1,2,-,0] + air raid;
+5 [10,1,1,barrage,1]; 6 [14,2,1,barrage,0]; 7 [16,2,1,barrage,2]; 8 [18,2,0,barrage,0] + raid; 9 [20,2,2,-,0];
+10 [22,2,2,barrage,0] + raid. Normal = Easy + 1 rifleman per battle, Hard = Easy + 2. Barrages, tanks, officers, MGs and
+raids are the same on every difficulty. Wave sizes now exceed `max_alive` 16 (e.g. battle 10 Hard = 24+2+4): groups come
+in as others die. Battle 2 briefing text rewritten by the owner. Edited in `resources/difficulty/*.tres` + builder `WAVE_LISTS`/`MISSIONS`.

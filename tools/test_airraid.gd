@@ -33,7 +33,7 @@ func run() -> void:
 	var raid := game.get_node("AirRaid") as AirRaid
 	var arty := game.get_node("ArtilleryBarrage") as ArtilleryBarrage
 	var hud: HUD = game.get_node("HUD")
-	check(raid != null and raid.raid_waves.size() == 2 and raid.raid_waves[0] == 4 and raid.raid_waves[1] == 8, "air raid in battles 4 and 8")
+	check(raid != null and raid.raid_waves == ([4, 8, 10] as Array[int]), "air raid in battles 4, 8 and 10")
 	check(arty.pool_size == 12 and arty._blasts.size() == 12, "12 blasts in the pool")
 	check(raid.engine_sound != null and raid.whistle_sound != null and raid._boom_sounds.size() >= 2,
 			"sounds set: engine, whistle, %d different booms" % raid._boom_sounds.size())
@@ -46,7 +46,7 @@ func run() -> void:
 	check(not raid.is_active(), "wave 3: no raid")
 	raid._on_wave_started(5, 5)
 	check(not raid.is_active(), "wave 5: no raid")
-	check(normal.waves[3].barrage and normal.waves[7].barrage, "(Normal waves 4 and 8 also have a barrage)")
+	check(not normal.waves[3].barrage and normal.waves[7].barrage and normal.waves[9].barrage, "(Normal: wave 4 has no barrage, waves 8 and 10 do)")
 
 	# Plan.
 	p.global_position = Vector3(-30, -1.3, 61)
@@ -115,9 +115,9 @@ func run() -> void:
 	while raid.is_active():
 		await seconds(0.2)
 
-	# Wave 4 has a barrage: the raid waits for it to end, then comes without a hold line.
-	raid._on_wave_started(4, 5)
-	check(not raid.is_active(), "wave 4 (barrage wave): the raid waits for the artillery")
+	# Wave 8 has a barrage: the raid waits for it to end, then comes without a hold line.
+	raid._on_wave_started(8, 10)
+	check(not raid.is_active(), "wave 8 (barrage wave): the raid waits for the artillery")
 	arty.barrage_ended.emit()
 	await seconds(raid.after_barrage_delay - 1.0)
 	check(not raid.is_active(), "...and starts a few seconds after the barrage ended, not at once")

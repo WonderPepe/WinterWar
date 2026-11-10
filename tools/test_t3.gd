@@ -38,7 +38,7 @@ func run() -> void:
 		var got: Array[int] = []
 		for w in d.waves:
 			got.append(w.tanks)
-		check(got == [0, 0, 0, 1, 1, 1, 1, 1, 2, 2], "%s: tanks per battle %s" % [n, str(got)])
+		check(got == [0, 0, 2, 0, 1, 0, 2, 0, 0, 0], "%s: tanks per battle %s" % [n, str(got)])
 	check(WaveData.describe(8, 1, 1, 1) == "8 riflemen · 1 officer · 1 machine-gun team · 1 tank"
 			and WaveData.describe(6, 0, 0, 2).ends_with("2 tanks") and not WaveData.describe(6, 1, 0).contains("tank"),
 			"HUD line names the tanks")
@@ -67,15 +67,15 @@ func run() -> void:
 				closest = minf(closest, absf(t.x - start.x))
 		check(closest > 5.0, "%s: lane through the forest is clear (closest tree %.1f m to the side)" % [r.name, closest])
 
-	# --- Battle 4: one tank comes out of the forest a while after the infantry.
+	# --- Battle 5: one tank comes out of the forest a while after the infantry.
 	Engine.time_scale = 4.0
 	waves.time_between_groups = 0.3
 	waves.first_tank_delay = 3.0
-	waves.start_at_wave(4, 0.1)
+	waves.start_at_wave(5, 0.1)
 	var hud: HUD = game.get_node("HUD")
-	await wait_for(func() -> bool: return waves.wave_number == 4, 3.0)
+	await wait_for(func() -> bool: return waves.wave_number == 5, 3.0)
 	await seconds(0.3)
-	check(waves.wave_tanks == 1, "battle 4 brings 1 tank (synced wave_tanks)")
+	check(waves.wave_tanks == 1, "battle 5 brings 1 tank (synced wave_tanks)")
 	check(hud.banner_sub.text.contains("1 tank"), "HUD banner: '%s'" % hud.banner_sub.text.replace("\n", " / "))
 	check(get_tree().get_nodes_in_group("tanks").is_empty(), "no tank yet right at the start of the battle")
 	var came: bool = await wait_for(func() -> bool: return get_tree().get_nodes_in_group("tanks").size() == 1, 6.0)
@@ -111,10 +111,10 @@ func run() -> void:
 	for e in get_tree().get_nodes_in_group("enemies"):
 		(e as Enemy).take_damage(9999.0, 1, e.global_position, Vector3.UP)
 	var won: bool = await wait_for(func() -> bool: return cleared.size() == 1, 3.0)
-	check(won and cleared[0] == 4 and waves.alive_count == 0, "crew dead → battle 4 cleared")
+	check(won and cleared[0] == 5 and waves.alive_count == 0, "crew dead → battle 5 cleared")
 	await seconds(0.5)
 
-	# --- Battle 9: two tanks, on different routes, one after the other.
+	# --- Battle 7: two tanks, on different routes, one after the other.
 	waves.set_process(false)
 	waves.tank_interval = 3.0
 	for t in get_tree().get_nodes_in_group("tanks"):
@@ -122,16 +122,17 @@ func run() -> void:
 	for e in get_tree().get_nodes_in_group("enemies"):
 		e.free()
 	waves.alive_count = 0
-	waves.start_at_wave(9, 0.1)
+	waves.start_at_wave(7, 0.1)
 	waves.set_process(true)
-	await wait_for(func() -> bool: return waves.wave_number == 9, 3.0)
-	check(waves.wave_tanks == 2 and waves.tanks_in_fight() == 2, "battle 9 brings 2 tanks")
+	await wait_for(func() -> bool: return waves.wave_number == 7, 3.0)
+	check(waves.wave_tanks == 2 and waves.tanks_in_fight() == 2, "battle 7 brings 2 tanks")
 	await wait_for(func() -> bool: return get_tree().get_nodes_in_group("tanks").size() == 1, 6.0)
 	var one: bool = get_tree().get_nodes_in_group("tanks").size() == 1
 	var two: bool = await wait_for(func() -> bool: return get_tree().get_nodes_in_group("tanks").size() == 2, 6.0)
 	check(one and two, "the second tank follows tank_interval later")
 	var ts: Array[Node] = get_tree().get_nodes_in_group("tanks")
 	check((ts[0] as Tank).route != (ts[1] as Tank).route, "the two tanks take different routes")
+
 	# Kill every soldier as he comes out (a big wave comes in parts: max_alive).
 	var t_end: int = Time.get_ticks_msec() + 20000
 	while (waves._left_to_spawn > 0 or waves.alive_count > 0) and Time.get_ticks_msec() < t_end:
@@ -140,10 +141,10 @@ func run() -> void:
 		await seconds(0.3)
 	(ts[0] as Tank).destroy()
 	await seconds(1.0)
-	check(waves.wave_number == 9 and waves.tanks_in_fight() == 1 and waves._phase == WaveSpawner.Phase.FIGHTING, "one tank left → battle 9 goes on")
+	check(waves.wave_number == 7 and waves.tanks_in_fight() == 1 and waves._phase == WaveSpawner.Phase.FIGHTING, "one tank left → battle 7 goes on")
 	(ts[1] as Tank).destroy()
 	var won9: bool = await wait_for(func() -> bool: return waves._phase == WaveSpawner.Phase.WAITING, 3.0)
-	check(won9, "both tanks knocked out → battle 9 cleared (alive %d, to spawn %d, tanks %d)" % [waves.alive_count, waves._left_to_spawn, waves.tanks_in_fight()])
+	check(won9, "both tanks knocked out → battle 7 cleared (alive %d, to spawn %d, tanks %d)" % [waves.alive_count, waves._left_to_spawn, waves.tanks_in_fight()])
 	waves.set_process(false)
 
 	# --- Wrecks: only the newest max_wrecks stay. A Molotov fire stuck to a wreck that goes
@@ -177,6 +178,25 @@ func run() -> void:
 	hud.day_screen.open(1, load("res://resources/front_reports.tres"))
 	var gone: bool = await wait_for(func() -> bool: return get_tree().get_nodes_in_group("tank_wrecks").size() == 3, 20.0)
 	check(gone, "extra wrecks removed while the day screen is black")
+
+	# --- A new tank never takes a route that still has a wreck (or any tank) on it.
+	waves.set_process(false)
+	for t in get_tree().get_nodes_in_group("tanks"):
+		t.free()
+	var tspawner: TankSpawner = get_tree().get_first_node_in_group("tank_spawner")
+	var n_routes: int = tspawner.get_routes().size()
+	for i in n_routes - 1:
+		tspawner.spawn_tank(i).destroy() # wrecks on all routes but the last
+	var fresh: Tank = tspawner.spawn_wave_tank()
+	check(fresh != null and fresh.route == tspawner.get_routes()[n_routes - 1], "new tank takes the only route without a wreck")
+	fresh.destroy()
+	var fresh2: Tank = tspawner.spawn_wave_tank() # every route has a wreck now: the oldest is cleared
+	await seconds(0.3)
+	var on_route: int = 0
+	for t in get_tree().get_nodes_in_group("tanks"):
+		if (t as Tank).route == fresh2.route and not t.is_queued_for_deletion():
+			on_route += 1
+	check(on_route == 1, "all routes had wrecks: the oldest wreck was cleared, the new tank is alone on its route")
 
 	Engine.time_scale = 1.0
 	print("TEST T3 DONE: %d failure(s)" % fails)

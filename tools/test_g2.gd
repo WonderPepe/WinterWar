@@ -394,8 +394,8 @@ func run() -> void:
 	check(spawner.wave_list.size() == director.waves_to_win, "wave list: one entry per wave (%d)" % spawner.wave_list.size())
 	var w2: WaveData = spawner.get_composition(2)
 	var w3: WaveData = spawner.get_composition(3)
-	check(spawner.get_composition(1).officers == 0 and spawner.get_composition(1).mg_teams == 0, "wave 1: riflemen only")
-	check(w2.officers == 1 and w3.mg_teams == 1, "officers from wave 2, a machine-gun team from wave 3")
+	check(spawner.get_composition(1).officers == 1 and spawner.get_composition(1).mg_teams == 0, "wave 1: riflemen and one officer")
+	check(w2.mg_teams == 2 and w3.mg_teams == 0 and w3.tanks == 2, "machine-gun teams in wave 2, two tanks in wave 3")
 	for d in ["easy", "normal", "hard"]:
 		var dd: DifficultyData = load("res://resources/difficulty/%s.tres" % d)
 		check(dd.waves.size() == dd.waves_to_win, "%s: %d waves listed" % [dd.display_name, dd.waves.size()])
@@ -419,13 +419,14 @@ func run() -> void:
 	await frames(3)
 	spawner.alive_count = 0
 	spawner.wave_number = 3
+	spawner.max_alive = 100 # wave 4 is bigger than the web limit
 	spawner.time_between_groups = 0.2
 	spawner.set_process(true)
 	spawner._phase = WaveSpawner.Phase.WAITING
 	spawner._timer = 0.0
 	var hud: HUD = game.get_node("HUD")
 	await seconds(0.3)
-	check(hud.banner_sub.text.contains("1 officer") and hud.banner_sub.text.contains("1 machine-gun team"),
+	check(hud.banner_sub.text.contains("1 officer") and hud.banner_sub.text.contains("2 machine-gun teams"),
 			"HUD tells what is coming: '%s'" % hud.banner_sub.text.replace("\n", " / "))
 	t0 = Time.get_ticks_msec()
 	while spawner._left_to_spawn > 0 and Time.get_ticks_msec() - t0 < 10000:
@@ -465,7 +466,7 @@ func run() -> void:
 	director.waves_cleared = 1
 	await seconds(0.4)
 	check(day.is_open and day.visible and day.date_label.text == "17 December 1939" and day.day_label.text.ends_with("2")
-			and day.tele_date.text.begins_with("Weather: Heavy Snowfall") and day.tele_text.text.begins_with("After hours of artillery fire"),
+			and day.tele_date.text.begins_with("Weather: Heavy Snowfall") and day.tele_text.text.begins_with("Enemy activity has increased"),
 			"battle 1 cleared: the day screen shows the briefing of battle 2 (17 December 1939)")
 	check(day.photo.texture != null and day.frame.visible, "…with its photo")
 	check(hud.wave_banner.text == "BATTLE 1 COMPLETED" and hud.wave_banner.modulate.a > 0.9 and day.black.color.a < 0.01,

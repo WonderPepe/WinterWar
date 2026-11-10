@@ -28,7 +28,7 @@ func run() -> void:
 		if normal.waves[i].barrage:
 			flags.append(i + 1)
 			check(normal.waves[i].officers > 0, "barrage wave %d has an officer (he whistles at the end)" % (i + 1))
-	check(flags == [4, 6, 8, 10], "Normal: barrage before waves %s" % str(flags))
+	check(flags == [5, 6, 7, 8, 10], "Normal: barrage before waves %s" % str(flags))
 
 	var game: Node = load("res://scenes/game.tscn").instantiate()
 	get_tree().root.add_child(game)
@@ -98,11 +98,11 @@ func run() -> void:
 	p.input.crouch_held = true
 	p.is_crouching = true
 
-	# Wave 4 starts → the barrage begins by itself.
-	spawner.wave_number = 3
+	# Wave 5 starts → the barrage begins by itself.
+	spawner.wave_number = 4
 	spawner._start_wave()
 	await seconds(0.3)
-	check(arty.phase == ArtilleryBarrage.Phase.WARNING, "wave 4 starts with an artillery warning")
+	check(arty.phase == ArtilleryBarrage.Phase.WARNING, "wave 5 starts with an artillery warning")
 	check(hud.artillery_label.visible and hud.artillery_label.text.begins_with("ARTILLERY!"), "HUD: '%s'" % hud.artillery_label.text)
 	check(Enemy.barrage_hold_z < INF, "the Soviets may not come closer than z %.0f meanwhile" % Enemy.barrage_hold_z)
 	check(arty._warning_audio.playing, "the distant guns are heard during the warning")
@@ -146,10 +146,11 @@ func run() -> void:
 			Enemy.State.keys()[r.state], Enemy.State.keys()[o.state]])
 	Engine.time_scale = 1.0
 
-	# A wave without a barrage: nothing happens.
-	spawner._start_wave() # wave 5
+	# A wave without a barrage: nothing happens (battle 9).
+	spawner.wave_number = 8
+	spawner._start_wave() # wave 9
 	await seconds(0.3)
-	check(not arty.is_active(), "wave 5: no barrage")
+	check(not arty.is_active(), "wave 9: no barrage")
 
 	# Bug fix: leaving a match during a barrage (Esc → Main Menu, or losing → Play again) must
 	# not leave the hold line behind – the next match's soldiers would stop 50 m short.

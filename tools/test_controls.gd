@@ -92,25 +92,25 @@ func run() -> void:
 	var waves: WaveSpawner = get_tree().get_first_node_in_group("wave_spawner")
 	Engine.time_scale = 4.0
 	waves.time_between_groups = 0.3
+	waves.start_at_wave(2, 0.1)
+	await wait_for(func() -> bool: return waves.wave_number == 2, 3.0)
+	await seconds(0.3)
+	check(not hud._tank_hint_shown, "battle 2 (no tanks): no Molotov hint")
+	# Battle 3 (first tanks) directly, as if battle 2 was cleared.
 	waves.start_at_wave(3, 0.1)
 	await wait_for(func() -> bool: return waves.wave_number == 3, 3.0)
-	await seconds(0.3)
-	check(not hud._tank_hint_shown, "battle 3 (no tanks): no Molotov hint")
-	# Battle 4 (first tanks) directly, as if battle 3 was cleared.
-	waves.start_at_wave(4, 0.1)
-	await wait_for(func() -> bool: return waves.wave_number == 4, 3.0)
 	await seconds(0.2)
-	check(hud._tank_hint_shown and not hud.tank_hint.visible, "battle 4: hint waits while the BATTLE banner is up")
+	check(hud._tank_hint_shown and not hud.tank_hint.visible, "battle 3: hint waits while the BATTLE banner is up")
 	await wait_for(func() -> bool: return hud.tank_hint.visible, 8.0)
 	check(hud.tank_hint.visible and hud.tank_hint.text.contains("TANKS ARE COMING") and hud.tank_hint.text.contains("[F]")
 			and hud.tank_hint.text.contains("[G]"), "hint shown after the banner: '%s'" % hud.tank_hint.text.replace("\n", " / "))
 	await wait_for(func() -> bool: return not hud.tank_hint.visible, hud.tank_hint_time + 2.0)
 	check(not hud.tank_hint.visible, "hint goes away after %d s" % hud.tank_hint_time)
-	hud._last_wave = 4
-	waves.start_at_wave(5, 0.1)
-	await wait_for(func() -> bool: return waves.wave_number == 5, 3.0)
+	hud._last_wave = 3
+	waves.start_at_wave(4, 0.1)
+	await wait_for(func() -> bool: return waves.wave_number == 4, 3.0)
 	await seconds(6.0)
-	check(not hud.tank_hint.visible, "battle 5: no second hint")
+	check(not hud.tank_hint.visible, "battle 4: no second hint")
 	Engine.time_scale = 1.0
 
 	print("RESULT: %s (%d failed)" % ["OK" if fails == 0 else "FAILED", fails])

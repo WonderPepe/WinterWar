@@ -59,7 +59,7 @@ func run() -> void:
 	await seconds(5.5)
 	check(waves.wave_number == 1, "wave 1 started")
 	await seconds(12.0)
-	check(waves.alive_count == 6 and living().size() == 6, "wave 1 has 6 soldiers (alive %d)" % waves.alive_count)
+	check(waves.get_composition(1).total_soldiers() == 10 and waves.alive_count >= 9 and living().size() == waves.alive_count, "wave 1 has 10 soldiers (9 riflemen + 1 officer), coming in groups (alive %d)" % waves.alive_count)
 	var e0: Enemy = living()[0]
 	check(e0.global_position.z < -80, "spawned at the southern forest edge (z=%.0f)" % e0.global_position.z)
 
@@ -142,7 +142,7 @@ func run() -> void:
 	Engine.time_scale = 3.0
 	await seconds(15.0)
 	Engine.time_scale = 1.0
-	check(waves.alive_count == 8, "wave 2 has 8 soldiers (alive %d)" % waves.alive_count)
+	check(waves.get_composition(2).total_soldiers() == 16 and waves.alive_count > 0, "wave 2 has 16 soldiers, they come in groups (alive %d)" % waves.alive_count)
 
 	print("RESULT: %s (%d failures)" % ["OK" if fails == 0 else "FAILED", fails])
 	get_tree().quit()

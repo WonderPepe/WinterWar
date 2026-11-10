@@ -59,19 +59,45 @@ func spawn_tank(route_index: int = -1, approach_m: float = 0.0) -> Tank:
 	return tank
 
 
-## A random route that no tank still in the fight is using (any route if all are taken).
+## A random route with no tank on it at all – not even a wreck or a burning tank, because a new
+## tank would drive into (or on top of) it and be hard to hit. If every route has a wreck, the
+## route with the OLDEST wreck is cleared (its wrecks are removed) and used. Routes with a living
+## tank are only used when there is nothing else (debug keys).
 func _pick_route(routes: Array[Path3D]) -> int:
 	var free: Array[int] = []
 	for i in routes.size():
-		var used: bool = false
-		for t in get_living_tanks():
-			if t.route == routes[i]:
-				used = true
-		if not used:
+		if _tanks_on_route(routes[i]).is_empty():
 			free.append(i)
-	if free.is_empty():
-		return _rng.randi() % routes.size()
-	return free[_rng.randi() % free.size()]
+	if not free.is_empty():
+		return free[_rng.randi() % free.size()]
+	# No empty route: take the one whose newest tank is the oldest, if it holds only wrecks.
+	var best: int = -1
+	var best_newest: int = 0
+	for i in routes.size():
+		var newest: int = 0
+		var only_wrecks: bool = true
+		for t in _tanks_on_route(routes[i]):
+			if not t.is_destroyed():
+				only_wrecks = false
+			newest = maxi(newest, String(t.name).trim_prefix("Tank").to_int())
+		if only_wrecks and (best < 0 or newest < best_newest):
+			best = i
+			best_newest = newest
+	if best >= 0:
+		for t in _tanks_on_route(routes[best]):
+			t.queue_free() # only wrecks; the MultiplayerSpawner removes them everywhere
+		return best
+	return _rng.randi() % routes.size()
+
+
+## Every tank (living, burning or wreck) that belongs to `route`.
+func _tanks_on_route(route: Path3D) -> Array[Tank]:
+	var list: Array[Tank] = []
+	for node in get_tree().get_nodes_in_group("tanks"):
+		var t := node as Tank
+		if t and not t.is_queued_for_deletion() and t.route == route:
+			list.append(t)
+	return list
 
 
 ## Host: a wave tank (T3): from the forest, on a free route.

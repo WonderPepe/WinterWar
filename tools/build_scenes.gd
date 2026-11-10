@@ -1285,14 +1285,15 @@ func _build_target_dummy(mats: Dictionary) -> Node:
 ## machine-gun teams, artillery barrage first (1/0)]. Barrage waves have an officer (he whistles
 ## when it lifts). Easy = Normal with fewer riflemen; officers, MG teams and barrages the same.
 ## [riflemen, officers, MG teams, barrage (1 = yes), tanks] per wave (T3: tanks owner's choice:
-## one in battles 4–8, two in 9–10, the same on every difficulty).
+## rebalanced by the owner 2026-11-09: tanks in battles 3 (2), 5 (1), 7 (2); barrages in 5–8 and 10;
+## air raids in 4, 8 and 10; Normal = Easy + 1 rifleman, Hard = Easy + 2; the same on every difficulty).
 const WAVE_LISTS := {
-	"Easy": [[4, 0, 0, 0, 0], [4, 1, 0, 0, 0], [4, 0, 1, 0, 0], [5, 1, 1, 1, 1], [5, 1, 1, 0, 1], [5, 2, 1, 1, 1], [6, 1, 2, 0, 1], [6, 2, 2, 1, 1],
-		[7, 2, 2, 0, 2], [7, 2, 2, 1, 2]],
-	"Normal": [[6, 0, 0, 0, 0], [7, 1, 0, 0, 0], [7, 0, 1, 0, 0], [8, 1, 1, 1, 1], [9, 1, 1, 0, 1], [9, 2, 1, 1, 1], [10, 1, 2, 0, 1], [10, 2, 2, 1, 1],
-		[11, 2, 2, 0, 2], [12, 2, 2, 1, 2]],
-	"Hard": [[8, 0, 0, 0, 0], [9, 1, 0, 0, 0], [9, 1, 1, 1, 0], [10, 1, 1, 0, 1], [11, 2, 1, 1, 1], [11, 1, 2, 0, 1], [12, 2, 2, 1, 1], [13, 2, 2, 0, 1],
-		[14, 2, 2, 1, 2], [15, 3, 3, 0, 2]],
+	"Easy": [[8, 1, 0, 0, 0], [10, 1, 2, 0, 0], [10, 1, 0, 0, 2], [14, 1, 2, 0, 0], [10, 1, 1, 1, 1],
+		[14, 2, 1, 1, 0], [16, 2, 1, 1, 2], [18, 2, 0, 1, 0], [20, 2, 2, 0, 0], [22, 2, 2, 1, 0]],
+	"Normal": [[9, 1, 0, 0, 0], [11, 1, 2, 0, 0], [11, 1, 0, 0, 2], [15, 1, 2, 0, 0], [11, 1, 1, 1, 1],
+		[15, 2, 1, 1, 0], [17, 2, 1, 1, 2], [19, 2, 0, 1, 0], [21, 2, 2, 0, 0], [23, 2, 2, 1, 0]],
+	"Hard": [[10, 1, 0, 0, 0], [12, 1, 2, 0, 0], [12, 1, 0, 0, 2], [16, 1, 2, 0, 0], [12, 1, 1, 1, 1],
+		[16, 2, 1, 1, 0], [18, 2, 1, 1, 2], [20, 2, 0, 1, 0], [22, 2, 2, 0, 0], [24, 2, 2, 1, 0]],
 }
 
 
@@ -1343,7 +1344,7 @@ const MISSIONS := [
 	["30 November 1939", "Weather: Light Snowfall",
 		"Soviet forces have crossed the border. All units are ordered to battle stations. Prepare the defenses and repel enemy reconnaissance patrols.", "sa_kuva_144612"],
 	["17 December 1939", "Weather: Heavy Snowfall\nVisibility: Poor",
-		"After hours of artillery fire, Soviet infantry and tanks are advancing against the line. Hold your position at all costs.", "sa_kuva_117623"],
+		"Enemy activity has increased under cover of darkness. Soviet patrols are probing the front, and distant sounds from their lines suggest preparations for a larger operation. Hold your position and remain vigilant.", "sa_kuva_117623"],
 	["19 December 1939", "Weather: Clear and Bitterly Cold",
 		"Enemy armor has broken through the obstacles. Finnish defenders must stop the tanks before the breach widens.", "sa_kuva_a_4"],
 	["22 December 1939", "Weather: Clear Skies",

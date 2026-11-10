@@ -1,73 +1,72 @@
-[gd_resource type="Resource" script_class="DifficultyData" format=3]
+[gd_resource type="Resource" script_class="DifficultyData" format=3 uid="uid://co80a6fqxic7s"]
 
-[ext_resource type="Script" path="res://scripts/game/difficulty_data.gd" id="1_e8dl2"]
-[ext_resource type="Script" path="res://scripts/enemies/wave_data.gd" id="2_ckvit"]
+[ext_resource type="Script" uid="uid://dx5gv8gbpbjeg" path="res://scripts/game/difficulty_data.gd" id="1_e8dl2"]
+[ext_resource type="Script" uid="uid://dxa1sxxxlb8fk" path="res://scripts/enemies/wave_data.gd" id="2_ckvit"]
 
 [sub_resource type="Resource" id="Resource_f8wgr"]
 script = ExtResource("2_ckvit")
+riflemen = 9
+officers = 1
 
 [sub_resource type="Resource" id="Resource_hyec1"]
 script = ExtResource("2_ckvit")
-riflemen = 7
+riflemen = 11
 officers = 1
+mg_teams = 2
 
 [sub_resource type="Resource" id="Resource_mbwmd"]
 script = ExtResource("2_ckvit")
-riflemen = 7
-mg_teams = 1
+riflemen = 11
+officers = 1
+tanks = 2
 
 [sub_resource type="Resource" id="Resource_purtg"]
 script = ExtResource("2_ckvit")
-riflemen = 8
+riflemen = 15
 officers = 1
-mg_teams = 1
-barrage = true
-tanks = 1
+mg_teams = 2
 
 [sub_resource type="Resource" id="Resource_k8iuy"]
 script = ExtResource("2_ckvit")
-riflemen = 9
+riflemen = 11
 officers = 1
 mg_teams = 1
+barrage = true
 tanks = 1
 
 [sub_resource type="Resource" id="Resource_jnhxb"]
 script = ExtResource("2_ckvit")
-riflemen = 9
+riflemen = 15
 officers = 2
 mg_teams = 1
 barrage = true
-tanks = 1
 
 [sub_resource type="Resource" id="Resource_3yum6"]
 script = ExtResource("2_ckvit")
-riflemen = 10
-officers = 1
-mg_teams = 2
-tanks = 1
+riflemen = 17
+officers = 2
+mg_teams = 1
+barrage = true
+tanks = 2
 
 [sub_resource type="Resource" id="Resource_sfgca"]
 script = ExtResource("2_ckvit")
-riflemen = 10
+riflemen = 19
 officers = 2
-mg_teams = 2
 barrage = true
-tanks = 1
 
 [sub_resource type="Resource" id="Resource_h38v7"]
 script = ExtResource("2_ckvit")
-riflemen = 11
+riflemen = 21
 officers = 2
 mg_teams = 2
-tanks = 2
 
 [sub_resource type="Resource" id="Resource_0i645"]
 script = ExtResource("2_ckvit")
-riflemen = 12
+riflemen = 23
 officers = 2
 mg_teams = 2
 barrage = true
-tanks = 2
 
 [resource]
 script = ExtResource("1_e8dl2")

@@ -25,7 +25,7 @@ signal raid_ended
 
 enum Phase { IDLE, APPROACH, BOMBING, LEAVING }
 
-@export var raid_waves: Array[int] = [4, 8] ## The raid happens at the start of these waves (= battles).
+@export var raid_waves: Array[int] = [4, 8, 10] ## The raid happens at the start of these waves (= battles).
 @export var after_barrage_delay: float = 5.0 ## If the wave has a barrage: seconds after it ends.
 @export var plane_speed: float = 110.0 ## m/s (~400 km/h, an SB-2).
 @export var plane_scale: float = 1.7 ## Bigger than real so they are seen against the sky.
