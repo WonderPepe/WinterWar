@@ -658,6 +658,8 @@ func _shoot_dt() -> void:
 			hit_player.notify_hurt.rpc_id(hit_player.get_peer_id(), origin)
 		else:
 			surface = ImpactEffects.surface_of(hit.collider, hit.normal)
+			if ImpactEffects.is_cover(hit.collider): # DT bullets in sandbags / the bunker
+				surface = "cover:" + surface
 	show_dt_effects.rpc(hit_position, hit_normal, surface)
 	# Players the bullet flew close past hear its crack (like the soldiers' bullets).
 	var bullet_end: Vector3 = hit_position if not hit.is_empty() else origin + direction * dt_range_m
@@ -689,7 +691,10 @@ func show_dt_effects(hit_position: Vector3, hit_normal: Vector3, surface: String
 		_last_smoke = _clock
 		effects.spawn_smoke(dt_muzzle.global_position, -dt_muzzle.global_basis.z)
 	if surface != "":
-		effects.spawn_impact(hit_position, hit_normal, surface)
+		var parts: Dictionary = ImpactEffects.split_cover(surface)
+		effects.spawn_impact(hit_position, hit_normal, parts.surface)
+		if parts.cover:
+			effects.play_cover_hit(hit_position)
 
 
 @rpc("authority", "call_local", "unreliable")

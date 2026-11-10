@@ -25,6 +25,11 @@ the game; the models are otherwise unchanged.
   https://freesound.org/s/486086/ – made mono and a little quieter for the game. One of its
   bangs is also the tank's 45 mm gun and its shell bursting.
 
+- "Sota, taistelu, rintama / War, infantry at the front, a battle, various guns, automatic weapons,
+  banging, ricochets, mix, short" by YleArkisto
+  https://freesound.org/s/410296/ – machine-gun bullets hitting sandbags and the bunker
+  (trimmed, made mono).
+
 - "Kimmokkeita / ricochets" by YleArkisto
   https://freesound.org/s/401921/ – the ricochets when bullets hit metal or stone (cut and made mono).
 
@@ -33,6 +38,13 @@ the game; the models are otherwise unchanged.
 
 - "Rajahdys, rajahde / Explosion, an echoing loud explosion, pattern, exterior" by YleArkisto
   https://freesound.org/s/256297/ – a shell bursting close to you (shortened, made mono).
+
+- "R12-27-Falling Bombs Whistle" by craigsmith (CC0)
+  https://freesound.org/s/479924/ – the whistle of the falling air-raid bombs (cut, made quieter at the start, louder at the end).
+
+- "Rajahdys, maastossa / Explosion in the woods, little further away, echoing" by YleArkisto
+  https://freesound.org/s/256299/ – a bomb exploding in the air raid (shortened, made mono). The other bomb sound is
+  the explosion 256297 credited above.
 
 - "War tank engine and crawlers – crawlers rattling and engine sounds 0004" by joniheinonen
   https://freesound.org/s/161894/ – the tank's engine and tracks (made mono, looped).

@@ -234,8 +234,11 @@ func _pose(delta: float) -> void:
 			rifle_pos = Vector3(0.24, 0.02, -0.18) # pistol down by his side
 			rifle_rot = _x(-0.9)
 	elif dead:
-		rifle_pos = Vector3(0.25, -0.3, -0.1)
-		rifle_rot = Quaternion.from_euler(Vector3(0.3, 0.0, 1.2))
+		# The Enemy tips the whole body over, so the weapon must lie ALONG the body (its long
+		# axis = the body's up axis), a little way to the side. Then it ends up flat on the snow
+		# next to him instead of pointing at the sky. (z = 0: not under him if he fell forwards.)
+		rifle_pos = Vector3(0.42, -0.25, 0.0)
+		rifle_rot = Quaternion.from_euler(Vector3(PI / 2.0, 0.12, 0.0))
 	elif attacking and not moving:
 		rifle_pos = Vector3(0.09, 0.47, -0.38) # shouldered, aiming
 		rifle_rot = Quaternion.IDENTITY

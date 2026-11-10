@@ -12,10 +12,17 @@ Real sound recordings for the game (used automatically, by file name):
                     (stops when the text is finished; silent if there is none)
   tank_gun... / tank_dt... / ricochet...  the T-26's 45 mm gun / DT machine gun (replace the
                     cuts in assets/audio/tank/), bullets glancing off armour (silent until added)
+  mg_cover...       machine-gun bullets hitting sandbags / the bunker
   molotov_ignite... lighting the rag (T2)      molotov_throw...  the bottle leaving the hand
   molotov_break...  glass breaking + fuel catching fire
   fire_loop...      burning fuel / a burning tank - set "Loop" on in its import settings
                     (the four Molotov sounds are made by tools/make_molotov_sounds.py)
+
+  raid_engine...    A1 air raid: a bomber flying over (loudest moment after N s: set
+                    AirRaid.engine_overhead_at; default is the existing plane recording)
+  raid_whistle...   A1: a bomb falling. Should END at the impact (about 2-4 s long)
+  raid_boom...      A1: a big bomb exploding, deep, with a long rumble
+                    (several files = a random one per bomb; silent if there is none)
 
 .ogg is best (small). Keep each file short and trimmed (no silence at the start).
 Good free sources:

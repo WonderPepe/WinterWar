@@ -412,6 +412,9 @@ func _shoot() -> void:
 			hit_player.notify_hurt.rpc_id(hit_player.get_peer_id(), origin) # where it came from
 		else:
 			surface = ImpactEffects.surface_of(hit.collider, hit.normal)
+			# A DP-27 burst thumping into sandbags / the bunker has its own sound.
+			if data.kind == EnemyData.Kind.MG_GUNNER and ImpactEffects.is_cover(hit.collider):
+				surface = "cover:" + surface
 	show_shot_effects.rpc(hit_position, hit_normal, surface)
 	# Players the bullet flew close past hear its crack.
 	var bullet_end: Vector3 = hit_position if not hit.is_empty() else origin + direction * data.shot_range_m
@@ -439,7 +442,10 @@ func show_shot_effects(hit_position: Vector3, hit_normal: Vector3, surface: Stri
 			_last_smoke = t
 			effects.spawn_smoke(muzzle.global_position, -muzzle.global_basis.z)
 		if surface != "":
-			effects.spawn_impact(hit_position, hit_normal, surface)
+			var parts: Dictionary = ImpactEffects.split_cover(surface)
+			effects.spawn_impact(hit_position, hit_normal, parts.surface)
+			if parts.cover:
+				effects.play_cover_hit(hit_position)
 
 
 ## Wounded (but not killed): flinch on every computer.

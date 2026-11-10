@@ -39,6 +39,11 @@ var cracks_played: int = 0 ## How many near-miss cracks were heard (used by the 
 var _soft_tex: GradientTexture2D
 var _ricochets: Array[AudioStreamPlayer3D] = []
 var _next_ricochet: int = 0
+var _cover_hits: Array[AudioStreamPlayer3D] = [] ## Machine-gun bullets thumping into sandbags / the bunker.
+var _next_cover_hit: int = 0
+var _last_cover_hit: float = -10.0
+var _cover_seq: int = 0 ## Which hit of the current burst comes next.
+var _cover_tokens: Dictionary = {} ## player -> id of the hit it plays (a stale stop timer must not cut a newer hit).
 
 
 func _ready() -> void:
@@ -93,6 +98,12 @@ func _ready() -> void:
 		r.unit_size = 10.0
 		add_child(r)
 		_ricochets.append(r)
+	for i in 6: # machine-gun bursts hitting cover (only if a "mg_cover…" recording exists)
+		var c := AudioStreamPlayer3D.new()
+		c.bus = &"SFX"
+		c.unit_size = 12.0
+		add_child(c)
+		_cover_hits.append(c)
 	for i in max_cracks:
 		var a := AudioStreamPlayer3D.new()
 		a.bus = &"SFX"
@@ -184,6 +195,55 @@ static func surface_of(node: Node, normal: Vector3) -> String:
 	if surface == "earthwork": # trench: snow on top, log walls on the sides
 		surface = "snow" if normal.y > 0.7 else "wood"
 	return surface
+
+
+## Surfaces that count as "cover" for the machine-gun hit sound: the sandbag firing positions
+## (group "fire_post") and the log bunker.
+static func is_cover(node: Node) -> bool:
+	return node != null and (node.is_in_group("fire_post") or node.name == &"Bunker")
+
+
+## Machine-gun fire sends its surface as "cover:<surface>" when the bullet hit cover
+## (so the RPCs keep their signature). Returns the plain surface; `cover` tells which it was.
+static func split_cover(surface: String) -> Dictionary:
+	var cover: bool = surface.begins_with("cover:")
+	return {"surface": surface.trim_prefix("cover:"), "cover": cover}
+
+
+## Machine-gun bullets hitting sandbags or the bunker: the recording "mg_cover…" in
+## assets/audio/recorded/ holds a rapid series of hits. Every bullet that hits cover plays ONE
+## of them, in order: the 1st hit of a burst plays the 1st thump, the 2nd the 2nd, … so a
+## 3-round burst sounds like 3 hits and the tank's long burst plays the longer series.
+## (Seconds into the recording where each hit starts; after the last, the series repeats
+## from the 4th.) A pause of COVER_BURST_GAP seconds starts a new burst.
+const COVER_HITS: Array[float] = [0.08, 0.185, 0.275, 0.355, 0.46, 0.58, 0.735, 0.815, 0.92, 1.01, 1.10]
+const COVER_PREROLL: float = 0.015
+const COVER_BURST_GAP: float = 0.4
+
+func play_cover_hit(pos: Vector3) -> void:
+	var stream: AudioStream = RecordedSounds.pick("mg_cover")
+	if stream == null:
+		return
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if now - _last_cover_hit > COVER_BURST_GAP:
+		_cover_seq = 0
+	_last_cover_hit = now
+	var n: int = COVER_HITS.size()
+	var i: int = _cover_seq if _cover_seq < n else 3 + (_cover_seq - 3) % (n - 3)
+	_cover_seq += 1
+	var start: float = COVER_HITS[i] - COVER_PREROLL
+	var end: float = (COVER_HITS[i + 1] + 0.02) if i + 1 < n else stream.get_length()
+	var c := _cover_hits[_next_cover_hit]
+	_next_cover_hit = (_next_cover_hit + 1) % _cover_hits.size()
+	c.stream = stream
+	c.pitch_scale = randf_range(0.97, 1.05)
+	c.global_position = pos
+	c.play(start)
+	var token: int = _cover_seq
+	get_tree().create_timer((end - start) / c.pitch_scale).timeout.connect(func() -> void:
+		if c.playing and _cover_tokens.get(c, 0) == token:
+			c.stop())
+	_cover_tokens[c] = token
 
 
 ## A bullet glancing off armour: a recording named "ricochet…" in assets/audio/recorded/, if any.
