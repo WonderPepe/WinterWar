@@ -206,10 +206,18 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 
 - [x] W3 Suomi cocking handle + empty cases (owner 2026-11-11). Owner's decisions: do NOT animate
   the bolt (not visible to the player); the KP/-31's cocking handle does not reciprocate, so it
-  never moves when firing – firing is shown by recoil, flash and ejected cases only; every reload
-  ends with the right hand pulling the handle back and letting it snap forward; reload time stays
+  never moves when firing – firing is shown by recoil, flash and ejected cases only; a reload
+  ends with the right hand pulling the handle back and letting it snap forward (W3b: only when
+  needed, see below); reload time stays
   4.5 s (option A: the drum change was squeezed a little to make room). The owner may add a real
   cocking sound later (`assets_source/`). Details: `weapons.md` ("Suomi cocking handle and cases").
+  W3b (owner 2026-11-11): cases always fly out to the right – walking or jumping must not change
+  them (now in the view's space, not the world). Cocking ONLY when needed: first time the gun is
+  taken out (each life) – yes; reload after an empty drum – yes; tactical reload with rounds left –
+  no (that reload is the old W2 drum change). No firing / aiming while cocking (~1.2 s).
+  Cocking sound from the owner's download (freesound 676588, CC0) → `cock_suomi.ogg`; credited in
+  CREDITS.md + the main-menu credits (which were also brought up to date – several sounds added
+  since T2 were missing there).
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

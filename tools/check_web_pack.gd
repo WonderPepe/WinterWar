@@ -28,6 +28,7 @@ func run() -> void:
 		[ResourceLoader.exists("res://assets/audio/steam_hiss.wav"), "W2: steam sound in the export"],
 		[suomi.get_node_or_null("Model/CockingHandle/BoltGrip") != null and suomi.get_node_or_null("Model/EjectionPort") != null, "W3: Suomi cocking handle + ejection port in the export"],
 		[(suomi.get("_cases") as Array).size() == 12, "W3: Suomi case pool in the export"],
+		[ResourceLoader.exists("res://assets/audio/recorded/cock_suomi.ogg"), "W3: Suomi cocking sound in the export"],
 		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves.size() == 10, "G2: wave list kept in the export"],
 		[(load("res://resources/difficulty/hard.tres") as DifficultyData).waves[9].riflemen == 24, "G2: wave list values kept in the export"],
 		[(load("res://resources/enemies/soviet_officer.tres") as EnemyData).kind == EnemyData.Kind.OFFICER, "G2: officer data in the export"],

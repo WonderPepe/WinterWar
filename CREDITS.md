@@ -73,6 +73,8 @@ the game; the models are otherwise unchanged.
   into single hits).
 - "Turn crank_Squeak_Old_Metal_Machine_Loop.wav" by AslakHostaker – https://freesound.org/s/395041/
   (the turret's hand crank, made mono and looped).
+- "Colt SMG - Firing, Handling" by hyperix6 – https://freesound.org/s/676588/ (the Suomi's
+  cocking handle pulled back and let go; cut, made mono, the handle going forward made louder).
 
 ## Photographs (Creative Commons Attribution 4.0)
 - Wartime photographs from the Finnish Wartime Photograph Archive: **SA-kuva**

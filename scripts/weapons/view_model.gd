@@ -7,6 +7,9 @@ extends Node3D
 ## The visible gun is an imported 3D model (Model/Mesh). Its moving parts are found by
 ## name when the game starts (`bolt_part_names`), and loose extra parts can be hidden.
 
+## Cocking: the moment the cocking sound should start (WeaponController plays it).
+signal cock_sound_cue
+
 @export var bolt: Node3D ## Optional part that slides back when the bolt is worked.
 ## Parts of the imported model that form the bolt: they are gathered into one "Bolt" node.
 @export var bolt_part_names: PackedStringArray = PackedStringArray()
@@ -31,8 +34,9 @@ extends Node3D
 @export var magazine_pull_m: float = 0.14 ## How far the magazine is pulled down out of the gun.
 @export var magazine_drop_lifetime: float = 15.0 ## Seconds a dropped magazine stays on the ground.
 ## Part of the imported model that is the cocking handle (Suomi). It does NOT move when firing
-## (open bolt, non-reciprocating handle): only at the end of a reload the right hand pulls it
-## back and lets it snap forward. Empty = no cocking.
+## (open bolt, non-reciprocating handle). The right hand pulls it back and lets it snap forward
+## when the gun is not cocked: first time it is taken out (each life) and after an empty drum.
+## A reload with rounds left skips it. Empty = no cocking.
 @export var cocking_handle_part_name: String = ""
 @export var cocking_travel: float = 0.045 ## How far the cocking handle is pulled back (metres).
 ## Where the gun is moved / how it is turned while cocking, so the handle at the rear is in view.
@@ -45,17 +49,28 @@ extends Node3D
 const MAX_DROPPED_MAGAZINES: int = 4
 ## Magazine reload, as parts of the reload time: [pulled out, dropped, at the pouch,
 ## new one in the hand, under the gun, pushed in].
-## (Squeezed a little in W3 so the cocking handle fits in before the end: was 0.24 … 0.76.)
-const MAG_STEPS: Array[float] = [0.22, 0.25, 0.38, 0.44, 0.59, 0.68]
-const MAG_PULL_START: float = 0.11
-const MAG_GRAB_AT: float = 0.415 # the new magazine appears in the hand (at the pouch)
+## (A reload that ends with cocking runs the magazine change a little faster: `play_reload`.)
+const MAG_STEPS: Array[float] = [0.24, 0.27, 0.42, 0.49, 0.66, 0.76]
+const MAG_PULL_START: float = 0.12
+const MAG_GRAB_AT: float = 0.46 # the new magazine appears in the hand (at the pouch)
 ## Where the reloading hand goes (the ammo pouch), in the space of the node holding the gun.
 const POUCH_RIGHT := Vector3(0.12, -0.5, 0.25)
 const POUCH_LEFT := Vector3(-0.3, -0.5, 0.2)
-## Cocking at the end of a reload, as parts of the reload time: [hand on the handle,
-## pulled back, let go (snaps forward), hand back on the grip].
-const COCK_STEPS: Array[float] = [0.75, 0.83, 0.87, 0.95]
-const COCK_SNAP_TIME: float = 0.06 # seconds the handle takes to snap forward
+## Cocking, in seconds. The gun first turns so the handle is in view (COCK_POSE_TIME); from
+## then on: the hand goes to the knob, pulls the handle back, lets go, the handle snaps forward,
+## the hand and the gun go back to rest.
+const COCK_POSE_TIME: float = 0.25
+const COCK_HAND_TIME: float = 0.18   # hand from the grip to the knob
+const COCK_PULL_START: float = 0.15  # the pull starts (the hand is on the knob)
+const COCK_PULL_TIME: float = 0.2
+const COCK_RELEASE_AT: float = 0.5   # the hand lets go
+const COCK_SNAP_TIME: float = 0.06   # the handle snaps forward
+const COCK_HAND_BACK_TIME: float = 0.3
+const COCK_BACK_TIME: float = 0.35   # the gun back to rest (starts just after the snap)
+const COCK_END: float = COCK_RELEASE_AT + COCK_SNAP_TIME + 0.05 + COCK_BACK_TIME
+## The recorded cocking sound (cock_suomi…) has its loud clack this far in: it is started so
+## that the clack lands when the handle is fully back (its rattle then matches the snap forward).
+const COCK_SOUND_CLACK_AT: float = 0.12
 const CASE_POOL_SIZE: int = 12 # empty cases in flight at most (reused, never more nodes)
 const CASE_LIFETIME: float = 0.5 # seconds a case is visible
 const CASE_GRAVITY: float = 9.8
@@ -94,9 +109,14 @@ var _magazine_last_pos: Vector3
 var _magazine_velocity: Vector3
 var _cocking_handle: Node3D      # holder node for the cocking handle part (slides along +z)
 var _cock: float = 0.0           # metres the cocking handle is pulled back
+## Open bolt: false until the handle has been pulled (a fresh gun at every spawn is not cocked).
+var is_cocked: bool = false
+## True while the cocking animation runs (WeaponController: no aiming meanwhile).
+var is_cocking: bool = false
 var _case_template: Node3D       # hidden copy of the case part (centred on its holder)
-var _cases: Array[Node3D] = []   # the pool: top-level holders that fly in world space
-var _case_velocity: Array[Vector3] = []
+var _cases: Array[Node3D] = []   # the pool of holders (children of this view model)
+var _case_xform: Array[Transform3D] = [] # where each case is, in the space of our parent
+var _case_velocity: Array[Vector3] = []  # (parent space)
 var _case_spin: Array[Vector3] = []
 var _case_age: Array[float] = []
 var _next_case: int = 0
@@ -326,9 +346,10 @@ func play_fire(kick_back_m: float, kick_rotation_deg: float) -> void:
 		_eject_case()
 
 
-## Empty cases: one hidden copy of the case part is made into a small pool of holders. They
-## are `top_level` (they fly in the world, not with the gun) and moved by a few lines of
-## maths each frame – no physics bodies (850 rounds a minute would be far too many).
+## Empty cases: one hidden copy of the case part is made into a small pool of holders, moved by
+## a few lines of maths each frame – no physics bodies (850 rounds a minute would be far too
+## many). They fly in the space of the WeaponHolder (it moves with the camera), not in the
+## world: walking or jumping must not change how they fly – always out to the right.
 func _make_case_pool(case_part: Node3D) -> void:
 	var centre: Vector3 = _centre_in_model(case_part)
 	var in_model: Transform3D = model.global_transform.affine_inverse() * case_part.global_transform
@@ -343,11 +364,11 @@ func _make_case_pool(case_part: Node3D) -> void:
 	for i in CASE_POOL_SIZE:
 		var holder := Node3D.new()
 		holder.name = "Case%d" % i
-		holder.top_level = true
 		holder.visible = false
 		holder.add_child(_case_template.duplicate())
 		add_child(holder)
 		_cases.append(holder)
+		_case_xform.append(Transform3D.IDENTITY)
 		_case_velocity.append(Vector3.ZERO)
 		_case_spin.append(Vector3.ZERO)
 		_case_age.append(CASE_LIFETIME)
@@ -358,9 +379,10 @@ func _eject_case() -> void:
 	var i: int = _next_case
 	_next_case = (_next_case + 1) % _cases.size()
 	var holder: Node3D = _cases[i]
-	var port: Transform3D = _ejection_port.global_transform
-	var b: Basis = model.global_basis.orthonormalized()
-	holder.global_transform = Transform3D(b, port.origin)
+	var to_parent: Transform3D = _parent_space().affine_inverse()
+	var b: Basis = (to_parent.basis * model.global_basis).orthonormalized()
+	_case_xform[i] = Transform3D(b, to_parent * _ejection_port.global_position)
+	holder.transform = transform.affine_inverse() * _case_xform[i]
 	holder.visible = true
 	_case_age[i] = 0.0
 	_case_velocity[i] = b * Vector3(randf_range(1.6, 2.2), randf_range(0.6, 1.0), randf_range(0.1, 0.4))
@@ -376,11 +398,20 @@ func _update_cases(delta: float) -> void:
 		if _case_age[i] >= CASE_LIFETIME:
 			holder.visible = false
 			continue
-		_case_velocity[i].y -= CASE_GRAVITY * delta
-		holder.global_position += _case_velocity[i] * delta
+		_case_velocity[i].y -= CASE_GRAVITY * delta # "down" of the view
+		var x: Transform3D = _case_xform[i]
+		x.origin += _case_velocity[i] * delta
 		var spin: Vector3 = _case_spin[i]
 		if spin.length_squared() > 0.0:
-			holder.global_basis = Basis(spin.normalized(), spin.length() * delta) * holder.global_basis
+			x.basis = Basis(spin.normalized(), spin.length() * delta) * x.basis
+		_case_xform[i] = x
+		holder.transform = transform.affine_inverse() * x # (this view model moves when aiming)
+
+
+## The space the cases fly in: our parent's (the WeaponHolder under the camera).
+func _parent_space() -> Transform3D:
+	var p := get_parent() as Node3D
+	return p.global_transform if p else Transform3D.IDENTITY
 
 
 ## How many cases are flying right now (tests).
@@ -438,14 +469,21 @@ func _apply_bolt() -> void:
 
 
 ## Reload: move and tilt the weapon (`reload_offset` / `reload_rotation_deg`), then bring it back.
-func play_reload(duration: float) -> void:
+## `cock` (open bolt, WeaponController: the drum was empty or the gun not cocked yet): the
+## reload ends with the cocking handle; the magazine change is a little faster to make room.
+func play_reload(duration: float, cock: bool = false) -> void:
 	_restart_tween()
 	_tween.set_parallel(true)
 	var turn := Vector3(deg_to_rad(reload_rotation_deg.x), deg_to_rad(reload_rotation_deg.y), deg_to_rad(reload_rotation_deg.z))
 	_tween.tween_property(self, "anim_offset", reload_offset, duration * 0.15)
 	_tween.tween_property(self, "anim_rotation", turn, duration * 0.15)
-	if _cocking_handle:
-		_add_cocking(duration)
+	var mag_time: float = duration
+	cock = cock and _cocking_handle != null
+	if cock:
+		var start: float = maxf(duration - COCK_END - 0.04, duration * 0.5)
+		_add_cocking(start)
+		# The drum must be in before the gun turns for cocking.
+		mag_time = minf(duration, (start - COCK_POSE_TIME) / MAG_STEPS[-1])
 	else:
 		_tween.chain().tween_property(self, "anim_offset", Vector3.ZERO, duration * 0.15).set_delay(duration * 0.7)
 		_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * 0.15).set_delay(duration * 0.7)
@@ -453,7 +491,7 @@ func play_reload(duration: float) -> void:
 	if _magazine and _grip_l:
 		# The left hand pulls the magazine out, drops it, takes a new one and pushes it in.
 		_set_magazine_progress(0.0)
-		_hand_tween.tween_method(_set_magazine_progress, 0.0, 1.0, duration)
+		_hand_tween.tween_method(_set_magazine_progress, 0.0, 1.0, mag_time)
 		_hand_tween.tween_callback(_set_magazine_progress.bind(-1.0))
 		return
 	# One hand goes down to the ammo pouch and comes back with a clip.
@@ -461,30 +499,45 @@ func play_reload(duration: float) -> void:
 	_hand_tween.tween_property(self, "reload_hand", 0.0, duration * 0.25).set_delay(duration * 0.15)
 
 
-## End of a reload (open bolt): the right hand takes the cocking handle, pulls it back against
-## the spring (fast first, slower at the end), lets go – it snaps forward with a small knock –
-## and the hand goes back to the grip. Added to the reload's parallel tween.
-func _add_cocking(duration: float) -> void:
-	var s: Array[float] = COCK_STEPS
-	# The gun turns so the handle (right side, rear) is in view, then goes back to rest.
+## Cocking (open bolt): the gun turns so the handle (right side, rear) is in view, the right hand
+## takes the knob, pulls the handle back against the spring (fast first, slower at the end),
+## lets go – it snaps forward with a small knock – and hand and gun go back to rest.
+## Added to the parallel `_tween`; `start` = seconds from now when the gun is in the cocking pose.
+func _add_cocking(start: float) -> void:
 	var turn := Vector3(deg_to_rad(cock_rotation_deg.x), deg_to_rad(cock_rotation_deg.y), deg_to_rad(cock_rotation_deg.z))
-	var to_pose: float = duration * 0.07
-	_tween.tween_property(self, "anim_offset", cock_offset, to_pose).set_delay(duration * s[0] - to_pose)
-	_tween.tween_property(self, "anim_rotation", turn, to_pose).set_delay(duration * s[0] - to_pose)
-	var back_at: float = duration * s[2] + COCK_SNAP_TIME + 0.05
-	_tween.tween_property(self, "anim_offset", Vector3.ZERO, duration * (1.0 - s[2]) - 0.11).set_delay(back_at)
-	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration * (1.0 - s[2]) - 0.11).set_delay(back_at)
+	var pose_from: float = maxf(start - COCK_POSE_TIME, 0.0)
+	_tween.tween_callback(_set_cocking.bind(true)).set_delay(pose_from)
+	_tween.tween_property(self, "anim_offset", cock_offset, start - pose_from).set_delay(pose_from)
+	_tween.tween_property(self, "anim_rotation", turn, start - pose_from).set_delay(pose_from)
 	if _bolt_grip:
-		_tween.tween_property(self, "bolt_hand", 1.0, duration * (s[1] - s[0]) * 0.5) \
-				.set_delay(duration * s[0])
-		_tween.tween_property(self, "bolt_hand", 0.0, duration * (s[3] - s[2])) \
-				.set_delay(duration * s[2] + COCK_SNAP_TIME)
-	var pull_from: float = s[0] + (s[1] - s[0]) * 0.45 # the hand is on the knob
-	_tween.tween_method(_set_cock, 0.0, cocking_travel, duration * (s[1] - pull_from)) \
-			.set_delay(duration * pull_from).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_tween.tween_property(self, "bolt_hand", 1.0, COCK_HAND_TIME).set_delay(start)
+		_tween.tween_property(self, "bolt_hand", 0.0, COCK_HAND_BACK_TIME) \
+				.set_delay(start + COCK_RELEASE_AT + COCK_SNAP_TIME)
+	var sound_at: float = maxf(start + COCK_PULL_START + COCK_PULL_TIME - COCK_SOUND_CLACK_AT, 0.0)
+	_tween.tween_callback(cock_sound_cue.emit).set_delay(sound_at)
+	_tween.tween_method(_set_cock, 0.0, cocking_travel, COCK_PULL_TIME) \
+			.set_delay(start + COCK_PULL_START).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_tween.tween_method(_set_cock, cocking_travel, 0.0, COCK_SNAP_TIME) \
-			.set_delay(duration * s[2]).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_tween.tween_callback(_cock_knock).set_delay(duration * s[2] + COCK_SNAP_TIME)
+			.set_delay(start + COCK_RELEASE_AT).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_tween.tween_callback(_cock_knock).set_delay(start + COCK_RELEASE_AT + COCK_SNAP_TIME)
+	var back_at: float = start + COCK_RELEASE_AT + COCK_SNAP_TIME + 0.05
+	_tween.tween_property(self, "anim_offset", Vector3.ZERO, COCK_BACK_TIME).set_delay(back_at)
+	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, COCK_BACK_TIME).set_delay(back_at)
+	_tween.tween_callback(_set_cocking.bind(false)).set_delay(start + COCK_END)
+
+
+func _set_cocking(value: bool) -> void:
+	is_cocking = value
+
+
+## True if this gun has to be cocked before it can fire (open bolt, not cocked yet).
+func needs_cocking() -> bool:
+	return _cocking_handle != null and not is_cocked
+
+
+## Seconds from the start of the cocking pose until the gun is back at rest.
+func cock_time() -> float:
+	return COCK_POSE_TIME + COCK_END
 
 
 func _set_cock(value: float) -> void:
@@ -493,20 +546,24 @@ func _set_cock(value: float) -> void:
 		_cocking_handle.position = Vector3(0.0, 0.0, _cock)
 
 
-## The handle hits its front stop: the whole gun gives a small knock.
+## The handle hits its front stop: the whole gun gives a small knock. The gun is cocked now.
 func _cock_knock() -> void:
+	is_cocked = true
 	_kick_back += 0.006
 	_kick_rotation += deg_to_rad(0.6)
 
 
-## Weapon switched in: start low and raise it.
-func play_raise(duration: float = 0.35) -> void:
+## Weapon switched in: start low and raise it. `cock`: then pull the cocking handle (the first
+## time the gun is taken out in this life).
+func play_raise(duration: float = 0.35, cock: bool = false) -> void:
 	_restart_tween()
 	anim_offset = Vector3(0, -0.25, 0)
 	anim_rotation = Vector3(deg_to_rad(-30), 0, 0)
 	_tween.set_parallel(true)
 	_tween.tween_property(self, "anim_offset", Vector3.ZERO, duration).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(self, "anim_rotation", Vector3.ZERO, duration).set_ease(Tween.EASE_OUT)
+	if cock and _cocking_handle:
+		_add_cocking(duration + COCK_POSE_TIME)
 
 
 func _restart_tween() -> void:
@@ -521,6 +578,7 @@ func _restart_tween() -> void:
 	_bolt_slide = 0.0
 	_apply_bolt()
 	_set_cock(0.0)
+	is_cocking = false
 	_tween = create_tween()
 
 

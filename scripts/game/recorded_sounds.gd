@@ -7,6 +7,8 @@ extends RefCounted
 ##   reload_suomi…  changing the Suomi's drum
 ##   reload_maxim…  a new belt in the Maxim
 ##   bolt_mosin…    working the Mosin's bolt after a shot
+##   cock_suomi…    pulling the Suomi's cocking handle back and letting it go (W3; the loud
+##                  clack should be 0.12 s in – ViewModel.COCK_SOUND_CLACK_AT)
 ##   hurt…          you get hit (several files = a random one each time)
 ##   officer_whistle…  a Soviet officer's whistle (G2)
 ##   dp27…          one DP-27 machine-gun shot (G2)

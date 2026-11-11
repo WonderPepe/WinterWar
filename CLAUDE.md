@@ -12,8 +12,8 @@ you work on. Update this file and the right note at the end of every milestone.
 - Status: M1–M5, P1–P2, W1–W2, G1–G2, T1–T4 done (T4 = heavy hand-cranked turret), L1 (new trench line + 4 sandbag firing positions), L2 (bunker faces the enemy, trench behind, back door), + Controls screen / Molotov hint, B1 (10 battles with real dates, weather and briefings shown before each battle), B2 (loading screen with a marching soldier), B3 (weather and time of day per battle), A1 (air raid of three SB-2 bombers in battles 4 and 8); battles rebalanced (R1: air raid also in battle 10, tanks in 3/5/7) and a tank-route fix; public
   v0.5.0 on GitHub Pages. L3: two zigzag communication trenches to the rear (x = ±40) with the
   rear (re)spawn points, and battle 6 "retake the trench" (Soviets hold the west half first).
-  W3: Suomi cocking handle pulled back + snaps forward at the end of each reload (never moves
-  when firing), empty cases fly out of the ejection port.
+  W3: Suomi cocking handle pulled back + snaps forward when the gun needs cocking (first time
+  out each life, empty-drum reload; never when firing), empty cases fly out to the right.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
 ## Working with the owner

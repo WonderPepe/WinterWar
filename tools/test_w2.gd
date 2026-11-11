@@ -61,6 +61,27 @@ func run() -> void:
 	await seconds(0.5)
 	check(arms.visible, "arms shown for your own player")
 	check(arms._mesh_instance.mesh.get_surface_count() == 1, "arms are one mesh (one draw call)")
+
+	# W3: the first time the Suomi is taken out it is cocked (no firing or aiming meanwhile);
+	# the second time it is not.
+	var fresh: ViewModel = wc._view_models[1]
+	check(not fresh.is_cocked and fresh.needs_cocking(), "a fresh Suomi is not cocked")
+	wc.current_slot = 1
+	var cock_start: float = wc.switch_time + ViewModel.COCK_POSE_TIME
+	await seconds(cock_start + 0.05)
+	p.input.aim_held = true
+	await frames(2)
+	check(fresh.is_cocking and not wc._can_fire_now() and not wc.is_aiming, "first time out: cocking, no firing or aiming meanwhile")
+	await seconds(ViewModel.COCK_PULL_START + ViewModel.COCK_PULL_TIME + 0.02 - 0.05)
+	check(fresh._cocking_handle.position.z > fresh.cocking_travel * 0.8, "first time out: the handle is pulled back (%.3f m)" % fresh._cocking_handle.position.z)
+	await seconds(ViewModel.COCK_END - ViewModel.COCK_PULL_START - ViewModel.COCK_PULL_TIME + 0.1)
+	check(fresh.is_cocked and not fresh.is_cocking and wc._can_fire_now(), "first time out: cocked, ready to fire")
+	p.input.aim_held = false
+	wc.current_slot = 0
+	await seconds(0.5)
+	wc.current_slot = 1
+	await seconds(wc.switch_time + 0.1)
+	check(not fresh.is_cocking and fresh._cocking_handle.position.z < 0.0001 and wc._can_fire_now(), "second time out: no cocking")
 	for slot in [0, 1]:
 		wc.current_slot = slot
 		for aim in [false, true]:
@@ -130,26 +151,55 @@ func run() -> void:
 		await frames(2)
 	check(handle.position.length() < 0.0001, "the cocking handle does not move when firing")
 	check(svm.cases_in_flight() == 3, "one case flies out per shot (%d)" % svm.cases_in_flight())
-	var case_node: Node3D = svm._cases[(svm._next_case + svm._cases.size() - 1) % svm._cases.size()]
-	var port: Vector3 = svm._ejection_port.global_position
-	await seconds(0.15)
-	var case_moved: Vector3 = svm.model.global_basis.orthonormalized().inverse() * (case_node.global_position - port)
-	check(case_moved.x > 0.15, "the case flies out to the right (%.2f m)" % case_moved.x)
+	var last: int = (svm._next_case + svm._cases.size() - 1) % svm._cases.size()
+	var case_node: Node3D = svm._cases[last]
+	var holder: Node3D = svm.get_parent()
+	var port: Vector3 = holder.to_local(svm._ejection_port.global_position)
+	await seconds(0.07)
+	# The player jumps 3 m to the right: the cases fly with the view, not left behind in the world.
+	var x_before: float = holder.to_local(case_node.global_position).x
+	p.global_position += p.global_basis.x * 3.0 + Vector3.UP * 0.5
+	await frames(2)
+	var x_after: float = holder.to_local(case_node.global_position).x
+	check(x_after > x_before, "moving right does not make the cases fly left (%.2f → %.2f m)" % [x_before, x_after])
+	await seconds(0.08)
+	var case_moved: float = holder.to_local(case_node.global_position).x - port.x
+	check(case_moved > 0.15, "the case flies out to the right (%.2f m)" % case_moved)
+	p.global_position = Vector3(-30, 0.0, 40.0)
+	await physics(3)
 	for i in 20:
 		svm.play_fire(0.025, 2.0)
 	check(svm.cases_in_flight() <= ViewModel.CASE_POOL_SIZE and svm._cases.size() == ViewModel.CASE_POOL_SIZE, "cases are reused (pool of %d)" % ViewModel.CASE_POOL_SIZE)
 	await seconds(0.6)
 	check(svm.cases_in_flight() == 0, "cases are gone after %.1f s" % ViewModel.CASE_LIFETIME)
-	svm.play_reload(3.0)
-	await seconds(3.0 * 0.85)
-	var knob: Vector3 = svm._bolt_grip.global_position
-	check(handle.position.z > svm.cocking_travel * 0.8, "the handle is pulled back when cocking (%.3f m)" % handle.position.z)
-	check(wc.get_hand_grips()[0].origin.distance_to(knob) < 0.01, "right hand on the cocking handle")
-	await seconds(3.0 * 0.05)
-	check(handle.position.z < 0.001, "the handle snaps forward")
-	await seconds(3.0 * 0.15)
-	check(svm.bolt_hand < 0.01 and hand_error(true, wc.get_hand_grips()[0]) < 0.01, "right hand back on the grip after cocking")
-	check(svm.anim_offset.length() < 0.001 and svm.anim_rotation.length() < 0.001, "the gun is back at rest after the reload")
+	# Tactical reload (rounds left): no cocking. Empty drum: the reload ends with cocking.
+	for empty in [false, true]:
+		wc.mag_ammo[1] = 0 if empty else 30
+		p.input.request_reload()
+		await frames(2)
+		check(wc.is_reloading, "%s reload started" % ("empty" if empty else "tactical"))
+		var max_z: float = 0.0
+		var saw_cocking: bool = false
+		var hand_off: float = -1.0
+		var heard: bool = false
+		while wc.is_reloading:
+			await frames(1)
+			heard = heard or wc._cock_audio.playing
+			max_z = maxf(max_z, handle.position.z)
+			saw_cocking = saw_cocking or svm.is_cocking
+			if handle.position.z > svm.cocking_travel * 0.8 and hand_off < 0.0:
+				hand_off = wc.get_hand_grips()[0].origin.distance_to(svm._bolt_grip.global_position)
+		await seconds(0.1)
+		if empty:
+			check(saw_cocking and max_z > svm.cocking_travel * 0.8, "empty drum: the handle is pulled back (%.3f m)" % max_z)
+			check(hand_off >= 0.0 and hand_off < 0.01, "right hand on the cocking handle (%.3f m)" % hand_off)
+			check(handle.position.z < 0.001, "the handle snaps forward")
+			check(heard and wc._cock_audio.stream == wc.loadout[1].get_cock_sound(), "the cocking sound plays (cock_suomi)")
+		else:
+			check(not saw_cocking and max_z < 0.0001 and not heard, "tactical reload: no cocking, no cocking sound")
+		check(svm.bolt_hand < 0.01 and hand_error(true, wc.get_hand_grips()[0]) < 0.01, "right hand back on the grip after the reload")
+		check(svm.anim_offset.length() < 0.001 and svm.anim_rotation.length() < 0.001, "the gun is back at rest after the reload")
+		check(svm.is_cocked and wc.get_mag_ammo() == 70, "cocked and a full drum")
 	wc.current_slot = 0
 	await seconds(0.6)
 
@@ -159,6 +209,7 @@ func run() -> void:
 	check(not arms.visible, "arms hidden when dead")
 	await seconds(5.5)
 	check(not p.is_dead and arms.visible, "arms back after respawning")
+	check(not wc._view_models[1].is_cocked, "after respawning the Suomi has to be cocked again")
 
 	# --- Maxim ---
 	gun = get_tree().get_first_node_in_group("mounted_guns")

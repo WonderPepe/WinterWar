@@ -46,6 +46,8 @@ var _server_next_fire: float = 0.0 # host: anti-cheat fire-rate check
 var _had_bottle: bool = false     # T2: a Molotov was in the hand last frame
 var _fire_blocked: bool = false   # T2: wait for the fire button to be let go after a throw
 var _reload_timer: float = 0.0     # host
+var _was_dead: bool = false
+var _cock_audio: AudioStreamPlayer
 var _view_models: Array[ViewModel] = []
 var _last_smoke_time: float = 0.0
 var _rng := RandomNumberGenerator.new()
@@ -68,6 +70,13 @@ func _ready() -> void:
 		var vm: ViewModel = w.view_model.instantiate()
 		holder.add_child(vm)
 		_view_models.append(vm)
+		vm.cock_sound_cue.connect(_on_cock_sound_cue.bind(w))
+	# Own player for the cocking sound, so it never cuts off a reload sound on MechAudio.
+	_cock_audio = AudioStreamPlayer.new()
+	_cock_audio.name = "CockAudio"
+	_cock_audio.volume_db = mech_audio.volume_db
+	_cock_audio.bus = mech_audio.bus
+	add_child(_cock_audio)
 	holder.position = hip_position
 	_apply_slot()
 
@@ -142,14 +151,21 @@ func _process(delta: float) -> void:
 	# while the right hand feeds the new belt.
 	var reloading_hand_weapon: bool = is_reloading_now() and get_mounted_gun() == null
 	var bottle: bool = player.molotov.is_selected() # T2: right mouse lights / aims the bottle instead
+	var cocking: bool = get_mounted_gun() == null and current_slot < _view_models.size() and _current_view_model().is_cocking
 	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging \
-			and not bottle
+			and not bottle and not cocking
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
 	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null and not bottle
 	if _had_bottle and not bottle and current_slot < _view_models.size():
-		_view_models[current_slot].play_raise(switch_time) # the gun comes back up
-		_next_fire_time = _now() + switch_time
+		_raise_current() # the gun comes back up
 	_had_bottle = bottle
+	# Back to life: a fresh gun – open-bolt guns have to be cocked again before firing.
+	if _was_dead and not player.is_dead:
+		for vm in _view_models:
+			vm.is_cocked = false
+		if current_slot < _view_models.size():
+			_raise_current()
+	_was_dead = player.is_dead
 	if player.is_local_player():
 		_owner_process(delta, w)
 
@@ -459,11 +475,21 @@ func _set_current_slot(value: int) -> void:
 func _apply_slot() -> void:
 	for i in _view_models.size():
 		_view_models[i].visible = (i == current_slot)
-	_next_fire_time = _now() + switch_time
 	_bloom_deg = 0.0
 	if current_slot < _view_models.size():
-		_view_models[current_slot].play_raise(switch_time)
+		_raise_current()
+	else:
+		_next_fire_time = _now() + switch_time
 	weapon_changed.emit(get_current_weapon())
+
+
+## The current gun comes up. An open-bolt gun that is not cocked yet (first time taken out in
+## this life) is cocked right after – no shooting until that is done.
+func _raise_current() -> void:
+	var vm := _current_view_model()
+	var cock: bool = vm.needs_cocking()
+	vm.play_raise(switch_time, cock)
+	_next_fire_time = _now() + switch_time + (vm.cock_time() if cock else 0.0)
 
 
 func _set_is_reloading(value: bool) -> void:
@@ -471,8 +497,18 @@ func _set_is_reloading(value: bool) -> void:
 	is_reloading = value
 	if started and is_node_ready() and player.is_local_player():
 		var w := get_current_weapon()
-		_current_view_model().play_reload(w.reload_time)
+		# Open bolt (Suomi): the bolt stays forward after the last round, so a reload of an empty
+		# drum ends with cocking. With rounds left (tactical reload) the gun is still cocked.
+		var vm := _current_view_model()
+		vm.play_reload(w.reload_time, get_mag_ammo() <= 0 or vm.needs_cocking())
 		_play(mech_audio, w.get_reload_sound())
+
+
+## A view model starts cocking: the cocking recording (only for the player on this computer –
+## the view models of other players are never seen or heard).
+func _on_cock_sound_cue(w: WeaponData) -> void:
+	if player.is_local_player() and not player.is_dead:
+		_play(_cock_audio, w.get_cock_sound())
 
 
 func _current_view_model() -> ViewModel:

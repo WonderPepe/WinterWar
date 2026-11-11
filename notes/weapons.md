@@ -67,23 +67,40 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   matched to the clicks of `assets/audio/recorded/bolt_mosin.ogg` (0.78 s, cut from
   `assets_source/370345…mosin-nagant-bolt-action-cycle.wav` at 13.38 s; the sound starts at 25 % of the cycle).
 
-## Suomi cocking handle and cases (W3)
+## Suomi cocking handle and cases (W3, W3b)
 - Open bolt, non-reciprocating handle: the bolt is NOT animated (owner: not visible), and the
   handle (`SuomiKP31_Handle`, the lever under the rear of the receiver) never moves when firing.
+- WHEN it is cocked (owner, W3b): first time the gun is taken out in each life (also after a
+  respawn), and a reload of an EMPTY drum. A tactical reload (rounds left) does not cock and is
+  exactly the W2 drum change. `ViewModel.is_cocked` (false for a fresh gun, set true at the snap,
+  false again on respawn – WeaponController `_was_dead`); `needs_cocking()`.
+  `WeaponController._raise_current()` raises + cocks and blocks firing for `cock_time()`;
+  no aiming while `is_cocking`. `_set_is_reloading` passes `cock = mag empty or not cocked`.
 - `ViewModel.cocking_handle_part_name` moves the part into a runtime `Model/CockingHandle` node;
   `BoltGrip` (the knob) is re-parented onto it, so the right hand (`bolt_hand`) rides along.
-  `_add_cocking()` is added to the reload's parallel tween at `COCK_STEPS` [hand on knob 0.75,
-  pulled back 0.83, let go 0.87, hand back 0.95] (parts of the reload time): the gun turns to
-  `cock_offset` / `cock_rotation_deg` so the handle is in view, the handle is pulled back
-  `cocking_travel` (0.045 m – limited by the slot under the end cap in this model; ease-out), snaps
-  forward in `COCK_SNAP_TIME` (0.06 s, ease-in), then a small knock (`_cock_knock`) and the gun goes
-  back to rest. `MAG_STEPS` were squeezed (ends 0.68 instead of 0.76) so it all fits in 4.5 s.
-  `_restart_tween()` puts the handle back forward (e.g. weapon switch mid-reload).
+  `_add_cocking(start)` adds to the parallel tween (times in seconds, `COCK_*`): the gun turns
+  to `cock_offset` / `cock_rotation_deg` in `COCK_POSE_TIME` so the handle is in view, the hand
+  goes to the knob, the handle is pulled back `cocking_travel` (0.045 m – limited by the slot
+  under the end cap in this model; ease-out), let go at `COCK_RELEASE_AT`, snaps forward in 0.06 s
+  (ease-in), a small knock (`_cock_knock`, sets `is_cocked`), hand and gun back to rest
+  (`COCK_END` ≈ 0.96 s after `start`, plus the 0.25 s pose = `cock_time()` ≈ 1.2 s). In an empty
+  reload the cocking ends just before the reload time and the drum change runs a little faster
+  (`mag_time`) so the drum is in before the gun turns. `_restart_tween()` resets the handle.
+- Sound: `assets/audio/recorded/cock_suomi.ogg` (0.48 s, cut from freesound 676588 "Colt SMG -
+  Firing, Handling" by hyperix6, CC0, 0.47–0.95 s of the file: scrape, clack, rattle; the rattle
+  ×2.5 louder; its gunshot at 1.10 s is NOT used). `WeaponData.get_cock_sound()` →
+  `cock_<recording_name>…`. The ViewModel emits `cock_sound_cue` so the clack
+  (`COCK_SOUND_CLACK_AT` 0.12 s in) lands when the handle is fully back – the rattle then falls on
+  the snap forward. WeaponController plays it on its own `CockAudio` player (never cuts a reload
+  sound), only for the player on this computer.
 - Empty cases: `eject_case_part_name` ("9mm_Case", still hidden on the gun; the bullet child is
-  removed from the copy) → a pool of `CASE_POOL_SIZE` (12) `top_level` holders made once at start
-  and reused round-robin. `play_fire()` throws the next one out of `Model/EjectionPort` (right side,
-  in front of the drum) to the right, a little up and back, spinning; plain maths in `_process`
-  (gravity), hidden after `CASE_LIFETIME` 0.5 s. No physics bodies, no particles (so no
-  web_fallback needed). Local only, like the rest of the view model.
-- Tests in `test_w2.gd` (W3 block); screenshots `tools/shots_w3.gd [prefix]` (reload frozen at
-  several moments of the cocking, cases caught in the air; each also from the side).
+  removed from the copy) → a pool of `CASE_POOL_SIZE` (12) holders made once at start and reused
+  round-robin. They fly in the space of the WeaponHolder (camera-fixed; `_case_xform`), NOT the
+  world (W3b: in world space walking right made them fly left, and jumping bent their arc).
+  `play_fire()` throws the next one out of `Model/EjectionPort` (right side, in front of the drum)
+  to the right, a little up and back, spinning; plain maths in `_process` (gravity = view's down),
+  hidden after `CASE_LIFETIME` 0.5 s. No physics bodies, no particles (so no web_fallback).
+  Local only, like the rest of the view model.
+- Tests in `test_w2.gd` (W3 blocks: first equip, cases while moving, tactical vs empty reload,
+  respawn); screenshots `tools/shots_w3.gd [prefix]` (reload frozen at several moments of the
+  cocking, cases in the air – also while running right; each also from the side).

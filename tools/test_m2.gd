@@ -128,7 +128,7 @@ func run() -> void:
 
 	# --- Switch to Suomi ---
 	p.input.request_switch(1)
-	await seconds(0.6)
+	await seconds(0.6 + wc._view_models[1].cock_time()) # W3b: first time out it is cocked first
 	check(wc.current_slot == 1 and wc.get_current_weapon().display_name.begins_with("Suomi"), "switched to Suomi")
 	check(wc.get_mag_ammo() == 70 and wc.get_reserve_ammo() == 140, "Suomi ammo 70/140")
 	var t50 := target("Target_50m")

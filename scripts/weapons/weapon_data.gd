@@ -59,6 +59,7 @@ enum FireMode { BOLT_ACTION, SEMI_AUTO, FULL_AUTO }
 @export var fire_sound: AudioStream
 @export var cycle_sound: AudioStream ## Bolt being worked (bolt-action only). Empty = a real recording "bolt_<recording_name>…", or silence.
 @export var reload_sound: AudioStream ## Empty = a real recording "reload_<recording_name>…" (see RecordedSounds), or silence.
+@export var cock_sound: AudioStream ## Cocking handle (open bolt). Empty = a real recording "cock_<recording_name>…", or silence.
 @export var recording_name: String = "" ## e.g. "mosin": uses assets/audio/recorded/reload_mosin….
 @export var empty_sound: AudioStream
 
@@ -75,6 +76,13 @@ func get_cycle_sound() -> AudioStream:
 	if cycle_sound:
 		return cycle_sound
 	return RecordedSounds.pick("bolt_" + recording_name) if not recording_name.is_empty() else null
+
+
+## The cocking sound: the one set above, else a real recording, else null (silent).
+func get_cock_sound() -> AudioStream:
+	if cock_sound:
+		return cock_sound
+	return RecordedSounds.pick("cock_" + recording_name) if not recording_name.is_empty() else null
 
 
 ## Seconds between two shots.

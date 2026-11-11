@@ -33,8 +33,8 @@ func _ready() -> void:
 	var vm: ViewModel = p.weapons._view_models[1]
 	await _shot("rest")
 	# Reload frozen at a few moments of the cocking (parts of the reload time).
-	for u in [0.62, 0.74, 0.8, 0.86, 0.9]:
-		vm.play_reload(4.5)
+	for u in [0.62, 0.755, 0.83, 0.867, 0.91]:
+		vm.play_reload(4.5, true) # (an empty drum: the reload ends with cocking)
 		await _wait(4.5 * u)
 		vm._tween.pause()
 		if vm._hand_tween:
@@ -56,6 +56,16 @@ func _ready() -> void:
 		Engine.time_scale = 0.0
 		await _shot("cases_%s" % ("ads" if aim else "hip"))
 		Engine.time_scale = 1.0
+	# Cases while the player runs to the right: they still fly out to the right.
+	p.input.aim_held = false
+	await _wait(0.6)
+	for i in 5:
+		vm.play_fire(0.025, 2.0)
+		p.global_position += p.global_basis.x * 0.4 # ~6 m/s to the right
+		await _wait(0.07)
+	Engine.time_scale = 0.0
+	await _shot("cases_moving_right")
+	Engine.time_scale = 1.0
 	get_tree().quit()
 
 
