@@ -13,7 +13,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
 - Run tests through `tools/run.gd` (see above): `test_m1.gd` … `test_m5.gd`,
   `test_benchmark.gd`, `test_mouse.gd` (needs a real window, e.g. xvfb),
   `shots_p1.gd <prefix> [views]` (graphics screenshots, needs xvfb), `test_w1.gd`,
-  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `test_g1.gd`,
+  `shots_w1.gd [prefix]` (weapons + Maxim screenshots), `test_w2.gd`, `shots_w2.gd`, `shots_w3.gd` (Suomi cocking handle, cases), `check_web_pack.gd` also checks the W3 parts, `test_g1.gd`,
   `soak_g1.gd`, `shots_g1.gd`, `test_g2.gd`, `soak_g2.gd`, `shots_g2.gd`, `make_whistle.py`, `shots_reports.gd [days…]` (day screen: completed banner, title, typing, read), `test_background.gd`, `test_artillery.gd`, `shots_artillery.gd`, `test_airraid.gd`, `shots_airraid.gd`, `shots_drum.gd`,
   `_model_shots.gd` (renders imported
   models from 4 sides), `import_weapons.py` (unpacks weapon downloads),

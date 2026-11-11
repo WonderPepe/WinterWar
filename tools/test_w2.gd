@@ -119,6 +119,37 @@ func run() -> void:
 	await seconds(1.3)
 	check(svm.magazine_progress < 0.0 and drum.position.distance_to(svm._magazine_rest.origin) < 0.001, "new drum seated in the gun")
 	check(hand_error(false, wc.get_hand_grips()[1]) < 0.01, "left hand back on the drum")
+
+	# W3 (open bolt): the cocking handle never moves when firing; a reload ends with the right
+	# hand pulling it back and letting it snap forward. Empty cases fly out at every shot.
+	var handle: Node3D = svm._cocking_handle
+	check(handle != null and handle.find_child("SuomiKP31_Handle", true, false) != null, "Suomi cocking handle is a movable part")
+	check(svm._bolt_grip != null and svm._bolt_grip.get_parent() == handle, "BoltGrip rides on the cocking handle")
+	for i in 3:
+		svm.play_fire(0.025, 2.0)
+		await frames(2)
+	check(handle.position.length() < 0.0001, "the cocking handle does not move when firing")
+	check(svm.cases_in_flight() == 3, "one case flies out per shot (%d)" % svm.cases_in_flight())
+	var case_node: Node3D = svm._cases[(svm._next_case + svm._cases.size() - 1) % svm._cases.size()]
+	var port: Vector3 = svm._ejection_port.global_position
+	await seconds(0.15)
+	var case_moved: Vector3 = svm.model.global_basis.orthonormalized().inverse() * (case_node.global_position - port)
+	check(case_moved.x > 0.15, "the case flies out to the right (%.2f m)" % case_moved.x)
+	for i in 20:
+		svm.play_fire(0.025, 2.0)
+	check(svm.cases_in_flight() <= ViewModel.CASE_POOL_SIZE and svm._cases.size() == ViewModel.CASE_POOL_SIZE, "cases are reused (pool of %d)" % ViewModel.CASE_POOL_SIZE)
+	await seconds(0.6)
+	check(svm.cases_in_flight() == 0, "cases are gone after %.1f s" % ViewModel.CASE_LIFETIME)
+	svm.play_reload(3.0)
+	await seconds(3.0 * 0.85)
+	var knob: Vector3 = svm._bolt_grip.global_position
+	check(handle.position.z > svm.cocking_travel * 0.8, "the handle is pulled back when cocking (%.3f m)" % handle.position.z)
+	check(wc.get_hand_grips()[0].origin.distance_to(knob) < 0.01, "right hand on the cocking handle")
+	await seconds(3.0 * 0.05)
+	check(handle.position.z < 0.001, "the handle snaps forward")
+	await seconds(3.0 * 0.15)
+	check(svm.bolt_hand < 0.01 and hand_error(true, wc.get_hand_grips()[0]) < 0.01, "right hand back on the grip after cocking")
+	check(svm.anim_offset.length() < 0.001 and svm.anim_rotation.length() < 0.001, "the gun is back at rest after the reload")
 	wc.current_slot = 0
 	await seconds(0.6)
 

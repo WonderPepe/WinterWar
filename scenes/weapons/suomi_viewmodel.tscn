@@ -21,6 +21,8 @@ hip_offset = Vector3(0, -0.02, -0.08)
 magazine_part_name = "SuomiKP31_Drum"
 reload_offset = Vector3(-0.1, -0.02, 0)
 reload_rotation_deg = Vector3(15, 10, -60)
+cocking_handle_part_name = "SuomiKP31_Handle"
+eject_case_part_name = "9mm_Case"
 
 [node name="Model" type="Node3D" parent="." unique_id=706135388]
 
@@ -47,6 +49,13 @@ omni_range = 6.0
 
 [node name="Mesh" type="Node3D" parent="Model" unique_id=1514144432 instance=ExtResource("3_comnv")]
 transform = Transform3D(0.0094, 0, 0, 0, 0.0094, 0, 0, 0, 0.0094, 0, -0.014709994, -0.0641)
+
+[node name="EjectionPort" type="Marker3D" parent="Model" unique_id=1055449019]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.024, 0.045, -0.165)
+
+[node name="BoltGrip" type="Marker3D" parent="Model" unique_id=1653218686]
+transform = Transform3D(0.952976, 0.30304578, 0, -0.16061394, 0.5050762, -0.8479983, -0.25698233, 0.80812204, 0.5299989, 0.05, 0.012, 0.088)
+gizmo_extents = 0.03
 
 [node name="GripR" type="Marker3D" parent="Model" unique_id=1640900574]
 transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.30151135, -0.94868326, -0.2860388, 0.90453404, 0.31622776, 0.022, -0.04, 0.1)

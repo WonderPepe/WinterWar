@@ -1052,6 +1052,16 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 	r[0].set("magazine_part_name", "SuomiKP31_Drum")
 	r[0].set("reload_offset", Vector3(-0.1, -0.02, 0.0))
 	r[0].set("reload_rotation_deg", Vector3(15.0, 10.0, -60.0))
+	# W3 (open bolt): the cocking handle (the lever under the rear of the receiver) never moves
+	# when firing; a reload ends with the right hand pulling it back and letting it snap forward.
+	r[0].set("cocking_handle_part_name", "SuomiKP31_Handle")
+	r[0].set("cocking_travel", 0.045)
+	# Empty cases fly out of the ejection port (right side, in front of the drum).
+	r[0].set("eject_case_part_name", "9mm_Case")
+	var port: Marker3D = _add(model, Marker3D.new(), "EjectionPort")
+	port.position = Vector3(0.024, 0.045, -0.165)
+	# BoltGrip = the knob of the cocking handle (the right hand goes there when cocking).
+	_grip(model, "BoltGrip", Vector3(0.05, 0.012, 0.088), Vector3(-0.3, -0.5, -0.8), Vector3(-1, 0, 0), true)
 	_grip(model, "GripR", Vector3(0.022, -0.04, 0.1), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
 	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077), palm up against
 	# its rim, fingers forward-right around it.

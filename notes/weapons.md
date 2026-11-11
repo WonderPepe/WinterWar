@@ -1,4 +1,4 @@
-# Weapons, Maxim, first-person arms (W1, W2)
+# Weapons, Maxim, first-person arms (W1, W2, W3)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
@@ -66,3 +66,24 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   rolls down. Right hand rides on `BoltGrip`. Timings are fractions of `bolt_cycle_time` (1.25 s),
   matched to the clicks of `assets/audio/recorded/bolt_mosin.ogg` (0.78 s, cut from
   `assets_source/370345…mosin-nagant-bolt-action-cycle.wav` at 13.38 s; the sound starts at 25 % of the cycle).
+
+## Suomi cocking handle and cases (W3)
+- Open bolt, non-reciprocating handle: the bolt is NOT animated (owner: not visible), and the
+  handle (`SuomiKP31_Handle`, the lever under the rear of the receiver) never moves when firing.
+- `ViewModel.cocking_handle_part_name` moves the part into a runtime `Model/CockingHandle` node;
+  `BoltGrip` (the knob) is re-parented onto it, so the right hand (`bolt_hand`) rides along.
+  `_add_cocking()` is added to the reload's parallel tween at `COCK_STEPS` [hand on knob 0.75,
+  pulled back 0.83, let go 0.87, hand back 0.95] (parts of the reload time): the gun turns to
+  `cock_offset` / `cock_rotation_deg` so the handle is in view, the handle is pulled back
+  `cocking_travel` (0.045 m – limited by the slot under the end cap in this model; ease-out), snaps
+  forward in `COCK_SNAP_TIME` (0.06 s, ease-in), then a small knock (`_cock_knock`) and the gun goes
+  back to rest. `MAG_STEPS` were squeezed (ends 0.68 instead of 0.76) so it all fits in 4.5 s.
+  `_restart_tween()` puts the handle back forward (e.g. weapon switch mid-reload).
+- Empty cases: `eject_case_part_name` ("9mm_Case", still hidden on the gun; the bullet child is
+  removed from the copy) → a pool of `CASE_POOL_SIZE` (12) `top_level` holders made once at start
+  and reused round-robin. `play_fire()` throws the next one out of `Model/EjectionPort` (right side,
+  in front of the drum) to the right, a little up and back, spinning; plain maths in `_process`
+  (gravity), hidden after `CASE_LIFETIME` 0.5 s. No physics bodies, no particles (so no
+  web_fallback needed). Local only, like the rest of the view model.
+- Tests in `test_w2.gd` (W3 block); screenshots `tools/shots_w3.gd [prefix]` (reload frozen at
+  several moments of the cocking, cases caught in the air; each also from the side).

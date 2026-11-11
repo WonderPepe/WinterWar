@@ -204,6 +204,13 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   L3b (owner 2026-11-11): battle 6 happens in the dark of the morning, a little darker than battle 2
   (`make_weather.gd` look 6, see `graphics-and-web.md`).
 
+- [x] W3 Suomi cocking handle + empty cases (owner 2026-11-11). Owner's decisions: do NOT animate
+  the bolt (not visible to the player); the KP/-31's cocking handle does not reciprocate, so it
+  never moves when firing – firing is shown by recoil, flash and ejected cases only; every reload
+  ends with the right hand pulling the handle back and letting it snap forward; reload time stays
+  4.5 s (option A: the drum change was squeezed a little to make room). The owner may add a real
+  cocking sound later (`assets_source/`). Details: `weapons.md` ("Suomi cocking handle and cases").
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

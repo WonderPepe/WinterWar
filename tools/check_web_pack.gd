@@ -15,6 +15,8 @@ func run() -> void:
 	root.add_child(vm)
 	var gun: Node = load("res://scenes/weapons/maxim_mg.tscn").instantiate()
 	root.add_child(gun)
+	var suomi: Node = load("res://scenes/weapons/suomi_viewmodel.tscn").instantiate()
+	root.add_child(suomi)
 	await process_frame
 	for check in [
 		[(vm.get("hidden_part_names") as PackedStringArray).size() == 3, "Mosin hidden parts kept in the export"],
@@ -24,6 +26,8 @@ func run() -> void:
 		[vm.get_node_or_null("Model/GripR") != null and vm.get_node_or_null("Model/Bolt/BoltGrip") != null, "W2: hand grip points in the export"],
 		[gun.get("_belt_anim") != null and gun.get("_turn_pivot") != null, "W2: Maxim belt animation re-pointed in the export"],
 		[ResourceLoader.exists("res://assets/audio/steam_hiss.wav"), "W2: steam sound in the export"],
+		[suomi.get_node_or_null("Model/CockingHandle/BoltGrip") != null and suomi.get_node_or_null("Model/EjectionPort") != null, "W3: Suomi cocking handle + ejection port in the export"],
+		[(suomi.get("_cases") as Array).size() == 12, "W3: Suomi case pool in the export"],
 		[(load("res://resources/difficulty/normal.tres") as DifficultyData).waves.size() == 10, "G2: wave list kept in the export"],
 		[(load("res://resources/difficulty/hard.tres") as DifficultyData).waves[9].riflemen == 24, "G2: wave list values kept in the export"],
 		[(load("res://resources/enemies/soviet_officer.tres") as EnemyData).kind == EnemyData.Kind.OFFICER, "G2: officer data in the export"],
