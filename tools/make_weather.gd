@@ -45,13 +45,15 @@ const LOOKS: Array = [
 	"glow_color": Color(1.0, 0.65, 0.4), "glow_strength": 0.6, "cloud_cover": 0.85, "cloud_color": Color(0.5, 0.45, 0.42),
 	"sun_brightness": 3.0, "fog_scale": 3.2, "fog_color": Color(0.5, 0.46, 0.43), "fog_sky_affect": 0.5, "visibility_m": 110.0,
 	"snowfall": 0.3, "snow_wind": 0.8, "drift_scale": 1.0, "wind_db": 1.0},
-	# 6 – 6 Feb, 15:40: flat overcast, intermittent snow, soft shadows.
-	{"title": "Overcast, light snow",
-	"sun_pitch_deg": -14.0, "sun_yaw_deg": -140.0, "sun_color": Color(0.9, 0.9, 0.95), "sun_energy": 0.5,
-	"ambient_energy": 0.85, "ambient_color": Color(0.66, 0.7, 0.8),
-	"zenith_color": Color(0.48, 0.52, 0.6), "horizon_color": Color(0.72, 0.74, 0.78), "ground_color": Color(0.74, 0.76, 0.8),
-	"glow_strength": 0.1, "cloud_cover": 1.0, "cloud_color": Color(0.7, 0.72, 0.76), "sun_brightness": 0.0,
-	"fog_scale": 1.8, "fog_color": Color(0.7, 0.72, 0.77), "fog_sky_affect": 0.5,
+	# 6 – 6 Feb, 06:30 (owner, L3): the counterattack goes in in the DARK of the morning – overcast,
+	# no moon, light snow, a little darker than battle 2 (but less fog and snow, so the trench reads).
+	{"title": "Dark morning, overcast",
+	"sun_pitch_deg": -36.0, "sun_yaw_deg": -125.0, "sun_color": MOON, "sun_energy": 0.26,
+	"ambient_energy": 0.42, "ambient_color": Color(0.42, 0.5, 0.78),
+	"zenith_color": Color(0.035, 0.05, 0.11), "horizon_color": Color(0.17, 0.21, 0.32), "ground_color": Color(0.18, 0.22, 0.31),
+	"glow_color": Color(0.55, 0.62, 0.85), "glow_strength": 0.2, "cloud_cover": 1.0, "cloud_color": Color(0.17, 0.2, 0.3),
+	"sun_size_deg": 1.5, "sun_brightness": 0.0, "star_strength": 0.0,
+	"fog_scale": 3.5, "fog_color": Color(0.19, 0.23, 0.34), "fog_sky_affect": 0.7, "visibility_m": 90.0,
 	"snowfall": 0.3, "snow_wind": 0.5, "drift_scale": 0.8, "wind_db": 0.0},
 	# 7 – 11 Feb, 08:40: dense fog, about -20 C.
 	{"title": "Dense fog",

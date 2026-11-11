@@ -45,6 +45,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   vision/ranges are unchanged (fog does not hide soldiers from the AI – maybe a later step);
   battle 8 starts in dense fog that clears (`end_look`, 75 s); battle 10 is dusk WITHOUT snowfall,
   orange → violet and dark over 200 s. Times are not shown in the game (owner), only used as mood.
+  L3 (owner 2026-11-11): battle 6 (the counterattack to retake the trench) is in the DARK of the
+  morning – overcast, no moon or stars, light snow, a little darker than battle 2 (measured mean
+  brightness of the weather shot: battle 2 ≈ 95, battle 6 ≈ 81) but less fog, enemy sight 90 m.
+  The briefing's weather line ("Overcast") is the owner's text and was left as it is.
 - `DuskLight` (class and node name kept): battle = `waves_cleared + 1`; a new battle's look is set
   when the day screen is black (or after `wait_for_black` 6 s; test mode / joining late: at once).
   `battle_clock` runs while `WaveSpawner.wave_number >= battle`; with an `end_look` the shown look is
@@ -56,7 +60,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `DuskLight._apply` sets the static `Enemy.visibility_limit` (INF = none; reset in
   `DuskLight._exit_tree`, like the other statics). Soldiers (`_find_visible_player`) and tanks
   (`Tank._can_see`) see `min(own range, limit)`; the spot-time scale and the trench fight (< 60 m)
-  are unchanged; gunshots still make noise (`hear_noise`). Values: battle 1 150 m, 2 80, 5 110,
+  are unchanged; gunshots still make noise (`hear_noise`). Values: battle 1 150 m, 2 80, 5 110, 6 90 (dark),
   7 60, 8 60 → none as the fog clears (blends with the look), 9 120, the rest none. MG teams only
   fire at a Finn they can see, so in dense fog they stay quiet until their final position.
   Possible tuning: battle 7 may now be easier than 6 and 8.

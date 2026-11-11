@@ -201,6 +201,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (two lines so it fits), 8 s later the normal battle 6 wave + barrage attacks. Owner's new battle 6
   briefing text. Details: `battle.md` (Retake), `architecture.md` (map). Tests: `test_l3.gd`,
   `shots_l3.gd`.
+  L3b (owner 2026-11-11): battle 6 happens in the dark of the morning, a little darker than battle 2
+  (`make_weather.gd` look 6, see `graphics-and-web.md`).
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
