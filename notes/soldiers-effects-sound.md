@@ -13,6 +13,20 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `bullet_passed` (sent only to the peer whose head the bullet passed within 3 m).
 - `ImpactEffects` pools: holes, sprays per surface (snow/wood/cloth), smoke, flashes, crack
   sounds. `make_smoke_emitter()` / `make_soft_texture()` are static (Maxim, breath reuse them).
+- Muzzle flashes in the dark (V1): `spawn_flash()` (enemies, tanks, other players) – 50 ms, one
+  shared QuadMesh + material for all 12 pooled flashes. `WeatherData.darkness()` (0 day … 1 night,
+  from sun/moon + ambient light; smooth step 1.1 → 0.4) is put into the static
+  `ImpactEffects.darkness` by `DuskLight._apply` (reset in `_exit_tree`), so battle 10 darkens as
+  its dusk deepens. Values: battles 3/4/7/8 = 0, 9 ≈ 0.07, 5 ≈ 0.28, 1 ≈ 0.44, 10 ≈ 0.52 → 0.98,
+  2 ≈ 0.94, 6 = 1. The flash look is updated only when the darkness changed: size 0.35 m ×
+  (1 + `night_size_gain` 0.1 × d), colour × (1 + `night_brightness_gain` 0.12 × d) (above 1.0 =
+  whiter core, shows through fog). Darkness ≥ 0.3 and within 80 m of this computer's camera: one of
+  2 pooled OmniLights (range 3.5 m, energy 0.4 × d, no shadow/specular) glows for the 50 ms; if both
+  are on, no glow. Day = exactly as before. Measured with `shots_flash.gd` (brightness change
+  around a flash at 60 / 120 m vs. before V1): day 0 %, battle 1 / 10 start about +25–65 %,
+  night (2, 6, 10 end) about +50–60 %. (Battle 5 at 60 m reads +170 % only because the old orange
+  flash had almost the same brightness as the hazy background there.) Tune the @exports in
+  `impact_effects.gd`.
 - Footsteps: generated ones were removed (owner: "very bad"). `FootstepSounds` loads real
   recordings by name from `assets/audio/footsteps/` (snow / trench|gravel / wood; trench falls
   back to snow) with `ResourceLoader.list_directory` (works in exports). No files = silent.

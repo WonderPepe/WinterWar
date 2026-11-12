@@ -219,6 +219,13 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   CREDITS.md + the main-menu credits (which were also brought up to date – several sounds added
   since T2 were missing there).
 
+- [x] V1 Enemy muzzle flashes easier to see at dusk / night (owner 2026-11-12). Owner's brief: realistic
+  and subtle (no fireballs), day unchanged, ~30–60 % easier to notice in the dark, 40–60 ms, cheap
+  for the browser, scaled with how dark it is. Owner approved all three parts: flash a little
+  bigger, brighter (HDR colour), and a brief small glow from 2 pooled lights. Details:
+  `soldiers-effects-sound.md` ("Muzzle flashes in the dark"). Tests: `test_v1.gd`; measurement:
+  `shots_flash.gd`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

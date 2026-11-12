@@ -48,6 +48,15 @@ extends Resource
 
 ## A new look `t` (0..1) of the way from this one to `other`. Only the numbers and colours
 ## are mixed (the title, `end_look` and `change_seconds` stay as they are).
+## How dark this look is, 0 (day, also fog and overcast) … 1 (night), from the light of the sun /
+## moon and the sky. Used to make enemy muzzle flashes easier to see in the dark (V1).
+## Roughly: battles 3, 4, 7, 8 = 0, 9 ≈ 0.1, 5 ≈ 0.3, 1 ≈ 0.45, 10 ≈ 0.5 → 1, 2 and 6 ≈ 1.
+func darkness() -> float:
+	var light: float = sun_energy * sun_color.get_luminance() + ambient_energy * ambient_color.get_luminance()
+	var t: float = clampf((1.1 - light) / 0.7, 0.0, 1.0)
+	return t * t * (3.0 - 2.0 * t) # smooth start and end
+
+
 func mixed(other: WeatherData, t: float) -> WeatherData:
 	var out := WeatherData.new()
 	for prop: Dictionary in get_script().get_script_property_list():

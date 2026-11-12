@@ -27,7 +27,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
     pressed from Playwright – try it by hand in Chrome.
 - Snow = CPUParticles3D following the local player only. Trees = MultiMesh chunks with
   visibility ranges. One shadowed sun, short shadow distance. Only the local muzzle flash has
-  a light. Export without threads. Navigation mesh is pre-baked (no runtime baking).
+  a light (plus 2 pooled tiny glows for enemy flashes in the dark, V1; blasts/tank/Molotov have their own). Export without threads. Navigation mesh is pre-baked (no runtime baking).
 - CSG trench/bunker should be converted to static meshes before the web export (M5).
 - Max 16 enemies alive; enemy senses run ~5×/s; no RVO avoidance.
 

@@ -14,6 +14,7 @@ you work on. Update this file and the right note at the end of every milestone.
   rear (re)spawn points, and battle 6 "retake the trench" (Soviets hold the west half first).
   W3: Suomi cocking handle pulled back + snaps forward when the gun needs cocking (first time
   out each life, empty-drum reload; never when firing), empty cases fly out to the right.
+  V1: enemy muzzle flashes a little bigger/brighter + a brief tiny glow, scaled by the battle's darkness.
   Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
 
 ## Working with the owner

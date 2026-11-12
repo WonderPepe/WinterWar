@@ -114,6 +114,7 @@ func _apply(w: WeatherData) -> void:
 		_sky.set_shader_parameter("sun_brightness", w.sun_brightness)
 		_sky.set_shader_parameter("star_strength", w.star_strength)
 	Enemy.visibility_limit = w.visibility_m if w.visibility_m < 1000.0 else INF
+	ImpactEffects.darkness = w.darkness() # brighter enemy muzzle flashes in the dark (V1)
 	apply_quality()
 	var amb := get_parent().get_node_or_null("Ambience") as Ambience
 	if amb:
@@ -144,3 +145,4 @@ func apply_quality() -> void:
 
 func _exit_tree() -> void:
 	Enemy.visibility_limit = INF # (a static: it must not outlive the match)
+	ImpactEffects.darkness = 0.0

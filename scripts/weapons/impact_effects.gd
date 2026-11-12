@@ -15,11 +15,27 @@ extends Node3D
 @export var max_cracks: int = 4
 @export var hole_size: float = 0.07
 @export var flash_duration: float = 0.05
+@export var flash_size: float = 0.35 ## Metres, in daylight.
+@export_group("Muzzle flashes in the dark (V1)")
+## At full darkness the flash is this much bigger (0.2 = +20 %) and brighter (0.5 = ×1.5).
+@export var night_size_gain: float = 0.1
+@export var night_brightness_gain: float = 0.12
+@export var flash_light_energy: float = 0.4 ## Brief glow on the snow around the shooter, at full darkness.
+@export var flash_light_range: float = 3.5
+@export var flash_light_min_darkness: float = 0.3 ## No glow when it is lighter than this.
+@export var flash_light_max_distance: float = 80.0 ## No glow further from your camera than this.
 
 const HOLE_COLORS: Dictionary = {
 	"snow": Color(0.32, 0.36, 0.44),
 	"wood": Color(0.09, 0.06, 0.04),
 }
+const FLASH_COLOR := Color(1.0, 0.78, 0.35)
+const FLASH_LIGHT_COUNT: int = 2 ## At most this many flashes light up their surroundings at once.
+
+## How dark the current battle is, 0 (day) … 1 (night). Set by DuskLight from the weather
+## (`WeatherData.darkness()`). A static so every computer gets it without syncing.
+static var darkness: float = 0.0
+
 const CRACK_SOUNDS: Array[String] = ["res://assets/audio/bullet_crack_1.wav", "res://assets/audio/bullet_crack_2.wav"]
 
 var _holes: Array[MeshInstance3D] = []
@@ -31,6 +47,10 @@ var _smoke: Array[CPUParticles3D] = []
 var _next_smoke: int = 0
 var _flashes: Array[MeshInstance3D] = []
 var _next_flash: int = 0
+var _flash_mat: StandardMaterial3D
+var _flash_quad: QuadMesh
+var _flash_darkness: float = -1.0 ## The darkness the flash material was last set for.
+var _flash_lights: Array[OmniLight3D] = []
 var _cracks: Array[AudioStreamPlayer3D] = []
 var _next_crack: int = 0
 var _crack_streams: Array[AudioStream] = []
@@ -79,17 +99,28 @@ func _ready() -> void:
 		var s := make_smoke_emitter(_soft_tex)
 		add_child(s)
 		_smoke.append(s)
-	var flash_mat := _make_flash_material(_round_tex)
+	_flash_mat = _make_flash_material(_round_tex)
+	_flash_quad = QuadMesh.new()
+	_flash_quad.material = _flash_mat
+	_update_flash_look()
 	for i in max_flashes:
 		var f := MeshInstance3D.new()
-		var fq := QuadMesh.new()
-		fq.size = Vector2(0.35, 0.35)
-		fq.material = flash_mat
-		f.mesh = fq
+		f.mesh = _flash_quad
 		f.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		f.visible = false
 		add_child(f)
 		_flashes.append(f)
+	for i in FLASH_LIGHT_COUNT:
+		var l := OmniLight3D.new()
+		l.name = "FlashLight%d" % i
+		l.light_color = Color(1.0, 0.72, 0.4)
+		l.omni_range = flash_light_range
+		l.omni_attenuation = 2.0 # falls off quickly: a small pool of light, not a lamp
+		l.shadow_enabled = false
+		l.light_specular = 0.0
+		l.visible = false
+		add_child(l)
+		_flash_lights.append(l)
 	for path in CRACK_SOUNDS:
 		_crack_streams.append(load(path))
 	for i in 3: # bullets glancing off a tank (only if a "ricochet…" recording exists)
@@ -259,13 +290,45 @@ func _play_ricochet(pos: Vector3) -> void:
 	r.play()
 
 
-## A short flash at another player's muzzle.
+## A short flash at a muzzle (enemy soldiers, tanks, other players). In the dark it is a little
+## bigger and brighter, and may briefly light the snow around it (V1).
 func spawn_flash(pos: Vector3) -> void:
+	if darkness != _flash_darkness:
+		_update_flash_look()
 	var f := _flashes[_next_flash]
 	_next_flash = (_next_flash + 1) % _flashes.size()
 	f.global_position = pos
 	f.visible = true
 	get_tree().create_timer(flash_duration).timeout.connect(func() -> void: f.visible = false)
+	if darkness >= flash_light_min_darkness:
+		_light_flash(pos)
+
+
+## Size and brightness of every flash for the current darkness (one shared quad + material,
+## so this costs nothing per shot). Colours above 1.0 are "brighter than white": the flash core
+## burns whiter and still shows through fog.
+func _update_flash_look() -> void:
+	_flash_darkness = darkness
+	var size: float = flash_size * (1.0 + night_size_gain * darkness)
+	_flash_quad.size = Vector2(size, size)
+	var boost: float = 1.0 + night_brightness_gain * darkness
+	_flash_mat.albedo_color = Color(FLASH_COLOR.r * boost, FLASH_COLOR.g * boost, FLASH_COLOR.b * boost)
+
+
+## Briefly lights the surroundings of a flash with one of the few pooled lights. Skipped when
+## the flash is far from this computer's camera or every light is busy (keeps the web build fast).
+func _light_flash(pos: Vector3) -> void:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null or cam.global_position.distance_to(pos) > flash_light_max_distance:
+		return
+	for l in _flash_lights:
+		if l.visible:
+			continue # still glowing for another shot
+		l.global_position = pos
+		l.light_energy = flash_light_energy * darkness
+		l.visible = true
+		get_tree().create_timer(flash_duration).timeout.connect(func() -> void: l.visible = false)
+		return
 
 
 ## Particles for one kind of hit. Snow: a burst of powder that hangs in the air a moment.
@@ -451,6 +514,6 @@ static func _make_flash_material(tex: Texture2D) -> StandardMaterial3D:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.albedo_color = Color(1.0, 0.78, 0.35)
+	m.albedo_color = FLASH_COLOR
 	m.albedo_texture = tex
 	return m
