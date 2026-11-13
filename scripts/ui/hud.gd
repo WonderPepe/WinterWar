@@ -241,8 +241,8 @@ func _update_waves(delta: float) -> void:
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
 	_update_day_screen()
 	# Big "BATTLE n" banner when a new wave starts.
-	if waves.wave_number > _last_wave and _director and waves.wave_number < _director.test_wave:
-		_last_wave = waves.wave_number # test mode: the skipped waves get no banner
+	if waves.wave_number > _last_wave and _director and waves.wave_number < _director.start_wave:
+		_last_wave = waves.wave_number # test mode / retry / continue: the skipped waves get no banner
 	if waves.wave_number > _last_wave:
 		_last_wave = waves.wave_number
 		day_screen.close() # the day screen makes way for the new wave
@@ -324,7 +324,7 @@ func _update_day_screen() -> void:
 	if cleared > _last_cleared:
 		_last_cleared = cleared
 		# Test mode: the waves before the chosen one were skipped – no day screens for them.
-		if not _director.is_over() and cleared >= _director.test_wave:
+		if not _director.is_over() and cleared >= _director.start_wave:
 			# "BATTLE n COMPLETED" over the battlefield first; the day screen fades in after it.
 			wave_banner.text = "BATTLE %d COMPLETED" % cleared
 			banner_sub.text = ""

@@ -200,3 +200,31 @@ in as others die. Battle 2 briefing text rewritten by the owner. Edited in `reso
   always a random rear spawn; during a retake the west one farthest from living Soviets.
 - HUD: battle banner sub "Retake the trench!" + occupiers; TrenchAlert line "RETAKE THE TRENCH – SOVIETS
   LEFT: n"; when `retaking` goes false: "Trench Retaken!" / "Prepare for Counterattack!" (owner's text).
+
+## Saved run – retry / continue (D1, owner 2026-11-13)
+- `RunSave` (`scripts/game/run_save.gd`, class with only static vars/functions – no autoload):
+  the run's checkpoint in memory (`difficulty`, `battle` = the battle the next match starts at,
+  `retries`, `time`, `totals` = peer id → kills/deaths/shots/hits) and the file `user://run.cfg`.
+  `active` = the match belongs to a run (Single Player, Continue, Retry, New run); Test Mode and
+  the benchmark set it false, and tests that load `game.tscn` directly never have it on – so
+  only real runs write the file.
+- Host, `MatchDirector`: `_on_wave_cleared` → `RunSave.checkpoint(n + 1, …)` (writes the file);
+  victory → `RunSave.clear()`. `_ready`: a run uses `RunSave.difficulty` (not the menu's) and,
+  when `RunSave.battle > 1`, `_start_at_wave()` (the old Test Mode start) + `match_time` from the
+  save. First `_process`: `RunSave.restore_player()` for everyone in `players`.
+- New synced `MatchDirector.start_wave` (MatchSync property 8): the wave the match started at;
+  the HUD skips banners / day screens before it. `test_wave` now only means Test Mode (TEST tag).
+  `is_run()` = in a run and not Test Mode.
+- A new run replaces an older saved run only when its battle 1 is held (`_file_is_ours`), so a
+  wrong click on Single Player loses nothing. Retry before that restarts battle 1 from memory.
+- `EndScreen.prepare_again()` decides what the button starts (retry / new run / Test Mode stays
+  Test Mode at the lost battle); `PlayAgainButton` keeps its node name, the text is set in `open()`.
+- Loading screen: the briefing of `RunSave.battle` when a run is active.
+- Main menu in the editor only: with Continue + Test Mode + Quit all visible the button list was
+  one row too tall for 720 p → the VBox separation drops to 3 in that case.
+- Co-op later: totals are stored per peer id, but only "1" (the host) is stable between
+  sessions, and `shots_fired` / `shots_hit` are what the HOST sees. Retry / New run buttons are
+  single player only, as Play again was. Decide then how clients get their totals back.
+- Web: the browser keeps `user://` itself (IndexedDB); private windows and "clear site data"
+  lose the run. A new release on the same address keeps it; if the number of battles ever
+  changes, the saved battle is clamped to the last one.

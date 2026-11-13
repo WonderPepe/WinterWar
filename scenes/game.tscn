@@ -81,6 +81,9 @@ properties/6/replication_mode = 2
 properties/7/path = NodePath(".:test_wave")
 properties/7/spawn = true
 properties/7/replication_mode = 2
+properties/8/path = NodePath(".:start_wave")
+properties/8/spawn = true
+properties/8/replication_mode = 2
 
 [node name="Game" type="Node3D" unique_id=1374428652 node_paths=PackedStringArray("players_root")]
 script = ExtResource("1_suyxu")

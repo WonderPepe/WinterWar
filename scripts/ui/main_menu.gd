@@ -8,6 +8,7 @@ const BENCHMARK_SCENE: String = "res://scenes/benchmark.tscn"
 ## Time the last "start" button was pressed (used by the benchmark to measure load time).
 static var start_pressed_msec: int = 0
 
+@onready var continue_button: Button = $Center/VBox/ContinueButton
 @onready var single_button: Button = $Center/VBox/SinglePlayerButton
 @onready var host_button: Button = $Center/VBox/HostCoopButton
 @onready var join_button: Button = $Center/VBox/JoinCoopButton
@@ -40,6 +41,13 @@ func _ready() -> void:
 	version_label.text = "Prototype · v%s" % ProjectSettings.get_setting("application/config/version", "?")
 	single_button.pressed.connect(_on_single_player)
 	difficulty_option.select(clampi(Settings.difficulty, 0, difficulty_option.item_count - 1))
+	# D1: Continue is only there when a saved run exists; it names the battle and the run's difficulty.
+	var saved: Dictionary = RunSave.peek()
+	continue_button.visible = not saved.is_empty()
+	if continue_button.visible:
+		continue_button.text = "Continue – Battle %d (%s)" % [saved.battle,
+				difficulty_option.get_item_text(clampi(saved.difficulty, 0, difficulty_option.item_count - 1))]
+	continue_button.pressed.connect(_on_continue)
 	difficulty_option.item_selected.connect(Settings.set_difficulty)
 	benchmark_button.pressed.connect(_on_benchmark)
 	settings_button.pressed.connect(func() -> void:
@@ -77,13 +85,29 @@ func _ready() -> void:
 		menu_box.visible = true
 		test_button.grab_focus())
 	test_start.pressed.connect(_on_test_start)
+	if test_button.visible and continue_button.visible and quit_button.visible:
+		# Only in the editor: with both extra buttons the list is one row too tall for 720 p.
+		(single_button.get_parent() as VBoxContainer).add_theme_constant_override("separation", 3)
 	host_button.disabled = true # co-op comes later
 	join_button.disabled = true
-	single_button.grab_focus()
+	(continue_button if continue_button.visible else single_button).grab_focus()
 
 
+## D1: go on with the saved run, from the battle after the last one held.
+func _on_continue() -> void:
+	if not RunSave.load_saved():
+		continue_button.visible = false # the file has gone meanwhile
+		return
+	MatchDirector.test_start_wave = 0
+	start_pressed_msec = Time.get_ticks_msec()
+	NetworkManager.start_single_player()
+	LoadingScreen.go(get_tree(), GAME_SCENE)
+
+
+## A new run from battle 1 (an older saved run is only replaced once battle 1 is held).
 func _on_single_player() -> void:
 	MatchDirector.test_start_wave = 0
+	RunSave.start_new(Settings.difficulty)
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), GAME_SCENE) # with a progress bar
@@ -91,6 +115,7 @@ func _on_single_player() -> void:
 
 func _on_test_start() -> void:
 	MatchDirector.test_start_wave = int(test_wave.value)
+	RunSave.active = false # Test mode never touches the saved run
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), GAME_SCENE)
@@ -98,6 +123,7 @@ func _on_test_start() -> void:
 
 func _on_benchmark() -> void:
 	MatchDirector.test_start_wave = 0
+	RunSave.active = false
 	start_pressed_msec = Time.get_ticks_msec()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), BENCHMARK_SCENE, false) # the benchmark runs on its own

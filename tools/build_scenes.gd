@@ -895,7 +895,7 @@ func _build_game() -> Node:
 	match_sync.replication_config = _sync_config([
 		[".:difficulty", true, OC], [".:waves_to_win", true, OC], [".:trench_limit", true, OC],
 		[".:in_trench", true, OC], [".:waves_cleared", true, OC], [".:result", true, OC],
-		[".:match_time", true, OC], [".:test_wave", true, OC],
+		[".:match_time", true, OC], [".:test_wave", true, OC], [".:start_wave", true, OC],
 	])
 	var dusk: Node = _add(g, Node.new(), "Dusk")
 	dusk.set_script(load("res://scripts/game/dusk.gd"))
@@ -1991,7 +1991,7 @@ func _build_hud(theme: Theme) -> Node:
 	var es_b: HBoxContainer = _add(es_v, HBoxContainer.new(), "Buttons")
 	es_b.alignment = BoxContainer.ALIGNMENT_CENTER
 	es_b.add_theme_constant_override("separation", 16)
-	for b in [["PlayAgainButton", "Play again"], ["MainMenuButton", "Main menu"]]:
+	for b in [["PlayAgainButton", "Retry battle"], ["MainMenuButton", "Main menu"]]: # D1: the text is set by EndScreen
 		var btn: Button = _add(es_b, Button.new(), b[0])
 		btn.text = b[1]
 		btn.custom_minimum_size = Vector2(200, 44)
@@ -2178,7 +2178,8 @@ func _build_main_menu(theme: Theme) -> Node:
 	_label(vb, "Subtitle", "Battle of Summa  ·  Mannerheim Line  ·  1939–40", 20, HORIZONTAL_ALIGNMENT_CENTER, Color(0.88, 0.91, 0.95))
 	var spacer: Control = _add(vb, Control.new(), "Spacer")
 	spacer.custom_minimum_size = Vector2(0, 14)
-	for b in [["SinglePlayerButton", "Single Player", ""],
+	for b in [["ContinueButton", "Continue", "Go on with your saved run from the last battle you held"], # D1: hidden without a saved run
+			["SinglePlayerButton", "Single Player", ""],
 			["TestModeButton", "Test Mode", "Start at any battle (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
 			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
 			["ControlsButton", "Controls", "Which key does what"], ["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
@@ -2199,7 +2200,8 @@ func _build_main_menu(theme: Theme) -> Node:
 	opt.select(1)
 	opt.custom_minimum_size = Vector2(200, 40)
 	opt.tooltip_text = "10 battles on every level.\nEasy: fewer riflemen, weaker enemy fire, the line breaks at 6 Soviets in the trench.\nNormal: 4 in the trench.\nHard: more soldiers, 3 in the trench, better enemy aim."
-	vb.move_child(row, vb.get_node("SinglePlayerButton").get_index())
+	vb.move_child(row, vb.get_node("ContinueButton").get_index())
+	vb.get_node("ContinueButton").visible = false # D1: MainMenu shows it when a saved run exists
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
 

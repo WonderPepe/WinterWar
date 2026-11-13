@@ -255,3 +255,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 Owner's new Easy wave lists (Normal +1, Hard +2 riflemen), air raid in battles 4/8/10, tanks in 3/5/7, barrages in 5–8 and 10, new
 battle 2 briefing; details in `battle.md` ("Wave lists rebalanced"). Tank routes: see `tank-and-molotov.md` (no tank on a wreck).
 All tests pass (tests adjusted to the new lists). Released as v0.5.0.
+
+## D1 – retry the lost battle / continue a run (2026-11-13)
+From the v0.6.0 team review (project doc `claude/review-2026-11-12.md`, item D1). Owner's decisions:
+defeat screen = "Retry battle n" + "Main menu" (no "Start over" there – a new run starts from
+the main menu's Single Player); victory screen = "New run" + "Main menu"; statistics cover the
+WHOLE run (saved at each battle held, a failed try's numbers are dropped on retry) + a
+"Retries: n" line. Main menu: "Continue – Battle n (Difficulty)" above Single Player, only when a
+saved run exists. Details in `battle.md` ("Saved run"). Checks: `test_d1.gd`. All tests pass,
+web export + smoke test OK.

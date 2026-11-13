@@ -438,6 +438,14 @@ popup/item_1/id = 1
 popup/item_2/text = "Hard"
 popup/item_2/id = 2
 
+[node name="ContinueButton" type="Button" parent="Center/VBox" unique_id=731905266]
+visible = false
+custom_minimum_size = Vector2(340, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Go on with your saved run from the last battle you held"
+text = "Continue"
+
 [node name="SinglePlayerButton" type="Button" parent="Center/VBox" unique_id=451514568]
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2

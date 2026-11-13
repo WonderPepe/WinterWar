@@ -211,12 +211,16 @@ func _draw_march() -> void:
 	march.draw_colored_polygon(helmet, Color("4a5359"))
 
 
-## The briefing of the battle the match starts at (battle 1, or the Test Mode battle).
+## The briefing of the battle the match starts at (battle 1, the Test Mode battle, or D1 the
+## battle a retried / continued run goes on from).
 func _add_briefing() -> void:
 	var reports := load("res://resources/front_reports.tres") as FrontReports
 	if reports == null:
 		return
-	var battle: int = clampi(MatchDirector.test_start_wave, 1, maxi(reports.dates.size(), 1))
+	var start: int = MatchDirector.test_start_wave
+	if start <= 0 and RunSave.active:
+		start = RunSave.battle
+	var battle: int = clampi(start, 1, maxi(reports.dates.size(), 1))
 	var r: PackedStringArray = reports.get_report(battle)
 	if r.size() != 2:
 		return

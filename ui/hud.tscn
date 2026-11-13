@@ -750,7 +750,7 @@ alignment = 1
 [node name="PlayAgainButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=1743100456]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
-text = "Play again"
+text = "Retry battle"
 
 [node name="MainMenuButton" type="Button" parent="EndScreen/Center/Panel/VBox/Buttons" unique_id=1613564654]
 custom_minimum_size = Vector2(200, 44)

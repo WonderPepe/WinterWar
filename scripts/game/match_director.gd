@@ -35,8 +35,12 @@ var result: int = Result.PLAYING:
 	set = _set_result
 var match_time: float = 0.0 ## Seconds since the match started (stops at the end).
 var test_wave: int = 0 ## Test mode: the wave this battle started at (0 = a normal battle).
+## The wave this match started at when the earlier ones were skipped: Test mode, or D1 a retried /
+## continued run (0 = from battle 1). The HUD shows no banners or day screens for the skipped ones.
+var start_wave: int = 0
 
 var _check_timer: float = 0.0
+var _run_restored: bool = false ## D1: the players have got their saved totals back.
 
 @onready var spawner: WaveSpawner = get_parent().get_node("WaveSpawner")
 
@@ -45,7 +49,9 @@ func _ready() -> void:
 	add_to_group("match_director")
 	if not multiplayer.is_server():
 		return
-	difficulty = clampi(Settings.difficulty, 0, maxi(difficulties.size() - 1, 0))
+	# D1: a run keeps the difficulty it was started on; Test mode uses the menu's.
+	var in_run: bool = RunSave.active and test_start_wave <= 0
+	difficulty = clampi(RunSave.difficulty if in_run else Settings.difficulty, 0, maxi(difficulties.size() - 1, 0))
 	if difficulties.is_empty():
 		return
 	var d: DifficultyData = difficulties[difficulty]
@@ -63,12 +69,27 @@ func _ready() -> void:
 	spawner.wave_cleared.connect(_on_wave_cleared)
 	if test_start_wave > 0:
 		_start_test_mode(clampi(test_start_wave, 1, maxi(waves_to_win, 1)))
+	elif in_run and RunSave.battle > 1:
+		# D1: retry / continue – the battles before the saved one are already held.
+		match_time = RunSave.time
+		_start_at_wave(clampi(RunSave.battle, 1, maxi(waves_to_win, 1)))
+
+
+## True when this match is part of a saved run (D1) – not Test mode, not the benchmark or tests.
+func is_run() -> bool:
+	return RunSave.active and test_wave == 0
 
 
 ## Test mode: pretend the earlier waves were already held (evening light, front reports),
 ## then send the chosen wave soon.
 func _start_test_mode(wave: int) -> void:
 	test_wave = wave
+	_start_at_wave(wave)
+
+
+## Host: start the match at `wave` as if the earlier ones had been held.
+func _start_at_wave(wave: int) -> void:
+	start_wave = wave
 	waves_cleared = wave - 1
 	spawner.start_at_wave(wave, test_first_wave_delay)
 
@@ -91,6 +112,12 @@ func is_over() -> bool:
 func _process(delta: float) -> void:
 	if not multiplayer.is_server() or is_over():
 		return
+	if not _run_restored:
+		# D1: once, when the players exist – their kills, deaths and shots so far in this run.
+		_run_restored = true
+		if is_run():
+			for node in get_tree().get_nodes_in_group("players"):
+				RunSave.restore_player(node as Player)
 	match_time += delta
 	_check_timer -= delta
 	if _check_timer > 0.0:
@@ -117,8 +144,13 @@ func _on_wave_cleared(number: int) -> void:
 		if not p.is_dead:
 			p.heal(p.max_health)
 	if number >= waves_to_win:
+		if is_run():
+			RunSave.clear() # the run is finished: nothing left to continue
 		end_match(Result.VICTORY)
 		return
+	if is_run():
+		# D1: checkpoint – Retry and Continue start at the next battle with these totals.
+		RunSave.checkpoint(number + 1, match_time, get_tree().get_nodes_in_group("players"))
 	_reset_players_later()
 
 

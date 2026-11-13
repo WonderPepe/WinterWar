@@ -15,7 +15,10 @@ you work on. Update this file and the right note at the end of every milestone.
   W3: Suomi cocking handle pulled back + snaps forward when the gun needs cocking (first time
   out each life, empty-drum reload; never when firing), empty cases fly out to the right.
   V1: enemy muzzle flashes a little bigger/brighter + a brief tiny glow, scaled by the battle's darkness.
-  Next: owner's choice (wreck cover / field cover is idea 0). See `notes/milestones.md`.
+  D1: a lost battle can be retried and a run continued from the main menu (`RunSave`,
+  `user://run.cfg`, saved at each battle held; statistics cover the whole run).
+  Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  P1, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,
@@ -74,7 +77,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2), Suomi cocking handle + cases (W3)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
-- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1)
+- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4)
 - `gotchas.md` – full list of lessons learned
