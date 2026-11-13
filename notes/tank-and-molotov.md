@@ -1,4 +1,4 @@
-# T-26 tank and Molotov cocktail (T1, T2, T3), climbing out of the trench (C1)
+# T-26 tank and Molotov cocktail (T1, T2, T3), armour (T5), climbing out of the trench (C1)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
@@ -55,6 +55,22 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (`debug_spawn_tank` / `debug_destroy_tank`, only `OS.has_feature("editor")`) →
   `PlayerInput.request_debug_tank` RPC to the host.
 - `tools/test_t1.gd`, `tools/shots_t1.gd` (approach, side, front, trench edge, wreck; xvfb).
+
+## Armour stops enemy bullets, sight and blasts (T5)
+- Owner 2026-11-13: "bullets should not go through tanks" – the player's own bullets already
+  stopped (mask world + players + enemies), but every ENEMY ray left layer 3 out, so soldiers and
+  tanks shot and saw straight through tanks and wrecks.
+- The tank body is now on layer 3 AND the new layer 5 "armour" (`collision_layer` 20 in
+  `soviet_tank.tscn` + the builder; layer name in `project.godot` + `setup_project.gd`). Constants
+  in `tank.gd`: `ARMOUR_LAYER`, `SIGHT_MASK` (world + armour), `BULLET_MASK` (world + players +
+  armour). Used by `Enemy._has_line_of_sight`, `Enemy._shoot`, `Tank._clear_line` (sight AND the
+  45 mm blast line), `Tank._shoot_dt`, `Tank._fire_main_gun` (each tank excludes itself). A hit on
+  armour shows the "metal" sparks through the usual `surface_of`.
+- Unchanged on purpose: soldiers still walk through tanks (their body mask has no layer 3 or 5);
+  artillery and bombs use the position rule `ArtilleryBarrage.is_covered`, not rays, so a wreck
+  does NOT shield from those. The collision is still a box (0.2–1.6 m high) + turret cylinder:
+  shots under the belly or past the gun barrel go through.
+- `tools/test_t5.gd`: soldier / tank / wreck / blast lines with a tank parked in between.
 
 ## Molotov cocktail (T2) – how it is built
 - `MolotovHandler` (`scripts/player/molotov_handler.gd`, Player child `Molotov` + `MolotovSync`:

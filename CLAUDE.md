@@ -28,6 +28,8 @@ you work on. Update this file and the right note at the end of every milestone.
   C1: climbing out of the trench – Space at a wall too high to jump onto (0.9–1.7 m) hauls the
   soldier over the edge in 1 s, hands busy (`ClimbHandler`, Player child `Climb`, synced
   `Player.is_climbing`); owner: not with a lit bottle, also from a crouch, no help text.
+  T5: tanks and wrecks stop ENEMY bullets, shells, sight and the 45 mm blast too (physics layer
+  5 "armour", `Tank.SIGHT_MASK` / `BULLET_MASK`) – a wreck is cover for the player.
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
@@ -92,6 +94,6 @@ you work on. Update this file and the right note at the end of every milestone.
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
-- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), climbing out of the trench (C1)
+- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1)
 - `gotchas.md` – full list of lessons learned
 - `tools.md` – helper tools and tests

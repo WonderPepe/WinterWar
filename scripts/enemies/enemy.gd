@@ -311,7 +311,7 @@ func _find_visible_player() -> Player:
 
 
 func _has_line_of_sight(point: Vector3) -> bool:
-	var query := PhysicsRayQueryParameters3D.create(eyes.global_position, point, 0b1) # world only
+	var query := PhysicsRayQueryParameters3D.create(eyes.global_position, point, Tank.SIGHT_MASK) # world + armour (T5: no seeing through a tank or wreck)
 	query.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
@@ -419,7 +419,7 @@ func _shoot() -> void:
 	var around: float = _rng.randf() * TAU
 	var direction: Vector3 = basis * Vector3(sin(angle) * cos(around), sin(angle) * sin(around), -cos(angle))
 
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * data.shot_range_m, 0b11) # world + players
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * data.shot_range_m, Tank.BULLET_MASK) # world + players + armour (T5)
 	query.exclude = [get_rid()]
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	var hit_position := Vector3.ZERO

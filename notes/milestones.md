@@ -236,6 +236,11 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   row, no line in the tank hint). Rejected: a higher jump, ladders/steps at fixed spots.
   Details: `tank-and-molotov.md` ("Climbing out"). Test: `test_c1.gd`.
 
+- [x] T5 armour stops enemy bullets (owner 2026-11-13: "bullets should not go trough tanks" – his
+  own did not, only the enemies'; he chose to include sight and blast too): tanks and wrecks on the
+  new physics layer 5 "armour"; soldiers' and tanks' bullets, shells, sight and the 45 mm blast
+  stop at them. Wrecks are now real cover for the player. Details: `notes/tank-and-molotov.md`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

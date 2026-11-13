@@ -31,7 +31,7 @@ properties/5/spawn = true
 properties/5/replication_mode = 2
 
 [node name="SovietTank" type="AnimatableBody3D" unique_id=1564799713]
-collision_layer = 4
+collision_layer = 20
 collision_mask = 0
 sync_to_physics = false
 script = ExtResource("1_utsw7")

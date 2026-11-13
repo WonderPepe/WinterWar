@@ -44,6 +44,7 @@ func _init() -> void:
 	s.set_setting("layer_names/3d_physics/layer_2", "players")
 	s.set_setting("layer_names/3d_physics/layer_3", "enemies")
 	s.set_setting("layer_names/3d_physics/layer_4", "triggers")
+	s.set_setting("layer_names/3d_physics/layer_5", "armour")
 
 	# Autoloads ("*" = also make it a global name you can use from any script)
 	s.set_setting("autoload/NetworkManager", "*res://autoload/network_manager.gd")

@@ -770,7 +770,7 @@ func _build_tank() -> Node:
 	var t := AnimatableBody3D.new()
 	t.name = "SovietTank"
 	t.set_script(load("res://scripts/enemies/tank.gd"))
-	t.collision_layer = 0b100 # layer 3: enemies (bullets hit it, players bump into it)
+	t.collision_layer = 0b10100 # layer 3: enemies (bullets hit it, players bump into it) + layer 5: armour (T5: enemy bullets, sight and blasts stop at it)
 	t.collision_mask = 0
 	t.sync_to_physics = false # the script places it every physics frame (with Jolt, "true" kept it at 0,0,0)
 	t.set_meta("surface", "metal")

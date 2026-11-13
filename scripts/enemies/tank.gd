@@ -21,6 +21,13 @@ enum State { ADVANCE, SUPPRESS, HALT_FIRE, AT_TRENCH, DESTROYED, BURNING } # (ne
 
 const SOUNDS_DIR := "res://assets/audio/tank/"
 
+## T5: physics layer 5 "armour". A tank is on layer 3 (enemies) AND on this one. Enemy rays leave
+## layer 3 out (soldiers must not shoot or hide each other), so they ask for layer 5 instead:
+## bullets, sight and blast lines all stop at a tank or a wreck.
+const ARMOUR_LAYER := 0b10000
+const SIGHT_MASK := 0b10001 ## world + armour: what blocks an enemy's view and a blast.
+const BULLET_MASK := 0b10011 ## world + players + armour: what enemy bullets and shells hit.
+
 @export_group("Driving")
 @export var speed: float = 2.0 ## m/s with nobody in sight (T-26 in snow: a fast walk).
 @export var suppress_speed: float = 1.2 ## m/s while firing the DT on the move.
@@ -339,7 +346,7 @@ func _can_see(p: Player) -> bool:
 
 
 func _clear_line(from: Vector3, to: Vector3) -> bool:
-	var query := PhysicsRayQueryParameters3D.create(from, to, 0b1) # world only
+	var query := PhysicsRayQueryParameters3D.create(from, to, SIGHT_MASK) # world + armour (other tanks, wrecks)
 	query.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
@@ -642,7 +649,7 @@ func _shoot_dt() -> void:
 		spread += dt_moving_spread_deg
 	spread *= Enemy.spread_multiplier
 	var direction: Vector3 = _scatter((_last_known - origin).normalized(), spread)
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * dt_range_m, 0b11) # world + players
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * dt_range_m, BULLET_MASK) # world + players + armour
 	query.exclude = [get_rid()]
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	var hit_position := Vector3.ZERO
@@ -710,7 +717,7 @@ func _fire_main_gun() -> void:
 	_aim_steady = 0.0
 	var origin: Vector3 = muzzle.global_position
 	var direction: Vector3 = _scatter((-muzzle.global_basis.z).normalized(), gun_spread_deg * Enemy.spread_multiplier)
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * 600.0, 0b11)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * 600.0, BULLET_MASK)
 	query.exclude = [get_rid()]
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	show_gun_fire.rpc()
