@@ -17,8 +17,10 @@ you work on. Update this file and the right note at the end of every milestone.
   V1: enemy muzzle flashes a little bigger/brighter + a brief tiny glow, scaled by the battle's darkness.
   D1: a lost battle can be retried and a run continued from the main menu (`RunSave`,
   `user://run.cfg`, saved at each battle held; statistics cover the whole run).
+  P3 (review item P1): the 3D picture is capped at 1080 / 900 / 720 lines (High / Medium / Low)
+  on big or high-density screens; Settings "3D resolution: Auto / Full".
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
-  P1, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
+  U4, D6, P2, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,

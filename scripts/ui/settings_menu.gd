@@ -6,6 +6,8 @@ extends Control
 signal closed
 
 @onready var quality: OptionButton = $Panel/VBox/Grid/Quality
+@onready var resolution: OptionButton = $Panel/VBox/Grid/Resolution
+@onready var resolution_hint: Label = $Panel/VBox/Grid/ResolutionHint
 @onready var sensitivity: HSlider = $Panel/VBox/Grid/Sensitivity
 @onready var sensitivity_value: Label = $Panel/VBox/Grid/SensitivityValue
 @onready var volume: HSlider = $Panel/VBox/Grid/Volume
@@ -22,6 +24,11 @@ func _ready() -> void:
 	for label in ["Low", "Medium", "High"]:
 		quality.add_item(label)
 	quality.item_selected.connect(func(i: int) -> void: Settings.set_quality(i as Settings.Quality))
+	resolution.clear()
+	for label in ["Auto", "Full"]:
+		resolution.add_item(label)
+	resolution.item_selected.connect(func(i: int) -> void: Settings.set_resolution(i as Settings.Resolution))
+	Settings.render_size_changed.connect(_refresh_labels)
 	sensitivity.value_changed.connect(func(v: float) -> void:
 		Settings.set_mouse_sensitivity(v)
 		_refresh_labels())
@@ -59,6 +66,7 @@ func _on_visibility_changed() -> void:
 		return
 	# Show the current values (without triggering a save).
 	quality.select(Settings.quality)
+	resolution.select(Settings.resolution)
 	sensitivity.set_value_no_signal(Settings.mouse_sensitivity)
 	volume.set_value_no_signal(Settings.volume * 100.0)
 	ambience.set_value_no_signal(Settings.ambience_volume * 100.0)
@@ -68,6 +76,9 @@ func _on_visibility_changed() -> void:
 
 
 func _refresh_labels() -> void:
+	# The real size of the 3D picture (Auto keeps it small enough on big screens).
+	var size_3d: Vector2i = Settings.render_size()
+	resolution_hint.text = "3D picture: %d × %d" % [size_3d.x, size_3d.y]
 	sensitivity_value.text = "%.2f×" % sensitivity.value
 	volume_value.text = "%d %%" % int(volume.value)
 	ambience_value.text = "%d %%" % int(ambience.value)

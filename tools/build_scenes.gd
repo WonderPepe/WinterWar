@@ -2534,6 +2534,11 @@ func _build_settings_menu(theme: Theme) -> Node:
 	q.custom_minimum_size = Vector2(240, 40)
 	_label(grid, "QualityHint", "", 14)
 
+	_label(grid, "ResolutionLabel", "3D resolution", 18)
+	var res: OptionButton = _add(grid, OptionButton.new(), "Resolution")
+	res.custom_minimum_size = Vector2(240, 40)
+	_label(grid, "ResolutionHint", "", 14)
+
 	_label(grid, "SensitivityLabel", "Mouse sensitivity", 18)
 	var sens: HSlider = _add(grid, HSlider.new(), "Sensitivity")
 	sens.min_value = 0.25

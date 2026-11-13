@@ -58,6 +58,25 @@ theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 
+[node name="ResolutionLabel" type="Label" parent="Panel/VBox/Grid" unique_id=731204455]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+text = "3D resolution"
+
+[node name="Resolution" type="OptionButton" parent="Panel/VBox/Grid" unique_id=1450982113]
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+
+[node name="ResolutionHint" type="Label" parent="Panel/VBox/Grid" unique_id=902617342]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+
 [node name="SensitivityLabel" type="Label" parent="Panel/VBox/Grid" unique_id=1292709381]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18

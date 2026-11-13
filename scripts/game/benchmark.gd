@@ -141,7 +141,8 @@ func _finish() -> void:
 		verdict = "OK - playable, try a lower quality for smoother play"
 	else:
 		verdict = "TOO SLOW - choose Low quality (Settings) and run again"
-	var view_size: Vector2 = get_viewport().get_visible_rect().size
+	var window_size: Vector2i = get_tree().root.size # real pixels
+	var size_3d: Vector2i = Settings.render_size() # what the 3D world is really drawn at
 	var lines: PackedStringArray = [
 		"Result: %s" % verdict,
 		"",
@@ -151,7 +152,7 @@ func _finish() -> void:
 		_memory_line(),
 		"Load time (menu click -> game): %.1f s" % _load_seconds,
 		"",
-		"Quality: %s   Resolution: %dx%d at %d%%   Platform: %s%s" % [Settings.Quality.keys()[Settings.quality], view_size.x, view_size.y, int(Settings.preset().render_scale * 100), OS.get_name(), " (browser)" if OS.has_feature("web") else ""],
+		"Quality: %s   3D picture: %dx%d (%d%% of the %dx%d window, 3D resolution %s)   Platform: %s%s" % [Settings.Quality.keys()[Settings.quality], size_3d.x, size_3d.y, roundi(Settings.render_scale() * 100), window_size.x, window_size.y, "Auto" if Settings.resolution == Settings.Resolution.AUTO else "Full", OS.get_name(), " (browser)" if OS.has_feature("web") else ""],
 		"Graphics: %s / %s" % [RenderingServer.get_video_adapter_vendor(), RenderingServer.get_video_adapter_name()],
 		"Godot %s   Frames measured: %d   V-Sync: %s" % [Engine.get_version_info().string, frames, "on (browser)" if OS.has_feature("web") else "off during the test"],
 	]

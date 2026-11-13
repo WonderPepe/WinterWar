@@ -74,6 +74,14 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `scaling_3d_scale` < 1, so presets would change the colours.
 - `display/window/stretch/mode = canvas_items` so UI scales with the browser window.
 - Terrain mesh does not cast shadows (it doubled the triangle count for nothing).
+- 3D resolution cap (P3, review item P1): `Settings.resolution` = `Resolution.AUTO` (default) or
+  `FULL`, saved as `graphics/resolution`. Each preset has `max_lines` (720 / 900 / 1080). Auto:
+  3D picture height = min(window height × `render_scale`, `max_lines`); `Settings.scale_for()`
+  (static, pure maths) → `root.scaling_3d_scale`, never below Godot's 0.25. Re-applied on
+  `root.size_changed` (resize, fullscreen, browser canvas). Use `Settings.render_scale()` /
+  `render_size()` for the real values, not `preset().render_scale`. `render_size_changed` updates
+  the Settings menu hint ("3D picture: 1920 × 1080"); the benchmark prints the real size. The
+  HUD and menus are 2D and stay at full window resolution. Test: `tools/test_p3.gd`.
 - Web export preset "Web" (no threads) → `export/web/` (git-ignored). Export from the command
   line: `godot --headless --path . --export-release "Web" export/web/index.html` (needs the
   4.7.2 export templates). `python3 tools/web_smoke_test.py` checks it in headless Chromium.

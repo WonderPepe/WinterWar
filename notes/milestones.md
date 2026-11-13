@@ -264,3 +264,9 @@ WHOLE run (saved at each battle held, a failed try's numbers are dropped on retr
 "Retries: n" line. Main menu: "Continue – Battle n (Difficulty)" above Single Player, only when a
 saved run exists. Details in `battle.md` ("Saved run"). Checks: `test_d1.gd`. All tests pass,
 web export + smoke test OK.
+
+## P3 – 3D resolution cap (review item P1) (2026-11-13)
+From the v0.6.0 team review (item P1; named P3 here because P1/P2 are the graphics milestones).
+Owner approved: caps 1080 / 900 / 720 lines (High / Medium / Low), default Auto, "Full" for
+strong machines. Side effect accepted: on a 1080p screen Medium is 900 lines (was 972) and Low
+720 (was 810). Details: `graphics-and-web.md` "3D resolution cap".
