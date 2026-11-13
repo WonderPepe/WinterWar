@@ -286,3 +286,21 @@ through them like knee-deep snow; solid banks would need a navmesh re-bake).
   and hit – a gameplay decision for its own milestone).
 - Cost: +4 draw calls, ~33 000 triangles in total (only what is in view is drawn), +0.4 MB pck.
 Details: `graphics-and-web.md` ("Soft snow on the earthworks"). Tests: `test_v2.gd`, `shots_v2.gd`.
+
+## V4 – sandbags (review item V4) (2026-11-13)
+Owner: "user should not see through sandbag holes" + the review's three steps (burlap texture and
+normal map, smooth sagging bag, keep the merged mesh). The old bags were squashed balls that only
+touched in points: daylight showed between them, worst beside the loophole.
+- `tools/make_textures.py` `burlap()` → `burlap_albedo.png` / `burlap_normal.png` (256 px, plain
+  weave, light grey – the material colour tints it, so plain and snowy bags share it).
+- `_bag_mesh()` in `build_scenes.gd`: a pillow (rounded-square outline, flat top/bottom, 160
+  triangles, smooth normals) that sags and is 6–18 % bigger than its place, so neighbours press
+  into each other. `_bags_mesh()` and the bag positions are unchanged (still one mesh, 2 surfaces).
+- Materials `sandbag.tres` / `sandbag_snow.tres`: burlap, triplanar (no UVs in the mesh).
+- **Added beyond the three steps:** node `SandbagCore` in each `FirePostN` – three dark boxes inside
+  the wall (7–13 cm smaller than the collision boxes, material `sandbag_core.tres`). Bags alone
+  cannot close every crack at every angle without bulging into the loophole; with the filling a
+  crack shows dark earth instead of daylight.
+- Unchanged: collision, loophole (0.8 × 0.42 m), navmesh (no re-bake needed).
+- Cost: bags 24 320 triangles in the 4 walls (was ~9 700), +4 draw calls (one filling per wall).
+Details: `graphics-and-web.md` ("Sandbags"). Tests: `test_v4.gd`, `shots_v4.gd`.

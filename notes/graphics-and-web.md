@@ -110,6 +110,20 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   lips/drifts has its normal forced straight up and sits 2 cm under the surface, so it melts into
   the ground without a visible seam.
 
+## Sandbags (V4) – how they are built
+- One bag = `_bag_mesh()` in `build_scenes.gd` (a 1 × 1 × 1 pillow; `_bag_transform()` squashes it
+  to 52 × 21 × 31 cm). `HALF` is its half size: above 0.5 means the bag is bigger than its place and
+  overlaps its neighbours – that overlap is what closes the wall. Don't make x much bigger: the
+  jamb bags would bulge into the loophole (`test_v4.gd` checks the hole stays free).
+- All bags of a wall are merged by `_bags_mesh()` (a MultiMesh is lost in a headless build, see
+  gotchas). The scene file holds the mesh as text: `levels/test_level.tscn` grew by ~225 kB.
+- Material: `_burlap_mat()` – a `StandardMaterial3D` with `uv1_triplanar` (texture laid on by
+  position from three sides, 25 cm per repeat, `uv1_scale` 4), so the bags need no UVs or
+  tangents. The texture is light grey (average 0.757) and `albedo_color` = wanted colour / 0.757.
+- `SandbagCore`: dark boxes inside the wall so a crack between bags never shows daylight. If the
+  wall constants (`POST_WALL_*`, `POST_HOLE_*`) change, the filling follows (built from them);
+  `test_v4.gd` has its own copy of the numbers – change them there too.
+
 ## Graphics (P1) – how it is built
 - Look: stylized-realistic, clear freezing day, low warm sun in the SSW (in front-left of the
   trench), blue sky ambient → blue shadows. Linear tonemap, exposure 0.85, sun energy 1.25.

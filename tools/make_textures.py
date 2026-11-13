@@ -122,6 +122,44 @@ def bark():
     save(np.clip(col, 0, 1), "bark.png")
 
 
+def burlap():
+    """Sackcloth for the sandbags (V4): a plain weave, 32 x 32 threads on 256 x 256 pixels.
+
+    The picture is a warm light grey (the material's colour tints it, so the plain and the snowy
+    bags share it). burlap_normal.png makes the threads catch the light.
+    """
+    n, threads = 256, 32
+    p = n / threads
+    y, x = np.mgrid[0:n, 0:n].astype(float)
+    # Threads are never perfectly straight: bend the grid a little (tileable).
+    x = x + (fft_noise(n, n, falloff=2.0, low=1, high=6) - 0.5) * 5.0
+    y = y + (fft_noise(n, n, falloff=2.0, low=1, high=6) - 0.5) * 5.0
+    u, v = x / p, y / p
+    a, b = u - np.floor(u), v - np.floor(v)
+    iu = np.floor(u).astype(int) % threads
+    iv = np.floor(v).astype(int) % threads
+    over = np.where((iu + iv) % 2 == 0, 1.0, -1.0)  # which thread lies on top in this square
+    thick_h = rng.uniform(0.75, 1.0, threads)[iv]   # every thread has its own thickness ...
+    thick_v = rng.uniform(0.75, 1.0, threads)[iu]
+    tone_h = rng.uniform(-1.0, 1.0, threads)[iv]    # ... and its own shade
+    tone_v = rng.uniform(-1.0, 1.0, threads)[iu]
+    across_h, across_v = np.sin(np.pi * b) ** 0.7, np.sin(np.pi * a) ** 0.7
+    h_h = across_h * thick_h * (0.6 + 0.4 * over * np.sin(np.pi * a))  # thread running along x
+    h_v = across_v * thick_v * (0.6 - 0.4 * over * np.sin(np.pi * b))  # thread running along y
+    top_is_h = h_h >= h_v
+    fibre_h = fft_noise(n, n, falloff=0.9, low=8, high=120, stretch=(6.0, 1.0))
+    fibre_v = fft_noise(n, n, falloff=0.9, low=8, high=120, stretch=(1.0, 6.0))
+    fibre = np.where(top_is_h, fibre_h, fibre_v)
+    height = np.maximum(h_h, h_v) + (fibre - 0.5) * 0.25
+    stains = fft_noise(n, n, falloff=2.0, low=1, high=5)
+    tone = np.where(top_is_h, tone_h, tone_v)
+    lum = 0.80 + (np.maximum(h_h, h_v) - 0.62) * 0.42 + (fibre - 0.5) * 0.16 + tone * 0.035 + (stains - 0.5) * 0.10
+    warm = (fibre - 0.5) * 0.04 + tone * 0.01
+    albedo = np.dstack([lum + warm, lum, lum - warm * 1.5])
+    save(np.clip(albedo, 0, 1), "burlap_albedo.png")
+    save(height_to_normal(height, 2.2), "burlap_normal.png")
+
+
 def treeline():
     """Distant forest silhouette, tileable left-right. RGBA 2048 x 256 (bottom = ground)."""
     w, h = 2048, 256
@@ -160,3 +198,4 @@ if __name__ == "__main__":
     logs()
     bark()
     treeline()
+    burlap()

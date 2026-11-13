@@ -22,8 +22,11 @@ you work on. Update this file and the right note at the end of every milestone.
   V2 (review item V2): soft snow over the box edges of the earthworks – lips on the trench
   edges, drifts at the wall foot, rounded heaps, bunker snow cap + side banks (picture only, no
   collision; `tools/earthwork_snow.gd`, node `EarthworkSnow`).
+  V4 (review item V4): sandbags are sagging burlap pillows (texture + normal map, smooth normals)
+  that press into each other, with a dark filling inside the wall (`SandbagCore`) – no daylight
+  between the bags; collision and loophole unchanged.
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
-  U4, D6, P2, V4, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
+  U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,

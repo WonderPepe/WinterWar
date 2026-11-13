@@ -81,6 +81,25 @@ func _mat(file: String, color: Color, rough: float = 0.9, vertex_color := false)
 	return load(MAT_DIR + file)
 
 
+## V4: sackcloth for the sandbags. The weave texture is a light grey picture that `color` tints,
+## and its normal map makes the threads catch the light. "Triplanar" = the texture is laid on
+## from three sides by position (25 cm per repeat), so the bag mesh needs no texture coordinates.
+func _burlap_mat(file: String, color: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	var k := 1.0 / 0.757 # the texture's average brightness: the bags keep their old colour
+	m.albedo_color = Color(color.r * k, color.g * k, color.b * k)
+	m.albedo_texture = load(TEX_DIR + "burlap_albedo.png")
+	m.normal_enabled = true
+	m.normal_texture = load(TEX_DIR + "burlap_normal.png")
+	m.normal_scale = 1.0
+	m.roughness = 1.0
+	m.uv1_triplanar = true
+	m.uv1_triplanar_sharpness = 4.0
+	m.uv1_scale = Vector3(4.0, 4.0, 4.0)
+	ResourceSaver.save(m, MAT_DIR + file)
+	return load(MAT_DIR + file)
+
+
 func _make_materials() -> Dictionary:
 	var flake := StandardMaterial3D.new()
 	flake.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -115,8 +134,9 @@ func _make_materials() -> Dictionary:
 		"cross_red": _mat("first_aid_red.tres", Color(0.62, 0.07, 0.06), 0.6),
 		"bottle_glass": _mat("bottle_glass.tres", Color(0.16, 0.24, 0.13), 0.15),
 		"rag_cloth": _mat("rag_cloth.tres", Color(0.78, 0.74, 0.62), 1.0),
-		"sandbag": _mat("sandbag.tres", Color(0.6, 0.52, 0.38), 1.0),
-		"sandbag_snow": _mat("sandbag_snow.tres", Color(0.74, 0.72, 0.66), 1.0),
+		"sandbag": _burlap_mat("sandbag.tres", Color(0.6, 0.52, 0.38)),
+		"sandbag_snow": _burlap_mat("sandbag_snow.tres", Color(0.74, 0.72, 0.66)),
+		"sandbag_core": _mat("sandbag_core.tres", Color(0.1, 0.085, 0.065), 1.0),
 	}
 
 
@@ -2400,11 +2420,7 @@ func _build_trench_source(mats: Dictionary) -> Node:
 ## hole; crouching, he is hidden. All sandbags of a post are one mesh (2 surfaces).
 func _build_fire_posts(root: Node, mats: Dictionary) -> void:
 	var posts: Node3D = _add(root, Node3D.new(), "FirePosts")
-	var bag := SphereMesh.new()
-	bag.radius = 0.5
-	bag.height = 1.0
-	bag.radial_segments = 8
-	bag.rings = 4
+	var bag := _bag_mesh()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1940
 	var thick: float = POST_WALL_BACK - POST_WALL_FRONT
@@ -2469,6 +2485,99 @@ func _build_fire_posts(root: Node, mats: Dictionary) -> void:
 		var bags := MeshInstance3D.new()
 		bags.mesh = _bags_mesh(bag, plain, snowy, mats.sandbag, mats.sandbag_snow)
 		_add(body, bags, "Sandbags")
+
+		# V4: a dark filling inside the wall (the same three blocks as the collision, a few cm
+		# smaller, so the bags hide it). Whatever crack is left between two bags now shows dark
+		# earth, like a shadow, instead of daylight from the other side.
+		var core_st := SurfaceTool.new()
+		core_st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var in_z := 0.11  # behind the front and rear faces
+		var in_hole := 0.13
+		var core_top := POST_WALL_TOP - 0.08
+		var lintel_y0 := POST_HOLE_TOP + 0.09
+		var core_boxes: Array = [[Vector3(hw * 2.0, core_top - lintel_y0, thick - in_z * 2.0), Vector3(0, (core_top + lintel_y0) / 2.0, zmid)]]
+		for side in [-1.0, 1.0]:
+			var x0: float = hh + in_hole
+			core_boxes.append([Vector3(hw - x0, lintel_y0 + 0.02, thick - in_z * 2.0), Vector3(side * (hw + x0) / 2.0, (lintel_y0 + 0.02) / 2.0 - 0.02, zmid)])
+		for cb: Array in core_boxes:
+			var bm := BoxMesh.new()
+			bm.size = cb[0]
+			core_st.append_from(bm, 0, Transform3D(Basis.IDENTITY, cb[1]))
+		var core := MeshInstance3D.new()
+		core.mesh = core_st.commit()
+		core.mesh.surface_set_material(0, mats.sandbag_core)
+		_add(body, core, "SandbagCore")
+
+
+## V4: one sandbag, 1 x 1 x 1 in size before `_bag_transform()` squashes it to 52 x 21 x 31 cm:
+## a "pillow" with flat top and bottom, blunt ends and rounded corners, a little bigger than its
+## place in the wall so that neighbours press into each other. It sags: the sides hang widest
+## below the middle, the belly is fatter than the ends and the top sinks towards the ends.
+## Smooth normals (each corner point's direction is the average of the faces around it), so the
+## light flows round the bag instead of showing flat facets. 160 triangles.
+func _bag_mesh() -> ArrayMesh:
+	const AROUND := 16
+	const RINGS := 5 # rings between the bottom and the top point
+	const HALF := Vector3(0.53, 0.59, 0.55) # half sizes (0.5 = exactly its place in the wall)
+	var verts := PackedVector3Array()
+	var idx := PackedInt32Array()
+	verts.append(Vector3(0, -HALF.y, 0)) # bottom point
+	for r in RINGS:
+		var lat := deg_to_rad(-60.0 + 120.0 * r / (RINGS - 1))
+		var ring_r := pow(cos(lat), 0.45)
+		var y := signf(sin(lat)) * pow(absf(sin(lat)), 0.45)
+		for a in AROUND:
+			var ang := TAU * a / AROUND
+			# A square with rounded corners seen from above (a "superellipse").
+			var cx := signf(cos(ang)) * pow(absf(cos(ang)), 0.35)
+			var cz := signf(sin(ang)) * pow(absf(sin(ang)), 0.35)
+			verts.append(Vector3(cx * ring_r * HALF.x, y * HALF.y, cz * ring_r * HALF.z))
+	verts.append(Vector3(0, HALF.y, 0)) # top point
+	# The sag.
+	for i in verts.size():
+		var v := verts[i]
+		var ty := v.y / HALF.y # -1 bottom … 1 top
+		var tx := v.x / HALF.x # -1 … 1 along the bag
+		v.z *= 1.0 + 0.05 * cos(tx * PI * 0.5) - 0.03 # fat belly, slimmer ends
+		v.y -= 0.04 * (1.0 - ty * ty)                 # the sides hang low
+		if ty > 0.0:
+			v.y -= 0.05 * ty * tx * tx                # the top sinks towards the ends
+		verts[i] = v
+	var top := verts.size() - 1
+	for a in AROUND:
+		var b := (a + 1) % AROUND
+		idx.append_array([0, 1 + a, 1 + b])
+		for r in RINGS - 1:
+			var p := 1 + r * AROUND
+			var q := p + AROUND
+			idx.append_array([p + a, q + a, q + b, p + a, q + b, p + b])
+		var last := 1 + (RINGS - 1) * AROUND
+		idx.append_array([top, last + b, last + a])
+	# Smooth normals: add up the faces around each point. (Godot draws a triangle only from the
+	# side where its corners run clockwise - turn any triangle that faces into the bag.)
+	var norms := PackedVector3Array()
+	norms.resize(verts.size())
+	for i in range(0, idx.size(), 3):
+		var n := (verts[idx[i + 2]] - verts[idx[i]]).cross(verts[idx[i + 1]] - verts[idx[i]])
+		if n.dot(verts[idx[i]] + verts[idx[i + 1]] + verts[idx[i + 2]]) < 0.0:
+			var swap := idx[i + 1]
+			idx[i + 1] = idx[i + 2]
+			idx[i + 2] = swap
+			n = -n
+		for j in 3:
+			norms[idx[i + j]] += n
+	for i in norms.size():
+		norms[i] = norms[i].normalized()
+		if norms[i].dot(verts[i]) < 0.0: # safety: always pointing out of the bag
+			norms[i] = -norms[i]
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts
+	arr[Mesh.ARRAY_NORMAL] = norms
+	arr[Mesh.ARRAY_INDEX] = idx
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	return mesh
 
 
 func _bag_transform(rng: RandomNumberGenerator, pos: Vector3, yaw: float) -> Transform3D:

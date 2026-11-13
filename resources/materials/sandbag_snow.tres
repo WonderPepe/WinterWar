@@ -1,4 +1,13 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
+[ext_resource type="Texture2D" path="res://assets/textures/burlap_albedo.png" id="1_0nxu3"]
+[ext_resource type="Texture2D" path="res://assets/textures/burlap_normal.png" id="2_2kv6d"]
+
 [resource]
-albedo_color = Color(0.74, 0.72, 0.66, 1)
+albedo_color = Color(0.97754294, 0.9511229, 0.87186265, 1)
+albedo_texture = ExtResource("1_0nxu3")
+normal_enabled = true
+normal_texture = ExtResource("2_2kv6d")
+uv1_scale = Vector3(4, 4, 4)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 4.0
