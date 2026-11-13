@@ -1,6 +1,7 @@
 class_name Player
 extends CharacterBody3D
-## Player logic: movement, sprint/stamina, crouch, jump, deep snow, health, death.
+## Player logic: movement, sprint/stamina, crouch, jump, climbing out of the trench (C1),
+## deep snow, health, death.
 ##
 ## The node's NAME is the peer id of the person controlling it ("1" = host).
 ## Movement is calculated only on the host (the "authority" for game state).
@@ -64,6 +65,7 @@ var deaths: int = 0
 var mounted_gun_path: NodePath = NodePath() ## The mounted gun we are using (empty = none).
 var bandages: int = 2
 var is_bandaging: bool = false
+var is_climbing: bool = false ## C1: hauling himself over a trench edge (hands busy, no shooting).
 
 var _bandage_timer: float = 0.0
 
@@ -81,6 +83,7 @@ var _shake: float = 0.0 # camera shake (artillery), local
 @onready var snow_particles: CPUParticles3D = $SnowParticles
 @onready var weapons: WeaponController = $WeaponController
 @onready var molotov: MolotovHandler = $Molotov
+@onready var climb: ClimbHandler = $Climb
 
 
 func _enter_tree() -> void:
@@ -185,7 +188,8 @@ func _process(delta: float) -> void:
 	head.rotation.x = input.look_pitch
 	_update_crouch_shape(delta)
 	# Death camera: sink to the ground and tilt the head sideways.
-	head.rotation.z = move_toward(head.rotation.z, 0.5 if is_dead else 0.0, delta * 2.0)
+	# (C1: climbing leans the head a little, like heaving the body over the edge.)
+	head.rotation.z = move_toward(head.rotation.z, 0.5 if is_dead else (0.09 if is_climbing else 0.0), delta * (2.0 if is_dead else 0.6))
 	# Shaking ground (artillery): the camera jolts a little, then settles.
 	_shake = maxf(_shake - delta * 1.8, 0.0)
 	var amp: float = _shake * _shake * 0.035
@@ -198,6 +202,7 @@ func _physics_process(delta: float) -> void:
 	rotation.y = input.look_yaw
 	if is_dead:
 		# Dead: no control, just fall to the ground and stop.
+		climb.cancel()
 		velocity.x = 0.0
 		velocity.z = 0.0
 		if not is_on_floor():
@@ -207,11 +212,20 @@ func _physics_process(delta: float) -> void:
 		input.consume_bandage()
 		move_and_slide()
 		return
+	if is_climbing:
+		# C1: on the way over the trench edge - nothing else until he stands on top.
+		input.consume_jump()
+		input.consume_interact()
+		input.consume_bandage()
+		climb.update(delta)
+		return
 	_update_bandage(delta)
 	if _handle_mounted_gun():
 		return
 	_update_crouch_state()
 	_apply_gravity_and_jump(delta)
+	if is_climbing:
+		return # (just started: the climb moves him from the next frame on)
 	_update_sprint_and_stamina(delta)
 	_apply_movement(delta)
 	move_and_slide()
@@ -281,6 +295,8 @@ func _apply_gravity_and_jump(delta: float) -> void:
 	var wants_jump: bool = input.consume_jump()
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
+	elif wants_jump and climb.try_start():
+		pass # C1: a wall too high to jump onto - he climbs it instead (also from a crouch)
 	elif wants_jump and not is_crouching:
 		velocity.y = jump_velocity * (0.6 if is_in_deep_snow() else 1.0)
 
@@ -375,6 +391,7 @@ func respawn(at: Transform3D) -> void:
 	is_crouching = false
 	is_sprinting = false
 	is_bandaging = false
+	climb.cancel()
 	bandages = max_bandages
 	molotov.reset() # (T2: bottles have to be fetched from the box again)
 	weapons.refill_ammo()

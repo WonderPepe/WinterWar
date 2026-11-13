@@ -25,6 +25,9 @@ you work on. Update this file and the right note at the end of every milestone.
   V4 (review item V4): sandbags are sagging burlap pillows (texture + normal map, smooth normals)
   that press into each other, with a dark filling inside the wall (`SandbagCore`) – no daylight
   between the bags; collision and loophole unchanged.
+  C1: climbing out of the trench – Space at a wall too high to jump onto (0.9–1.7 m) hauls the
+  soldier over the edge in 1 s, hands busy (`ClimbHandler`, Player child `Climb`, synced
+  `Player.is_climbing`); owner: not with a lit bottle, also from a crouch, no help text.
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
@@ -43,7 +46,9 @@ you work on. Update this file and the right note at the end of every milestone.
 
 ## Session setup (Cowork: cloud workspace + owner's computer)
 - Get the repo into the cloud: on his computer `git bundle create "Claude outputs/repo.bundle" --all`
-  → stage it → `git clone` in the cloud. Godot 4.7.2 Linux + Web export templates from
+  → stage it → `git clone` in the cloud (the bundle is ~60 MB and staging can time out: if his
+  `git rev-parse HEAD origin/main` are equal and `git status` is clean, clone the public GitHub
+  repo instead). Godot 4.7.2 Linux + Web export templates from
   github.com/godotengine/godot/releases (into `~/.local/share/godot/export_templates/4.7.2.stable/`);
   xvfb for screenshots/GL; Python Playwright for `tools/web_smoke_test.py`.
 - Run builder/tests/exports in the cloud copy; deliver changed files as a zip → unzip in his
@@ -87,6 +92,6 @@ you work on. Update this file and the right note at the end of every milestone.
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
-- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4)
+- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), climbing out of the trench (C1)
 - `gotchas.md` – full list of lessons learned
 - `tools.md` – helper tools and tests

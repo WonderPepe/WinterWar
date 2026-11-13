@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/player/player_fx.gd" id="8_qfm1y"]
 [ext_resource type="Material" path="res://resources/materials/snowflake.tres" id="9_fulsm"]
 [ext_resource type="Script" path="res://scripts/player/player_input.gd" id="10_4r5pv"]
+[ext_resource type="Script" path="res://scripts/player/climb_handler.gd" id="11_c1clm"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v2ag"]
 radius = 0.35
@@ -119,6 +120,9 @@ properties/12/replication_mode = 2
 properties/13/path = NodePath(".:is_bandaging")
 properties/13/spawn = true
 properties/13/replication_mode = 2
+properties/14/path = NodePath(".:is_climbing")
+properties/14/spawn = true
+properties/14/replication_mode = 2
 
 [node name="Player" type="CharacterBody3D" unique_id=992209146]
 collision_layer = 2
@@ -178,6 +182,9 @@ script = ExtResource("8_d2wvv")
 
 [node name="MolotovSync" type="MultiplayerSynchronizer" parent="Molotov" unique_id=458654444]
 replication_config = SubResource("SceneReplicationConfig_oprun")
+
+[node name="Climb" type="Node" parent="." unique_id=1310047251]
+script = ExtResource("11_c1clm")
 
 [node name="PlayerFX" type="Node3D" parent="." unique_id=1082899348]
 script = ExtResource("8_qfm1y")

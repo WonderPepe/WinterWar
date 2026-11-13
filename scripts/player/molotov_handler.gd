@@ -110,6 +110,11 @@ func can_put_away() -> bool:
 	return phase != Phase.LIT and phase != Phase.THROWING
 
 
+## C1 (owner): no climbing out of the trench while the rag is being lit or is burning.
+func can_climb() -> bool:
+	return phase == Phase.NONE or phase == Phase.HELD
+
+
 ## Host: back to the gun.
 func put_away() -> void:
 	if can_put_away():
@@ -148,7 +153,7 @@ func _physics_process(delta: float) -> void:
 				_rmb_released = true
 			if count <= 0:
 				phase = Phase.NONE
-			elif input.aim_held and _rmb_released and not player.is_sprinting:
+			elif input.aim_held and _rmb_released and not player.is_sprinting and not player.is_climbing:
 				_ignite_t = 0.0
 				phase = Phase.IGNITING
 		Phase.IGNITING:

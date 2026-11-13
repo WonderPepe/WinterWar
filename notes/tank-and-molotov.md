@@ -1,4 +1,4 @@
-# T-26 tank and Molotov cocktail (T1, T2, T3)
+# T-26 tank and Molotov cocktail (T1, T2, T3), climbing out of the trench (C1)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
@@ -141,6 +141,28 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (where the BATTLE banner was) shows "TANKS ARE COMING!" + where the Molotov boxes are and the
   keys (read from the Input Map via `ControlsPanel.key_text`). It waits until the banner has
   faded, stays `tank_hint_time` 14 s, once per match (`_tank_hint_shown`). Local UI only.
+
+## Climbing out of the trench (C1) – how it is built
+- `ClimbHandler` (`scripts/player/climb_handler.gd`, Player child `Climb`, no nodes of its own).
+  `Player._apply_gravity_and_jump`: on the floor, a jump request first asks `climb.try_start()`;
+  only if that says no does the normal jump happen (not while crouching, as before).
+- `find_ledge()` (host, rays on the world layer 1 only – so never onto a tank): a near-vertical
+  wall within `reach` 0.5 m of the body, faced within `max_angle_deg` 60°; ground on top
+  `step_in` 0.5 m behind the wall face, `min_height` 0.9 … `max_height` 1.7 m above the feet
+  (lower = a normal jump can do it); nothing over the head, nothing between him and the spot,
+  and room for a standing capsule there (world + tanks). The 0.84 m sandbag wall on top of a
+  firing position's front makes that ledge 2.24 m → no climbing out through a firing position.
+- Refused while dead, bandaging, on the Maxim, or `MolotovHandler.can_climb()` is false
+  (IGNITING / LIT / THROWING). Starting drops a reload, un-crouches, stops sprinting.
+- `update()` (host, from `Player._physics_process` while `is_climbing`; normal movement is
+  skipped): the position is set directly – `up_share` 0.6 of `climb_time` 1.0 s straight up, then
+  forward to the spot (smoothstep, overlapping a little). Jump / F / B presses are swallowed.
+  Death or respawn → `cancel()` (a dead man falls back in).
+- `Player.is_climbing` is in StateSync (ON_CHANGE). WeaponController: no firing, aiming or
+  reload start, gun lowered out of view; MolotovHandler: HELD can't go to IGNITING; the head
+  leans a little (`Player._process`). No sound and no HUD text of its own.
+- Enemies and tanks need no change: they see / shoot the climber like anyone in the open
+  (test_c1 checks the line from a parked tank's eye height).
 
 ## Turret feel (T4) – how it is built
 - `Tank._aim()` → `_traverse()`: the host keeps a signed `_turret_vel` (rad/s). Top speed:

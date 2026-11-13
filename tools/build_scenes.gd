@@ -270,6 +270,10 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:phase", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 	])
 
+	# C1: climbing out of the trench (Space at a wall too high to jump onto).
+	var climb: Node = _add(p, Node.new(), "Climb")
+	climb.set_script(load("res://scripts/player/climb_handler.gd"))
+
 	# Footsteps, breath vapour and drifting snow (made in code by player_fx.gd).
 	var fx: Node3D = _add(p, Node3D.new(), "PlayerFX")
 	fx.set_script(load("res://scripts/player/player_fx.gd"))
@@ -336,6 +340,7 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:deaths", true, ON_CHANGE],
 		[".:bandages", true, ON_CHANGE],
 		[".:is_bandaging", true, ON_CHANGE],
+		[".:is_climbing", true, ON_CHANGE],
 	])
 	return p
 

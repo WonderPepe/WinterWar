@@ -226,6 +226,16 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `soldiers-effects-sound.md` ("Muzzle flashes in the dark"). Tests: `test_v1.gd`; measurement:
   `shots_flash.gd`.
 
+- [x] C1 climbing out of the trench (owner 2026-11-13: "player cannot jump out of the trench, this
+  is hard when they need to destroy tanks"). A jump lifts ~1.0 m, the trench is 1.4 m deep and all
+  exits lead to the rear, but a Molotov must land on the tank's rear engine deck. Now Space in
+  front of a wall that is too high to jump onto climbs it (any side, any world ledge 0.9–1.7 m).
+  **Owner's decisions:** climb time 1.0 s; NOT with a bottle that is being lit or burning (an
+  unlit bottle in the hand comes along, and can't be lit during the climb); Space while crouching
+  climbs too (on open ground a crouching player still can't jump); NO help text (no Controls
+  row, no line in the tank hint). Rejected: a higher jump, ladders/steps at fixed spots.
+  Details: `tank-and-molotov.md` ("Climbing out"). Test: `test_c1.gd`.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

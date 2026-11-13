@@ -153,6 +153,7 @@ func _process(delta: float) -> void:
 	var bottle: bool = player.molotov.is_selected() # T2: right mouse lights / aims the bottle instead
 	var cocking: bool = get_mounted_gun() == null and current_slot < _view_models.size() and _current_view_model().is_cocking
 	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging \
+			and not player.is_climbing \
 			and not bottle and not cocking
 	_aim_t = move_toward(_aim_t, 1.0 if is_aiming else 0.0, delta / maxf(w.ads_time, 0.01))
 	holder.visible = player.is_local_player() and not player.is_dead and get_mounted_gun() == null and not bottle
@@ -209,7 +210,7 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 
 func _can_fire_now() -> bool:
 	return _now() >= _next_fire_time and not is_reloading_now() and not player.is_sprinting and not player.is_dead \
-			and not player.is_bandaging
+			and not player.is_bandaging and not player.is_climbing
 
 
 func _fire(w: WeaponData) -> void:
@@ -293,6 +294,8 @@ func _update_view(delta: float, w: WeaponData) -> void:
 
 	if player.is_bandaging:
 		target += Vector3(0.05, -0.28, 0.08) # gun lowered while the hands are busy
+	if player.is_climbing:
+		target += Vector3(0.08, -0.5, 0.12) # C1: out of view while he hauls himself up
 
 	if wall_check.is_colliding():
 		var dist: float = camera.global_position.distance_to(wall_check.get_collision_point())
@@ -334,7 +337,7 @@ func _host_process(delta: float, w: WeaponData) -> void:
 	if slot >= 0 and slot < loadout.size() and slot != current_slot:
 		is_reloading = false
 		current_slot = slot
-	if input.consume_reload():
+	if input.consume_reload() and not player.is_climbing: # (C1: hands busy)
 		_start_reload(w)
 	if is_reloading:
 		_reload_timer -= delta
