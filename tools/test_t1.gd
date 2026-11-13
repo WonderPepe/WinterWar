@@ -95,6 +95,9 @@ func run() -> void:
 	stand.y = terrain.get_height(stand.x, stand.z) + 0.1
 	p.global_position = stand
 	tank._next_halt = 1000.0 # no stop for the main gun yet
+	# Lots of health for this part: four DT hits kill, and a dead player respawns far in the rear –
+	# then the turret has nobody to turn to and the checks below failed now and then.
+	p.health = 100000
 	var hp: int = p.health
 	var ok: bool = await wait_for(func() -> bool: return tank.state == Tank.State.SUPPRESS, 6.0)
 	check(ok, "player in sight → SUPPRESS")
@@ -103,8 +106,8 @@ func run() -> void:
 	ok = await wait_for(func() -> bool: return tank.dt_rounds_fired >= 10, 40.0) # slow turret (T4): the hull keeps turning under it
 	check(ok, "DT fires at the player (%d rounds)" % tank.dt_rounds_fired)
 	check(tank._aim_error_deg(tank.dt_muzzle) < 6.0, "turret turned towards the player (%.1f° off)" % tank._aim_error_deg(tank.dt_muzzle))
-	ok = await wait_for(func() -> bool: return p.health < hp or p.is_dead, 10.0)
-	check(ok, "DT bullets hurt the player (health %d → %d)" % [hp, p.health])
+	ok = await wait_for(func() -> bool: return p.health < hp, 10.0)
+	check(ok and not p.is_dead, "DT bullets hurt the player (%d damage)" % (hp - p.health))
 	p.god_mode = true
 	p.health = p.max_health
 

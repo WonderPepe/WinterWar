@@ -123,9 +123,11 @@ func run() -> void:
 	# Climb out into the open: deadly.
 	p.input.crouch_held = false
 	p.global_position = Vector3(-30, terrain.get_height(-30, 30) + 0.2, 30)
-	await seconds(0.3)
-	check(not ArtilleryBarrage.is_covered(p) and hud.artillery_label.text.begins_with("GET INTO"), "out in the open: '%s'" % hud.artillery_label.text)
 	var t0 := Time.get_ticks_msec()
+	while not hud.artillery_label.text.begins_with("GET INTO") and not p.is_dead and Time.get_ticks_msec() - t0 < 2000:
+		await get_tree().process_frame # (the HUD needs a frame or two; a fixed 0.3 s was sometimes too short)
+	check(not ArtilleryBarrage.is_covered(p) and hud.artillery_label.text.begins_with("GET INTO"), "out in the open: '%s'" % hud.artillery_label.text)
+	t0 = Time.get_ticks_msec()
 	while not p.is_dead and Time.get_ticks_msec() - t0 < 8000:
 		await seconds(0.2)
 	check(p.is_dead or p.health < 100, "out in the open the shells get you (health %d, dead %s)" % [p.health, p.is_dead])
@@ -140,7 +142,12 @@ func run() -> void:
 	check(o.whistle_count >= 1, "the officer blows his whistle when it lifts (%d)" % o.whistle_count)
 	check(not hud.artillery_label.visible, "no text when the barrage lifts")
 	var z_end: float = maxf(r.global_position.z, o.global_position.z)
-	await seconds(6.0)
+	# A soldier who has just knelt down to fire stays there for up to 7 s before he walks on,
+	# so wait until one of them has moved (at most 20 s) instead of looking after exactly 6 s.
+	var waited: float = 0.0
+	while maxf(r.global_position.z, o.global_position.z) <= z_end + 3.0 and waited < 20.0:
+		await seconds(0.5)
+		waited += 0.5
 	var z_now: float = maxf(r.global_position.z, o.global_position.z)
 	check(z_now > z_end + 3.0, "…and the attack goes on (front man z %.0f → %.0f; %s / %s)" % [z_end, z_now,
 			Enemy.State.keys()[r.state], Enemy.State.keys()[o.state]])

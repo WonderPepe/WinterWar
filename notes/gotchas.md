@@ -52,14 +52,19 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   has a `.gdignore`.
 - After changing the level geometry, re-bake: select `Navigation` in `levels/test_level.tscn`
   → Bake NavigationMesh (saves `levels/test_level_navmesh.res`).
-- `test_artillery.gd` "out in the open: GET INTO THE TRENCH!" is flaky (fails ~1 run in 2, also
-  before T3): only 0.3 s after moving the player; a re-run passes.
+- Flaky tests, fixed 2026-11-13 (tests only, the game was right): `test_artillery.gd` "…and the
+  attack goes on" looked after exactly 6 s, but a soldier who just knelt to fire stays up to 7 s
+  (failed ~1 run in 2) – it now waits until someone has moved (max 20 s); "GET INTO THE TRENCH!"
+  waits for the HUD text instead of a fixed 0.3 s. `test_t1.gd`: four DT hits kill, the dead
+  player respawned in the rear and "DT fires / turret turned / DT bullets hurt (100 → 100) /
+  fires a 45 mm shell" failed in turn (~1 run in 4) – the player now has 100000 health there.
+  **Lesson:** a test that turns `god_mode` off must keep the player alive (or expect the respawn),
+  and must wait for a condition, not a fixed time, when the AI has random pauses.
 - `JavaScriptBridge.eval()` in the web export did not return a JavaScript true/false as a
   GDScript bool: comparing the result (`== true`) silently stopped the function (no error in the
   console). Ask for a string instead: `FullscreenNotice._js_yes()` evaluates `(expr) ? 'yes' : 'no'`.
 - Playwright: `page.close(run_before_unload=True)` showed no `beforeunload` dialog here; navigating
   away (`page.goto("about:blank")`) after a click does. Software WebGL is slow: give it 30 s.
-- `test_t1.gd` "DT bullets hurt the player" can miss once under load (random spread); re-run.
 - `test_m1.gd` deep-snow / exit-ramp checks failed once (3 FAILs) under heavy load in the cloud,
   then passed 4× in a row (also without the change being tested) – re-run before suspecting code.
 - **Trench line (L1):** many tests teleport the player / soldiers to fixed trench spots
