@@ -424,7 +424,9 @@ static func bunker_mesh(mat: Material) -> ArrayMesh:
 			return null # inside the walls
 		var u := maxf(d, 0.0)
 		var mask := 1.0 - smoothstep(1.9, 2.6, z) # nothing behind the bunker
-		var front := smoothstep(-2.6, -2.95, z)
+		# "front" must be fully 1 already INSIDE the front wall (its face is at z = -2.75), or a
+		# wedge of snow stands in the Maxim's hole and the gunner sees nothing.
+		var front := smoothstep(-2.1, -2.5, z)
 		mask *= lerpf(1.0, smoothstep(1.5, 2.3, absf(x)), front)
 		var top := lerpf(0.42, 0.72, _n01(n_a, x * 1.3, z * 1.3))
 		var reach := lerpf(1.1, 1.6, _n01(n_a, x + 90.0, z))

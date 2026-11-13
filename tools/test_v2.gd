@@ -118,9 +118,21 @@ func _ready() -> void:
 	check(covered, "the snow cap covers the old flat roof slab")
 	var in_fire := 0.0
 	for v in cap:
-		if v.y < 1.2 and absf(v.x) < 1.4 and v.z < bz - 2.75:
+		if v.y < 1.2 and absf(v.x) < 1.4 and v.z < bz - 2.2: # from inside the front wall forwards
 			in_fire = maxf(in_fire, v.y)
-	check(in_fire < 0.03, "no snow bank in front of the Maxim's hole (%.3f)" % in_fire)
+	check(in_fire < 0.03, "no snow bank in or in front of the Maxim's hole (%.3f)" % in_fire)
+	# The gunner's view: from behind the gun through the hole, straight and at the Maxim's limits
+	# (21 degrees each way), no snow triangle may be crossed in the first 6 m.
+	var bank_mesh := (snow.get_node("BunkerSnow") as MeshInstance3D).mesh
+	var tri_mesh := bank_mesh.generate_triangle_mesh()
+	var blocked := 0
+	for deg: float in [-21.0, -10.0, 0.0, 10.0, 21.0]:
+		for eye_y: float in [0.2, 0.33, 0.5]:
+			var from := Vector3(0.0, eye_y, -2.15) # the gun's turning point, bunker coordinates
+			var dir := Vector3(sin(deg_to_rad(deg)), 0.0, -cos(deg_to_rad(deg)))
+			if tri_mesh.intersect_segment(from, from + dir * 6.0).size() > 0:
+				blocked += 1
+	check(blocked == 0, "the Maxim gunner sees out through the hole: no snow in the way (%d of 15 lines blocked)" % blocked)
 
 	# Nothing changed for bullets: a ray along the ground just above a lip passes; the trench
 	# body and the bunker still have their baked collision.

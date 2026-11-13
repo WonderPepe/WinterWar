@@ -62,6 +62,10 @@ func _all_views(tag: String) -> void:
 	await _view(Vector3(-6, 1.7, 42), Vector3(0, 0.6, 56.5), tag + "bunker_front")
 	await _view(Vector3(-7.5, 1.6, 53.5), Vector3(-1, 0.7, 58.5), tag + "bunker_corner")
 	await _view(Vector3(6, 4.5, 68), Vector3(0.5, -1.0, 61), tag + "bunker_back")
+	# The Maxim gunner's view through the hole (straight, and turned to both limits).
+	await _view(Vector3(0, 0.36, 58.2), Vector3(0, 0.3, 40), tag + "maxim_view", 70.0)
+	await _view(Vector3(0, 0.36, 58.2), Vector3(-7, 0.3, 40), tag + "maxim_view_left", 70.0)
+	await _view(Vector3(0.6, 1.3, 53.2), Vector3(0, 0.3, 56.7), tag + "maxim_hole")
 	# Exit ramp and a communication trench.
 	await _view(Vector3(-77, 2.0, 73), Vector3(-80, -0.8, 66), tag + "exit_ramp")
 	await _view(Vector3(-36, 3.0, 78), Vector3(-42, -1.2, 88), tag + "comm_trench")
