@@ -146,6 +146,11 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 	normals.resize(n * n)
 	colors.resize(n * n)
 	uvs.resize(n * n)
+	var shade_h := heights.duplicate()
+	for iz in n:
+		for ix in n:
+			if _on_trench_floor(ix - half, iz - half):
+				shade_h[iz * n + ix] = 0.0
 	# Vertex colours tell the snow shader what is where:
 	# red below 1 = ice on the bog, green below 1 = trampled, dirty snow (trench floor).
 	for iz in n:
@@ -154,11 +159,13 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 			var x: float = ix - half
 			var z: float = iz - half
 			verts[i] = Vector3(x, heights[i], z)
-			# Normal from the height difference of the neighbours (2 m apart).
-			var hl: float = heights[iz * n + maxi(ix - 1, 0)]
-			var hr: float = heights[iz * n + mini(ix + 1, n - 1)]
-			var hd: float = heights[maxi(iz - 1, 0) * n + ix]
-			var hu: float = heights[mini(iz + 1, n - 1) * n + ix]
+			# Normal from the height difference of the neighbours (2 m apart). The drop to the
+			# trench floor is left out (V2): it is hidden inside the earth slab, and it used to
+			# tilt the light on the ground along the slab's edges, which showed as lines.
+			var hl: float = shade_h[iz * n + maxi(ix - 1, 0)]
+			var hr: float = shade_h[iz * n + mini(ix + 1, n - 1)]
+			var hd: float = shade_h[maxi(iz - 1, 0) * n + ix]
+			var hu: float = shade_h[mini(iz + 1, n - 1) * n + ix]
 			normals[i] = Vector3(hl - hr, 2.0, hd - hu).normalized()
 			# Icy patches on the bog (wind has blown the snow away), trampled snow in the trench.
 			var patch: float = smoothstep(0.05, 0.35, noise.get_noise_2d(x * 3.0 + 500.0, z * 3.0))

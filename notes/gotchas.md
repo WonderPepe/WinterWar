@@ -95,3 +95,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - (L3) Soldiers standing in the trench see over the edge (eyes ~0.2 m above the ground): across the
   flat ground a head is visible far away. That is why HOLD sight is short (30/40 m) – the rear spawns
   would otherwise be shot at from the line.
+- (V2) The soft snow (`EarthworkSnow`, heap meshes) is picture only. Keep it that way: anything that
+  should stop bullets or feet belongs in the CSG / collision shapes, and then the navmesh must be
+  re-baked. The lips must stay low (< 0.17 m, `test_v2.gd`): standing eyes are only 0.2 m above the ground.
+- (V2) The builder rewrites `levels/baked/snow_*_mesh.res` and `heap_*_mesh.res` on every run (binary,
+  the bytes may differ although the mesh is the same) – commit them only when the snow really changed.

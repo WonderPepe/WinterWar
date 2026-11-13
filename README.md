@@ -63,6 +63,9 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   thin clouds). Its colours can be changed in `resources/materials/winter_sky.tres`.
 - **Snow**: `resources/shaders/snow.gdshader` – wind ripples, soft patches, sparkles, ice on
   the bog and trampled snow on the trench floor. Material: `resources/materials/snow_ground.tres`.
+- **Soft earthworks** (V2): rounded snow lips on the trench edges, drifts at the foot of the
+  walls, rounded earth heaps and a snow cap on the bunker – made by `tools/earthwork_snow.gd`
+  when the scenes are built. Only pictures: they stop no bullets.
 - **Log walls**: `resources/shaders/log_wall.gdshader` – trench walls and bunker, snow on top.
 - **Trees**: `resources/shaders/spruce.gdshader` + `scripts/world/forest_scatter.gd` (two spruce
   shapes close up, a simple one further away – each tree softly dissolves into the other –

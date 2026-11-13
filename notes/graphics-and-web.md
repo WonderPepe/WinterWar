@@ -88,6 +88,28 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Measured budget (High, after P1): ~190 draw calls (260 max), ~255k triangles/frame, CPU scripts
   1–2 ms + physics 2.5–4 ms with 16 enemies (native). Keep new art within the README's budget table.
 
+## Soft snow on the earthworks (V2) – how it is built
+- `tools/earthwork_snow.gd` (helper of the builder, static functions) makes the meshes;
+  `build_scenes.gd` (`_build_earthwork_snow`, `_heap_mesh`) saves them in `levels/baked/`
+  (`snow_*_mesh.res`, `heap_*_mesh.res`) and links them in `levels/test_level.tscn`. Re-run the
+  builder after changing the trench line – the snow follows it. No CSG or navmesh re-bake is needed:
+  nothing here has collision.
+- The trench outline is read from the CSG source: every box SUBTRACTED over the full slab height
+  (size.y ≥ 3.5) is joined with `Geometry2D.merge_polygons` → polygons → edges cut into ≤ 0.6 m
+  pieces. A cross-section (7 points for the lip, 4 for the drift) is swept along the outline;
+  height and width vary with noise (fixed seeds, so the result is the same every build).
+- Places that must stay clear: `no_lip` rectangles (the sandbag walls – their loopholes start at
+  the ground – and the bunker); on the ramps the lips and drifts fade out and `RampSnow` takes over.
+- Bunker sizes are written out in `bunker_mesh()` (roof 6.8 × 6.3 m, old snow slab top 1.745 m,
+  walls 6 × 5.5 m). The old flat `RoofSnow` CSG box is still there (hidden inside the cap, part of
+  the baked collision). If the bunker CSG changes, change these numbers too (`test_v2.gd` checks
+  that the cap covers the slab and that nothing lies in front of the Maxim's hole).
+- Vertex colour green < 1 = trampled / earthy (same meaning as on the terrain). Lips, drifts and
+  ramp snow cast no shadows; the bunker snow and the heaps do.
+- Smooth normals are computed in the helper (`Builder.add_grid`, `_smooth`); the outer edge of
+  lips/drifts has its normal forced straight up and sits 2 cm under the surface, so it melts into
+  the ground without a visible seam.
+
 ## Graphics (P1) – how it is built
 - Look: stylized-realistic, clear freezing day, low warm sun in the SSW (in front-left of the
   trench), blue sky ambient → blue shadows. Linear tonemap, exposure 0.85, sun energy 1.25.

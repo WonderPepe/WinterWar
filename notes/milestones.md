@@ -270,3 +270,19 @@ From the v0.6.0 team review (item P1; named P3 here because P1/P2 are the graphi
 Owner approved: caps 1080 / 900 / 720 lines (High / Medium / Low), default Auto, "Full" for
 strong machines. Side effect accepted: on a 1080p screen Medium is 900 lines (was 972) and Low
 720 (was 810). Details: `graphics-and-web.md` "3D resolution cap".
+
+## V2 – softer earthworks (review item V2) (2026-11-13)
+From the v0.6.0 team review (item V2: "trench, bunker and firing positions are clean boxes").
+Owner approved the plan as shown, including the bunker side banks as PICTURE ONLY (a soldier walks
+through them like knee-deep snow; solid banks would need a navmesh re-bake).
+- New node `EarthworkSnow` in the level (4 meshes, no collision, not a navigation source):
+  `TrenchLips` (rounded snow lip on every trench edge, 4–15 cm, lower on the enemy side),
+  `FloorDrifts` (drifts at the wall foot, clean → trampled), `RampSnow` (snow over the four ramp
+  landings), `BunkerSnow` (domed roof cap + banks on the side walls and front corners).
+- The earth heaps of the firing positions: rounded mesh, the old wedge stays as the collision.
+- Terrain: the ground's normals no longer include the hidden drop to the trench floor (it showed as
+  lines along the edges of the earth slabs).
+- NOT done on purpose: a raised parapet in front of the trench (would change what both sides see
+  and hit – a gameplay decision for its own milestone).
+- Cost: +4 draw calls, ~33 000 triangles in total (only what is in view is drawn), +0.4 MB pck.
+Details: `graphics-and-web.md` ("Soft snow on the earthworks"). Tests: `test_v2.gd`, `shots_v2.gd`.

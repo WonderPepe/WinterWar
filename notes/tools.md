@@ -26,6 +26,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_turret.gd` (T4 turret speeds / delays), `make_turret_sounds.py`,
   `test_b3.gd` (weather per battle, fog limits enemy sight), `shots_weather.gd` (all ten looks), `make_weather.gd` (writes resources/weather/), `test_b1.gd` (loading-screen briefing + march), `shots_briefing.gd` (loading screen for battles 1, 7, 9), `test_controls.gd`, `shots_controls.gd` (Controls screen, tank route ends, Molotov hint),
   `shots_l2.gd` (bunker views), `test_l3.gd`, `shots_l3.gd` (communication trenches, rear spawns, battle 6 retake), `test_p3.gd` (P3 3D resolution cap: maths per screen height, a 4K window, saved setting, menu hint; uses user://settings.cfg and puts the earlier file back), `test_d1.gd` (D1 saved run: retry, Continue, new run, victory clears it; uses user://run.cfg and puts an earlier file back), `test_v1.gd`, `shots_flash.gd` (V1 enemy muzzle flashes in the dark: measures how much a flash stands out per look, 60/120 m), `test_l1.gd`, `shots_l1.gd` (trench line, exits, the 4 firing positions; top views + player views),
+  `earthwork_snow.gd` (V2: makes the soft snow meshes for the builder), `test_v2.gd`, `shots_v2.gd` (V2 snow lips / drifts / heaps / bunker snow; `shots_v2.gd before_` saves with another file prefix to compare),
   `web_guard_test.py` (web export: Leave-site warning, fullscreen "hold Esc" notice),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

@@ -599,6 +599,9 @@ func _build_level(mats: Dictionary) -> Node:
 	# --- L1: sandbag walls and earth banks in front of the four firing positions ---
 	_build_fire_posts(root, mats)
 
+	# --- V2: soft snow over the box edges (picture only, no collision) ---
+	_build_earthwork_snow(root, mats, terrain)
+
 	# --- Deep snow ---
 	var zones: Node3D = _add(root, Node3D.new(), "DeepSnowZones")
 	var zone_data := [
@@ -2428,19 +2431,19 @@ func _build_fire_posts(root: Node, mats: Dictionary) -> void:
 			cs.shape = box
 			cs.position = w[2]
 
-		# Earth heaps on both sides of the wall (a triangular prism sloping down and away).
+		# Earth heaps on both sides of the wall. What bullets and feet hit is still a simple wedge
+		# (a triangular prism sloping down and away); what you SEE is a rounded heap that covers
+		# it (V2, tools/earthwork_snow.gd).
 		for side in [-1.0, 1.0]:
 			var heap := PrismMesh.new()
 			heap.size = Vector3(1.3, POST_WALL_TOP, 1.0)
 			heap.left_to_right = 1.0 if side < 0.0 else 0.0 # the steep side faces the wall
 			var mi := MeshInstance3D.new()
-			mi.mesh = heap
-			mi.material_override = mats.snow
+			mi.mesh = _heap_mesh(side, mats)
 			_add(body, mi, "EarthHeapWest" if side < 0.0 else "EarthHeapEast")
-			mi.position = Vector3(side * (hw + 0.65 - 0.05), POST_WALL_TOP / 2.0, zmid)
 			var col: CollisionShape3D = _add(body, CollisionShape3D.new(), "EarthHeapWestCollision" if side < 0.0 else "EarthHeapEastCollision")
 			col.shape = heap.create_convex_shape()
-			col.position = mi.position
+			col.position = Vector3(side * (hw + 0.65 - 0.05), POST_WALL_TOP / 2.0, zmid)
 
 		# The sandbags: 4 layers of 0.21 m, 2 bags deep. The two lower layers leave the hole open.
 		var plain: Array[Transform3D] = []
@@ -2496,6 +2499,77 @@ func _bags_mesh(bag: Mesh, plain: Array[Transform3D], snowy: Array[Transform3D],
 		st.commit(mesh)
 		mesh.surface_set_material(mesh.get_surface_count() - 1, group[1])
 	return mesh
+
+
+# ---------------------------------------------------------------- V2: soft snow on the earthworks
+const EarthworkSnow := preload("res://tools/earthwork_snow.gd")
+
+
+## Saves a generated mesh in levels/baked/ and returns the saved copy (so the scene file only
+## holds a link to it).
+func _baked_mesh(mesh: ArrayMesh, file: String) -> Mesh:
+	DirAccess.make_dir_recursive_absolute(BAKED_DIR)
+	ResourceSaver.save(mesh, BAKED_DIR + file, ResourceSaver.FLAG_COMPRESS)
+	return load(BAKED_DIR + file)
+
+
+var _heap_meshes := {}
+func _heap_mesh(side: float, mats: Dictionary) -> Mesh:
+	if not _heap_meshes.has(side):
+		var zmid: float = (POST_WALL_BACK + POST_WALL_FRONT) / 2.0
+		_heap_meshes[side] = _baked_mesh(EarthworkSnow.heap_mesh(side, POST_WALL_HALF_W, POST_WALL_TOP, zmid, mats.snow),
+			"heap_%s_mesh.res" % ("west" if side < 0.0 else "east"))
+	return _heap_meshes[side]
+
+
+## The top of the four ramps out of the trenches: x, where the ramp starts (z0) and reaches the
+## ground (z1), and where the flat landing behind it ends.
+func _ramps() -> Array:
+	var list: Array = []
+	for x in [-80.0, 80.0]:
+		list.append({"x": x, "z0": 65.0, "z1": 69.5, "land_end": 71.4})
+	for k in 2:
+		var pts := _comm_points(k)
+		list.append({"x": pts[pts.size() - 1].x, "z0": COMM_RAMP_Z, "z1": COMM_RAMP_Z + COMM_RAMP_RUN,
+			"land_end": (COMM_AREAS[k] as Rect2).end.y + 0.1})
+	return list
+
+
+## V2: rounded snow that hides the box edges: lips along the trench edges, drifts at the foot of
+## the walls, a snow cap and side banks on the bunker, snow over the ramp landings. Only meshes:
+## nothing here has collision or is part of the navigation mesh, so the game plays as before.
+func _build_earthwork_snow(root: Node, mats: Dictionary, terrain: Node) -> void:
+	var snow: Node3D = _add(root, Node3D.new(), "EarthworkSnow")
+	var src: Node = load(TRENCH_SOURCE).instantiate()
+	var polys := EarthworkSnow.footprint(src.get_node("Trench"))
+	src.free()
+	# No lip where the sandbag walls stand (their loopholes start at the ground) or under the bunker.
+	var no_lip: Array[Rect2] = [Rect2(-3.1, BUNKER_Z - 2.85, 6.2, 5.7)]
+	for k in POST_X.size():
+		var zf: float = _line_z(POST_X[k]) - POST_BAY_DEPTH
+		no_lip.append(Rect2(POST_X[k] - POST_WALL_HALF_W - 0.1, zf + POST_WALL_FRONT - 0.1,
+			POST_WALL_HALF_W * 2.0 + 0.2, POST_WALL_BACK - POST_WALL_FRONT + 0.2))
+	var slabs: Array[Rect2] = [Rect2(-105, 52, 210, 18)]
+	slabs.append_array(COMM_AREAS)
+	var ground := func(x: float, z: float) -> float:
+		for r in slabs:
+			if r.has_point(Vector2(x, z)):
+				return 0.0
+		return terrain.call("get_height", x, z)
+	var built: Array = EarthworkSnow.build_lips_and_drifts(polys, DEPTH, _ramps(), no_lip, mats.snow)
+	var aprons = EarthworkSnow.build_aprons(_ramps(), DEPTH, ground, mats.snow)
+	var parts: Array = [["TrenchLips", built[0].mesh(mats.snow), built[0].triangles(), false, Vector3.ZERO],
+		["FloorDrifts", built[1].mesh(mats.snow), built[1].triangles(), false, Vector3.ZERO],
+		["RampSnow", aprons.mesh(mats.snow), aprons.triangles(), false, Vector3.ZERO],
+		["BunkerSnow", EarthworkSnow.bunker_mesh(mats.drift), -1, true, Vector3(0, 0, BUNKER_Z)]]
+	for p: Array in parts:
+		var mi: MeshInstance3D = _add(snow, MeshInstance3D.new(), p[0])
+		mi.mesh = _baked_mesh(p[1], "snow_%s_mesh.res" % (p[0] as String).to_snake_case())
+		mi.position = p[4]
+		if not p[3]:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var tris: int = mi.mesh.surface_get_array_index_len(0) / 3
+		print("V2 %s: %d triangles" % [p[0], tris])
 
 
 ## A StaticBody3D using the mesh and collision shape baked from the CSG combiner `n`.
