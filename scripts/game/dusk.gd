@@ -1,7 +1,8 @@
 class_name DuskLight
 extends Node
 ## The weather and time of day of the battle (B3; before B3 this was the slow sunset over all ten
-## battles). Every battle has its own look – sun or moon, sky, fog, falling snow, wind – in
+## battles). Every battle has its own look – sun or moon, sky, fog, falling snow, wind (also on
+## the trees and the drifting clouds, V10a) – in
 ## resources/weather/battle_NN.tres (`WeatherData`, made by tools/make_weather.gd). Battles 8 and
 ## 10 change DURING the battle (their look has an `end_look`: the fog clears / dusk deepens).
 ## The new look is set while the day screen is black, so nobody sees it change.
@@ -11,6 +12,12 @@ extends Node
 
 @export var wait_for_black: float = 6.0 ## Max seconds to wait for the black day screen before changing the look anyway.
 @export var step: float = 0.01 ## The sky is only re-lit when the blend moved this much (re-lighting is costly).
+## V10a: how fast the clouds drift at wind 0.6 ("cloud ceiling" units per second; 0 = they stand still).
+## The real speed is this × (0.4 + the battle's wind).
+@export var cloud_drift: float = 0.006
+## V10a: the drifting clouds are moved this many times a second, in steps too small to see – every
+## move re-lights the sky once (cheap, but not free), so not every frame.
+@export var cloud_updates_per_second: float = 8.0
 
 signal look_changed
 
@@ -26,6 +33,8 @@ var _wait: float = 0.0
 var _blend: float = -1.0
 var _started: bool = false
 var _snow_applied: int = -1
+var _cloud_offset := Vector2.ZERO # how far the clouds have drifted (V10a)
+var _cloud_wait: float = 0.0
 
 
 func _ready() -> void:
@@ -47,6 +56,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_drift_clouds(delta)
 	var director := get_tree().get_first_node_in_group("match_director") as MatchDirector
 	var spawner := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	var want: int = clampi((director.waves_cleared + 1) if director else 1, 1, _looks.size())
@@ -70,6 +80,23 @@ func _process(delta: float) -> void:
 		var t: float = clampf(battle_clock / maxf(_current_base().change_seconds, 0.01), 0.0, 1.0)
 		if absf(t - _blend) >= step or (t >= 1.0 and _blend < 1.0):
 			_apply_blend(t)
+
+
+## V10a: the clouds drift with the wind. The place is worked out every frame, but only sent to
+## the sky `cloud_updates_per_second` times a second.
+func _drift_clouds(delta: float) -> void:
+	if _sky == null or look == null or cloud_drift <= 0.0:
+		return
+	_cloud_offset += WeatherData.WIND_DIRECTION * cloud_drift * (0.4 + look.wind) * delta
+	_cloud_wait -= delta
+	if _cloud_wait <= 0.0:
+		_cloud_wait = 1.0 / maxf(cloud_updates_per_second, 0.1)
+		_sky.set_shader_parameter("cloud_offset", _cloud_offset)
+
+
+## How far the clouds have drifted (tests).
+func get_cloud_offset() -> Vector2:
+	return _cloud_offset
 
 
 ## Sets the look of battle `n` at once (start look, clock at 0).
@@ -113,6 +140,9 @@ func _apply(w: WeatherData) -> void:
 		_sky.set_shader_parameter("sun_size_deg", w.sun_size_deg)
 		_sky.set_shader_parameter("sun_brightness", w.sun_brightness)
 		_sky.set_shader_parameter("star_strength", w.star_strength)
+	var forest := get_tree().get_first_node_in_group("forest") as ForestScatter
+	if forest:
+		forest.set_wind(w.wind, WeatherData.WIND_DIRECTION) # V10a: the spruces sway with this battle's wind
 	Enemy.visibility_limit = w.visibility_m if w.visibility_m < 1000.0 else INF
 	ImpactEffects.darkness = w.darkness() # brighter enemy muzzle flashes in the dark (V1)
 	apply_quality()

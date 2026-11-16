@@ -250,10 +250,18 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   Not built / open: body shadows (off: one more draw call each), fewer draw calls by merging
   bodies, snow that grows during a snowy battle. Details: `soldiers-effects-sound.md` ("Bodies
   stay"), `tank-and-molotov.md` ("Tank tracks"). Test: `test_v10b.gd`; pictures: `shots_v10b.gd`.
-  Still to do for V10: V10a – spruce sway + cloud drift; the owner chose that sway (and wind)
-  follows each battle's weather (`snow_wind`). Plan for the clouds: no shader TIME in the sky
-  (it would re-light the sky every frame) – move a `cloud_offset` uniform in small steps from
-  DuskLight and measure with the Benchmark; fallback: clouds on their own see-through layer.
+
+- [x] V10a "the world moves" (review item V10, steps 1 and 2; owner 2026-11-16). The spruces lean
+  with the gusts and their branch tips bob (vertex shader), and the clouds drift slowly.
+  **Owner's decision:** the strength follows each battle's wind – new `WeatherData.wind` (0 still …
+  1 strong … 2 storm): where snow falls it is the battle's `snow_wind` (1: 0.4, 2: 1.6, 5: 0.8,
+  6: 0.5, 9: 0.3); without snowfall it was chosen from the wind sound (3: 0.3, 4: 0.25, 7 dense
+  fog: 0.1, 8: 0.15 → 0.35 as the fog clears, 10: 0.3) – tune in `tools/make_weather.gd` (`LOOKS`).
+  Clouds: NOT with TIME in the sky shader (measured: several times dearer) but a `cloud_offset`
+  value moved 8 times a second by DuskLight. The fallback (clouds on their own layer) was not
+  needed. Details: `graphics-and-web.md` ("Motion"). Test: `test_v10a.gd`; pictures: `shots_v10a.gd`.
+  Baselines before V10a (owner's PC, Low and High) are in the project doc
+  `claude/review-2026-11-12.md`; the browser run on Medium is still to be compared.
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

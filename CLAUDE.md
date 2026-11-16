@@ -37,9 +37,11 @@ you work on. Update this file and the right note at the end of every milestone.
   `BodyKeeper` (node `Bodies`) 3 s after the fall, as a plain picture; caps 36 / 24 / 12 per
   quality, the newest 12 stay for the next day with a little snow on them – and tanks leave
   tracks (`TankTracks`, one MultiMesh of pooled strips, cleared at the day change).
-  Next: V10a (spruce sway + cloud drift, strength from each battle's wind – plan in
-  `notes/milestones.md`), then owner's choice – the v0.6.0 review's list (project doc
-  `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover / field cover (idea 0).
+  V10a (review item V10, steps 1–2): the spruces sway (vertex shader, TIME) and the clouds drift
+  (`cloud_offset`, moved 8×/s by DuskLight – never TIME in the sky shader); strength from each
+  battle's `WeatherData.wind`.
+  Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,
@@ -97,7 +99,7 @@ you work on. Update this file and the right note at the end of every milestone.
 ## Notes index (`notes/`, ignored by Godot)
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
 - `architecture.md` – multiplayer architecture, conventions, groups, physics layers, map coordinates
-- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3)
+- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)

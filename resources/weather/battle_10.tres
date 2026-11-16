@@ -23,6 +23,7 @@ sun_brightness = 4.0
 star_strength = 0.5
 fog_scale = 1.5
 fog_color = Color(0.4, 0.36, 0.5, 1)
+wind = 0.3
 change_seconds = 200.0
 
 [resource]
@@ -43,5 +44,6 @@ cloud_cover = 0.4
 cloud_color = Color(0.95, 0.72, 0.62, 1)
 fog_scale = 1.2
 fog_color = Color(0.6, 0.55, 0.6, 1)
+wind = 0.3
 end_look = SubResource("Resource_bmsch")
 change_seconds = 200.0

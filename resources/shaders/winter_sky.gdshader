@@ -14,6 +14,9 @@ uniform float sun_brightness = 12.0;
 uniform float cloud_cover : hint_range(0.0, 1.0) = 0.35;
 uniform vec3 cloud_color : source_color = vec3(1.0, 0.98, 0.96);
 uniform float star_strength : hint_range(0.0, 1.0) = 0.0; // B3: a few stars on the night battles.
+// V10a: how far the clouds have drifted (world x / z, in "cloud ceiling" units). DuskLight moves it a few times a second. NOT done with TIME here on purpose: a sky
+// shader that uses TIME is re-lit every frame at a bigger size (measured: several times dearer).
+uniform vec2 cloud_offset = vec2(0.0);
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -62,7 +65,7 @@ void sky() {
 	// Thin high clouds (projected onto a flat "ceiling" far above).
 	if (h > 0.0) {
 		vec2 uv = dir.xz / (h + 0.12);
-		float c = fbm(uv * vec2(0.9, 2.6) + vec2(13.0, 4.0));
+		float c = fbm((uv - cloud_offset) * vec2(0.9, 2.6) + vec2(13.0, 4.0));
 		c = smoothstep(1.0 - cloud_cover, 1.0 - cloud_cover + 0.3, c);
 		c *= smoothstep(0.02, 0.25, h); // fade out towards the horizon haze
 		vec3 lit = mix(cloud_color, sun_glow_color * 1.2, pow(toward_sun, 4.0) * 0.6);

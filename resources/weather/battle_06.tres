@@ -27,3 +27,4 @@ visibility_m = 90.0
 snowfall = 0.3
 snow_wind = 0.5
 drift_scale = 0.8
+wind = 0.5

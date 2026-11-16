@@ -5,6 +5,10 @@ extends Resource
 ## the Inspector to tune it. `end_look` (optional) is where the look slowly goes DURING the battle
 ## (battle 8: the fog clears, battle 10: dusk deepens), over `change_seconds`.
 
+## Where the wind blows TO (world x, z; length 1) – the same way the falling snow is pushed
+## (DuskLight.apply_quality). Trees lean and clouds drift this way (V10a).
+const WIND_DIRECTION := Vector2(0.894427, 0.447214)
+
 @export var title: String = ""
 
 @export_group("Sun or moon (the level's one directional light)")
@@ -40,6 +44,9 @@ extends Resource
 @export var snow_wind: float = 0.4 ## Sideways push on the falling snow (m/s²).
 @export var drift_scale: float = 1.0 ## × the preset's snow blown along the ground.
 @export var wind_db: float = 0.0 ## Added to the wind sound.
+## V10a: how hard the wind blows on the trees and the clouds: 0 = still … 1 = a strong wind …
+## 2 = a storm. (Where snow falls it is the same number as `snow_wind`.)
+@export var wind: float = 0.4
 
 @export_group("Change during the battle")
 @export var end_look: WeatherData

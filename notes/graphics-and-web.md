@@ -67,6 +67,43 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Heavy snowfall is ×1.2 of the preset (battle 2): 1080 flakes on High (was 900); Low 300.
 - Tests: `test_b3.gd`; screenshots of all ten looks: `shots_weather.gd`.
 
+## Motion (V10a): spruce sway and cloud drift – how it is built
+- Wind per battle: `WeatherData.wind` (0 = still … 1 = a strong wind … 2 = a storm; table `LOOKS` in
+  `tools/make_weather.gd`, values and the owner's decision in `milestones.md`) and the constant
+  `WeatherData.WIND_DIRECTION` (world x, z; the same way `apply_quality()` pushes the falling
+  snow). `DuskLight._apply()` → `ForestScatter.set_wind(strength, direction)` → uniforms
+  `wind_strength` / `wind_direction` on all four tree materials (near / far × branches / trunk).
+  A look that changes during the battle blends the wind too (`mixed()` mixes every float);
+  `build()` gives rebuilt materials the wind again.
+- Sway is in `spruce.gdshader` `vertex()` (TIME, no script work): the whole tree leans downwind,
+  `sway_top_m` (0.11 m at strength 1, tree scale 1) × (height / `sway_height`)² × (0.5 + gust),
+  gust = three sine waves (a gust wave travelling downwind, the tree's own swing from a hash of
+  its position, a slow swell). Branch tips bob `sway_tip_m` (3.5 cm) × UV.x², only near the
+  camera (fades out before the LOD change). The foot never moves (trunk collision is static).
+- Things that must stay so: `local_pos = VERTEX` is taken BEFORE the wind (the snow pattern is
+  mapped by it – otherwise the snow swims over the branches); the lean depends only on the tree's
+  place and the height on the tree, so detailed tree, simple tree, trunk and shadow tree move
+  together through the LOD cross-fade; the wind direction is turned into the tree's own space
+  (`vec4(dir) * MODEL_MATRIX`), because every tree is rotated and scaled.
+- Clouds: `winter_sky.gdshader` uniform `cloud_offset` (the cloud pattern is looked up at
+  `uv - cloud_offset`). `DuskLight._drift_clouds()` adds `WIND_DIRECTION × cloud_drift (0.006) ×
+  (0.4 + wind)` per second and sends it to the sky `cloud_updates_per_second` (8) times a second:
+  steps of well under a pixel. At 1280 × 720 the clouds move about 2.5 px/s on a calm day. Fully
+  overcast looks show no drift. The clouds stop while the game is paused (the trees don't).
+- Why not TIME in the sky shader – measured under xvfb (software GL, so only the ratios count,
+  minimal scene, 1280 × 720): no change 24.5 ms/frame; `cloud_offset` set EVERY frame +1.6 ms;
+  TIME in the shader +5.7 ms (Godot then re-lights the sky every frame as a "realtime" sky).
+  Every change of a sky uniform re-lights the ambient light (arrives 4–8 frames later). Also
+  checked: while the clouds move (every frame … every 15th) a colour change of the sky still
+  arrives, and the ambient light stays steady (± 0.4 %) – so the battle looks that change
+  (8, 10) keep working. If the browser Benchmark ever shows a cost: lower
+  `cloud_updates_per_second` (4 still looks smooth) or set `cloud_drift` 0.
+- The engine's shader TIME starts again from 0 once an hour (project setting time rollover):
+  the trees twitch for one frame then. TIME also runs in the pause menu.
+- Tests: `test_v10a.gd` (headless: wind per battle, materials, blend, rebuild, cloud speed and
+  update rate, no TIME in the sky); shader mistakes only show with a GL window:
+  `shots_v10a.gd [battle] [frames] [wind]` (a row of frames of trees + the sky 60 s apart).
+
 ## Graphics settings & web build
 - Quality presets live in `autoload/settings.gd` (`PRESETS`); `scripts/game/quality_applier.gd`
   applies them (groups `sun`, `forest`, `world_environment`, players' snow).

@@ -23,3 +23,4 @@ fog_color = Color(0.74, 0.78, 0.83, 1)
 fog_sky_affect = 1.0
 visibility_m = 60.0
 wind_db = -4.0
+wind = 0.1

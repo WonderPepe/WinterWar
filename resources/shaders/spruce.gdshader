@@ -10,6 +10,8 @@ shader_type spatial;
 // one by one and softly: in the fade zone a tree "dissolves" pixel by pixel (dithering)
 // while its other version appears in exactly the remaining pixels.
 // The forest script sets `lod_camera` (the player's camera position) every frame.
+// The detailed tree, the simple tree and the shadow tree all lean the same way in the wind
+// (it only depends on the tree's place and the height on the tree), so they never come apart.
 
 uniform sampler2D noise_texture : filter_linear_mipmap, repeat_enable; // snow_mask.png
 uniform vec3 needle_color : source_color = vec3(0.08, 0.14, 0.09);
@@ -26,14 +28,42 @@ uniform float lod_distance = 70.0; // where the detailed tree changes into the s
 uniform float view_distance = 220.0; // simple trees fade out here
 uniform float fade_band = 10.0; // metres over which a tree dissolves
 
+// V10a: wind. The whole tree leans with the gusts (the top most, the foot not at all) and the
+// branch tips bob up and down. Gusts travel through the forest in the wind's direction, and
+// every tree has its own rhythm. The forest script sets the two wind values from the battle's
+// weather (WeatherData.wind). Done here in the vertex function = on the graphics card, for free.
+uniform float wind_strength = 0.3; // 0 = still, 1 = a strong wind, 2 = a storm
+uniform vec2 wind_direction = vec2(0.894, 0.447); // where the wind blows TO (world x, z), length 1
+uniform float sway_top_m = 0.11; // how far the top of a tree leans at strength 1 (metres, tree scale 1)
+uniform float sway_tip_m = 0.035; // how far a branch tip bobs at strength 1
+uniform float sway_height = 7.0; // height of a tree before scaling
+
 varying vec3 local_pos;
 varying vec3 world_normal;
 varying float tree_distance;
 
 void vertex() {
-	local_pos = VERTEX;
+	local_pos = VERTEX; // (before the wind moves it: the snow pattern stays on the branches)
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	tree_distance = distance(MODEL_MATRIX[3].xyz, lod_camera); // tree's base, same for the whole tree
+	vec3 tree_base = MODEL_MATRIX[3].xyz;
+	tree_distance = distance(tree_base, lod_camera); // tree's base, same for the whole tree
+	if (wind_strength > 0.0) {
+		float along = dot(tree_base.xz, wind_direction); // metres downwind
+		float own = fract(sin(dot(tree_base.xz, vec2(12.9898, 78.233))) * 43758.5453) * 6.2832; // this tree's own rhythm
+		// A slow gust wave rolling downwind + the tree's own quicker swing + a very slow swell.
+		float gust = 0.55 * sin(TIME * 0.9 - along * 0.07 + own * 0.3) + 0.3 * sin(TIME * 2.1 + own)
+				+ 0.35 * sin(TIME * 0.31 - along * 0.02);
+		float up = clamp(local_pos.y / sway_height, 0.0, 1.2);
+		float lean = wind_strength * sway_top_m * up * up * (0.5 + gust); // 0.5 = it leans with the wind on average
+		// The wind's direction in the tree's own space (every tree is turned and scaled).
+		vec3 wind_local = normalize((vec4(wind_direction.x, 0.0, wind_direction.y, 0.0) * MODEL_MATRIX).xyz);
+		VERTEX += wind_local * lean;
+		if (!trunk) {
+			// Branch tips (UV.x = 1) bob; only on trees near the camera (far away nobody sees it).
+			float near = 1.0 - smoothstep(lod_distance * 0.6, lod_distance - fade_band, tree_distance);
+			VERTEX.y += wind_strength * sway_tip_m * UV.x * UV.x * near * sin(TIME * 1.7 + own + local_pos.y * 1.9 + along * 0.1);
+		}
+	}
 }
 
 void fragment() {

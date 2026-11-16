@@ -47,6 +47,8 @@ var _far_instances: Array[MultiMeshInstance3D] = []
 var _near_materials: Array[ShaderMaterial] = [] # detailed tree + shadow tree
 var _far_materials: Array[ShaderMaterial] = []
 var _last_camera_pos := Vector3(INF, INF, INF)
+var _wind_strength: float = 0.3
+var _wind_direction := Vector2(0.894427, 0.447214)
 
 
 func _ready() -> void:
@@ -65,6 +67,22 @@ func _process(_delta: float) -> void:
 	_last_camera_pos = pos
 	for m in _near_materials + _far_materials:
 		m.set_shader_parameter("lod_camera", pos)
+
+
+## V10a: how hard the wind blows on the trees (0 = still … 1 = a strong wind … 2 = a storm) and
+## where to (world x, z). The spruce shader makes the trees lean and the branch tips bob.
+## Called by DuskLight with each battle's weather.
+func set_wind(strength: float, direction: Vector2) -> void:
+	_wind_strength = maxf(strength, 0.0)
+	if direction.length() > 0.001:
+		_wind_direction = direction.normalized()
+	for m in _near_materials + _far_materials:
+		m.set_shader_parameter("wind_strength", _wind_strength)
+		m.set_shader_parameter("wind_direction", _wind_direction)
+
+
+func get_wind() -> float:
+	return _wind_strength
 
 
 ## Changes how far away trees are still drawn (used by the quality setting).
@@ -121,6 +139,7 @@ func build() -> void:
 	var far_trunk := _lod_material(trunk_material, 1)
 	_near_materials = [near_foliage, near_trunk]
 	_far_materials = [far_foliage, far_trunk]
+	set_wind(_wind_strength, _wind_direction) # (the new copies get the wind too)
 
 	var terrain := get_node_or_null(terrain_path) as TerrainGenerator
 	if terrain == null:
