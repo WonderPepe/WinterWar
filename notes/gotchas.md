@@ -104,3 +104,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   front clear" mask only became full 0.2 m in front of the wall, and the test only looked at points
   in front of the wall face. Masks around a hole must be complete already inside the wall;
   `test_v2.gd` now casts the gunner's sight lines (straight and ±21°) against the snow mesh.
+- (V10b) Headless (dummy renderer): `MultiMesh.get_instance_transform()` returns identity for what
+  `set_instance_transform()` just wrote – a test can't read strips back. Keep your own copy of
+  the transforms (`TankTracks._placed`).
+- (V10b) `get_tree().create_timer(t)` keeps counting while the game is PAUSED (second argument
+  `process_always` is true by default), a node's `_process` does not. Two clocks that must agree
+  (the corpse timer and the body hand-over) both have to stop in a pause: `create_timer(t, false)`.
+- (V10b) A test must not call `Settings.set_quality()`: it SAVES the player's settings file. Set
+  `Settings.quality` and emit `Settings.changed` instead.
+

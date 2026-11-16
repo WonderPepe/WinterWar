@@ -64,3 +64,37 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Plane: `assets/audio/background/plane_flyover_viima.ogg` from Freesound 254511 (YleArkisto,
   CC-BY 4.0; credited) – trimmed 1.5 s + 39.3 s, mono, -3 dB + limiter (the stereo mix clipped),
   fades. Original WAV in `assets_source/` (git-ignored). `tools/test_background.gd`.
+
+## Bodies stay (V10b) – how it is built
+- `BodyKeeper` (`scripts/enemies/body_keeper.gd`, node `Game/Bodies`, group `body_keeper`).
+  `SoldierVisual` counts the seconds since its soldier fell (`body_after` 3 s: the fall takes
+  0.55 s, the pose settles in ~1 s) and then calls `BodyKeeper.take(self)`: the Visual node is
+  re-parented from the Enemy to `Bodies` (keeping its place) and `become_body()` makes it a plain
+  picture – `_process` off, footstep player and breath freed, no shadow, `visibility_range_end`
+  170 m. The Enemy node is removed by the host as before (`corpse_time`, now 6 s; `_remove_dead`
+  hands the body over first if that has not happened yet).
+- So nothing else changed: bodies are NOT in the `enemies` group, have no collision, no nav
+  agent and no network sync. Every computer keeps the bodies it saw fall (a late joiner sees
+  none from before). Without a BodyKeeper in the scene (some tests, the benchmark) a body goes
+  with its soldier node after `corpse_time`, as before.
+- `Enemy._update_visuals()` leaves a kept body alone (`visual.is_body`) – a late synced pose
+  change must not start the fall tween on a node that now lives under `Bodies`.
+- The corpse timer and the body clock both stop while the game is paused
+  (`create_timer(corpse_time, false)`): before, a pause right after a kill let the soldier node go
+  while the body was not handed over yet.
+- A soldier killed in the air (jumping into the trench) used to hang there until he vanished:
+  `BodyKeeper._drop_to_ground()` (a ray down on the world layer) brings the body down.
+- Limits: `Settings.PRESETS[...].max_bodies` 12 / 24 / 36 (re-checked on `Settings.changed`). One
+  body too many: the oldest sinks into the snow (`sink_time` 3 s, `sink_depth` 0.7 m), then freed.
+- New day: `BodyKeeper` polls the day screen (`is_black()`, 2×/s, like the tank wrecks). At the
+  moment it turns black `new_day()` frees all but the newest `keep_overnight` (12) and adds
+  `overnight_snow` (0.3, at most 0.9 in all) to the rest: `SoldierVisual.set_snow_cover()` →
+  `soldier.gdshader` uniform `snow_cover` (snow on the parts that face up, in patches from
+  snow_mask.png). A retry / Continue reloads the scene: no bodies.
+- Cost measured (xvfb, High): one body = 1 draw call and ~780 triangles (a living soldier with
+  shadows: ~2.6 draw calls, ~2 200 triangles). 36 bodies all in view = +36 draw calls, +28 000
+  triangles. With shadows on (`cast_shadows`) it would be up to +95 draw calls – that is why they
+  are off. If more bodies are ever wanted: bake each pose into a static mesh and merge them.
+- Seen while measuring (not caused by V10b): looking south from a firing position on High the
+  frame is already ~260 draw calls and ~450k triangles with nobody on the field – above the
+  README's budget numbers, which are averages from the benchmark flight.

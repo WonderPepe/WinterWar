@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/enemies/tank_spawner.gd" id="7_gxtfn"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/soviet_tank.tscn" id="8_twgab"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/soviet_rifleman.tscn" id="9_02fa5"]
+[ext_resource type="Script" path="res://scripts/enemies/body_keeper.gd" id="30_v10bk"]
+[ext_resource type="Script" path="res://scripts/enemies/tank_tracks.gd" id="31_v10tt"]
 [ext_resource type="Script" path="res://scripts/weapons/molotov_manager.gd" id="10_nepv3"]
 [ext_resource type="Script" path="res://scripts/enemies/wave_spawner.gd" id="11_7025r"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/soviet_officer.tscn" id="12_m4url"]
@@ -127,6 +129,12 @@ tank_scene = ExtResource("8_twgab")
 tanks_root = NodePath("../Tanks")
 crew_scene = ExtResource("9_02fa5")
 crew_root = NodePath("../Enemies")
+
+[node name="Bodies" type="Node3D" parent="." unique_id=1716102939]
+script = ExtResource("30_v10bk")
+
+[node name="TankTracks" type="Node3D" parent="." unique_id=1716102940]
+script = ExtResource("31_v10tt")
 
 [node name="Molotovs" type="Node3D" parent="." unique_id=1046571473]
 script = ExtResource("10_nepv3")

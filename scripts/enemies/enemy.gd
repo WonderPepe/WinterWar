@@ -36,7 +36,9 @@ static var barrage_hold_z: float = INF
 static var show_debug_labels: bool = false ## Toggled with F2 for all enemies.
 
 @export var data: EnemyData
-@export var corpse_time: float = 20.0 ## Seconds before a dead body is removed.
+## Seconds before a dead soldier's node is removed. V10b: his body is handed to the BodyKeeper
+## before that (SoldierVisual.body_after, 3 s) and stays on the field – keep this longer than that.
+@export var corpse_time: float = 6.0
 @export var near_miss_distance: float = 3.0 ## A bullet this close to your head makes a crack.
 @export_group("Holding the trench (L3)")
 ## HOLD: sees and fires at Finns up to this far (fog can limit it) – short, so the rear spawn
@@ -563,7 +565,16 @@ func _die() -> void:
 	state = State.DEAD
 	_on_death_g2()
 	died.emit(self)
-	get_tree().create_timer(corpse_time).timeout.connect(queue_free)
+	# (false = the countdown stops while the game is paused, like the body's own clock.)
+	get_tree().create_timer(corpse_time, false).timeout.connect(_remove_dead)
+
+
+## Host: the dead soldier's node goes (the other computers follow). His body stays behind
+## with the BodyKeeper (V10b) – handed over here at the latest.
+func _remove_dead() -> void:
+	if not visual.is_body:
+		visual.hand_over_body()
+	queue_free()
 
 
 # ------------------------------------------------------------------ assault on the trench
@@ -1262,8 +1273,8 @@ func _update_visuals() -> void:
 	var capsule := collision.shape as CapsuleShape3D
 	if state == State.DEAD:
 		collision.set_deferred("disabled", true) # bullets and players pass through bodies
-		if is_prone:
-			return # already lying in the snow: the visual just goes limp
+		if is_prone or visual.is_body:
+			return # already lying in the snow: the visual just goes limp (or is a kept body, V10b)
 		# Fall: backwards most of the time, sometimes forwards, a little twisted. Chosen from the
 		# soldier's name so every computer shows the same fall.
 		var h: int = absi(hash(str(name)))

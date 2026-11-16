@@ -888,6 +888,12 @@ func _build_game() -> Node:
 	tank_spawner.set("tanks_root", tanks)
 	tank_spawner.set("crew_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))
 	tank_spawner.set("crew_root", enemies)
+	# V10b: the bodies of the fallen stay on the field, and tanks leave tracks in the snow
+	# (pictures only, made on every computer by itself – nothing is synced).
+	var bodies: Node3D = _add(g, Node3D.new(), "Bodies")
+	bodies.set_script(load("res://scripts/enemies/body_keeper.gd"))
+	var tracks: Node3D = _add(g, Node3D.new(), "TankTracks")
+	tracks.set_script(load("res://scripts/enemies/tank_tracks.gd"))
 	# T2: flying Molotov cocktails and the fires they start.
 	var molotovs: Node3D = _add(g, Node3D.new(), "Molotovs")
 	molotovs.set_script(load("res://scripts/weapons/molotov_manager.gd"))

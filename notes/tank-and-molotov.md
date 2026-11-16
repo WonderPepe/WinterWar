@@ -204,3 +204,26 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `tank_turret` (gear loop) / `tank_clunk` (clunks) override them.
 - `tools/test_turret.gd` (speeds, ramp, delays, behind, close range, reversal smoothness, sprinter).
   Flaky BEFORE T4 too (random): test_t1 "DT bullets hurt" / "HALT_FIRE", test_m3 "soldiers advance".
+
+## Tank tracks in the snow (V10b) – how it is built
+- `TankTracks` (`scripts/enemies/tank_tracks.gd`, node `Game/TankTracks`, group `tank_tracks`).
+  Picture only, made on every computer from the `tanks` group (nothing synced, `tank.gd`
+  untouched): it remembers where each tank's last strip ended and lays a new one when the tank
+  has moved `strip_length` (1.5 m) on. A jump of more than 3 strips (spawn, tests) lays nothing.
+- All strips are ONE MultiMesh (child `Strips`, `top_level`, 1 draw call, 2 triangles per
+  strip): a pool of `pool_size` 640 (≈ four tanks driving the whole field); when full the oldest
+  strip is reused (`visible_instance_count` grows to the pool size, then stays). `custom_aabb` =
+  the whole map, so Godot doesn't work the box out again for every strip.
+- A strip is a flat 2.6 × 1.5 m PlaneMesh with a generated 128 × 64 texture (`make_texture()`:
+  two ruts 1.02 m either side of the centre line, 0.34 m wide, 12 cross-bars, see-through
+  elsewhere, mipmaps). It lies on the ground: four `TerrainGenerator.get_height()` samples
+  (front, back, under each rut) give its tilt, `lift` 5 cm keeps it from flickering. It is
+  stretched to reach exactly from the last strip's end to the tank (no gaps on bends).
+- Material: StandardMaterial3D, alpha, LIT (not unshaded like the scorch marks) – so the ruts
+  are dark at night and fogged like the snow; `color` × `strength` (0.8) to tune,
+  `render_priority` -1 (under smoke and scorch marks). No shadows cast.
+- New day: cleared behind the black day screen (same poll as the bodies). Old wrecks then stand
+  without tracks (owner: OK).
+- Headless gotcha: `MultiMesh.get_instance_transform()` returns identity without a renderer, so
+  the script keeps its own copy (`_placed`, `strip_transform()`) for the tests.
+

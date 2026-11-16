@@ -10,6 +10,10 @@ extends Node3D
 ##
 ## Runs on EVERY computer and only reads what the host syncs (position, state, kneeling),
 ## so all players see the same soldier doing the same thing.
+##
+## V10b: a few seconds after he falls, this node leaves the soldier and is kept by the
+## BodyKeeper as a plain picture (`become_body`) – the body stays on the field, the soldier
+## node itself is removed as before.
 
 const B := SoldierMesh.Bone
 
@@ -18,8 +22,11 @@ const B := SoldierMesh.Bone
 @export var effects_distance: float = 30.0 ## Footsteps and breath only when you are this close.
 @export var material: ShaderMaterial ## soldier.gdshader; each soldier gets his own copy (coat tint).
 @export var kind: EnemyData.Kind = EnemyData.Kind.RIFLEMAN ## Used when there is no Enemy parent (warm-up, screenshots).
+## V10b: this long after he fell (he lies still by then) the body is handed to the BodyKeeper.
+@export var body_after: float = 3.0
 
 var muzzle: Marker3D ## Where his shots come from (follows the rifle).
+var is_body: bool = false ## V10b: true once this is only a body kept by the BodyKeeper.
 
 var _enemy: Enemy
 var _skeleton: Skeleton3D
@@ -33,6 +40,7 @@ var _phase: float = 0.0 # walk cycle, one step = PI
 var _kick: float = 0.0
 var _hit: float = 0.0
 var _was_dead: bool = false
+var _dead_time: float = 0.0 # seconds since he fell (V10b)
 var _breath_timer: float = 0.0
 var _rot: Dictionary = {} # bone -> current Quaternion (smoothed)
 var _rifle_pos: Vector3
@@ -140,6 +148,53 @@ func _process(delta: float) -> void:
 		get_tree().create_timer(0.45).timeout.connect(_footsteps.play)
 	_was_dead = dead
 	_pose(delta)
+	if dead:
+		_dead_time += delta
+		if _dead_time >= body_after:
+			hand_over_body()
+
+
+## V10b: he lies still now – the BodyKeeper takes this node over (on this computer). Without a
+## BodyKeeper (tests, the benchmark) the body goes when the soldier node is removed, as before.
+func hand_over_body() -> void:
+	if is_body:
+		return
+	var keeper := get_tree().get_first_node_in_group("body_keeper") as BodyKeeper
+	if keeper:
+		keeper.take(self)
+	else:
+		_dead_time = -INF # nobody to hand it to: don't ask again
+
+
+## V10b: from now on this is only a picture of a body: no posing, no sounds, no breath, no
+## shadow, and not drawn at all beyond `hide_distance_m`. Called by the BodyKeeper.
+func become_body(hide_distance_m: float, shadows: bool) -> void:
+	is_body = true
+	_enemy = null
+	set_process(false)
+	if _footsteps:
+		_footsteps.queue_free()
+		_footsteps = null
+	if _breath:
+		_breath.queue_free()
+		_breath = null
+	if _mesh:
+		if not shadows:
+			_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_mesh.visibility_range_end = hide_distance_m
+
+
+## V10b: how much snow lies on the body (0 = none … 1 = nearly covered).
+func set_snow_cover(amount: float) -> void:
+	var m: ShaderMaterial = (_mesh.material_override as ShaderMaterial) if _mesh else null
+	if m:
+		m.set_shader_parameter("snow_cover", clampf(amount, 0.0, 1.0))
+
+
+func get_snow_cover() -> float:
+	var m: ShaderMaterial = (_mesh.material_override as ShaderMaterial) if _mesh else null
+	var v: Variant = m.get_shader_parameter("snow_cover") if m else null
+	return float(v) if v != null else 0.0
 
 
 func _is_near_camera() -> bool:

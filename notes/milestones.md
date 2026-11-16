@@ -241,6 +241,20 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   new physics layer 5 "armour"; soldiers' and tanks' bullets, shells, sight and the 45 mm blast
   stop at them. Wrecks are now real cover for the player. Details: `notes/tank-and-molotov.md`.
 
+- [x] V10b "the battle leaves marks" (review item V10, steps 3 and 4; owner 2026-11-16: bodies and
+  tracks first, then V10a trees + clouds). Bodies of the fallen stay on the field instead of
+  vanishing after 20 s, and tanks leave tracks in the snow.
+  **Owner's decisions:** body caps 36 / 24 / 12 (High / Medium / Low); tracks vanish at the next
+  day screen; the newest 12 bodies STAY for the next day "to give a feeling of continuity"; bodies
+  should have a bit of snow on them (built: kept bodies get snow at each day change).
+  Not built / open: body shadows (off: one more draw call each), fewer draw calls by merging
+  bodies, snow that grows during a snowy battle. Details: `soldiers-effects-sound.md` ("Bodies
+  stay"), `tank-and-molotov.md` ("Tank tracks"). Test: `test_v10b.gd`; pictures: `shots_v10b.gd`.
+  Still to do for V10: V10a – spruce sway + cloud drift; the owner chose that sway (and wind)
+  follows each battle's weather (`snow_wind`). Plan for the clouds: no shader TIME in the sky
+  (it would re-light the sky every frame) – move a `cloud_offset` uniform in small steps from
+  DuskLight and measure with the Benchmark; fallback: clouds on their own see-through layer.
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

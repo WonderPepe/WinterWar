@@ -22,14 +22,17 @@ const PRESETS: Dictionary = {
 	Quality.LOW: {
 		"shadows": false, "shadow_distance": 0.0, "tree_distance": 140.0, "tree_detail_distance": 35.0,
 		"snow_amount": 250, "drift_amount": 0, "render_scale": 0.75, "max_lines": 720, "fog_density": 0.006,
+		"max_bodies": 12,
 	},
 	Quality.MEDIUM: {
 		"shadows": true, "shadow_distance": 40.0, "tree_distance": 180.0, "tree_detail_distance": 50.0,
 		"snow_amount": 550, "drift_amount": 120, "render_scale": 0.9, "max_lines": 900, "fog_density": 0.0045,
+		"max_bodies": 24,
 	},
 	Quality.HIGH: {
 		"shadows": true, "shadow_distance": 70.0, "tree_distance": 220.0, "tree_detail_distance": 70.0,
 		"snow_amount": 900, "drift_amount": 220, "render_scale": 1.0, "max_lines": 1080, "fog_density": 0.0035,
+		"max_bodies": 36,
 	},
 }
 
