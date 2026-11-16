@@ -118,3 +118,5 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   and after re-importing the model from the zip check that test_t6 still finds 14 axles per side.
   Not yet checked in Godot (2026-11-16): that the importer keeps TEXCOORD_1 as UV2 unchanged, and
   that the wheels' shadows turn with them (the importer's "shadow mesh" has no UV2).
+- Shader random numbers: use whole-number (uint) hashes on `ivec2` cells, not `fract(sin(...))` or
+  `fract(p * 123.34)` – those need every float digit and gave seams in Chrome's default path (S1).

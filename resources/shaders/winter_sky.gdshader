@@ -18,25 +18,34 @@ uniform float star_strength : hint_range(0.0, 1.0) = 0.0; // B3: a few stars on 
 // shader that uses TIME is re-lit every frame at a bigger size (measured: several times dearer).
 uniform vec2 cloud_offset = vec2(0.0);
 
-float hash(vec2 p) {
-	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
-	return fract(p.x * p.y);
+// S1: a random number 0..1 for one grid cell, made with WHOLE-NUMBER math. The old version
+// (fract of decimals multiplied into the thousands) needed every last digit: on some browsers'
+// graphics paths (Chrome's default on Windows/AMD) two neighbouring cells rounded differently and
+// the clouds showed straight seams / blocks. Whole numbers are exact everywhere.
+float hash(highp ivec2 q) {
+	highp uint x = uint(q.x) * 1664525u + uint(q.y) * 1013904223u;
+	x ^= x >> 16u;
+	x *= 0x7feb352du;
+	x ^= x >> 15u;
+	x *= 0x846ca68bu;
+	x ^= x >> 16u;
+	return float(x >> 8u) * (1.0 / 16777216.0);
 }
 
-float value_noise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
+highp float value_noise(highp vec2 p) {
+	highp vec2 cell = floor(p);
+	highp ivec2 i = ivec2(cell);
+	highp vec2 f = p - cell;
 	f = f * f * (3.0 - 2.0 * f);
 	float a = hash(i);
-	float b = hash(i + vec2(1.0, 0.0));
-	float c = hash(i + vec2(0.0, 1.0));
-	float d = hash(i + vec2(1.0, 1.0));
+	float b = hash(i + ivec2(1, 0));
+	float c = hash(i + ivec2(0, 1));
+	float d = hash(i + ivec2(1, 1));
 	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
-float fbm(vec2 p) {
-	float v = 0.0;
+highp float fbm(highp vec2 p) {
+	highp float v = 0.0;
 	float amp = 0.5;
 	for (int i = 0; i < 5; i++) {
 		v += value_noise(p) * amp;
@@ -64,7 +73,7 @@ void sky() {
 
 	// Thin high clouds (projected onto a flat "ceiling" far above).
 	if (h > 0.0) {
-		vec2 uv = dir.xz / (h + 0.12);
+		highp vec2 uv = dir.xz / (h + 0.12);
 		float c = fbm((uv - cloud_offset) * vec2(0.9, 2.6) + vec2(13.0, 4.0));
 		c = smoothstep(1.0 - cloud_cover, 1.0 - cloud_cover + 0.3, c);
 		c *= smoothstep(0.02, 0.25, h); // fade out towards the horizon haze
@@ -78,9 +87,9 @@ void sky() {
 	// Stars: tiny bright dots in the upper sky, hidden by clouds.
 	if (star_strength > 0.0 && h > 0.05 && !AT_CUBEMAP_PASS) {
 		vec2 sp = dir.xz / (h + 0.4) * 60.0;
-		vec2 cell = floor(sp);
-		float rnd = hash(cell + 7.0);
-		vec2 off = vec2(hash(cell + 1.3), hash(cell + 5.1)) * 0.6 + 0.2;
+		highp ivec2 cell = ivec2(floor(sp));
+		float rnd = hash(cell + ivec2(7, 7));
+		vec2 off = vec2(hash(cell + ivec2(101, 3)), hash(cell + ivec2(5, 211))) * 0.6 + 0.2;
 		float d = length(fract(sp) - off);
 		float star = step(0.93, rnd) * (1.0 - smoothstep(0.03, 0.09, d));
 		col += vec3(0.85, 0.9, 1.0) * star * star_strength * smoothstep(0.05, 0.3, h) * (1.0 - clamp(cloud_cover, 0.0, 1.0) * 0.8);

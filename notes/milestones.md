@@ -383,3 +383,15 @@ response", and when it is ready the photo and briefing are still on screen with 
 - **Owner decision:** at the click prompt the photo and briefing go away (fade 0.6 s).
 - Test: `test_b1.gd` (fade, dependency order, desktop keeps threaded loading).
 - Open: the first frame's shader compiling is not split yet (see the note).
+
+## S1 – sky seams in Chrome (2026-11-16)
+Owner's report: in Chrome (Windows, AMD Radeon 780M) the night sky of v0.9.0 showed straight lines /
+blocks, also while paused; Firefox was fine, and Chrome with `chrome://flags/#use-angle` = D3D11
+was fine too – so it is Chrome's default graphics path on that computer.
+- Not reproduced outside the game (a WebGL test page with the old noise looked fine in Chrome).
+- Fix tried: the sky's `hash()` now uses whole-number (uint) math instead of `fract()` of big
+  decimals; noise coordinates marked `highp`. Stars use the same hash. Cloud pattern is a new
+  random layout, same look and cost.
+- **Owner decision:** if the seams are still there after this, remove the cloud drift (V10a).
+- Open: the owner checks it in Chrome on Default once it is online.
+

@@ -101,6 +101,9 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   place and the height on the tree, so detailed tree, simple tree, trunk and shadow tree move
   together through the LOD cross-fade; the wind direction is turned into the tree's own space
   (`vec4(dir) * MODEL_MATRIX`), because every tree is rotated and scaled.
+- S1: the sky noise's `hash()` takes whole-number cells (`ivec2`) and mixes them with uint math
+  (exact on every GPU / browser path). Never go back to `fract(p * big numbers)` hashes: on Chrome's
+  default path (Windows / AMD) neighbouring cells disagreed and the sky showed straight seams.
 - Clouds: `winter_sky.gdshader` uniform `cloud_offset` (the cloud pattern is looked up at
   `uv - cloud_offset`). `DuskLight._drift_clouds()` adds `WIND_DIRECTION × cloud_drift (0.006) ×
   (0.4 + wind)` per second and sends it to the sky `cloud_updates_per_second` (8) times a second:
