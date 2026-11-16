@@ -112,4 +112,9 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (the corpse timer and the body hand-over) both have to stop in a pause: `create_timer(t, false)`.
 - (V10b) A test must not call `Settings.set_quality()`: it SAVES the player's settings file. Set
   `Settings.quality` and emit `Settings.changed` instead.
-
+- **T-26 wheels live in UV2 (T6):** the chassis meshes' second UV channel holds each wheel
+  vertex's axle (`import_weapons.py` `bake_t26_wheels`). Never let anything else write UV2 there
+  (lightmap unwrap: keep the model's import at "Light Baking: Static", not "Static Lightmaps"),
+  and after re-importing the model from the zip check that test_t6 still finds 14 axles per side.
+  Not yet checked in Godot (2026-11-16): that the importer keeps TEXCOORD_1 as UV2 unchanged, and
+  that the wheels' shadows turn with them (the importer's "shadow mesh" has no UV2).

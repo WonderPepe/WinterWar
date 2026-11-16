@@ -40,6 +40,10 @@ you work on. Update this file and the right note at the end of every milestone.
   V10a (review item V10, steps 1–2): the spruces sway (vertex shader, TIME) and the clouds drift
   (`cloud_offset`, moved 8×/s by DuskLight – never TIME in the sky shader); strength from each
   battle's `WeatherData.wind`.
+  T6: running tracks and turning wheels – `TrackAnimator` (tank child node, picture only, every
+  computer by itself) reads the hull's real movement, left/right track = forward ∓ turn × half
+  gauge; link picture slides (`tank_track.gdshader`, + snow/dirt), wheels turn around axles
+  baked into the model's UV2 (`tank_wheels.gdshader`, `import_weapons.py --t26-wheels`).
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
@@ -104,6 +108,6 @@ you work on. Update this file and the right note at the end of every milestone.
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
-- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1), tank tracks (V10b)
+- `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1), tank tracks (V10b), running tracks + turning wheels (T6)
 - `gotchas.md` – full list of lessons learned
 - `tools.md` – helper tools and tests

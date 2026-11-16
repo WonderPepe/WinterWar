@@ -67,6 +67,9 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
   walls, rounded earth heaps and a snow cap on the bunker – made by `tools/earthwork_snow.gd`
   when the scenes are built. Only pictures: they stop no bullets.
 - **Log walls**: `resources/shaders/log_wall.gdshader` – trench walls and bunker, snow on top.
+- **Tank tracks and wheels** (T6): `resources/shaders/tank_track.gdshader` slides the link picture
+  along the track belts (with a little packed snow and dirt), `tank_wheels.gdshader` turns the
+  wheels – both driven by `scripts/enemies/track_animator.gd` from how the tank really moves.
 - **Trees**: `resources/shaders/spruce.gdshader` + `scripts/world/forest_scatter.gd` (two spruce
   shapes close up, a simple one further away – each tree softly dissolves into the other –
   and a ring of distant forest on the horizon).

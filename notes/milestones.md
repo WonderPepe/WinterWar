@@ -260,6 +260,22 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   Clouds: NOT with TIME in the sky shader (measured: several times dearer) but a `cloud_offset`
   value moved 8 times a second by DuskLight. The fallback (clouds on their own layer) was not
   needed. Details: `graphics-and-web.md` ("Motion"). Test: `test_v10a.gd`; pictures: `shots_v10a.gd`.
+
+- [x] T6 running tracks and turning wheels (owner 2026-11-16). Written in a chat without Godot,
+  run the same evening in the next chat: `test_t6.gd` and all other tests green at the first
+  run, no shader errors with a GL window, pictures in daylight (battle 4) and the darkest look
+  (battle 6), web export + smoke test + a longer browser run past the loading screen (no
+  console errors). No game code had to be changed – only the far camera of `shots_t6.gd`.
+  A `TrackAnimator` node on the tank reads the hull's real movement (nothing from the AI):
+  left track = forward − turn × half gauge, right = forward + turn × half gauge; the belts' link
+  picture slides, with a little snow and dirt; sprocket, idler, road wheels and rollers turn on
+  the graphics card around axles written into the model. No new draw calls or triangles.
+  **Told the owner:** today's tank never reverses or turns on the spot, so those two are built
+  and tested but not seen in play (teaching the tank to do them = a driving milestone); the
+  road wheels' turning is hard to see (plain dark discs) – a snow smear on them is an idea.
+  Changed from the plan: distance is measured each physics step instead of a 0.15 s smoothed
+  speed (so the links never slide on the snow); the snow/dirt picture is made in code, not by
+  `make_textures.py` (no new import file). Details: `tank-and-molotov.md` ("Running tracks").
   Baselines before V10a (owner's PC, Low and High) are in the project doc
   `claude/review-2026-11-12.md`; the browser run on Medium is still to be compared.
 

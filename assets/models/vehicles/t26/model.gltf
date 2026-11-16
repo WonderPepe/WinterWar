@@ -388,6 +388,34 @@
    "componentType": 5125,
    "count": 2364,
    "type": "SCALAR"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5126,
+   "count": 3096,
+   "type": "VEC2",
+   "min": [
+    -1.962339460849762,
+    0.0
+   ],
+   "max": [
+    1.8175176978111267,
+    6.916657894849777
+   ]
+  },
+  {
+   "bufferView": 4,
+   "componentType": 5126,
+   "count": 3098,
+   "type": "VEC2",
+   "min": [
+    -1.9623392820358276,
+    0.0
+   ],
+   "max": [
+    1.8175176978111267,
+    6.916657894849777
+   ]
   }
  ],
  "asset": {
@@ -422,11 +450,27 @@
    "byteStride": 12,
    "name": "floatBufferViews",
    "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 491336,
+   "byteLength": 24768,
+   "byteStride": 8,
+   "name": "wheelAxles",
+   "target": 34962
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 516104,
+   "byteLength": 24784,
+   "byteStride": 8,
+   "name": "wheelAxles",
+   "target": 34962
   }
  ],
  "buffers": [
   {
-   "byteLength": 491336,
+   "byteLength": 540888,
    "uri": "scene.bin"
   }
  ],
@@ -555,7 +599,8 @@
      "attributes": {
       "NORMAL": 9,
       "POSITION": 8,
-      "TEXCOORD_0": 10
+      "TEXCOORD_0": 10,
+      "TEXCOORD_1": 28
      },
      "indices": 11,
      "material": 2,
@@ -570,7 +615,8 @@
      "attributes": {
       "NORMAL": 13,
       "POSITION": 12,
-      "TEXCOORD_0": 14
+      "TEXCOORD_0": 14,
+      "TEXCOORD_1": 29
      },
      "indices": 15,
      "material": 3,

@@ -833,6 +833,10 @@ func _build_tank() -> Node:
 		[".:drive_speed", true, ON_CHANGE],
 		[".:state", true, ON_CHANGE],
 	])
+	# T6: runs the tracks and turns the wheels from how the hull really moves (picture only,
+	# every computer by itself; tank.gd knows nothing about it).
+	var track_anim: Node = _add(t, Node.new(), "TrackAnimator")
+	track_anim.set_script(load("res://scripts/enemies/track_animator.gd"))
 	return t
 
 

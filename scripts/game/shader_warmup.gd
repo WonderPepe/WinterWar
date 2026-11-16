@@ -79,6 +79,12 @@ func _warm_up() -> void:
 	player.get_parent().add_child(tank_model)
 	tank_model.scale = Vector3.ONE * 0.02
 	tank_model.global_position = cam.global_position - cam.global_basis.z * 2.5 + cam.global_basis.x * 0.3
+	# T6: its running tracks and turning wheels have shaders of their own (and the snow-and-dirt
+	# picture for the tracks is made here, behind the loading screen).
+	var track_anim := TrackAnimator.new()
+	track_anim.body = tank_model
+	track_anim.model = tank_model
+	tank_model.add_child(track_anim)
 	_temp.append(tank_model)
 
 	for i in frames:

@@ -1,4 +1,4 @@
-# T-26 tank and Molotov cocktail (T1, T2, T3), armour (T5), climbing out of the trench (C1)
+# T-26 tank and Molotov cocktail (T1, T2, T3), armour (T5), climbing out of the trench (C1), running tracks (T6)
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
@@ -227,3 +227,65 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Headless gotcha: `MultiMesh.get_instance_transform()` returns identity without a renderer, so
   the script keeps its own copy (`_placed`, `strip_transform()`) for the tests.
 
+## Running tracks and turning wheels (T6) – how it is built
+Checked 2026-11-16 (Godot 4.7.2): test, all other tests, GL window (no shader errors), pictures
+for battles 4 (daylight) and 6 (darkest), web export, smoke test and a browser run into the game.
+From 55 m (the trench) the tank is ~30 pixels wide: the running links cannot be made out there,
+close up they can – also in battle 6, where the lit snow patches show the movement.
+- `TrackAnimator` (`scripts/enemies/track_animator.gd`, tank child node `TrackAnimator`, in the
+  builder's `_build_tank()` and in `soviet_tank.tscn`). Picture only, nothing synced, `tank.gd`
+  untouched and unaware (like `TankTracks`): every computer works it out from where it sees the hull.
+- Each PHYSICS step (the tank is moved in physics steps, so one step = one clean measurement):
+  `forward` = the hull's movement since the last step along its nose, `turn` = how far it turned
+  (left = +, read from where the old nose points in the new hull's space) × `half_track_gauge`
+  1.03 m (track centres are at x = ±1.027 in the model). **left = forward − turn, right =
+  forward + turn.** Straight 2 m/s → 2 / 2; the tightest bend (22°/s) → 1.6 / 2.4; on the spot at
+  22°/s → −0.4 / +0.4; reverse → both negative. It measures DISTANCE, not a smoothed speed, so the
+  links on the ground stay put on the snow and the tracks stop the moment the hull stops.
+- "Believable" rules (`_believable`): under `dead_zone_speed` 0.02 m/s = exactly 0; never over
+  `max_track_speed` 4 m/s; a step of more than `teleport_distance` 2 m (spawn, tests setting
+  `_distance`) moves nothing. A wreck (`tank_wrecks` group) switches its animator off for good.
+  Read-only for tests / future use (track sound, snow spray): `left_speed`, `right_speed`,
+  `left_travel`, `right_travel`, `is_moving()`, `scroll_of(side)`.
+- **Today's `tank.gd` only drives forwards and only turns while driving** – reverse and turning on
+  the spot work in the animator (test_t6 moves a parked tank by hand) but are never seen in play.
+- Tracks: the model's two belt meshes (`track_LShape…`, one material each) already have a link
+  picture that repeats 12× around the belt (UV.y −5.5…6.5; belt 9.73 m → `metres_per_repeat`
+  0.81). `resources/shaders/tank_track.gdshader`: `UV.y += scroll` (repeats run, wrapped at 12).
+  Driving forwards `scroll` grows = the picture moves backwards on the ground run.
+- Snow and dirt: `TrackAnimator.grime_texture()` – ONE 16 × 256 picture made in code at the first
+  use (in ShaderWarmup, behind the loading screen; ~4 000 pixels, seed 1940, shared by all tanks):
+  R = snow patches, G = frozen dirt, B = the snow patches grown (used in the dark gaps between
+  links). It goes once round the whole belt and slides with it, so the 12 repeats differ.
+  The masks are stored ready-made (not thresholded in the shader) so far away they blend to their
+  average instead of vanishing. Uniforms `snow_amount` 0.6, `dirt_amount` 0.45, `snow_color`,
+  `dirt_color`, `steel_brightness` 1.5 (the model's steel is nearly black: linear 0.02);
+  `grime_shift` from the tank's name + side. Low light: nothing glows – the snow is LIT like the
+  ground snow and is what shows the movement at dusk.
+- Wheels: sprocket, idler, 8 road wheels and 4 return rollers per side are welded into ONE
+  `chassis_RShape…` mesh per side (83 loose pieces each). `tools/import_weapons.py`
+  `bake_t26_wheels()` (also alone: `python3 tools/import_weapons.py --t26-wheels`; safe to repeat)
+  finds the pieces of each wheel (table `T26_WHEELS`) and writes the axle into glTF TEXCOORD_1 =
+  Godot **UV2**: x = axle along the tank (mesh +y = nose), y = axle height + 2 × kind (1 sprocket /
+  idler, 2 road wheel, 3 return roller), (0, 0) = fixed. 1 470 of 3 096 vertices per side turn.
+  Sprocket / idler take everything inside their circle (teeth, spokes, hub, bolts); road wheels and
+  rollers only the disc (the pin through the hub is a few mm off-centre in the model and would
+  wobble). `model.gltf` + `scene.bin` changed (+50 kB) – CREDITS.md says so (CC-BY).
+- `resources/shaders/tank_wheels.gdshader` turns each wheel vertex (and its normal) around its
+  axle in `vertex()`; uniform `wheel_angles` (x sprocket/idler, y road wheels, z rollers; radians,
+  wrapped at a full turn) = travel ÷ radius (`sprocket_radius` 0.322, `road_wheel_radius` 0.161,
+  `roller_radius` 0.142). Same single draw call per side as before.
+- Materials: at `_ready` the animator gives the 4 meshes their own `ShaderMaterial`
+  (`set_surface_override_material`; left/right from where the mesh sits, not from its name; the
+  picture and roughness are taken from the model's own material). 4 small materials per tank, two
+  shared shaders. The wreck's dark `material_overlay` still works on top.
+- Cost: 0 new draw calls, 0 new triangles, no per-frame allocation; per moving tank and physics
+  step 2–4 `set_shader_parameter` calls, none while it stands.
+- Known limits: the road wheels are plain dark discs in the model's picture, so their turning is
+  hard to see (sprocket teeth and idler spokes show it well) – idea: a faint snow smear on the
+  wheel faces. The belt's top run does not sag or bounce.
+- `tools/test_t6.gd`, `tools/shots_t6.gd [battle]` (camera rides beside the tank; flip through
+  the `side_0..5` pictures; `far_0..1` = from 55 m, 4 m beside the route – a lone spruce hid the
+  tank from the first camera spot). `check_web_pack.gd` T6 checks. `web_smoke_test.py` stops
+  while the loading screen is still up (software WebGL is slow): to see the warm-up shaders
+  compile in the browser, run a copy with the last wait raised to ~200 s.

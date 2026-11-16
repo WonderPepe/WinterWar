@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemies/tank.gd" id="1_utsw7"]
 [ext_resource type="PackedScene" path="res://assets/models/vehicles/t26/model.gltf" id="2_xuiai"]
+[ext_resource type="Script" path="res://scripts/enemies/track_animator.gd" id="3_trk6a"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fx0oc"]
 size = Vector3(2.35, 1.4, 4.65)
@@ -87,3 +88,6 @@ attenuation_filter_db = -20.0
 
 [node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=29771725]
 replication_config = SubResource("SceneReplicationConfig_nciiy")
+
+[node name="TrackAnimator" type="Node" parent="." unique_id=1193846215]
+script = ExtResource("3_trk6a")

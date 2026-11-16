@@ -15,6 +15,7 @@ the game; the models are otherwise unchanged.
   https://sketchfab.com/3d-models/machine-gun-maxim-c3be4e0b9ddc4297a8356852b21bdc37
 - "Т-26 SD" (the T-26 tank) by MMD_SonicNewYear
   https://sketchfab.com/3d-models/26-sd-75689d006c704894aff88646017a94dc
+  (also changed: wheel-axle data added to the running-gear meshes so the wheels can turn)
 
 ## Sounds (Creative Commons Attribution 4.0)
 - "Lentokone, potkurikone, syöksy, ylilento / An old aeroplane, old propeller aircraft, Viima,

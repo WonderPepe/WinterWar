@@ -33,6 +33,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_c1.gd` (C1 climbing out of the trench: front / rear wall, from a crouch, time, no firing, bottle rules, firing position, death on the wall),
   `test_v10b.gd`, `shots_v10b.gd [prefix]` (V10b: bodies handed to the BodyKeeper, caps, pause, new day keeps 12 with snow, a soldier killed in the air comes down; tank track strips on the ground, pool wraps round, cleared at the day change),
   `test_v10a.gd`, `shots_v10a.gd [battle] [frames] [wind]` (V10a: wind per battle reaches the tree materials, cloud drift speed / update rate, no TIME in the sky shader; the shots script needs xvfb and `--fixed-fps 20`),
+  `test_t6.gd`, `shots_t6.gd [battle]` (T6 running tracks: track speeds from the hull's movement – straight, reverse, bends, on the spot, standing, teleport, cap –, materials per tank, wheel data in the model's UV2; pictures from a camera riding beside the tank, needs xvfb and `--fixed-fps 30`), `import_weapons.py --t26-wheels` (T6: writes only the wheel axles into the unpacked T-26 model),
   `web_guard_test.py` (web export: Leave-site warning, fullscreen "hold Esc" notice),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.
