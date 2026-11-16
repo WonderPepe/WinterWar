@@ -30,6 +30,9 @@ you work on. Update this file and the right note at the end of every milestone.
   `Player.is_climbing`); owner: not with a lit bottle, also from a crouch, no help text.
   T5: tanks and wrecks stop ENEMY bullets, shells, sight and the 45 mm blast too (physics layer
   5 "armour", `Tank.SIGHT_MASK` / `BULLET_MASK`) – a wreck is cover for the player.
+  D9 (review item D9): hit zones for the player's bullets – head ×4, legs ×0.6, worked out from
+  where on the soldier's one capsule the bullet lands (`Enemy.hit_zone_at`, numbers in
+  `EnemyData`); a head shot adds a ring to the hit marker (`hit_confirmed(killed, zone)`).
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
@@ -90,7 +93,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
 - `architecture.md` – multiplayer architecture, conventions, groups, physics layers, map coordinates
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3)
-- `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2), Suomi cocking handle + cases (W3)
+- `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1)
 - `day-screen.md` – battle briefings (B1), photos, day screen

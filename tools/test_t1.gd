@@ -113,7 +113,7 @@ func run() -> void:
 
 	# --- Rifle bullets: sparks, no damage, no hit marker.
 	var hits := [0]
-	p.weapons.hit_confirmed.connect(func(_k: bool) -> void: hits[0] += 1)
+	p.weapons.hit_confirmed.connect(func(_k: bool, _zone: int) -> void: hits[0] += 1)
 	var aim_from: Vector3 = p.head.global_position
 	var to_hull: Vector3 = tank.global_position + Vector3(0, 1.0, 0) - aim_from
 	var mosin: WeaponData = p.weapons.loadout[0]

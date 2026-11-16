@@ -115,8 +115,9 @@ func _on_health_changed(new_health: int) -> void:
 	_last_health = new_health
 
 
-func _on_hit_confirmed(killed: bool) -> void:
-	hit_marker.show_hit(killed) # (no sound: the owner removed the generated hit tick)
+func _on_hit_confirmed(killed: bool, zone: int) -> void:
+	# (no sound: the owner removed the generated hit tick; a head-shot sound may come later)
+	hit_marker.show_hit(killed, zone == Enemy.HitZone.HEAD)
 
 
 func _update_vitals() -> void:

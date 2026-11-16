@@ -29,6 +29,7 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `earthwork_snow.gd` (V2: makes the soft snow meshes for the builder), `test_v2.gd`, `shots_v2.gd` (V2 snow lips / drifts / heaps / bunker snow; `shots_v2.gd before_` saves with another file prefix to compare),
   `test_v4.gd`, `shots_v4.gd` (V4 sandbags: nobody sees through the wall – thousands of straight and slanted lines against the bag mesh –, loophole free, collision unchanged; `shots_v4.gd before_` saves with another file prefix),
   `test_t5.gd` (T5 armour: a tank / wreck between a soldier and the player stops his sight and bullets, another tank's sight and fire, and a shell's blast),
+  `test_d9.gd` (D9 hit zones: head / body / legs for a standing, kneeling and prone soldier, damage per weapon, head-shot ring, direct damage untouched),
   `test_c1.gd` (C1 climbing out of the trench: front / rear wall, from a crouch, time, no firing, bottle rules, firing position, death on the wall),
   `web_guard_test.py` (web export: Leave-site warning, fullscreen "hold Esc" notice),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).

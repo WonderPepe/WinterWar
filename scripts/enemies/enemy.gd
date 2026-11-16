@@ -486,6 +486,44 @@ func bullet_passed(where: Vector3) -> void:
 
 
 # ------------------------------------------------------------------ damage & death
+## D9: which part of the soldier a bullet hit. Worked out from WHERE on his one collision capsule
+## the bullet landed - there are no separate head / leg shapes, so movement is untouched.
+## (Add new values at the END: the number is sent over the network with the hit marker.)
+enum HitZone { BODY, HEAD, LEGS }
+
+const HEAD_LENGTH: float = 0.3 ## The top 0.3 m of the soldier is his head.
+const LEGS_STANDING: float = 0.85 ## Standing: everything below this height is legs.
+const LEGS_KNEELING: float = 0.4 ## Kneeling: only the lowest part (the legs are folded under him).
+const LEGS_PRONE: float = 0.8 ## Lying flat: the rear 0.8 m of the body is legs.
+
+
+## The zone for a hit at `hit_position` (a point in the world, on his capsule).
+func hit_zone_at(hit_position: Vector3) -> HitZone:
+	var local: Vector3 = to_local(hit_position)
+	if is_prone:
+		# Lying flat, head forward: measure along the body, from the feet (0) to the head.
+		var length: float = (collision.shape as CapsuleShape3D).height
+		var from_feet: float = (collision.position.z + length / 2.0) - local.z
+		if from_feet >= length - HEAD_LENGTH:
+			return HitZone.HEAD
+		return HitZone.LEGS if from_feet < LEGS_PRONE else HitZone.BODY
+	# Upright: measure the height above his feet.
+	var height: float = 1.2 if is_kneeling else 1.8
+	if local.y >= height - HEAD_LENGTH:
+		return HitZone.HEAD
+	return HitZone.LEGS if local.y < (LEGS_KNEELING if is_kneeling else LEGS_STANDING) else HitZone.BODY
+
+
+## How much a bullet's damage is multiplied in that zone (numbers: his EnemyData, "Combat").
+func zone_damage_multiplier(zone: HitZone) -> float:
+	match zone:
+		HitZone.HEAD:
+			return data.head_damage_multiplier
+		HitZone.LEGS:
+			return data.leg_damage_multiplier
+	return 1.0
+
+
 ## Called on the host when a bullet hits. Returns true if this hit killed the soldier.
 func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_normal: Vector3) -> bool:
 	if not multiplayer.is_server() or state == State.DEAD:

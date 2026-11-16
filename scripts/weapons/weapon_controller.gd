@@ -12,7 +12,7 @@ extends Node
 ## gun instead of the hand weapons (see MountedGun).
 
 signal weapon_changed(data: WeaponData)
-signal hit_confirmed(killed: bool)
+signal hit_confirmed(killed: bool, zone: int) ## zone = Enemy.HitZone (D9); BODY for anything that is not a soldier
 
 @export var loadout: Array[WeaponData] = [] ## Slot 1, slot 2, ...
 @export var hip_position: Vector3 = Vector3(0.13, -0.17, -0.3) ## Gun position (from the eye) when not aiming.
@@ -418,10 +418,17 @@ func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: A
 		if target is Enemy and (target as Enemy).state != Enemy.State.DEAD:
 			shots_hit += 1
 		if target and (friendly_fire or not target is Player):
-			var killed: bool = target.take_damage(w.damage_at(origin.distance_to(hit.position)), shooter, hit.position, hit.normal)
+			var damage: float = w.damage_at(origin.distance_to(hit.position))
+			# D9 hit zones: a soldier's head takes more, his legs less. Only bullets do this -
+			# fire, shells and bombs call take_damage() directly and stay as they were.
+			var zone: int = Enemy.HitZone.BODY
+			if target is Enemy:
+				zone = (target as Enemy).hit_zone_at(hit.position)
+				damage *= (target as Enemy).zone_damage_multiplier(zone)
+			var killed: bool = target.take_damage(damage, shooter, hit.position, hit.normal)
 			if killed and target is Enemy:
 				player.kills += 1
-			confirm_hit.rpc_id(shooter, killed)
+			confirm_hit.rpc_id(shooter, killed, zone)
 		var attach: NodePath = collider.get_path() if collider.has_meta("attach_holes") else NodePath()
 		show_impact.rpc(hit.position, hit.normal, ImpactEffects.surface_of(collider, hit.normal), attach)
 	# G2: soldiers the bullet flew close past duck (suppression).
@@ -432,8 +439,8 @@ func resolve_shot(origin: Vector3, direction: Vector3, w: WeaponData, exclude: A
 
 
 @rpc("authority", "call_local", "reliable")
-func confirm_hit(killed: bool) -> void:
-	hit_confirmed.emit(killed)
+func confirm_hit(killed: bool, zone: int) -> void:
+	hit_confirmed.emit(killed, zone)
 
 
 @rpc("authority", "call_local", "unreliable")

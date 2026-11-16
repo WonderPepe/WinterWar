@@ -55,7 +55,7 @@ func run() -> void:
 	p = get_tree().get_nodes_in_group("players")[0]
 	p.input.set_process(false)
 	wc = p.weapons
-	wc.hit_confirmed.connect(func(killed: bool) -> void:
+	wc.hit_confirmed.connect(func(killed: bool, _zone: int) -> void:
 		hits += 1
 		if killed: kills += 1)
 	await seconds(1.0)

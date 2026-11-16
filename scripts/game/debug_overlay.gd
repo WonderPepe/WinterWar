@@ -58,8 +58,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Enemy.show_debug_labels = not Enemy.show_debug_labels
 
 
-func _on_hit_confirmed(killed: bool) -> void:
+func _on_hit_confirmed(killed: bool, zone: int) -> void:
 	_hit_text = ">>> HIT - KILLED <<<" if killed else ">>> HIT <<<"
+	if zone != Enemy.HitZone.BODY:
+		_hit_text += "  " + Enemy.HitZone.keys()[zone]
 	_hit_text_until = Time.get_ticks_msec() / 1000.0 + 0.4
 
 

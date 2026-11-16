@@ -319,3 +319,19 @@ touched in points: daylight showed between them, worst beside the loophole.
 - Unchanged: collision, loophole (0.8 × 0.42 m), navmesh (no re-bake needed).
 - Cost: bags 24 320 triangles in the 4 walls (was ~9 700), +4 draw calls (one filling per wall).
 Details: `graphics-and-web.md` ("Sandbags"). Tests: `test_v4.gd`, `shots_v4.gd`.
+
+## D9 – hit zones (review item D9) (2026-11-15)
+The player's bullets do different damage in a soldier's head, body and legs.
+- No new collision shapes: `Enemy.hit_zone_at(hit_position)` works the zone out from where on the
+  one capsule the bullet landed. Standing (1.8 m): head = top 0.3 m, legs = below 0.85 m.
+  Kneeling (1.2 m): head = top 0.3 m, legs = below 0.4 m. Lying flat: measured ALONG the body
+  (head forward) – head = front 0.3 m, legs = rear 0.8 m.
+- Multipliers in `EnemyData` ("Combat"): `head_damage_multiplier` 4, `leg_damage_multiplier` 0.6.
+  **Owner decisions:** head ×4 (so one Suomi head shot kills up close), legs ×0.6 (a Mosin leg hit
+  only wounds: 60 of 100), ring around the X for a head shot; a head-shot sound may come later.
+- Only bullets (`WeaponController.resolve_shot`, also the Maxim) use zones. Molotov fire, shells
+  and bombs call `take_damage()` directly and are unchanged; so are Soviet bullets on the player.
+- `hit_confirmed(killed, zone)` – the host sends the zone (`Enemy.HitZone`: BODY, HEAD, LEGS – add
+  new values at the END) with the hit confirmation; `HitMarker.show_hit(killed, head)` draws the ring.
+  The F3 debug text names the zone.
+Details: `weapons.md` ("Hit zones"). Test: `test_d9.gd`.

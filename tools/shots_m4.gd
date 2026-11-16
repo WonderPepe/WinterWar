@@ -37,7 +37,7 @@ func run() -> void:
 	p.input.look_pitch = deg_to_rad(2)
 	await wait(5)
 	p.take_damage(35, -1, Vector3.ZERO, Vector3.UP)
-	p.weapons.hit_confirmed.emit(false)
+	p.weapons.hit_confirmed.emit(false, Enemy.HitZone.BODY)
 	await wait(1)
 	await snap("m4_3_hud.png")
 	p.take_damage(200, -1, Vector3.ZERO, Vector3.UP)

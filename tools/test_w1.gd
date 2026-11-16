@@ -50,7 +50,7 @@ func run() -> void:
 	wc = p.weapons
 	p.input.set_process(false) # the test presses the buttons
 	get_tree().get_first_node_in_group("wave_spawner").set_process(false)
-	wc.hit_confirmed.connect(func(killed: bool) -> void:
+	wc.hit_confirmed.connect(func(killed: bool, _zone: int) -> void:
 		hits += 1
 		if killed:
 			kills += 1)

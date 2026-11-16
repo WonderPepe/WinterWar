@@ -104,3 +104,17 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Tests in `test_w2.gd` (W3 blocks: first equip, cases while moving, tactical vs empty reload,
   respawn); screenshots `tools/shots_w3.gd [prefix]` (reload frozen at several moments of the
   cocking, cases in the air – also while running right; each also from the side).
+
+## Hit zones (D9)
+- `WeaponController.resolve_shot` (host): if the bullet hit an `Enemy`, `hit_zone_at()` gives
+  `Enemy.HitZone` (BODY / HEAD / LEGS) and `zone_damage_multiplier()` scales the damage (after the
+  distance falloff). Numbers per enemy type: `EnemyData` → Combat → head 4, legs 0.6.
+- Zone limits are constants at "damage & death" in `enemy.gd` (`HEAD_LENGTH`, `LEGS_STANDING`,
+  `LEGS_KNEELING`, `LEGS_PRONE`). They follow the capsule sizes in `_update_visuals()` (1.8 / 1.2 m,
+  prone 1.7 m lying along the body) – change both together.
+- Result with 100 health: Mosin / Maxim – head and body kill, legs 60. Suomi – head kills (to 60 m,
+  less with falloff), body 25, legs 15. Beyond 400 m the Mosin's falloff already left a body hit
+  short of a kill before D9; a head shot now kills at any range.
+- Signal `hit_confirmed(killed, zone)`: anything listening must take both arguments.
+- Not zoned: `take_damage()` called directly (fire, shells, bombs), the tank, the target dummy,
+  and damage to players.

@@ -28,6 +28,8 @@ enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
 
 @export_group("Combat")
 @export var damage: float = 35.0
+@export var head_damage_multiplier: float = 4.0 ## D9: a player's bullet in his head does this many times the damage.
+@export var leg_damage_multiplier: float = 0.6 ## D9: ...and in his legs this much (the body is always 1).
 @export var reaction_time_min: float = 0.8 ## Delay before the first shot at a new target.
 @export var reaction_time_max: float = 1.5
 @export var fire_interval_min: float = 2.5 ## Time between shots (bolt-action rifle).
