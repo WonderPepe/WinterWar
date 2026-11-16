@@ -373,3 +373,13 @@ The player's bullets do different damage in a soldier's head, body and legs.
   new values at the END) with the hit confirmation; `HitMarker.show_hit(killed, head)` draws the ring.
   The F3 debug text names the zone.
 Details: `weapons.md` ("Hit zones"). Test: `test_d9.gd`.
+
+## P4 – web loading without the long freeze (2026-11-16)
+Owner's report: the web version "takes much time" at the first battle, the browser says "no
+response", and when it is ready the photo and briefing are still on screen with "click to start".
+- Measured (live v0.9.0, real GPU): one 10.3 s freeze with no frame, at the "reading files" step.
+- Fix: `LoadingScreen` loads the battle's files one by one in the web build (no threads) with a
+  frame in between; details in `graphics-and-web.md` ("Loading the battle in the web build").
+- **Owner decision:** at the click prompt the photo and briefing go away (fade 0.6 s).
+- Test: `test_b1.gd` (fade, dependency order, desktop keeps threaded loading).
+- Open: the first frame's shader compiling is not split yet (see the note).

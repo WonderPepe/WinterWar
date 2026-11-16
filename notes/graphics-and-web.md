@@ -28,6 +28,22 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Snow = CPUParticles3D following the local player only. Trees = MultiMesh chunks with
   visibility ranges. One shadowed sun, short shadow distance. Only the local muzzle flash has
   a light (plus 2 pooled tiny glows for enemy flashes in the dark, V1; blasts/tank/Molotov have their own). Export without threads. Navigation mesh is pre-baked (no runtime baking).
+- **Loading the battle in the web build (P4, 2026-11-16).** Without threads,
+  `ResourceLoader.load_threaded_request()` does the whole load at once on the page's only thread
+  – and was also very slow there: measured in the live v0.9.0 on a real GPU, ONE frozen stretch of
+  10.3 s after "Single Player" (browsers then say "Page unresponsive"); in cloud Chromium
+  (software GL) 19.9 s. Now `LoadingScreen.piecewise_loading()` (web + no "threads" feature)
+  makes `_run()` load the battle's parts one by one: `LoadingScreen.dependency_order()` walks
+  `ResourceLoader.get_dependencies()` (deepest first, the scene last – 125 files), `load()`s them
+  and draws a frame every `LOAD_SLICE` (0.04 s) of work; then `load(game.tscn)` takes ~70 ms
+  because every part is cached. Cloud Chromium: the read step 20 s → ~1 s, progress now real.
+  Desktop keeps the threaded loading. What is still left: the FIRST frame of the battle (behind
+  the loading screen) compiles every shader at once – in software GL that is ~15 s, on a real
+  GPU much less; not measured on the owner's PC yet. If it is still too long, the next step is to
+  show the scene / warm-up effects in groups over several frames.
+- Click prompt (P4, owner): when the battle is ready the photo and briefing fade away
+  (`_hide_briefing()`, `BRIEFING_FADE` 0.6 s, layout kept so nothing jumps); march, ALARM line and
+  "CLICK TO START THE BATTLE" stay over the dimmed battlefield.
 - CSG trench/bunker should be converted to static meshes before the web export (M5).
 - Max 16 enemies alive; enemy senses run ~5×/s; no RVO avoidance.
 

@@ -19,6 +19,10 @@ extends CanvasLayer
 ## phrase for every stretch of the way ("Drafting recruits...", ...). At 100 % he stops and
 ## the line turns red: "ALARM! TO THE POSITIONS!". The old ProgressBar still counts (hidden);
 ## the path just reads it. The march lasts at least MIN_MARCH seconds so it can be seen.
+##
+## P4: in the web build (no threads) the battle's files are loaded one by one with a drawn frame
+## in between (piecewise_loading()), instead of one long freeze that made browsers say "Page
+## unresponsive". When the battle is ready, the photo and briefing fade away.
 
 const SCENE_PATH: String = "res://ui/loading_screen.tscn"
 const TIPS: Array[String] = [
@@ -34,6 +38,8 @@ const TIPS: Array[String] = [
 const PHOTO_BOX: Vector2 = Vector2(520, 300) ## Largest size of the briefing photo.
 const MIN_MARCH: float = 4.0 ## The march takes at least this many seconds (the real game only).
 const ARRIVE_HOLD: float = 0.7 ## He stands at the end this long before the battle starts (no click needed).
+const LOAD_SLICE: float = 0.04 ## P4: web build – seconds of loading work between two drawn frames.
+const BRIEFING_FADE: float = 0.6 ## P4: seconds for the photo and briefing to fade away.
 const MARCH_SIZE: Vector2 = Vector2(960, 96)
 const ALARM_TEXT: String = "ALARM! TO THE POSITIONS!"
 ## [from percent, text] – the owner's phrases; the last one that has been reached is shown.
@@ -340,11 +346,13 @@ func _run() -> void:
 	_step(0.02, "Loading the battle...")
 	await _frames(2) # let the screen appear before the heavy work starts
 	# 1) Read the scene and everything it uses (models, textures, sounds).
-	if ResourceLoader.load_threaded_request(target_scene) != OK:
+	if piecewise_loading():
+		await _load_in_pieces(target_scene)
+	elif ResourceLoader.load_threaded_request(target_scene) != OK:
 		_fail()
 		return
 	var progress: Array = []
-	while true:
+	while not piecewise_loading():
 		var state := ResourceLoader.load_threaded_get_status(target_scene, progress)
 		if state == ResourceLoader.THREAD_LOAD_LOADED:
 			break
@@ -353,7 +361,14 @@ func _run() -> void:
 			return
 		_step(0.05 + 0.6 * float(progress[0] if not progress.is_empty() else 0.0), "Loading the battle...")
 		await get_tree().process_frame
-	var packed := ResourceLoader.load_threaded_get(target_scene) as PackedScene
+	var packed: PackedScene
+	if piecewise_loading():
+		packed = load(target_scene) as PackedScene # quick now: all its parts are in memory
+	else:
+		packed = ResourceLoader.load_threaded_get(target_scene) as PackedScene
+	if packed == null:
+		_fail()
+		return
 	# 2) Build it: the terrain, the forest and the trench are made when the scene starts.
 	_step(0.7, "Building the trench and the forest...")
 	await _frames(2)
@@ -387,11 +402,66 @@ func _run() -> void:
 			bar.visible = false
 		start_label.visible = true
 		background.modulate.a = 0.55
+		_hide_briefing()
 		if NetworkManager.is_single_player():
 			get_tree().paused = true
 		_waiting_for_click = true
 		return
 	queue_free()
+
+
+## P4: true in a browser build without threads (our web export). There "threaded" loading
+## really happens all at once on the page's only thread, and the page freezes for many
+## seconds ("Page unresponsive"). So we load the parts one by one instead.
+static func piecewise_loading() -> bool:
+	return OS.has_feature("web") and not OS.has_feature("threads")
+
+
+## Every file `path` uses, the files THEY use, and so on – the deepest parts first and `path`
+## itself last, so that each file finds its parts already loaded (Godot keeps them in memory).
+static func dependency_order(path: String) -> PackedStringArray:
+	var order := PackedStringArray()
+	_collect_deps(path, {}, order)
+	return order
+
+
+static func _collect_deps(path: String, seen: Dictionary, order: PackedStringArray) -> void:
+	if seen.has(path):
+		return
+	seen[path] = true
+	for dep in ResourceLoader.get_dependencies(path):
+		# A dependency looks like "uid://…::Type::res://path" (or just a path).
+		var dep_path: String = dep.get_slice("::", 2) if dep.contains("::") else dep
+		if dep_path.begins_with("uid://"):
+			dep_path = ResourceUID.get_id_path(ResourceUID.text_to_id(dep_path))
+		if dep_path.begins_with("res://"):
+			_collect_deps(dep_path, seen, order)
+	order.append(path)
+
+
+## Load the scene's parts one after another, drawing a frame whenever about LOAD_SLICE
+## seconds of work have been done, so the page keeps answering and the soldier keeps walking.
+func _load_in_pieces(path: String) -> void:
+	var parts: PackedStringArray = dependency_order(path)
+	parts.remove_at(parts.size() - 1) # the scene itself is loaded by the caller
+	var slice_start: int = Time.get_ticks_msec()
+	for i in parts.size():
+		if not ResourceLoader.has_cached(parts[i]):
+			load(parts[i])
+		if Time.get_ticks_msec() - slice_start > LOAD_SLICE * 1000.0:
+			_step(0.05 + 0.6 * float(i + 1) / parts.size(), "Loading the battle...")
+			await get_tree().process_frame
+			slice_start = Time.get_ticks_msec()
+
+
+## When the battle is ready, the photo and the briefing fade away (owner, P4): only the
+## march, the ALARM line and the click prompt stay over the battlefield.
+func _hide_briefing() -> void:
+	var row := tip.get_parent().get_node_or_null("Briefing") as Control
+	if row == null:
+		return
+	# Keep its place in the layout so nothing jumps: just make it invisible.
+	create_tween().tween_property(row, "modulate:a", 0.0, BRIEFING_FADE)
 
 
 func _step(value: float, text: String) -> void:

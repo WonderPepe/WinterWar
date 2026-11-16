@@ -1,7 +1,7 @@
 extends Node
 ## Test for the battle briefings (B1): the loading screen shows the briefing of battle 1 (or of
 ## the Test Mode battle), with date, weather, text and photo; no briefing without the click
-## prompt (benchmark). Not part of the game:
+## prompt (benchmark); P4: the briefing fades at the click prompt, web loading order. Not part of the game:
 ##   godot --headless --path . --script tools/run.gd -- tools/test_b1.gd
 
 var fails := 0
@@ -41,7 +41,19 @@ func _ready() -> void:
 	# The soldier never gets ahead of the minimum march time.
 	await get_tree().create_timer(1.0).timeout
 	check(ls._shown > 10.0 and ls._shown < 40.0, "after ~1 s the soldier has walked a quarter of the minimum time (%.0f %%)" % ls._shown)
+	# P4: when the battle is ready (click prompt), the photo and briefing fade away.
+	ls._hide_briefing()
+	await get_tree().create_timer(LoadingScreen.BRIEFING_FADE + 0.2).timeout
+	check(is_equal_approx(row.modulate.a, 0.0), "P4: photo and briefing faded away at the click prompt")
 	ls.free()
+	# P4: web build loads the battle's parts one by one, deepest parts first, the scene last.
+	var order: PackedStringArray = LoadingScreen.dependency_order("res://scenes/game.tscn")
+	check(order.size() > 50 and order[order.size() - 1] == "res://scenes/game.tscn"
+			and order.find("res://levels/test_level.tscn") < order.size() - 1
+			and order.find("res://levels/test_level.tscn") > order.find("res://resources/materials/snow_ground.tres")
+			and order.find("res://resources/materials/snow_ground.tres") >= 0,
+			"P4: dependency order of the battle (%d files, parts before the scenes that use them)" % order.size())
+	check(not LoadingScreen.piecewise_loading(), "P4: desktop keeps the background loading")
 
 	MatchDirector.test_start_wave = 9
 	ls = load("res://ui/loading_screen.tscn").instantiate()
