@@ -47,7 +47,7 @@ you work on. Update this file and the right note at the end of every milestone.
   P4: web build loads the battle's files one by one with frames in between (no more 10 s
   "Page unresponsive" freeze while reading); photo + briefing fade away at the click prompt.
   S1: sky noise uses a whole-number hash – fix for straight seams / blocks on the sky in Chrome
-  (Windows/AMD default path); if still there, the cloud drift goes (owner).
+  (Windows/AMD default path) – owner confirmed it works. Public v0.9.1 (P4 + S1).
   Next: owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 

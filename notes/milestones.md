@@ -393,5 +393,5 @@ was fine too – so it is Chrome's default graphics path on that computer.
   decimals; noise coordinates marked `highp`. Stars use the same hash. Cloud pattern is a new
   random layout, same look and cost.
 - **Owner decision:** if the seams are still there after this, remove the cloud drift (V10a).
-- Open: the owner checks it in Chrome on Default once it is online.
+- Owner tested it in Chrome on Default (Run in Browser): the blocks are gone. Released as v0.9.1.
 
