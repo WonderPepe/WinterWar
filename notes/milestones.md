@@ -304,6 +304,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (sprint, reload, bandage, climb, raise/cock), resting on the guard (hip), on the trigger (aim,
   fire, squeeze at each shot), round the knob (bolt / cocking); Maxim thumbs press while firing.
   No mitten compression (not needed). Still one draw call, 9 bones. Details: `weapons.md` ("AR2").
+- [x] AR3 hand positions (owner 2026-11-17): Mosin bolt hand palm-down over the knob, turns a third
+  of the handle's turn, curved path over the receiver; Suomi left hand cups the drum's front-lower
+  edge (owner: holds the gun up and pulls it back). Right wrists stay as they are (straighter =
+  thumb + trigger finger worse; the real fix is the shoulder, out of scope). Details: `weapons.md` ("AR3").
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

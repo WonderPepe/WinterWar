@@ -190,6 +190,32 @@ func run() -> void:
 	await seconds(0.5)
 	var bolt_r: Vector3 = wc.get_hand_grips()[0].origin
 	check(vm.bolt_hand > 0.9 and bolt_r.distance_to(rest_r) > 0.05, "right hand on the bolt while cycling (%.2f m away)" % bolt_r.distance_to(rest_r))
+	# AR3: on the knob the hand follows only a third of the handle's 80° turn, and on the way it
+	# swings up over the receiver (not straight through it).
+	vm._restart_tween()
+	vm.bolt_hand = 1.0
+	vm._set_bolt_roll(0.0)
+	var hand_down: Basis = wc.get_hand_grips()[0].basis.orthonormalized()
+	vm._set_bolt_roll(deg_to_rad(vm.bolt_roll_deg))
+	var hand_up: Transform3D = wc.get_hand_grips()[0]
+	var hand_turn: float = rad_to_deg(hand_down.get_rotation_quaternion().angle_to(hand_up.basis.orthonormalized().get_rotation_quaternion()))
+	check(hand_turn > 15.0 and hand_turn < 40.0, "AR3: hand turns %.0f° with the 80° bolt handle (no wrung wrist)" % hand_turn)
+	check(hand_up.origin.distance_to(vm._bolt_grip.global_position) < 0.001, "AR3: palm stays on the knob when the handle is up")
+	vm._set_bolt_roll(0.0)
+	var model_inv: Transform3D = vm.model.global_transform.affine_inverse()
+	var grip_m: Vector3 = model_inv * vm._grip_r.global_position
+	var knob_m: Vector3 = model_inv * vm._bolt_grip.global_position
+	var half_m: Vector3 = model_inv * vm._hand_to_knob(vm._grip_r.global_transform, 0.5).origin
+	check(half_m.y > (grip_m.y + knob_m.y) * 0.5 + 0.01 and half_m.x > (grip_m.x + knob_m.x) * 0.5 + 0.01,
+			"AR3: half-way to the knob the hand is up and out from the straight line")
+	var through: int = 0
+	for i in 11:
+		var q: Vector3 = model_inv * vm._hand_to_knob(vm._grip_r.global_transform, i / 10.0).origin
+		if absf(q.x) < 0.021 and q.y > 0.0 and q.y < 0.07 and q.z > 0.0 and q.z < 0.2:
+			through += 1 # the palm inside the receiver / stock box
+	check(through == 0, "AR3: the palm never passes through the receiver on its way to the knob")
+	vm.bolt_hand = 0.0
+	await seconds(0.3)
 	await seconds(1.0)
 	check(vm.bolt_hand < 0.01, "right hand back on the grip")
 	vm.play_reload(2.0)
@@ -206,6 +232,16 @@ func run() -> void:
 	var drum_rest: Vector3 = drum.global_position
 	var palm_l: Vector3 = wc.get_hand_grips()[1].origin
 	check(palm_l.distance_to(drum_rest) < 0.09 and palm_l.y < drum_rest.y, "left hand under the drum (%.3f m from its centre)" % palm_l.distance_to(drum_rest))
+	# AR3 (owner: the left hand holds the gun up and pulls it back): the palm cups the drum's
+	# front-lower edge – just outside the rim (radius 0.077), in front of the drum's centre.
+	var palm_m: Vector3 = svm.model.global_transform.affine_inverse() * palm_l
+	var drum_m := Vector3(0.0, -0.044, -0.145)
+	var off_axis: float = Vector2(palm_m.x - drum_m.x, palm_m.y - drum_m.y).length()
+	check(off_axis > 0.077 and off_axis < 0.09 and palm_m.z < drum_m.z - 0.01 and palm_m.z > -0.172,
+			"AR3: left palm on the drum's front-lower edge (%.3f from its axis, z %.3f)" % [off_axis, palm_m.z])
+	var fl: Vector3 = Basis(arms.skeleton.get_bone_pose_rotation(FirstPersonArms.Bone.FORE_L)).y
+	var hl: Vector3 = Basis(arms.skeleton.get_bone_pose_rotation(FirstPersonArms.Bone.HAND_L)).y
+	check(rad_to_deg(fl.angle_to(hl)) < 45.0, "AR3: left wrist on the drum not bent too far (%.0f°)" % rad_to_deg(fl.angle_to(hl)))
 	var dropped_before: int = ViewModel._dropped_magazines.size()
 	svm.play_reload(3.0)
 	await seconds(0.65) # ~0.22 of the reload: being pulled out

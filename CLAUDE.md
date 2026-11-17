@@ -53,7 +53,9 @@ you work on. Update this file and the right note at the end of every milestone.
   steps AR2–AR6 planned in project doc `claude/plan-arms-winter-clothing.md`.
   AR2: smooth elbow, twist spread, a moving trigger finger (outside the guard / on the guard /
   on the trigger / round the knob), Maxim thumbs press while firing.
-  Next: AR3 (grip markers: Mosin bolt hand, Suomi drum hand, contact tests), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  AR3: Mosin bolt hand palm-down over the knob (turns a third, curved path), Suomi left hand
+  cups the drum's front-lower edge.
+  Next: AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner

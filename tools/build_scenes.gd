@@ -1077,7 +1077,11 @@ func _build_mosin_view(mats: Dictionary) -> Node:
 	# trigger blade (found from the model's trigger and guard shapes, see weapons.md).
 	r[0].set("index_outside_deg", Vector3(18, -6, 36))
 	r[0].set("index_trigger_deg", Vector3(-9, 0, 6))
-	_grip(model, "BoltGrip", Vector3(0.05, 0.045, 0.085), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
+	# AR3: the mitten takes the knob from above (palm down towards the rifle) and follows only a
+	# third of the handle's 80° turn; on the way it swings up and out over the receiver.
+	_grip(model, "BoltGrip", Vector3(0.05, 0.045, 0.085), Vector3(-0.15, -0.2, -0.95), Vector3(-0.5, -1, 0), true)
+	r[0].set("bolt_hand_roll_share", 0.35)
+	r[0].set("bolt_hand_lift", Vector3(0.03, 0.03, 0))
 	return r[0]
 
 
@@ -1116,9 +1120,11 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 	# back for the thumb, so the finger reaches the blade's back edge – it is pressed from the side).
 	r[0].set("index_outside_deg", Vector3(30, -3, 30))
 	r[0].set("index_trigger_deg", Vector3(9, 3, 3))
-	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077), palm up against
-	# its rim, fingers forward-right around it.
-	_grip(model, "GripL", Vector3(-0.023, -0.121, -0.145), Vector3(0.75, -0.2, -0.55), Vector3(0.3, 1, 0), false)
+	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077, front face z -0.17),
+	# palm up against its rim, fingers forward-right around it. AR3 (owner: the left hand holds the
+	# gun up and pulls it slightly back to the shooter): the palm cups the drum's FRONT-lower edge
+	# (1.8 cm further forward, palm tilted back towards the shooter).
+	_grip(model, "GripL", Vector3(-0.02, -0.123, -0.163), Vector3(0.75, -0.2, -0.55), Vector3(0.3, 1, 0.45), false)
 	return r[0]
 
 

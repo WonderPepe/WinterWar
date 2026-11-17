@@ -128,6 +128,26 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Tests (`test_w2.gd`): finger 0.6 at the hip / 1 aiming / 0 sprinting, tip within 2 cm of the
   trigger when aiming, >100 elbow vertices shared, forearm roll between upper arm and hand,
   Maxim thumbs press while firing.
+
+## Arms: hand positions (AR3)
+- Mosin `BoltGrip`: palm down towards the rifle, fingers forward over the knob (was the firing
+  grip's angle). `ViewModel._hand_to_knob()`: on the knob the hand turns only
+  `bolt_hand_roll_share` (Mosin 0.35 → 28° of the handle's 80°; its turn before the handle moves
+  is `_bolt_grip_rest`, saved in `_ready` before BoltGrip is re-parented into the Bolt node);
+  on the way it follows a curve bowed out by `bolt_hand_lift` (Mosin (0.03, 0.03, 0) Model
+  space = up and out, over the receiver). Suomi: share 1, no lift (the cocking handle slides,
+  it doesn't turn).
+- Suomi `GripL` (owner: "the left hand keeps the gun up when aimed and pulls it slightly back to
+  the shooter"): stays on the drum; palm on the drum's FRONT-lower edge – z −0.163 (drum
+  −0.17 … −0.121, centre z −0.145), 0.081 from the drum's axis (r 0.077), palm tilted back
+  towards the shooter (palm (0.3, 1, 0.45)). Wrist 37°. The drum change starts/ends there.
+- Right wrists measured (forearm ↔ hand): Mosin 75°, Suomi 59°. The right forearm comes up
+  steeply from the fixed shoulder below the gun; straightening the hand was tried (Suomi 36–44°)
+  but then the thumb (owner-approved) moves back and the trigger finger loses 1–2 cm of reach –
+  NOT done. The cure would be the shoulder position, which is out of scope (owner's brief).
+- Tests (`test_w2.gd`, AR3): hand turn on the knob 15–40°, palm stays on the knob, curve up and
+  out at half-way, the palm never inside the receiver box on the way, left palm on the drum's
+  front-lower edge, left wrist < 45°.
   Old, not AR1: on the Suomi the right upper arm passes the camera's near plane at the screen edge.
 - Daylight screenshots: `MatchDirector.test_start_wave = 4` before loading the game, with the
   enemies / air raid / artillery disabled (battle 1 is night – colours can't be judged there).

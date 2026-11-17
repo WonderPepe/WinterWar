@@ -55,6 +55,12 @@ signal cock_sound_cue
 ## trigger. WeaponController.trigger_finger blends between them (0.6 = resting on the guard).
 @export var index_outside_deg: Vector3 = Vector3.ZERO
 @export var index_trigger_deg: Vector3 = Vector3.ZERO
+## AR3: how much of the bolt handle's turn the right hand follows (1 = all of it; the Mosin's
+## 80° wrung the wrist). The hand stays on the knob either way.
+@export_range(0.0, 1.0) var bolt_hand_roll_share: float = 1.0
+## AR3: on the way from the grip to the bolt / cocking knob (and back) the hand passes this far
+## (Model space) from the straight line – up and out, so it goes over the receiver, not through it.
+@export var bolt_hand_lift: Vector3 = Vector3.ZERO
 
 const MAX_DROPPED_MAGAZINES: int = 4
 ## Magazine reload, as parts of the reload time: [pulled out, dropped, at the pouch,
@@ -112,6 +118,7 @@ var _hand_tween: Tween
 var _grip_r: Node3D
 var _grip_l: Node3D
 var _bolt_grip: Node3D
+var _bolt_grip_rest: Basis # AR3: its turn in Model space before the handle is turned up
 var _magazine: Node3D            # holder node for the magazine part (moves with the hand)
 var _magazine_rest: Transform3D  # its place in the gun (Model space)
 var _magazine_in_hand: Transform3D # the magazine relative to the left hand (GripL)
@@ -147,6 +154,8 @@ func _ready() -> void:
 	_grip_r = get_node_or_null("Model/GripR")
 	_grip_l = get_node_or_null("Model/GripL")
 	_bolt_grip = get_node_or_null("Model/BoltGrip")
+	if _bolt_grip:
+		_bolt_grip_rest = _bolt_grip.transform.basis # (still a child of Model here)
 	if _bolt_grip and bolt:
 		_bolt_grip.reparent(bolt, true) # the hand rides along with the bolt
 	elif _bolt_grip and _cocking_handle:
@@ -163,7 +172,7 @@ func get_hand_grips() -> Array[Transform3D]:
 	var r: Transform3D = _grip_r.global_transform
 	var l: Transform3D = _grip_l.global_transform
 	if _bolt_grip and bolt_hand > 0.0:
-		r = r.interpolate_with(_bolt_grip.global_transform, smoothstep(0.0, 1.0, bolt_hand))
+		r = _hand_to_knob(r, smoothstep(0.0, 1.0, bolt_hand))
 	if magazine_progress >= 0.0 and _magazine:
 		l = model.global_transform * _left_hand_on_magazine(magazine_progress)
 	elif reload_hand > 0.0:
@@ -205,6 +214,18 @@ static func _turn(deg: Vector3) -> Basis:
 static func _thumb_turn(deg: Vector3, free: float) -> Basis:
 	var on_gun := Basis.from_euler(Vector3(deg_to_rad(deg.x), deg_to_rad(deg.y), deg_to_rad(deg.z)))
 	return on_gun.slerp(Basis.IDENTITY, smoothstep(0.0, 1.0, clampf(free, 0.0, 1.0)))
+
+
+## AR3: the right hand on its way from the grip `r` to the bolt / cocking knob (`t` 0 → 1): it
+## swings out by `bolt_hand_lift` on the way (a curve, not a straight line through the gun) and
+## on the knob it turns only `bolt_hand_roll_share` of the handle's turn.
+func _hand_to_knob(r: Transform3D, t: float) -> Transform3D:
+	var knob: Transform3D = _bolt_grip.global_transform
+	var unturned: Basis = model.global_basis * _bolt_grip_rest
+	var on_knob := Transform3D(unturned.orthonormalized().slerp(knob.basis.orthonormalized(), bolt_hand_roll_share), knob.origin)
+	var mid: Vector3 = (r.origin + on_knob.origin) * 0.5 + model.global_basis * bolt_hand_lift
+	var pos: Vector3 = r.origin.lerp(mid, t).lerp(mid.lerp(on_knob.origin, t), t) # (quadratic curve)
+	return Transform3D(r.basis.orthonormalized().slerp(on_knob.basis, t), pos)
 
 
 ## The left hand during a magazine change, in Model space. `u` = 0..1 through the reload.
