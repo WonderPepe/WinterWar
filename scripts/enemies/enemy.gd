@@ -1275,13 +1275,20 @@ const BUNKER_DOOR_AIM := Vector3(1.2, -1.1, 61.3)
 ## Host, with his senses (~5×/s): should he throw a grenade now? All the rules first, then the
 ## chance, then the flight is tried out – it must not come back to his own feet or land among his
 ## comrades – and the GrenadeManager must have a free place (max live grenades, gap).
+## GR3: down in the trench (assault) only at a Finn he can't see right now but knows is there,
+## at least `grenade_trench_min_m` away, and the grenade must come down in the trench, not near him.
 func _consider_grenade(dt: float) -> void:
 	if grenades <= 0 or is_throwing or state == State.DEAD:
 		return
 	if not state in [State.PATROL, State.ALERT, State.ATTACK, State.ASSAULT, State.HOLD]:
 		return
-	if (state == State.ASSAULT and is_in_trench()) or is_prone or is_pinned() or is_panicking():
-		return # in the trench fight he would blow himself up; flat on the snow he can't throw
+	if is_prone or is_pinned() or is_panicking():
+		return # flat on the snow (or running for his life) he can't throw
+	# GR3: in the trench fight only round a corner – at a Finn he knows is there but can't see
+	# right now (a Finn in sight is shot), and never close by.
+	var in_trench: bool = state == State.ASSAULT and is_in_trench()
+	if in_trench and _can_see_target:
+		return
 	if data.kind == EnemyData.Kind.MG_GUNNER or _deployed or is_instance_valid(mg_gunner):
 		return # the gun team has other work
 	if _rng.randf() > data.grenade_chance_per_s * dt:
@@ -1290,7 +1297,7 @@ func _consider_grenade(dt: float) -> void:
 	if aim == Vector3.INF:
 		return
 	var flat := Vector2(aim.x - global_position.x, aim.z - global_position.z).length()
-	if flat < data.grenade_range_min_m or flat > data.grenade_range_max_m:
+	if flat < (data.grenade_trench_min_m if in_trench else data.grenade_range_min_m) or flat > data.grenade_range_max_m:
 		return
 	if _comrade_near(aim, data.grenade_comrade_clear_m):
 		return
@@ -1308,6 +1315,8 @@ func _consider_grenade(dt: float) -> void:
 	var rest: Vector3 = flight.rest
 	if rest.distance_to(global_position) < data.grenade_range_min_m * 0.8 or _comrade_near(rest, data.grenade_comrade_clear_m):
 		return # it would bounce back to him, or fall among his own men
+	if in_trench and (rest.y > TRENCH_FLOOR_BELOW or rest.distance_to(global_position) < data.grenade_trench_min_m * 0.75):
+		return # GR3: from the trench it must come down IN the trench, round the corner – not on the edge or near him
 	if not manager.reserve():
 		return
 	grenades -= 1

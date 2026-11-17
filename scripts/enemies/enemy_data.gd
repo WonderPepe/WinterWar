@@ -109,6 +109,8 @@ enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
 ## He only throws at a Finn this far away (flat distance to the aim point)...
 @export var grenade_range_min_m: float = 6.0
 @export var grenade_range_max_m: float = 28.0
+## GR3: inside the trench he only throws round a corner (a Finn he can't see now), at least this far.
+@export var grenade_trench_min_m: float = 8.0
 ## ...whom he saw within this many seconds (or whose gun he heard within `grenade_heard_memory`).
 @export var grenade_seen_memory: float = 4.0
 @export var grenade_heard_memory: float = 3.0

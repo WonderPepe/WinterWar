@@ -444,3 +444,8 @@ F next to a live grenade (1.5 m): snatch it up and throw it back the way you loo
 0.4 s; the fuse keeps running (too late = it goes off in your hand); kills count for you; end
 screen "Grenades thrown back" (kept in the saved run). HUD: [F] key beside that grenade's icon.
 Details: `battle.md` ("Throwing a grenade back (GR2)"). Tests: `test_grenades.gd` (GR2 part).
+
+## GR3 – grenades round a corner in the trench (2026-11-17)
+Owner noticed soldiers in the trench never throw (the GR1 rule). **Owner decision:** in the trench
+only at a Finn he can't see but knows is there, at least 8 m away, no comrade within 4 m of the
+landing spot, never landing near himself; same limits (2 live, 4 s). Details: `battle.md` (GR3).

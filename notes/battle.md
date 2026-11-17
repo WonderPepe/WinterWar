@@ -289,3 +289,13 @@ in as others die. Battle 2 briefing text rewritten by the owner. Edited in `reso
   rule on this computer's picture) draws an [F] key next to that grenade's icon and blanks the
   `[F] Take …` prompt. Controls screen: one more F row.
 - Tests: GR2 part of `test_grenades.gd`; pictures `shots_grenades.gd` (gr2_*).
+
+## Grenades round a corner in the trench (GR3, owner 2026-11-17)
+- A soldier down in the trench (ASSAULT, `is_in_trench()`) may throw too, but only at a Finn he
+  can't see now (`_can_see_target` false) and knows is there (seen within 4 s / gun heard within
+  3 s), at least `grenade_trench_min_m` 8 m away (flat), no comrade within 4 m of the aim point or
+  the landing spot, and the tried-out flight must end IN the trench (y < -0.85) at least 6 m from
+  him. Limits as before (2 live, 4 s gap). A Finn in sight is shot, not bombed.
+- Note: a STANDING Finn's head shows over the trench edge (soldiers in the trench see across the
+  flat ground, see gotchas L3), so in practice this happens to a Finn CROUCHING round a corner.
+- Test: GR3 part of `test_grenades.gd`.

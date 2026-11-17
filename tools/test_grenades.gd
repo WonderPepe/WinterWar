@@ -377,6 +377,74 @@ func run() -> void:
 	await get_tree().create_timer(3.2).timeout
 	check(hud.grenade_warning._near_grenades().is_empty(), "…and is gone after the burst")
 
+	# ================================================================== GR3: round a corner in the trench
+	p.god_mode = true
+	var ts: Enemy = new_soldier("res://scenes/enemies/soviet_rifleman.tscn", Vector3(-31.0, floor_y + 0.05, 61.0), "TrenchThrower")
+	ts.data = data
+	ts.set_physics_process(false)
+	await frames(3)
+	ts.state = Enemy.State.ASSAULT
+	ts._target = p
+	ts.grenades = 2
+	check(ts.is_in_trench(), "a Soviet down in the trench (assault)")
+	# A Finn in plain sight along the same straight, 10 m away: he is shot, not bombed.
+	p.global_position = Vector3(-31.0 + 0.0, floor_y, 61.0)
+	var straight: Vector3 = Vector3(-21.0, floor_y, 58.0) # (another straight; looked for below)
+	var corner: Vector3 = Vector3.INF
+	# (Standing, a Finn's head shows over the trench edge – soldiers in the trench see it across the
+	# flat ground. Crouching round a corner he is out of sight.)
+	p.is_crouching = true
+	for cand in [Vector3(-19.0, floor_y, 58.0), Vector3(-20.0, floor_y, 58.0), Vector3(-22.0, floor_y, 58.0), Vector3(-13.0, floor_y, 61.0), Vector3(-11.0, floor_y, 61.0)]:
+		if floor_at(cand.x, cand.z) > -1.0:
+			continue
+		p.global_position = cand
+		await frames(2)
+		ts._update_senses(0.2)
+		var dflat: float = Vector2(cand.x + 31.0, cand.z - 61.0).length()
+		if not ts._can_see_target and dflat >= 8.0 and corner == Vector3.INF:
+			corner = cand
+	check(corner != Vector3.INF, "found a crouching Finn round a corner of the trench (%s)" % corner)
+	p.global_position = corner
+	await frames(2)
+	reset_manager()
+	ts._update_senses(0.2)
+	ts._seen_target_at = ts._now() # he saw him go round the corner a moment ago
+	var tries3 := 0
+	while not ts.is_throwing and tries3 < 60:
+		reset_manager()
+		ts._consider_grenade(0.2)
+		tries3 += 1
+	check(ts.is_throwing, "round the corner (%.0f m): he throws (after %d tries)" % [Vector2(corner.x + 31.0, corner.z - 61.0).length(), tries3])
+	if ts.is_throwing:
+		var o3: Vector3 = ts._grenade_release_point(ts._throw_target)
+		var f3: Dictionary = manager.simulate(o3, manager.solve_throw(o3, ts._throw_target, ts._throw_angle), 4.0)
+		var r3: Vector3 = f3.rest
+		check(r3.y < -0.85 and r3.distance_to(ts.global_position) >= 6.0, "…and it comes down in the trench, away from him (%.1f m from him)" % r3.distance_to(ts.global_position))
+	ts._end_throw(false)
+	# In sight → no grenade (he shoots).
+	p.global_position = Vector3(-33.5, floor_y, 61.0)
+	ts.global_position = Vector3(-28.5, floor_y + 0.05, 61.0)
+	await frames(2)
+	ts._update_senses(0.2)
+	reset_manager()
+	for i in 30:
+		ts._consider_grenade(0.2)
+	check(ts._can_see_target and not ts.is_throwing, "a Finn in sight in the trench: no grenade (he shoots)")
+	p.is_crouching = true
+	# Round a corner but closer than 8 m → no grenade.
+	ts.global_position = Vector3(-31.0, floor_y + 0.05, 61.0)
+	p.global_position = Vector3(-25.5, floor_y, 58.0)
+	await frames(2)
+	ts._update_senses(0.2)
+	ts._seen_target_at = ts._now()
+	for i in 30:
+		reset_manager()
+		ts._consider_grenade(0.2)
+	check(not ts.is_throwing, "a Finn round a corner only %.1f m away: no grenade" % Vector2(-25.5 + 31.0, 58.0 - 61.0).length())
+	ts.queue_free()
+	p.god_mode = false
+	p.is_crouching = false
+
 	# ================================================================== GR2: throw it back
 	p.god_mode = false
 	p.health = 100000
