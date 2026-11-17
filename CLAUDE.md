@@ -59,8 +59,10 @@ you work on. Update this file and the right note at the end of every milestone.
   heard a moment ago, also at the bunker's firing hole / back door; host works out the whole bouncing
   flight and sends it to everyone; blast needs a clear line (trench wall / bunker / wreck protect);
   friendly fire; max 2 live, 4 s apart; HUD grenade icon only (`GrenadeManager`, `GrenadeWarning`).
-  Next: GR2 (pick up a live grenade with F and throw it back; end screen counts them – plan in
-  project doc `claude/plan-enemy-grenades.md`), then AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  GR2: F next to a live grenade (1.5 m) snatches it up and throws it back (~20 m, fuse keeps running,
+  kills count for you; `GrenadeGrabHandler`, child `GrenadeGrab` made in code); [F] key on its icon;
+  end screen + saved run count "Grenades thrown back".
+  Next: AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -122,7 +124,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)
-- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1), hand grenades (GR1)
+- `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1), hand grenades (GR1) + throwing them back (GR2)
 - `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1), tank tracks (V10b), running tracks + turning wheels (T6)
 - `gotchas.md` – full list of lessons learned

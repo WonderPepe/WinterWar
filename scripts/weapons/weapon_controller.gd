@@ -127,11 +127,18 @@ func get_hand_grips() -> Array[Transform3D]:
 	var gun := get_mounted_gun()
 	if gun:
 		return gun.get_hand_grips()
+	if player.grab.is_busy():
+		return player.grab.get_hand_grips() # GR2: a grenade snatched up to throw back
 	if player.molotov.is_selected():
 		return player.molotov.get_hand_grips() # T2: a bottle in the hand
 	if current_slot >= _view_models.size():
 		return []
 	return _current_view_model().get_hand_grips()
+
+
+## T2 / GR2: the hands hold a bottle or a grenade instead of the gun.
+func _hands_busy() -> bool:
+	return player.molotov.is_selected() or player.grab.is_busy()
 
 
 ## How the mittens' fingers are turned [right thumb, left thumb, right trigger finger]
@@ -142,7 +149,7 @@ func get_finger_turns() -> Array[Basis]:
 	if gun:
 		var t: float = clampf(trigger_finger, 0.0, 1.0)
 		return [Basis.IDENTITY.slerp(gun.thumb_press_turn(true), t), Basis.IDENTITY.slerp(gun.thumb_press_turn(false), t), Basis.IDENTITY]
-	if not player.molotov.is_selected() and current_slot < _view_models.size():
+	if not _hands_busy() and current_slot < _view_models.size():
 		return _current_view_model().get_finger_turns(trigger_finger)
 	return [Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY]
 
@@ -156,7 +163,7 @@ func _trigger_finger_target() -> float:
 	var gun := get_mounted_gun()
 	if gun:
 		return 1.0 if input.fire_held and not gun.is_overheated and gun.ammo > 0 else 0.0
-	if player.is_dead or player.molotov.is_selected():
+	if player.is_dead or _hands_busy():
 		return 0.0
 	var vm: ViewModel = _current_view_model() if current_slot < _view_models.size() else null
 	var busy: bool = is_reloading_now() or player.is_sprinting or player.is_bandaging or player.is_climbing \
@@ -189,7 +196,7 @@ func _process(delta: float) -> void:
 	# A hand weapon leaves the shoulder to reload; on the Maxim the gunner stays behind the sights
 	# while the right hand feeds the new belt.
 	var reloading_hand_weapon: bool = is_reloading_now() and get_mounted_gun() == null
-	var bottle: bool = player.molotov.is_selected() # T2: right mouse lights / aims the bottle instead
+	var bottle: bool = _hands_busy() # T2: right mouse lights / aims the bottle instead (GR2: or a grenade in the hand)
 	var cocking: bool = get_mounted_gun() == null and current_slot < _view_models.size() and _current_view_model().is_cocking
 	is_aiming = input.aim_held and not reloading_hand_weapon and not player.is_sprinting and not player.is_bandaging \
 			and not player.is_climbing \
@@ -219,9 +226,10 @@ func _owner_process(delta: float, w: WeaponData) -> void:
 		input.add_look(-step, 0.0)
 		_recoil_to_recover -= step
 
-	if player.molotov.is_selected():
+	if _hands_busy():
 		# T2: the left mouse button throws the bottle (PlayerInput); the gun waits until it is
-		# let go, so the throwing click can't fire it afterwards.
+		# let go, so the throwing click can't fire it afterwards. (GR2: also while a grenade is
+		# being thrown back.)
 		_fire_blocked = true
 		camera.position = Vector3.ZERO
 		camera.fov = base_fov
@@ -366,6 +374,9 @@ func _host_process(delta: float, w: WeaponData) -> void:
 			gun.start_reload() # a new belt
 		return
 	var slot: int = input.consume_switch()
+	if player.grab.is_busy():
+		input.consume_reload() # GR2: the hand is busy with a grenade for a moment
+		return
 	if player.molotov.is_selected():
 		# T2: 1 / 2 put the bottle away (not a lit one: that has to be thrown).
 		if slot >= 0 and slot < loadout.size() and player.molotov.can_put_away():

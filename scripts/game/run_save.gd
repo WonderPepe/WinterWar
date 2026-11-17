@@ -14,7 +14,7 @@ extends RefCounted
 ## Test Mode and the benchmark never touch it (`active` is false there).
 
 const SAVE_PATH: String = "user://run.cfg"
-const TOTAL_KEYS: PackedStringArray = ["kills", "deaths", "shots", "hits"]
+const TOTAL_KEYS: PackedStringArray = ["kills", "deaths", "shots", "hits", "thrown_back"]
 
 ## True while the match being played belongs to a run (Single Player, Continue, Retry).
 static var active: bool = false
@@ -22,7 +22,7 @@ static var difficulty: int = 1 ## The run's own difficulty (not changed by the m
 static var battle: int = 1 ## The battle the next match starts at (1 = a fresh run).
 static var retries: int = 0 ## Times a lost battle was tried again in this run.
 static var time: float = 0.0 ## Match time at the checkpoint, seconds.
-## Peer id (as text; "1" = the host) -> {kills, deaths, shots, hits} at the checkpoint.
+## Peer id (as text; "1" = the host) -> {kills, deaths, shots, hits, thrown_back (GR2)} at the checkpoint.
 static var totals: Dictionary = {}
 ## True when the file on disk belongs to THIS run. A new run only replaces an older saved run
 ## once its first battle is held, so a wrong click on Single Player loses nothing.
@@ -87,6 +87,7 @@ static func checkpoint(next_battle: int, match_time: float, players: Array[Node]
 			totals[str(p.get_peer_id())] = {
 				"kills": p.kills, "deaths": p.deaths,
 				"shots": p.weapons.shots_fired, "hits": p.weapons.shots_hit,
+				"thrown_back": p.grab.thrown_back, # GR2: grenades thrown back
 			}
 	_file_is_ours = true
 	_write()
@@ -99,6 +100,7 @@ static func restore_player(p: Player) -> void:
 	p.deaths = int(t.get("deaths", 0))
 	p.weapons.shots_fired = int(t.get("shots", 0))
 	p.weapons.shots_hit = int(t.get("hits", 0))
+	p.grab.thrown_back = int(t.get("thrown_back", 0)) # (older saves: 0)
 
 
 ## Retry after a defeat: the same checkpoint again, one more retry on the counter.

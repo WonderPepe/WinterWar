@@ -4,6 +4,7 @@ extends Control
 ## A grenade you can see: the icon floats just above it. One behind you or off the screen: the
 ## icon sits at the edge of the screen in its direction, with a small arrow pointing to it.
 ## The closer the grenade, the bigger, redder and faster-pulsing the icon.
+## GR2: one close enough to pick up (and you are free to) gets a small [F] key next to its icon.
 ## Only reads what the GrenadeManager shows on this computer (UI only reads state).
 
 @export var warn_radius_m: float = 10.0 ## Grenades closer than this get an icon.
@@ -47,6 +48,27 @@ func _near_grenades() -> Array[Dictionary]:
 	return out
 
 
+## GR2: the index (in `_near_grenades()`) of the grenade F would pick up now, or -1.
+## The same rule as the host's (GrenadeGrabHandler.try_grab), on this computer's picture.
+func grabbable_index() -> int:
+	if _player == null or not is_instance_valid(_player):
+		return -1
+	var grab: GrenadeGrabHandler = _player.grab
+	if grab == null or grab.is_busy() or _player.is_dead or _player.is_climbing or _player.is_bandaging \
+			or _player.get_mounted_gun() != null or not _player.molotov.can_put_away():
+		return -1
+	var near: Array[Dictionary] = _near_grenades()
+	var best: int = -1
+	var best_d: float = grab.grab_radius_m
+	for i in near.size():
+		for pt in grab.grab_points():
+			var d: float = pt.distance_to(near[i].pos)
+			if d <= best_d:
+				best_d = d
+				best = i
+	return best
+
+
 func _draw() -> void:
 	var near: Array[Dictionary] = _near_grenades()
 	if near.is_empty():
@@ -56,7 +78,10 @@ func _draw() -> void:
 	if screen.x < 16.0 or screen.y < 16.0 or not cam.is_inside_tree():
 		return
 	var px: float = icon_size * screen.y / 1080.0
-	for g in near:
+	var grab_i: int = grabbable_index()
+	for gi in near.size():
+		var g: Dictionary = near[gi]
+		var key: bool = gi == grab_i
 		var pos: Vector3 = g.pos
 		var urgency: float = clampf(1.0 - float(g.d) / warn_radius_m, 0.0, 1.0)
 		var pulse: float = 0.5 + 0.5 * sin(_time * lerpf(6.0, 16.0, urgency))
@@ -68,6 +93,8 @@ func _draw() -> void:
 			at = cam.unproject_position(pos + Vector3.UP * 0.25)
 		if inside.has_point(at):
 			_draw_icon(at - Vector2(0.0, s * 1.7), s, col)
+			if key:
+				_draw_key(at - Vector2(-s * 1.15, s * 1.7), s)
 			continue
 		# Off the screen: at the edge, in its direction (0 = ahead, +90° = right, 180° = behind).
 		var to: Vector3 = (pos - _player.global_position).rotated(Vector3.UP, -_player.input.look_yaw)
@@ -77,6 +104,8 @@ func _draw() -> void:
 		var k: float = minf(half.x / maxf(absf(dir.x), 0.001), half.y / maxf(absf(dir.y), 0.001))
 		var c: Vector2 = screen / 2.0 + dir * k
 		_draw_icon(c, s, col)
+		if key:
+			_draw_key(c - dir * s * 1.1, s)
 		var tip: Vector2 = c + dir * s * 1.15
 		var side := Vector2(-dir.y, dir.x)
 		draw_colored_polygon(PackedVector2Array([tip, c + dir * s * 0.75 + side * s * 0.28,
@@ -102,3 +131,14 @@ func _draw_icon(c: Vector2, s: float, col: Color) -> void:
 	draw_line(body_c + Vector2(0.0, -s * 0.34), body_c + Vector2(0.0, s * 0.34), line, w)
 	draw_rect(Rect2(c + Vector2(-s * 0.09, -s * 0.44), Vector2(s * 0.18, s * 0.2)), col)
 	draw_line(c + Vector2(s * 0.09, -s * 0.4), c + Vector2(s * 0.3, -s * 0.05), col, maxf(1.5, s * 0.08))
+
+
+## GR2: a small keyboard key with "F" on it (you can pick this grenade up and throw it back).
+func _draw_key(c: Vector2, s: float) -> void:
+	var r := Rect2(c - Vector2(s * 0.38, s * 0.38), Vector2(s * 0.76, s * 0.76))
+	draw_rect(r, Color(0.05, 0.05, 0.05, 0.7))
+	draw_rect(r, Color(0.95, 0.95, 0.9, 0.95), false, maxf(1.0, s * 0.05))
+	var font: Font = get_theme_default_font()
+	var fs: int = maxi(10, int(s * 0.62))
+	var w: float = font.get_string_size("F", HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	draw_string(font, c + Vector2(-w / 2.0, fs * 0.36), "F", HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(0.95, 0.95, 0.9))

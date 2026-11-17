@@ -162,6 +162,8 @@ func _update_weapon() -> void:
 		interact_prompt.text = "[F] Leave the gun    [R] New belt"
 	elif Time.get_ticks_msec() / 1000.0 < _message_until:
 		interact_prompt.text = _message
+	elif grenade_warning.grabbable_index() >= 0:
+		interact_prompt.text = "" # GR2: F now grabs the grenade – its icon shows the [F]
 	else:
 		var usable := _player.find_usable_gun()
 		var crate := _player.find_ammo_crate() if usable == null else null

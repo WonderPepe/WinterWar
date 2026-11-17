@@ -84,6 +84,7 @@ var _shake: float = 0.0 # camera shake (artillery), local
 @onready var weapons: WeaponController = $WeaponController
 @onready var molotov: MolotovHandler = $Molotov
 @onready var climb: ClimbHandler = $Climb
+var grab: GrenadeGrabHandler ## GR2: picking up a live grenade and throwing it back (made in _ready).
 
 
 func _enter_tree() -> void:
@@ -93,6 +94,9 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	add_to_group("players")
+	grab = GrenadeGrabHandler.new()
+	grab.name = "GrenadeGrab"
+	add_child(grab)
 	collision.shape = collision.shape.duplicate() # each player needs its own capsule to resize
 	health = max_health
 	stamina = max_stamina
@@ -234,7 +238,7 @@ func _physics_process(delta: float) -> void:
 ## Host: B starts a bandage; after `bandage_time` seconds it heals. No shooting meanwhile.
 func _update_bandage(delta: float) -> void:
 	if input.consume_bandage() and not is_bandaging and bandages > 0 and health < max_health \
-			and not molotov.is_selected(): # (T2: not with a bottle in the hand)
+			and not molotov.is_selected() and not grab.is_busy(): # (T2: not with a bottle in the hand; GR2: nor a grenade)
 		is_bandaging = true
 		_bandage_timer = bandage_time
 	if is_bandaging:
@@ -259,6 +263,8 @@ func _handle_mounted_gun() -> bool:
 		if gun:
 			gun.release()
 			return false
+		if grab.try_grab():
+			return false # GR2: a live grenade at your feet comes before anything else
 		var usable := find_usable_gun()
 		if usable and molotov.can_put_away():
 			molotov.put_away()
@@ -394,6 +400,7 @@ func respawn(at: Transform3D) -> void:
 	climb.cancel()
 	bandages = max_bandages
 	molotov.reset() # (T2: bottles have to be fetched from the box again)
+	grab.reset()
 	weapons.refill_ammo()
 	is_dead = false
 	input.set_look.rpc_id(get_peer_id(), at.basis.get_euler().y, 0.0) # the owner controls the view

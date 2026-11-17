@@ -377,5 +377,114 @@ func run() -> void:
 	await get_tree().create_timer(3.2).timeout
 	check(hud.grenade_warning._near_grenades().is_empty(), "…and is gone after the burst")
 
+	# ================================================================== GR2: throw it back
+	p.god_mode = false
+	p.health = 100000
+	p.is_crouching = false
+	p.global_position = Vector3(tx, floor_y, 61.0)
+	p.input.look_yaw = 0.0 # looking at the enemy (-z)
+	p.input.look_pitch = deg_to_rad(20.0)
+	await frames(3)
+	reset_manager()
+	var gid2: int = manager.throw(Vector3(tx + 0.9, floor_y + 0.1, 61.0), Vector3.ZERO, -1, false, 3.5)
+	await get_tree().create_timer(0.4).timeout
+	check(hud.grenade_warning.grabbable_index() >= 0, "HUD: a live grenade 0.9 m away can be picked up ([F] on its icon)")
+	await get_tree().process_frame
+	check(hud.interact_prompt.text == "", "…and the [F] text prompt (ammo box etc.) steps aside")
+	var live_before: int = manager.live_count()
+	var thrown_now: int = manager.thrown_count
+	check(p.grab.try_grab(), "F: the player grabs it")
+	check(manager.live_count() == live_before - 1 and manager.position_of(gid2) == Vector3.INF, "…it leaves the ground")
+	await get_tree().process_frame
+	check(p.grab.is_busy() and p.weapons.get_hand_grips().size() == 2, "…his hands hold it (gun lowered)")
+	check(not p.grab.try_grab(), "…no second grab while the first is in the hand")
+	await get_tree().create_timer(p.grab.throw_at + 0.1).timeout
+	check(manager.thrown_count == thrown_now + 1 and p.grab.thrown_back == 1, "…and throws it back (thrown back: %d)" % p.grab.thrown_back)
+	var back_id: int = manager._next_id
+	var far_pos: Vector3 = Vector3.INF
+	t = 0.0
+	while manager.position_of(back_id) != Vector3.INF and t < 5.0:
+		far_pos = manager.position_of(back_id)
+		await get_tree().physics_frame
+		t += 1.0 / 60.0
+	var dist: float = Vector2(far_pos.x - tx, far_pos.z - 61.0).length()
+	check(far_pos != Vector3.INF and far_pos.z < 61.0 - 8.0, "…towards the enemy, %.0f m away" % dist)
+	await get_tree().create_timer(0.7).timeout
+	check(not p.grab.is_busy(), "…then the gun is back up")
+
+	# Too far away: F does nothing to it.
+	reset_manager()
+	var far_id: int = manager.throw(Vector3(tx + 2.3, floor_y + 0.1, 61.0), Vector3.ZERO, -1, false, 2.0)
+	await get_tree().create_timer(0.3).timeout
+	check(not p.grab.try_grab() and manager.position_of(far_id) != Vector3.INF, "a grenade 2.3 m away can't be grabbed")
+	# Not while bandaging / with a lit bottle / on the Maxim.
+	p.is_bandaging = true
+	var near_id: int = manager.throw(Vector3(tx - 0.8, floor_y + 0.1, 61.0), Vector3.ZERO, -1, false, 1.5)
+	await get_tree().create_timer(0.2).timeout
+	check(not p.grab.try_grab(), "not while bandaging")
+	p.is_bandaging = false
+	p.molotov.phase = MolotovHandler.Phase.LIT
+	check(not p.grab.try_grab(), "not with a lit Molotov in the hand")
+	p.molotov.phase = MolotovHandler.Phase.NONE
+	# Two hands at once (co-op): the second finds nothing.
+	var pts: Array[Vector3] = [Vector3(tx - 0.8, floor_y + 0.1, 61.0)]
+	var first_id: int = manager.find_grabbable(pts, 1.5)
+	manager.grab(first_id)
+	check(first_id == near_id and manager.find_grabbable(pts, 1.5) == -1, "a grenade can only be grabbed once (the second player finds nothing)")
+	await get_tree().create_timer(2.2).timeout # (the far one goes off)
+
+	# The fuse keeps running: grabbed with 0.2 s left, it goes off in the hand.
+	reset_manager()
+	manager.throw(Vector3(tx + 0.7, floor_y + 0.1, 61.0), Vector3.ZERO, -1, false, 0.45)
+	await get_tree().create_timer(0.25).timeout
+	hp = p.health
+	check(p.grab.try_grab(), "grabbed with ~0.2 s left…")
+	await get_tree().create_timer(0.4).timeout
+	check(hp - p.health >= 300, "…it goes off in his hand (%d damage)" % (hp - p.health))
+	check(p.grab.thrown_back == 1, "…and doesn't count as thrown back")
+	await get_tree().create_timer(0.5).timeout
+
+	# A thrown-back grenade that kills a Soviet counts as the player's kill.
+	reset_manager()
+	var target_e: Enemy = new_soldier("res://scenes/enemies/soviet_rifleman.tscn", Vector3(tx, terrain.get_height(tx, 50.0) + 0.05, 50.0), "BackTarget")
+	target_e.set_physics_process(false)
+	await frames(2)
+	var kills0: int = p.kills
+	manager.throw(target_e.global_position + Vector3(0.6, 0.3, 0.0), Vector3.ZERO, p.get_peer_id(), false, 0.3)
+	await get_tree().create_timer(0.6).timeout
+	check(target_e.state == Enemy.State.DEAD and p.kills == kills0 + 1, "a Soviet killed by a thrown-back grenade counts for the player (kills %d → %d)" % [kills0, p.kills])
+
+	# F through the Player's own key handling (physics on): grabs before the ammo box.
+	reset_manager()
+	p.set_physics_process(true)
+	manager.throw(p.global_position + Vector3(0.6, 0.1, 0.0), Vector3.ZERO, -1, false, 3.0)
+	await get_tree().create_timer(0.3).timeout
+	var tb: int = p.grab.thrown_back
+	p.input.request_interact()
+	await get_tree().create_timer(0.7).timeout
+	check(p.grab.thrown_back == tb + 1, "F (the real key handling) picks it up and throws it back")
+	p.set_physics_process(false)
+
+	# The run save carries the count; the end screen shows it.
+	RunSave.totals = {}
+	RunSave.active = true
+	var save_backup: PackedByteArray = FileAccess.get_file_as_bytes(RunSave.SAVE_PATH) if FileAccess.file_exists(RunSave.SAVE_PATH) else PackedByteArray()
+	RunSave.checkpoint(3, 100.0, get_tree().get_nodes_in_group("players"))
+	var saved_count: int = p.grab.thrown_back
+	p.grab.thrown_back = 0
+	RunSave.restore_player(p)
+	check(p.grab.thrown_back == saved_count and saved_count > 0, "the saved run keeps the grenades thrown back (%d)" % saved_count)
+	if save_backup.is_empty():
+		DirAccess.remove_absolute(RunSave.SAVE_PATH)
+	else:
+		var f := FileAccess.open(RunSave.SAVE_PATH, FileAccess.WRITE)
+		f.store_buffer(save_backup)
+		f.close()
+	RunSave.active = false
+	var director := get_tree().get_first_node_in_group("match_director") as MatchDirector
+	hud.end_screen.open(director, p)
+	check(hud.end_screen.stats.text.contains("Grenades thrown back: %d" % saved_count), "the end screen shows the grenades thrown back")
+	get_tree().paused = false
+
 	print("\nRESULT: %s (%d failed)" % ["ALL PASSED" if fails == 0 else "FAILED", fails])
 	get_tree().quit(1 if fails > 0 else 0)

@@ -201,6 +201,36 @@ func live_count() -> int:
 	return _live.size()
 
 
+## The manager's game clock (seconds).
+func clock() -> float:
+	return _clock
+
+
+## GR2, host: the id of the nearest live grenade within `radius` of any of `points`, or -1.
+func find_grabbable(points: Array[Vector3], radius: float) -> int:
+	var best: int = -1
+	var best_d: float = radius
+	for g in _live:
+		var pos: Vector3 = _path_point(g.path, _clock - float(g.start))
+		for pt in points:
+			var d: float = pt.distance_to(pos)
+			if d <= best_d:
+				best_d = d
+				best = int(g.id)
+	return best
+
+
+## GR2, host: a player picks the grenade up. It leaves the field (his hand shows it) and the
+## fuse time it has left is returned (he throws it on with that, see GrenadeGrabHandler).
+func grab(id: int) -> float:
+	for g in _live:
+		if g.id == id:
+			_live.erase(g)
+			grenade_grabbed.rpc(id)
+			return maxf(float(g.fuse) - (_clock - float(g.start)), 0.0)
+	return 0.0
+
+
 ## Host: the fuse is done. Who is hurt, then the burst on every computer.
 func _explode(g: Dictionary) -> void:
 	_live.erase(g)
@@ -280,6 +310,15 @@ func grenade_thrown(id: int, path: PackedVector3Array, fuse: float, first_hit: f
 			return
 
 
+## GR2: picked up – the flying / lying grenade disappears (it is in someone's hand now).
+@rpc("authority", "call_local", "reliable")
+func grenade_grabbed(id: int) -> void:
+	for v in _visuals:
+		if v.id == id:
+			v.id = -1
+			(v.node as Node3D).visible = false
+
+
 @rpc("authority", "call_local", "reliable")
 func grenade_exploded(id: int, pos: Vector3) -> void:
 	for v in _visuals:
@@ -324,7 +363,7 @@ func _process(delta: float) -> void:
 
 
 ## Every computer: the live grenades it shows right now (HUD warning icon).
-## [{pos: Vector3, fuse_left: float, moving: bool}]
+## [{pos: Vector3, fuse_left: float}]
 func get_visible_grenades() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for v in _visuals:

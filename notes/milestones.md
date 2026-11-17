@@ -438,3 +438,9 @@ GR2 (pick up and throw back, F) right after GR1; the end screen shows grenades t
 - Details: `battle.md` ("Hand grenades (GR1)"). Tests: `test_grenades.gd`, `shots_grenades.gd`.
 - Sounds: `grenade_boom…` / `grenade_land…` recordings wanted (owner downloads); until then the
   raid_boom recording pitched up, landing silent.
+
+## GR2 – throw a grenade back (2026-11-17)
+F next to a live grenade (1.5 m): snatch it up and throw it back the way you look (~20 m) in
+0.4 s; the fuse keeps running (too late = it goes off in your hand); kills count for you; end
+screen "Grenades thrown back" (kept in the saved run). HUD: [F] key beside that grenade's icon.
+Details: `battle.md` ("Throwing a grenade back (GR2)"). Tests: `test_grenades.gd` (GR2 part).

@@ -26,6 +26,7 @@ const ROWS: Array = [
 	["fire", "Throw – aim for the engine deck at the back of the tank"],
 	"OTHER",
 	["interact", "Pick up ammo or Molotov cocktails, use / leave the Maxim gun"],
+	["interact", "Grab a live grenade at your feet and throw it back (its icon shows [F])"],
 	["bandage", "Bandage your wounds"],
 	["pause", "Pause menu"],
 ]

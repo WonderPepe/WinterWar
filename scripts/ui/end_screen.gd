@@ -46,6 +46,7 @@ func open(director: MatchDirector, player: Player, reports: FrontReports = null)
 		director.get_difficulty_name(), director.waves_cleared, director.waves_to_win,
 		player.kills, player.deaths, accuracy, player.weapons.shots_hit, shots,
 		minutes, int(director.match_time) % 60]
+	stats.text += "\nGrenades thrown back: %d" % player.grab.thrown_back # GR2
 	if director.is_run():
 		stats.text += "\nRetries: %d" % RunSave.retries
 	again_button.visible = NetworkManager.is_single_player()

@@ -79,6 +79,22 @@ func _ready() -> void:
 	p.is_crouching = true
 	await get_tree().create_timer(0.6).timeout
 	await _shot("gr1_closeup")
+
+	# 4. GR2: the [F] key on the icon, then snatching it up and throwing it back.
+	p.is_crouching = false
+	await get_tree().create_timer(4.0).timeout # (the close-up grenade goes off first)
+	p.global_position = Vector3(50.0, -1.4, 61.3)
+	manager.throw(Vector3(50.0, -1.1, 60.4), Vector3.ZERO, -1, false, 3.5)
+	p.input.look_yaw = 0.0
+	p.input.look_pitch = deg_to_rad(-35.0)
+	await get_tree().create_timer(0.5).timeout
+	await _shot("gr2_key")
+	p.input.look_pitch = deg_to_rad(10.0)
+	p.grab.try_grab()
+	await get_tree().create_timer(0.2).timeout
+	await _shot("gr2_cocked")
+	await get_tree().create_timer(0.17).timeout
+	await _shot("gr2_throw")
 	get_tree().quit()
 
 

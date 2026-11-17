@@ -269,3 +269,23 @@ in as others die. Battle 2 briefing text rewritten by the owner. Edited in `reso
   close); off-screen / behind → at the screen edge with an arrow. No text (owner).
 - Sounds: `RecordedSounds` `grenade_boom…` (else raid_boom pitch 1.4, −4 dB), `grenade_land…`
   (else silent), throw silent for now.
+
+## Throwing a grenade back (GR2, owner 2026-11-17)
+- `GrenadeGrabHandler` (`scripts/player/grenade_grab_handler.gd`), made in code by `Player._ready`
+  as child `GrenadeGrab` on every computer (no scene change; `Player.grab`). F → `Player`
+  interact handling calls `grab.try_grab()` FIRST (before the Maxim / boxes): host, not dead /
+  climbing / bandaging / on the Maxim, Molotov `can_put_away()` (an unlit bottle is put away);
+  `GrenadeManager.find_grabbable(grab_points, 1.5 m)` (feet + waist) → `grab(id)` takes it out of
+  the live list, hides it everywhere (`grenade_grabbed`) and returns the fuse left. The fuse keeps
+  running (`_fuse_end` on the manager clock): at `throw_at` 0.4 s it is thrown from the camera
+  (14 m/s + 2.5 up + half the player's speed, ~20 m) with the thrower's peer id → `_explode` gives
+  him the kills; fuse out before that → goes off in the hand; killed meanwhile → drops at his feet.
+  `done_time` 0.65 s. `show_grab` RPC (call_local) → `is_busy()` on the owner too: WeaponController
+  `_hands_busy()` (= bottle or grenade) lowers the gun, blocks firing / switching / reloading, arms
+  on the handler's GripR/GripL (local hand: F-1 without lever under the camera, low → cocked →
+  thrown → down). No bandage meanwhile.
+- `thrown_back` (host; setter sends it to a co-op owner): end screen line "Grenades thrown back",
+  RunSave totals key `thrown_back` (old saves: 0). HUD: `GrenadeWarning.grabbable_index()` (same
+  rule on this computer's picture) draws an [F] key next to that grenade's icon and blanks the
+  `[F] Take …` prompt. Controls screen: one more F row.
+- Tests: GR2 part of `test_grenades.gd`; pictures `shots_grenades.gd` (gr2_*).
