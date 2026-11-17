@@ -51,7 +51,9 @@ you work on. Update this file and the right note at the end of every milestone.
   AR1: first-person arms in winter clothing – baggy folded ivory snow-smock sleeves, grey wool
   cuff, thick grey-ivory trigger-finger mittens, baked dirt/wear, own matte shader (one draw call);
   steps AR2–AR6 planned in project doc `claude/plan-arms-winter-clothing.md`.
-  Next: AR2 (skinning + mitten trigger finger/thumb), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  AR2: smooth elbow, twist spread, a moving trigger finger (outside the guard / on the guard /
+  on the trigger / round the knob), Maxim thumbs press while firing.
+  Next: AR3 (grip markers: Mosin bolt hand, Suomi drum hand, contact tests), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner

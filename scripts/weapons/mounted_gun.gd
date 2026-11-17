@@ -28,6 +28,10 @@ extends StaticBody3D
 @export var hidden_part_names: PackedStringArray = PackedStringArray()
 @export var flash_duration: float = 0.05
 @export_range(0.0, 1.0) var sight_kick_share: float = 0.25 ## How much of the recoil push the aiming eye follows.
+## AR2: the Maxim is fired with both thumbs on the trigger between the spade grips – how far
+## each mitten's thumb turns to press it while firing (degrees, Euler, hand space).
+@export var thumb_press_right_deg: Vector3 = Vector3.ZERO
+@export var thumb_press_left_deg: Vector3 = Vector3.ZERO
 
 # --- Synced from the host by GunSync ---
 var user_id: int = 0 ## Peer id of the player on the gun, 0 = free.
@@ -214,6 +218,12 @@ func get_hand_grips() -> Array[Transform3D]:
 		var w: float = smoothstep(0.0, 0.6, t) * (1.0 - smoothstep(data.reload_time - 0.7, data.reload_time - 0.1, t))
 		r = r.interpolate_with(belt_grip.global_transform, w)
 	return [r, grip_l.global_transform]
+
+
+## AR2: a thumb pressing the trigger (FirstPersonArms via WeaponController.get_finger_turns).
+func thumb_press_turn(right: bool) -> Basis:
+	var d: Vector3 = thumb_press_right_deg if right else thumb_press_left_deg
+	return Basis.from_euler(Vector3(deg_to_rad(d.x), deg_to_rad(d.y), deg_to_rad(d.z)))
 
 
 ## Left/right direction the gun points when centred (radians, like PlayerInput.look_yaw).

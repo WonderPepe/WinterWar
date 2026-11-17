@@ -100,6 +100,34 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   mitten hand are still 100 % one bone (AR2: elbow blend, twist spread).
 - Tests (`test_w2.gd`): Mosin left thumb tip up beside the fore-end; Suomi right thumb behind the
   cap/handle and crossing over the stock.
+
+## Arms: bending and the trigger finger (AR2)
+- Elbow: the upper-arm tube, both elbow spheres and the forearm tube use one blend function –
+  weight upper → forearm over `ELBOW_BLEND` (3.5 cm) above → below the elbow point.
+  `_bake_wear` takes the bone with the bigger weight.
+- Twist spread (`_solve_arm`): upper arm rolled towards the elbow's bend (`bend * sgn`, so the
+  left arm's hint points the same way as its palm-up hand), forearm half-way
+  (`upper.x + hand.x`), the wrist cuffs blend the rest. `UNDERSIDE` was measured again and is
+  now per bone [L upper, L fore, R upper, R fore] – measure again if the twist changes.
+- Trigger finger: bone 8 `IndexR` (right mitten only; the left index stays on the hand bone),
+  hinged at `INDEX_BASE`. `ViewModel.index_outside_deg` / `index_trigger_deg` per gun (Euler,
+  hand space); `WeaponController.trigger_finger` (local picture only, moved at 6/s towards
+  `_trigger_finger_target()`): 0 outside the guard (reloading, sprinting, bandaging, climbing,
+  raising the gun incl. Suomi cocking), 0.6 resting on the guard (hip), 1 on the trigger (aiming,
+  firing, 0.6 s after a shot), 1.15 for 0.08 s after a shot (the squeeze). On a bolt / cocking
+  knob (`bolt_hand`) it curls to `ViewModel.INDEX_KNOB_DEG`.
+  Values from the model's trigger + guard shapes (side cut through x ≈ 0): Mosin blade front
+  z ≈ 0.115, guard z 0.085–0.147, bottom y −0.045; Suomi blade z 0.017–0.027, guard z
+  −0.007–0.04. Mosin (18, −6, 36) / (−9, 0, 6); Suomi (30, −3, 30) / (9, 3, 3). The Suomi hand
+  sits far back (for the thumb, AR1b), so its finger only reaches the blade's back edge (5 cm
+  finger, 6.6 cm to the front) – seen from the side it looks right.
+- `WeaponController.get_finger_turns()` → [right thumb, left thumb, right index] (replaces
+  AR1b's `get_thumb_turns`). Maxim: both thumbs press its trigger while firing –
+  `MountedGun.thumb_press_right_deg` / `_left_deg` (−10, 0, ∓25), blended by `trigger_finger`.
+- No mitten "compression" (bone scale) – not needed in the close-ups.
+- Tests (`test_w2.gd`): finger 0.6 at the hip / 1 aiming / 0 sprinting, tip within 2 cm of the
+  trigger when aiming, >100 elbow vertices shared, forearm roll between upper arm and hand,
+  Maxim thumbs press while firing.
   Old, not AR1: on the Suomi the right upper arm passes the camera's near plane at the screen edge.
 - Daylight screenshots: `MatchDirector.test_start_wave = 4` before loading the game, with the
   enemies / air raid / artillery disabled (battle 1 is night – colours can't be judged there).

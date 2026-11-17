@@ -50,6 +50,11 @@ signal cock_sound_cue
 ## swings it towards / away from the palm. Zero = the mitten as it is built.
 @export var thumb_right_deg: Vector3 = Vector3.ZERO
 @export var thumb_left_deg: Vector3 = Vector3.ZERO
+## AR2: the right trigger finger on this gun (degrees, Euler, hand space, around
+## FirstPersonArms.INDEX_BASE): straight along the side outside the trigger guard, and on the
+## trigger. WeaponController.trigger_finger blends between them (0.6 = resting on the guard).
+@export var index_outside_deg: Vector3 = Vector3.ZERO
+@export var index_trigger_deg: Vector3 = Vector3.ZERO
 
 const MAX_DROPPED_MAGAZINES: int = 4
 ## Magazine reload, as parts of the reload time: [pulled out, dropped, at the pouch,
@@ -171,9 +176,15 @@ func get_hand_grips() -> Array[Transform3D]:
 	return [r, l]
 
 
-## AR1b: the thumbs' turns this frame [right, left] (FirstPersonArms). A hand that leaves its
-## grip (bolt, cocking knob, pouch, drum change) lets its thumb relax back to the built pose.
-func get_thumb_turns() -> Array[Basis]:
+## AR2: the trigger finger half-curled round a bolt or cocking knob (hand space).
+const INDEX_KNOB_DEG := Vector3(0.0, 0.0, -35.0)
+
+
+## The fingers' turns this frame [right thumb, left thumb, right trigger finger]
+## (FirstPersonArms). AR1b: a hand that leaves its grip (bolt, cocking knob, pouch, drum change)
+## lets its thumb relax back to the built pose. AR2: `trigger` 0 = finger outside the guard,
+## 1 = on the trigger (WeaponController); on a bolt / cocking knob it curls round the knob.
+func get_finger_turns(trigger: float = 0.0) -> Array[Basis]:
 	var r_free: float = bolt_hand
 	var l_free: float = 0.0
 	if reload_with_right_hand:
@@ -182,7 +193,13 @@ func get_thumb_turns() -> Array[Basis]:
 		l_free = reload_hand
 	if magazine_progress >= 0.0:
 		l_free = 1.0
-	return [_thumb_turn(thumb_right_deg, r_free), _thumb_turn(thumb_left_deg, l_free)]
+	var index: Basis = _turn(index_outside_deg).slerp(_turn(index_trigger_deg), clampf(trigger, 0.0, 1.2))
+	index = index.slerp(_turn(INDEX_KNOB_DEG), smoothstep(0.0, 1.0, bolt_hand))
+	return [_thumb_turn(thumb_right_deg, r_free), _thumb_turn(thumb_left_deg, l_free), index]
+
+
+static func _turn(deg: Vector3) -> Basis:
+	return Basis.from_euler(Vector3(deg_to_rad(deg.x), deg_to_rad(deg.y), deg_to_rad(deg.z)))
 
 
 static func _thumb_turn(deg: Vector3, free: float) -> Basis:

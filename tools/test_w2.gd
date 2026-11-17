@@ -48,6 +48,14 @@ func thumb_line(right: bool) -> Array[Vector3]:
 	return [to_model * pose.origin, to_model * tip]
 
 
+## AR2: the right trigger finger's tip in the Model space of the gun in the hands.
+func index_tip() -> Vector3:
+	var pose: Transform3D = arms.skeleton.global_transform * arms.skeleton.get_bone_global_pose(FirstPersonArms.Bone.INDEX_R)
+	var tip_rest: Vector3 = arms._rest_position(FirstPersonArms.Bone.HAND_R) + Vector3(-0.02, -0.143, -0.034) # see _mitten()
+	var tip: Vector3 = pose * (tip_rest - arms._rest_position(FirstPersonArms.Bone.INDEX_R))
+	return (wc._current_view_model().get_node("Model") as Node3D).global_transform.affine_inverse() * tip
+
+
 ## How far the palm of a mitten is from where it should be (metres).
 func hand_error(right: bool, grip: Transform3D) -> float:
 	var bone: int = FirstPersonArms.Bone.HAND_R if right else FirstPersonArms.Bone.HAND_L
@@ -134,6 +142,44 @@ func run() -> void:
 	p.input.aim_held = false
 	check(is_equal_approx(wc._view_models[0].ads_eye_distance, 0.39) and is_equal_approx(wc._view_models[1].ads_eye_distance, 0.35),
 		"aiming closer to the gun (Mosin 0.39 m, Suomi 0.35 m; was 0.42 / 0.40)")
+
+	# AR2: the right trigger finger – resting on the guard at the hip, on the trigger when aiming,
+	# outside the guard when sprinting; its tip goes from the side of the stock into the guard.
+	for slot in [0, 1]:
+		wc.current_slot = slot
+		p.input.aim_held = false
+		await seconds(1.6) # raise (+ Suomi cocking the first time)
+		check(absf(wc.trigger_finger - 0.6) < 0.05, "slot %d hip: trigger finger resting on the guard (%.2f)" % [slot, wc.trigger_finger])
+		var tip_rest: Vector3 = index_tip()
+		p.input.aim_held = true
+		await seconds(0.5)
+		check(wc.trigger_finger > 0.95, "slot %d aimed: trigger finger on the trigger (%.2f)" % [slot, wc.trigger_finger])
+		var tip_aim: Vector3 = index_tip()
+		# the trigger: Mosin blade z ≈ 0.115, Suomi z 0.019–0.027 (both at x 0, y -0.01…-0.04)
+		var trig := Vector3(0.0, -0.025, 0.112 if slot == 0 else 0.024)
+		check(tip_aim.distance_to(trig) < 0.02 and tip_aim.distance_to(trig) < tip_rest.distance_to(trig),
+				"slot %d aimed: finger tip at the trigger (%.3f m away)" % [slot, tip_aim.distance_to(trig)])
+		p.input.aim_held = false
+		p.is_sprinting = true
+		check(wc._trigger_finger_target() == 0.0, "slot %d sprinting: finger outside the guard" % slot)
+		p.is_sprinting = false
+		await seconds(0.3)
+	wc.current_slot = 0
+	await seconds(0.6)
+	# AR2: the elbow and wrist are shared between two bones (no hard crease).
+	var arm_arrays: Array = arms._mesh_instance.mesh.surface_get_arrays(0)
+	var arm_bones: PackedInt32Array = arm_arrays[Mesh.ARRAY_BONES]
+	var arm_weights: PackedFloat32Array = arm_arrays[Mesh.ARRAY_WEIGHTS]
+	var shared_elbow: int = 0
+	for i in arm_bones.size() / 4:
+		if arm_weights[i * 4 + 1] > 0.2 and arm_bones[i * 4] == FirstPersonArms.Bone.UPPER_R and arm_bones[i * 4 + 1] == FirstPersonArms.Bone.FORE_R:
+			shared_elbow += 1
+	check(shared_elbow > 100, "elbow shared between upper arm and forearm (%d vertices)" % shared_elbow)
+	# AR2: the twist is spread – the upper arm doesn't roll with the hand.
+	var up_x: Vector3 = Basis(arms.skeleton.get_bone_pose_rotation(FirstPersonArms.Bone.UPPER_R)).x
+	var fo_x: Vector3 = Basis(arms.skeleton.get_bone_pose_rotation(FirstPersonArms.Bone.FORE_R)).x
+	var ha_x: Vector3 = Basis(arms.skeleton.get_bone_pose_rotation(FirstPersonArms.Bone.HAND_R)).x
+	check(fo_x.angle_to(ha_x) < up_x.angle_to(ha_x) + 0.001, "forearm rolls between the upper arm and the hand")
 
 	# Bolt: the right hand goes to the bolt knob and back.
 	wc.current_slot = 0
@@ -290,6 +336,9 @@ func run() -> void:
 	await seconds(0.05)
 	await frames(2)
 	var moved: bool = cartridge.position.distance_to(c_rest) > 0.01
+	await seconds(0.3)
+	var press: Array[Basis] = wc.get_finger_turns()
+	check(not press[0].is_equal_approx(Basis.IDENTITY) and not press[1].is_equal_approx(Basis.IDENTITY), "AR2: both thumbs press the Maxim's trigger while firing")
 	p.input.fire_held = false
 	check(moved, "belt moves while firing")
 

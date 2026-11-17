@@ -38,6 +38,11 @@ var shots_hit: int = 0 ## Hits on Soviet soldiers.
 
 var _aim_t: float = 0.0           # 0 = hip, 1 = fully aimed
 var _next_fire_time: float = 0.0  # owner: when the trigger may fire again
+## AR2 (local picture only): the right trigger finger, 0 = outside the guard … 1 = on the
+## trigger (see _trigger_finger_target); on the Maxim how far the thumbs press.
+var trigger_finger: float = 0.6
+var _last_shot_time: float = -10.0 # owner: for the trigger finger
+var _raised_until: float = 0.0 # owner: the gun is being raised (finger outside the guard)
 var _trigger_ready: bool = true   # owner: semi/bolt need the button released between shots
 var _bloom_deg: float = 0.0       # owner: extra spread from sustained fire
 var _recoil_to_recover: float = 0.0
@@ -129,12 +134,38 @@ func get_hand_grips() -> Array[Transform3D]:
 	return _current_view_model().get_hand_grips()
 
 
-## AR1b: how the mittens' thumbs are turned [right, left] – per hand weapon (ViewModel);
-## the Maxim and the bottle use the mitten as it is built.
-func get_thumb_turns() -> Array[Basis]:
-	if get_mounted_gun() == null and not player.molotov.is_selected() and current_slot < _view_models.size():
-		return _current_view_model().get_thumb_turns()
-	return [Basis.IDENTITY, Basis.IDENTITY]
+## How the mittens' fingers are turned [right thumb, left thumb, right trigger finger]
+## (FirstPersonArms). Hand weapons: per gun (ViewModel, AR1b/AR2); the Maxim: both thumbs
+## press its trigger while firing; the bottle: the mitten as it is built.
+func get_finger_turns() -> Array[Basis]:
+	var gun := get_mounted_gun()
+	if gun:
+		var t: float = clampf(trigger_finger, 0.0, 1.0)
+		return [Basis.IDENTITY.slerp(gun.thumb_press_turn(true), t), Basis.IDENTITY.slerp(gun.thumb_press_turn(false), t), Basis.IDENTITY]
+	if not player.molotov.is_selected() and current_slot < _view_models.size():
+		return _current_view_model().get_finger_turns(trigger_finger)
+	return [Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY]
+
+
+## AR2 (local picture only): where the right trigger finger should be this frame –
+## 0 = straight along the side, outside the trigger guard (sprinting, reloading, bandaging,
+## climbing, raising the gun, cocking); 0.6 = resting on the guard (hip, walking); 1 = on the
+## trigger (aiming, firing), squeezed a little further at each shot. On the Maxim: how far the
+## thumbs press its trigger (1 while firing).
+func _trigger_finger_target() -> float:
+	var gun := get_mounted_gun()
+	if gun:
+		return 1.0 if input.fire_held and not gun.is_overheated and gun.ammo > 0 else 0.0
+	if player.is_dead or player.molotov.is_selected():
+		return 0.0
+	var vm: ViewModel = _current_view_model() if current_slot < _view_models.size() else null
+	var busy: bool = is_reloading_now() or player.is_sprinting or player.is_bandaging or player.is_climbing \
+			or _now() < _raised_until or (vm != null and vm.is_cocking)
+	if busy:
+		return 0.0
+	if is_aiming or _now() - _last_shot_time < 0.6 or input.fire_held:
+		return 1.0 + (0.15 if _now() - _last_shot_time < 0.08 else 0.0)
+	return 0.6
 
 
 ## True while the mounted gun is too hot to fire.
@@ -177,6 +208,7 @@ func _process(delta: float) -> void:
 	_was_dead = player.is_dead
 	if player.is_local_player():
 		_owner_process(delta, w)
+		trigger_finger = move_toward(trigger_finger, _trigger_finger_target(), delta * 6.0)
 
 
 # ------------------------------------------------------------------ owner side
@@ -222,6 +254,7 @@ func _can_fire_now() -> bool:
 
 
 func _fire(w: WeaponData) -> void:
+	_last_shot_time = _now()
 	var rounds_before: int = get_mag_ammo()
 	var interval: float = w.get_shot_interval()
 	if w.fire_mode == WeaponData.FireMode.FULL_AUTO and _now() - _next_fire_time < interval:
@@ -508,6 +541,7 @@ func _raise_current() -> void:
 	var cock: bool = vm.needs_cocking()
 	vm.play_raise(switch_time, cock)
 	_next_fire_time = _now() + switch_time + (vm.cock_time() if cock else 0.0)
+	_raised_until = _next_fire_time
 
 
 func _set_is_reloading(value: bool) -> void:

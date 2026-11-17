@@ -298,6 +298,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   the stock behind the cap/handle, Mosin GripL raised 2.7 cm (it floated below the fore-end) +
   thumb up its left side. Brought forward from AR2/AR3 (thumbs, wrist blend). Owner's 2nd test:
   the Suomi thumb straight across the gun, closer to the cocking handle (not leaning back).
+- [x] AR2 arms: smooth elbow, twist spread down the arm, a moving trigger finger (owner
+  2026-11-17). Elbow shared between upper arm and forearm; upper arm rolls with the elbow, forearm
+  half-way to the hand (folds stay put); right trigger finger on its own bone – outside the guard
+  (sprint, reload, bandage, climb, raise/cock), resting on the guard (hip), on the trigger (aim,
+  fire, squeeze at each shot), round the knob (bolt / cocking); Maxim thumbs press while firing.
+  No mitten compression (not needed). Still one draw call, 9 bones. Details: `weapons.md` ("AR2").
 
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in

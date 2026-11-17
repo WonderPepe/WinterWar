@@ -1073,6 +1073,10 @@ func _build_mosin_view(mats: Dictionary) -> Node:
 	# 2.6 cm below it), the thumb turned up against its left side so the hand holds the rifle.
 	_grip(model, "GripL", Vector3(0.0, 0.015, -0.27), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
 	r[0].set("thumb_left_deg", Vector3(0, -30, 50))
+	# AR2: the right trigger finger straight along the stock above the guard / in front of the
+	# trigger blade (found from the model's trigger and guard shapes, see weapons.md).
+	r[0].set("index_outside_deg", Vector3(18, -6, 36))
+	r[0].set("index_trigger_deg", Vector3(-9, 0, 6))
 	_grip(model, "BoltGrip", Vector3(0.05, 0.045, 0.085), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
 	return r[0]
 
@@ -1108,6 +1112,10 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 	# right against the back of the cap (owner: not bent back towards the shooter).
 	_grip(model, "GripR", Vector3(0.022, -0.04, 0.114), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
 	r[0].set("thumb_right_deg", Vector3(64, 58, 15))
+	# AR2: trigger finger along the stock above the guard / on the trigger (the hand sits far
+	# back for the thumb, so the finger reaches the blade's back edge – it is pressed from the side).
+	r[0].set("index_outside_deg", Vector3(30, -3, 30))
+	r[0].set("index_trigger_deg", Vector3(9, 3, 3))
 	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077), palm up against
 	# its rim, fingers forward-right around it.
 	_grip(model, "GripL", Vector3(-0.023, -0.121, -0.145), Vector3(0.75, -0.2, -0.55), Vector3(0.3, 1, 0), false)
@@ -1260,6 +1268,9 @@ func _build_maxim(mats: Dictionary) -> Node:
 		"pociskpusty_23", "pociskpusty_001_22", "pociskpusty_002_17", "pociskpusty_003_18",
 		"pociskpusty_004_19", "pociskpusty_005_20", "pociskpusty_006_21"]))
 	gun.set("hidden_part_names", PackedStringArray(["Cube_0"])) # the model's own muzzle flash
+	# AR2: both thumbs press the trigger between the spade grips while firing.
+	gun.set("thumb_press_right_deg", Vector3(-10, 0, -25))
+	gun.set("thumb_press_left_deg", Vector3(-10, 0, 25))
 
 	var model: Node3D = _add(gun, load("res://assets/models/weapons/maxim/model.gltf").instantiate(), "Model")
 	model.scale = Vector3.ONE * MAXIM_SCALE

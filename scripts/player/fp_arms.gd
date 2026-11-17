@@ -11,7 +11,7 @@ extends Node3D
 ## the elbow position follows from the triangle shoulder–elbow–wrist (law of cosines).
 ## Like the soldiers, the arms are ONE skinned mesh (one draw call) built in code.
 
-enum Bone { UPPER_L, FORE_L, HAND_L, UPPER_R, FORE_R, HAND_R, THUMB_L, THUMB_R }
+enum Bone { UPPER_L, FORE_L, HAND_L, UPPER_R, FORE_R, HAND_R, THUMB_L, THUMB_R, INDEX_R }
 
 @export var shoulder_right: Vector3 = Vector3(0.16, -0.28, 0.2) ## Right shoulder in camera space (up at the butt of the gun).
 @export var shoulder_left: Vector3 = Vector3(-0.17, -0.34, 0.05) ## Left shoulder: lower, so the arm comes up from below the gun.
@@ -34,14 +34,21 @@ const SMOCK_DIRT := Color(0.5, 0.47, 0.4)
 const WOOL_DIRT := Color(0.33, 0.3, 0.26)
 const SNOW := Color(0.93, 0.95, 0.98)
 ## Which way the underside of each sleeve faces, in the bone's own (rest) space – measured from
-## the hip and aiming poses of both guns ([left arm, right arm]). Dirt goes there.
-const UNDERSIDE: Array[Vector3] = [Vector3(-1.0, 0.0, 0.1), Vector3(-0.3, 0.0, 0.95)]
+## the hip and aiming poses of both guns (AR2, after the twist was spread out):
+## [left upper arm, left forearm, right upper arm, right forearm]. Dirt goes there.
+const UNDERSIDE: Array[Vector3] = [Vector3(-0.86, 0.0, 0.5), Vector3(-0.95, 0.0, 0.3), Vector3(0.72, 0.0, 0.69), Vector3(-0.57, 0.0, 0.82)]
 ## Right hand: centre of the palm surface in hand space (hand bone at the wrist, fingers
 ## along -Y, palm facing -X, thumb towards -Z). The grip markers mark this point.
 const PALM_CONTACT := Vector3(-0.03, -0.068, 0.0) # (AR1: the thicker mitten, was -0.027)
 ## AR1b: where the mitten's thumb is hinged, in right-hand space (left: x mirrored). Each gun
 ## turns the thumbs around this point (ViewModel.thumb_right_deg / thumb_left_deg).
 const THUMB_BASE := Vector3(-0.008, -0.04, -0.032)
+## AR2: the right mitten's trigger finger is hinged here (right-hand space); each gun curls it
+## (ViewModel.index_outside_deg / index_trigger_deg, WeaponController.trigger_finger).
+const INDEX_BASE := Vector3(0.0, -0.095, -0.032)
+## AR2: the elbow bends smoothly – the sleeve is shared between the upper arm and the forearm
+## over this distance above and below the elbow point (metres).
+const ELBOW_BLEND: float = 0.035
 ## AR1b: the wrist bends smoothly – the grey tunic cuff and the knitted mitten cuff are shared
 ## between the forearm and the hand over this stretch (metres above → below the wrist point).
 const WRIST_BLEND_TOP: float = 0.06
@@ -59,7 +66,7 @@ func _ready() -> void:
 	skeleton = Skeleton3D.new()
 	skeleton.name = "Skeleton"
 	add_child(skeleton)
-	var names: Array[String] = ["UpperArmL", "ForearmL", "HandL", "UpperArmR", "ForearmR", "HandR", "ThumbL", "ThumbR"]
+	var names: Array[String] = ["UpperArmL", "ForearmL", "HandL", "UpperArmR", "ForearmR", "HandR", "ThumbL", "ThumbR", "IndexR"]
 	for i in names.size():
 		skeleton.add_bone(names[i])
 	for i in names.size():
@@ -96,16 +103,20 @@ func _process(_delta: float) -> void:
 	var grips: Array[Transform3D] = _player.weapons.get_hand_grips()
 	visible = grips.size() == 2
 	if visible:
-		var thumbs: Array[Basis] = _player.weapons.get_thumb_turns()
-		update_pose(grips[0], grips[1], thumbs[0], thumbs[1])
+		var fingers: Array[Basis] = _player.weapons.get_finger_turns()
+		update_pose(grips[0], grips[1], fingers)
 
 
 ## Puts the hands on two global transforms (right, left) and bends the arms to fit.
-## `thumb_right` / `thumb_left`: how each thumb is turned around its hinge, in hand space.
-func update_pose(right_grip: Transform3D, left_grip: Transform3D, thumb_right := Basis.IDENTITY, thumb_left := Basis.IDENTITY) -> void:
+## `fingers` = [right thumb, left thumb, right trigger finger]: how each is turned around its
+## hinge, in hand space (missing = as the mitten is built).
+func update_pose(right_grip: Transform3D, left_grip: Transform3D, fingers: Array[Basis] = []) -> void:
+	var f: Array[Basis] = [Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY]
+	for i in mini(fingers.size(), 3):
+		f[i] = fingers[i]
 	var to_local: Transform3D = global_transform.affine_inverse()
-	_solve_arm(true, to_local * right_grip, thumb_right)
-	_solve_arm(false, to_local * left_grip, thumb_left)
+	_solve_arm(true, to_local * right_grip, f[0], f[2])
+	_solve_arm(false, to_local * left_grip, f[1])
 
 
 ## The thumb's hinge in the hand's own space (right or left hand).
@@ -113,7 +124,7 @@ static func thumb_base(right: bool) -> Vector3:
 	return Vector3(THUMB_BASE.x * (1.0 if right else -1.0), THUMB_BASE.y, THUMB_BASE.z)
 
 
-func _solve_arm(right: bool, grip: Transform3D, thumb := Basis.IDENTITY) -> void:
+func _solve_arm(right: bool, grip: Transform3D, thumb := Basis.IDENTITY, index := Basis.IDENTITY) -> void:
 	var sgn: float = 1.0 if right else -1.0
 	var upper: int = Bone.UPPER_R if right else Bone.UPPER_L
 	var hand_basis: Basis = grip.basis.orthonormalized()
@@ -138,13 +149,22 @@ func _solve_arm(right: bool, grip: Transform3D, thumb := Basis.IDENTITY) -> void
 	bend = bend.normalized() if bend.length() > 0.001 else Vector3(sgn, -1.0, 0.0).normalized()
 	var elbow: Vector3 = shoulder + dir * (l1 * cos_a) + bend * (l1 * sqrt(1.0 - cos_a * cos_a))
 	wrist = shoulder + dir * dist
-	# The forearm twists with the hand (palm direction), so the wrist doesn't look wrung.
-	_set_bone(upper, shoulder, _along(elbow - shoulder, hand_basis.x))
-	_set_bone(upper + 1, elbow, _along(wrist - elbow, hand_basis.x))
+	# AR2: the twist is spread out – the upper arm rolls with the elbow (not the hand), the
+	# forearm half-way between the upper arm and the hand, so the sleeve folds stay put instead
+	# of spinning round the arm with every turn of the wrist. The rest is the wrist's job
+	# (its cuffs are shared between the forearm and the hand).
+	var upper_basis: Basis = _along(elbow - shoulder, bend * sgn)
+	var fore_hint: Vector3 = upper_basis.x + hand_basis.x
+	if fore_hint.length() < 0.05:
+		fore_hint = hand_basis.x
+	_set_bone(upper, shoulder, upper_basis)
+	_set_bone(upper + 1, elbow, _along(wrist - elbow, fore_hint))
 	_set_bone(upper + 2, wrist, hand_basis)
-	# The thumb rides on the hand, turned around its hinge.
+	# The thumb (and the right trigger finger) ride on the hand, turned around their hinges.
 	var thumb_bone: int = Bone.THUMB_R if right else Bone.THUMB_L
 	_set_bone(thumb_bone, wrist + hand_basis * thumb_base(right), hand_basis * thumb)
+	if right:
+		_set_bone(Bone.INDEX_R, wrist + hand_basis * INDEX_BASE, hand_basis * index)
 
 
 ## A bone basis whose -Y points along `dir` (the rest pose hangs down), rolled towards `x_hint`.
@@ -164,6 +184,8 @@ func _set_bone(bone: int, pos: Vector3, basis: Basis) -> void:
 
 ## Where a bone starts when the arms hang straight down (the mesh is built like this).
 func _rest_position(bone: int) -> Vector3:
+	if bone == Bone.INDEX_R:
+		return _rest_position(Bone.HAND_R) + INDEX_BASE
 	if bone >= Bone.THUMB_L:
 		var r: bool = bone == Bone.THUMB_R
 		return _rest_position(Bone.HAND_R if r else Bone.HAND_L) + thumb_base(r)
@@ -198,12 +220,15 @@ static func _build_mesh(upper_len: float, fore_len: float) -> ArrayMesh:
 			var bunch: float = 0.05 * smoothstep(0.55, 0.8, t) * sin(TAU * 2.0 * t + 0.9 * sin(2.0 * ang + ph2))
 			# The end goes smoothly into the round elbow (no open edge sticking out of it).
 			return base * (1.0 + (ridges + bunch) * (1.0 - smoothstep(0.8, 1.0, t)))
-		SoldierMesh.use_bone(first)
+		# AR2: around the elbow the sleeve is shared between the upper arm and the forearm.
+		var elbow_y: float = e.y
+		SoldierMesh.use_bone_fn(func(q: Vector3) -> Array:
+			var h: float = smoothstep(0.0, 1.0, (elbow_y + ELBOW_BLEND - q.y) / (2.0 * ELBOW_BLEND))
+			return [PackedInt32Array([first, first + 1, 0, 0]), PackedFloat32Array([1.0 - h, h, 0.0, 0.0])])
 		_tube(s + Vector3(0, 0.06, 0), e, 12, 18, upper_shape, SMOCK)
 		SoldierMesh.sphere(e, Vector3(0.06, 0.058, 0.06), 18, 8, SMOCK)
 		# Forearm: the sleeve swells and bunches in broad folds above the wrist, then is gathered
 		# into the cuff. The grey wool tunic sleeve shows a little below it.
-		SoldierMesh.use_bone(first + 1)
 		# Its own rounded elbow end too, so a sharply bent elbow never shows an open tube.
 		SoldierMesh.sphere(e, Vector3(0.057, 0.055, 0.057), 18, 8, SMOCK)
 		var cuff: Vector3 = w + Vector3(0, 0.058, 0)
@@ -218,6 +243,7 @@ static func _build_mesh(upper_len: float, fore_len: float) -> ArrayMesh:
 			var elbow: float = 0.04 * smoothstep(0.03, 0.1, t) * (1.0 - smoothstep(0.1, 0.25, t)) * sin(2.0 * ang + ph2)
 			return base * (1.0 + ridges + bunch + gather + elbow)
 		_tube(e + Vector3(0, 0.012, 0), cuff, 20, 22, fore_shape, SMOCK)
+		SoldierMesh.use_bone(first + 1)
 		# The sleeve end is hemmed: it turns in towards the tunic sleeve (so you never look into an
 		# empty tube or see a paper-thin edge).
 		SoldierMesh.frustum(cuff, cuff - Vector3(0, 0.007, 0), 0.047, 0.039, 22, SMOCK_INSIDE)
@@ -231,7 +257,7 @@ static func _build_mesh(upper_len: float, fore_len: float) -> ArrayMesh:
 		_mitten_cuff(w)
 		# Hand: the mitten.
 		SoldierMesh.use_bone(first + 2)
-		_mitten(w, side, Bone.THUMB_R if side > 0.0 else Bone.THUMB_L)
+		_mitten(w, side, Bone.THUMB_R if side > 0.0 else Bone.THUMB_L, Bone.INDEX_R if side > 0.0 else first + 2)
 	return SoldierMesh.finish_build()
 
 
@@ -247,12 +273,14 @@ static func _mitten_cuff(w: Vector3) -> void:
 
 
 ## The hand part of the mitten (the cuff is `_mitten_cuff`); the thumb on its own bone.
-static func _mitten(w: Vector3, side: float, thumb_bone: int) -> void:
+static func _mitten(w: Vector3, side: float, thumb_bone: int, index_bone: int) -> void:
 	var palm: float = -side # palm faces -X on the right hand, +X on the left
 	# Hand + the three fingers in one rounded, padded pouch, its end curled towards the palm.
 	SoldierMesh.sphere(w + Vector3(0, -0.072, 0.008), Vector3(0.029, 0.064, 0.047), 14, 8, WOOL)
 	SoldierMesh.sphere(w + Vector3(palm * 0.021, -0.127, 0.014), Vector3(0.026, 0.034, 0.039), 14, 7, WOOL)
-	# The free index finger (for the trigger), beside the pouch on the thumb side.
+	# The free index finger (for the trigger), beside the pouch on the thumb side – on its own
+	# bone on the right hand (AR2), so it can lie outside the trigger guard or on the trigger.
+	SoldierMesh.use_bone(index_bone)
 	_capsule(w + Vector3(0, -0.095, -0.032), w + Vector3(palm * 0.02, -0.143, -0.034), 0.0155, WOOL)
 	# Thumb (its own bone, so each gun can turn it around its hinge – AR1b).
 	SoldierMesh.use_bone(thumb_bone)
@@ -311,10 +339,11 @@ static func _bake_wear(mesh: ArrayMesh, upper_len: float, fore_len: float) -> Ar
 	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
 	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
 	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
+	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS] # (AR2: shared at elbow and wrist)
 	var wrist_y: float = -(upper_len + fore_len)
 	for i in verts.size():
-		var bone: int = bones[i * 4]
-		var right: bool = bone in [Bone.UPPER_R, Bone.FORE_R, Bone.HAND_R, Bone.THUMB_R]
+		var bone: int = bones[i * 4] if weights[i * 4] >= weights[i * 4 + 1] else bones[i * 4 + 1]
+		var right: bool = bone in [Bone.UPPER_R, Bone.FORE_R, Bone.HAND_R, Bone.THUMB_R, Bone.INDEX_R]
 		var sgn: float = 1.0 if right else -1.0
 		var p: Vector3 = verts[i]
 		var n: Vector3 = normals[i]
@@ -325,8 +354,8 @@ static func _bake_wear(mesh: ArrayMesh, upper_len: float, fore_len: float) -> Ar
 		if code < 0.6: # snow smock
 			var radial := Vector3(n.x, 0.0, n.z)
 			radial = radial.normalized() if radial.length() > 0.001 else Vector3.ZERO
-			var under: float = radial.dot(UNDERSIDE[1 if right else 0].normalized())
 			var on_forearm: bool = bone % 3 == 1
+			var under: float = radial.dot(UNDERSIDE[(2 if right else 0) + (1 if on_forearm else 0)].normalized())
 			dirt += 0.5 * smoothstep(0.15, 0.9, under) * (1.0 if on_forearm else 0.55) * (0.6 + 0.6 * noise)
 			dirt += 0.28 * (1.0 - smoothstep(0.015, 0.075, absf(p.y + upper_len))) * (0.5 + noise)
 			if on_forearm:

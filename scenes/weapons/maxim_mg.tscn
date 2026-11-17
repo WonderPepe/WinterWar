@@ -58,6 +58,8 @@ elevation_min_deg = -7.0
 elevation_max_deg = 4.0
 turning_part_names = PackedStringArray("karabin_001_3", "Zapatka_4", "Cube_0", "pocisk_5", "pocisk_001_7", "pocisk_002_8", "pocisk_003_9", "pocisk_004_6", "pocisk_005_11", "pocisk_006_10", "pocisk_007_12", "pocisk_008_15", "pocisk_009_16", "pocisk_010_24", "pociskpusty_23", "pociskpusty_001_22", "pociskpusty_002_17", "pociskpusty_003_18", "pociskpusty_004_19", "pociskpusty_005_20", "pociskpusty_006_21")
 hidden_part_names = PackedStringArray("Cube_0")
+thumb_press_right_deg = Vector3(-10, 0, -25)
+thumb_press_left_deg = Vector3(-10, 0, 25)
 metadata/surface = "wood"
 
 [node name="Model" type="Node3D" parent="." unique_id=1272906248 instance=ExtResource("3_tinhd")]

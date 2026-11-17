@@ -24,6 +24,8 @@ reload_rotation_deg = Vector3(15, 10, -60)
 cocking_handle_part_name = "SuomiKP31_Handle"
 eject_case_part_name = "9mm_Case"
 thumb_right_deg = Vector3(64, 58, 15)
+index_outside_deg = Vector3(30, -3, 30)
+index_trigger_deg = Vector3(9, 3, 3)
 
 [node name="Model" type="Node3D" parent="." unique_id=706135388]
 

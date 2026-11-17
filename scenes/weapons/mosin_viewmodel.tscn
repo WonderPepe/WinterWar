@@ -20,6 +20,8 @@ bolt_travel = 0.09
 ads_eye_distance = 0.39
 reload_with_right_hand = true
 thumb_left_deg = Vector3(0, -30, 50)
+index_outside_deg = Vector3(18, -6, 36)
+index_trigger_deg = Vector3(-9, 0, 6)
 
 [node name="Model" type="Node3D" parent="." unique_id=352314677]
 
