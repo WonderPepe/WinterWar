@@ -19,6 +19,7 @@ hidden_part_names = PackedStringArray("LP_Clip", "LP_BulletHolster", "LP_BulletH
 bolt_travel = 0.09
 ads_eye_distance = 0.39
 reload_with_right_hand = true
+thumb_left_deg = Vector3(0, -30, 50)
 
 [node name="Model" type="Node3D" parent="." unique_id=352314677]
 
@@ -51,7 +52,7 @@ transform = Transform3D(0.95346254, 0.30151135, 7.450581e-09, -0.09534626, 0.301
 gizmo_extents = 0.03
 
 [node name="GripL" type="Marker3D" parent="Model" unique_id=2059369761]
-transform = Transform3D(-0.20388064, -0.649189, 0.7327935, 0.9540568, -0.29962572, -1.4901161e-08, 0.21956378, 0.69912666, 0.6804511, 0, -0.012, -0.27)
+transform = Transform3D(-0.20388064, -0.649189, 0.7327935, 0.9540568, -0.29962572, -1.4901161e-08, 0.21956378, 0.69912666, 0.6804511, 0, 0.015, -0.27)
 gizmo_extents = 0.03
 
 [node name="BoltGrip" type="Marker3D" parent="Model" unique_id=858009472]

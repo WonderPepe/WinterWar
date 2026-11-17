@@ -36,6 +36,18 @@ func _ready() -> void:
 	run()
 
 
+## AR1b: the mitten's thumb as a line [hinge, tip] in the Model space of the gun in the hands.
+func thumb_line(right: bool) -> Array[Vector3]:
+	var bone: int = FirstPersonArms.Bone.THUMB_R if right else FirstPersonArms.Bone.THUMB_L
+	var hand: int = FirstPersonArms.Bone.HAND_R if right else FirstPersonArms.Bone.HAND_L
+	var pose: Transform3D = arms.skeleton.global_transform * arms.skeleton.get_bone_global_pose(bone)
+	var sd: float = 1.0 if right else -1.0
+	var tip_rest: Vector3 = arms._rest_position(hand) + Vector3(-sd * 0.024, -0.087, -0.05) # see _mitten()
+	var tip: Vector3 = pose * (tip_rest - arms._rest_position(bone))
+	var to_model: Transform3D = (wc._current_view_model().get_node("Model") as Node3D).global_transform.affine_inverse()
+	return [to_model * pose.origin, to_model * tip]
+
+
 ## How far the palm of a mitten is from where it should be (metres).
 func hand_error(right: bool, grip: Transform3D) -> float:
 	var bone: int = FirstPersonArms.Bone.HAND_R if right else FirstPersonArms.Bone.HAND_L
@@ -61,6 +73,19 @@ func run() -> void:
 	await seconds(0.5)
 	check(arms.visible, "arms shown for your own player")
 	check(arms._mesh_instance.mesh.get_surface_count() == 1, "arms are one mesh (one draw call)")
+	# AR1: folded sleeves, mittens and baked wear stay cheap and use their own matte shader.
+	var arm_tris: int = arms._mesh_instance.mesh.surface_get_array_len(0) / 3
+	print("      arms: %d triangles" % arm_tris)
+	check(arm_tris < 9000, "arms stay under 9000 triangles (AR1)")
+	var arm_mat := arms._mesh_instance.material_override as ShaderMaterial
+	check(arm_mat != null and arm_mat.shader.resource_path.ends_with("fp_arms.gdshader"), "arms use the fp_arms shader (AR1)")
+	var arm_cols: PackedColorArray = arms._mesh_instance.mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	var darkest: float = 1.0
+	for c in arm_cols:
+		if c.a > 0.75: # mitten wool
+			darkest = minf(darkest, c.v)
+	check(darkest < FirstPersonArms.WOOL.v * 0.75, "mitten palms/fingertips are darker than the clean wool (AR1)")
+	check(absf(FirstPersonArms.PALM_CONTACT.x) >= 0.029, "palm contact moved out to the thicker mitten (AR1)")
 
 	# W3: the first time the Suomi is taken out it is cocked (no firing or aiming meanwhile);
 	# the second time it is not.
@@ -93,6 +118,19 @@ func run() -> void:
 				var er: float = hand_error(true, grips[0])
 				var el: float = hand_error(false, grips[1])
 				check(er < 0.01 and el < 0.01, "slot %d %s: mittens on the grips (%.3f / %.3f m off)" % [slot, "aimed" if aim else "hip", er, el])
+			if not aim and slot == 0:
+				# AR1b: left palm right under the Mosin's fore-end (wood bottom y 0.014 at z -0.27,
+				# 2.4 cm wide), its thumb up against the wood's left side – not floating.
+				var lt: Array[Vector3] = thumb_line(false)
+				check(lt[1].y > 0.025 and lt[1].x > -0.035 and lt[1].x < -0.026,
+						"Mosin: left thumb up along the fore-end's left side (tip %s)" % lt[1])
+			if not aim and slot == 1:
+				# AR1b: the right thumb goes over the stock BEHIND the receiver's end cap (ends at
+				# z 0.105) and the cocking handle (ends 0.095), not through them (mitten thumb r 0.017).
+				var rt: Array[Vector3] = thumb_line(true)
+				check(minf(rt[0].z, rt[1].z) > 0.105 + 0.016 and rt[1].x < rt[0].x - 0.02,
+						"Suomi: right thumb over the stock behind the cocking handle (%s → %s)" % [rt[0], rt[1]])
+				check(absf(rt[1].z - rt[0].z) < 0.008, "Suomi: right thumb straight across the gun, close to the handle")
 	p.input.aim_held = false
 	check(is_equal_approx(wc._view_models[0].ads_eye_distance, 0.39) and is_equal_approx(wc._view_models[1].ads_eye_distance, 0.35),
 		"aiming closer to the gun (Mosin 0.39 m, Suomi 0.35 m; was 0.42 / 0.40)")

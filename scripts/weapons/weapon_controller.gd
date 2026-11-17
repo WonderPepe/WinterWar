@@ -129,6 +129,14 @@ func get_hand_grips() -> Array[Transform3D]:
 	return _current_view_model().get_hand_grips()
 
 
+## AR1b: how the mittens' thumbs are turned [right, left] – per hand weapon (ViewModel);
+## the Maxim and the bottle use the mitten as it is built.
+func get_thumb_turns() -> Array[Basis]:
+	if get_mounted_gun() == null and not player.molotov.is_selected() and current_slot < _view_models.size():
+		return _current_view_model().get_thumb_turns()
+	return [Basis.IDENTITY, Basis.IDENTITY]
+
+
 ## True while the mounted gun is too hot to fire.
 func is_gun_overheated() -> bool:
 	var gun := get_mounted_gun()

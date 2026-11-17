@@ -279,6 +279,26 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   Baselines before V10a (owner's PC, Low and High) are in the project doc
   `claude/review-2026-11-12.md`; the browser run on Medium is still to be compared.
 
+- [x] AR1 first-person arms: winter clothing look (owner 2026-11-17). First of six steps AR1–AR6 in
+  the project doc `claude/plan-arms-winter-clothing.md` (findings, plan, owner decisions). Out of
+  scope by the owner's brief, for ALL AR steps: state-specific elbow targets, a shoulder-posture
+  system, spring-based weapon weight/inertia/lag. Owner decisions (17 Nov): the Suomi's left hand
+  STAYS on the drum (it holds the gun up when aiming and pulls it slightly back towards the shooter
+  for a steady aim and less muzzle climb – refine, don't move it, AR3); mittens grey-ivory; a
+  look-down front torso (smock front, belt, pouches; no legs/boots) – yes (AR6); grey cuff that
+  shows more while reaching, with one extra bone – yes (AR4). Order AR1 → AR6.
+  AR1 (picture only, no animation change): baggy folded smock sleeves (left/right fold
+  differently), hemmed cuff, ~1.5–2 cm grey wool tunic cuff, rounder grey-ivory mittens with a
+  ribbed cuff, dirt/wear/snow baked into the vertex colours, own matte shader (both sides drawn).
+  Arms 2332 → ~6400 triangles, still one draw call. Details: `weapons.md` ("Arms: winter clothing (AR1)").
+  AR1b (owner's test, 17 Nov): "Suomi: right thumb goes through the cocking handle; the left mitten
+  goes through the grey sleeve. Mosin: the left thumb doesn't touch – the left hand should hold
+  the rifle to control it." → thumb bones (each gun turns the thumbs: `thumb_right_deg` /
+  `thumb_left_deg`), wrist shared between forearm and hand, Suomi GripR 1.4 cm back + thumb over
+  the stock behind the cap/handle, Mosin GripL raised 2.7 cm (it floated below the fore-end) +
+  thumb up its left side. Brought forward from AR2/AR3 (thumbs, wrist blend). Owner's 2nd test:
+  the Suomi thumb straight across the gun, closer to the cocking handle (not leaning back).
+
 ## Development ideas (not yet approved)
 0. G2/T3 leftovers: tank wrecks as cover points soldiers run to (T3, owner: later); field cover (granite rocks / anti-tank rocks, old shell craters in
    TerrainGenerator heights, barbed-wire belts with gaps via NavigationObstacle3D carving, cover

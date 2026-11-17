@@ -60,6 +60,50 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - `tools/shots_w2.gd [prefix] [side]` (the "side" option adds a camera beside the player to
   check the grips), `tools/test_w2.gd`.
 
+## Arms: winter clothing (AR1)
+- Plan + owner decisions for AR1–AR6: project doc `claude/plan-arms-winter-clothing.md`.
+- Mesh (`FirstPersonArms._build_mesh`, still ONE skinned surface, 6 bones, ~6300 triangles):
+  sleeves are `_tube()`s – rings of points whose radius comes from a shape function (folds =
+  sums of sines; per-arm phases so left and right differ), normals from the neighbouring points.
+  Upper arm 12×18, forearm 20×22. The fold terms fade out at the tube ends so the ends match the
+  round elbow spheres (one on EACH bone – a sharply bent elbow showed an open tube otherwise).
+  Sleeve end = a hem turned in towards the tunic (`SMOCK_INSIDE`). Mitten: ribbed knitted cuff
+  (`_tube`, 18 ribs) with a closed rolled top, bigger pouch; `PALM_CONTACT.x` −0.027 → −0.03.
+- Colours: alpha = cloth code for `fp_arms.gdshader` (0.5 smock, 0.65 tunic, 0.8 mitten).
+  `_bake_wear()` paints dirt/snow into the vertex colours once (rest pose): sleeve underside
+  (`UNDERSIDE`, per arm, in bone space – MEASURED from the hip/ADS poses of both guns; if AR2
+  changes how the sleeves roll, measure again), elbows, cuff edge; faint snow patches on the top
+  side; mitten palms, fingertips, oily trigger finger + thumb tip.
+- Shader `resources/shaders/fp_arms.gdshader` (the soldier shader is untouched): `cull_disabled`
+  (open cuffs show their shaded inside, never a paper-thin edge; back faces ×0.45), grain from
+  `snow_mask.png` b channel (fine for the smock, coarser two-size mix for wool), broad variation
+  from r; roughness 0.9–0.97, specular 0.1–0.2. Warmed up by `ShaderWarmup` like before (the
+  arms are drawn while the view models are shown behind the cover).
+- AR1b thumbs + wrist: bones 6/7 = `ThumbL`/`ThumbR` (root bones like the rest), hinged at
+  `THUMB_BASE` (hand space, x mirrored for the left). `ViewModel.thumb_right_deg` /
+  `thumb_left_deg` (Euler, Godot's YXZ order, hand space: x lifts the thumb from along the
+  fingers towards the thumb side, y swings it to/away from the palm, z for the left hand swings
+  it towards the palm). `get_thumb_turns()` relaxes a thumb back to the built pose while its
+  hand is off the grip (bolt, cocking knob, pouch, drum change); Maxim + bottle: built pose.
+  Values: Mosin left (0, −30, 50) = up along the fore-end's left side; Suomi right (64, 58, 15) =
+  straight across the gun (hinge and tip both at z ≈ 0.123) over the stock top, right against the
+  back of the receiver's end cap (z ≤ 0.105) and just behind the cocking handle (z ≤ 0.095, knob
+  at x 0.05) – owner 17 Nov: "straight across the gun, not bent towards the shooter, closer to
+  the cocking handle" (first try 100, 62, 0 leaned 3.4 cm back). It can't go further forward:
+  the cap is in the way. Found by measuring the glTF parts (AABBs / a slice of the
+  triangles at one z) – the Mosin's fore-end wood starts at y 0.014 at z −0.27, so GripL went
+  from y −0.012 (palm 2.6 cm below the wood) to 0.015.
+- Wrist: the tunic cuff and the mitten's knitted cuff use `SoldierMesh.use_bone_fn()` – weight
+  forearm → hand from `WRIST_BLEND_TOP` (6 cm above the wrist) to `WRIST_BLEND_BOTTOM` (2 cm
+  below), smoothstep. Both layers share the same weights at the same height, so the grey sleeve
+  stays inside the mitten cuff (tunic tapers to r 0.034 inside it). The smock sleeve and the
+  mitten hand are still 100 % one bone (AR2: elbow blend, twist spread).
+- Tests (`test_w2.gd`): Mosin left thumb tip up beside the fore-end; Suomi right thumb behind the
+  cap/handle and crossing over the stock.
+  Old, not AR1: on the Suomi the right upper arm passes the camera's near plane at the screen edge.
+- Daylight screenshots: `MatchDirector.test_start_wave = 4` before loading the game, with the
+  enemies / air raid / artillery disabled (battle 1 is night – colours can't be judged there).
+
 ## Mosin bolt cycle (after each shot)
 - `ViewModel.play_bolt_cycle()`: handle rolls up (`bolt_roll_deg` 80°, around the bolt axis
   `bolt_roll_pivot`, measured from the glTF parts), bolt slides back `bolt_travel`, forward, handle

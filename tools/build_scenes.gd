@@ -1069,7 +1069,10 @@ func _build_mosin_view(mats: Dictionary) -> Node:
 	# Hands: right on the wrist of the stock (finger at the trigger), left under the fore-end,
 	# BoltGrip = the bolt knob (the right hand goes there to work the bolt).
 	_grip(model, "GripR", Vector3(0.017, -0.025, 0.19), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
-	_grip(model, "GripL", Vector3(0.0, -0.012, -0.27), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
+	# AR1b: the palm right under the fore-end (its wood starts at y 0.014 here – the hand floated
+	# 2.6 cm below it), the thumb turned up against its left side so the hand holds the rifle.
+	_grip(model, "GripL", Vector3(0.0, 0.015, -0.27), Vector3(0.65, 0.3, -0.7), Vector3(0, 1, 0), false)
+	r[0].set("thumb_left_deg", Vector3(0, -30, 50))
 	_grip(model, "BoltGrip", Vector3(0.05, 0.045, 0.085), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
 	return r[0]
 
@@ -1100,7 +1103,11 @@ func _build_suomi_view(mats: Dictionary) -> Node:
 	port.position = Vector3(0.024, 0.045, -0.165)
 	# BoltGrip = the knob of the cocking handle (the right hand goes there when cocking).
 	_grip(model, "BoltGrip", Vector3(0.05, 0.012, 0.088), Vector3(-0.3, -0.5, -0.8), Vector3(-1, 0, 0), true)
-	_grip(model, "GripR", Vector3(0.022, -0.04, 0.1), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
+	# AR1b: 1.4 cm further back, so the thumb goes over the top of the stock just behind the
+	# receiver's end cap and the cocking handle (it went through them) – straight across the gun,
+	# right against the back of the cap (owner: not bent back towards the shooter).
+	_grip(model, "GripR", Vector3(0.022, -0.04, 0.114), Vector3(-0.3, -0.3, -0.9), Vector3(-1, 0, 0), true)
+	r[0].set("thumb_right_deg", Vector3(64, 58, 15))
 	# Left hand under the drum (centre (0, -0.044, -0.145), radius ~0.077), palm up against
 	# its rim, fingers forward-right around it.
 	_grip(model, "GripL", Vector3(-0.023, -0.121, -0.145), Vector3(0.75, -0.2, -0.55), Vector3(0.3, 1, 0), false)

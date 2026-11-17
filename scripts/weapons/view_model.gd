@@ -45,6 +45,11 @@ signal cock_sound_cue
 ## Part of the imported model that is an empty case: a copy flies out of Model/EjectionPort
 ## at every shot. Empty = no cases.
 @export var eject_case_part_name: String = ""
+## AR1b: how the mittens' thumbs are turned on this gun (degrees, Euler XYZ in hand space, around
+## FirstPersonArms.THUMB_BASE): x turns the thumb from along the fingers up the thumb side, y
+## swings it towards / away from the palm. Zero = the mitten as it is built.
+@export var thumb_right_deg: Vector3 = Vector3.ZERO
+@export var thumb_left_deg: Vector3 = Vector3.ZERO
 
 const MAX_DROPPED_MAGAZINES: int = 4
 ## Magazine reload, as parts of the reload time: [pulled out, dropped, at the pouch,
@@ -164,6 +169,25 @@ func get_hand_grips() -> Array[Transform3D]:
 		else:
 			l = l.interpolate_with(Transform3D(l.basis, holder.global_transform * POUCH_LEFT), t)
 	return [r, l]
+
+
+## AR1b: the thumbs' turns this frame [right, left] (FirstPersonArms). A hand that leaves its
+## grip (bolt, cocking knob, pouch, drum change) lets its thumb relax back to the built pose.
+func get_thumb_turns() -> Array[Basis]:
+	var r_free: float = bolt_hand
+	var l_free: float = 0.0
+	if reload_with_right_hand:
+		r_free = maxf(r_free, reload_hand)
+	else:
+		l_free = reload_hand
+	if magazine_progress >= 0.0:
+		l_free = 1.0
+	return [_thumb_turn(thumb_right_deg, r_free), _thumb_turn(thumb_left_deg, l_free)]
+
+
+static func _thumb_turn(deg: Vector3, free: float) -> Basis:
+	var on_gun := Basis.from_euler(Vector3(deg_to_rad(deg.x), deg_to_rad(deg.y), deg_to_rad(deg.z)))
+	return on_gun.slerp(Basis.IDENTITY, smoothstep(0.0, 1.0, clampf(free, 0.0, 1.0)))
 
 
 ## The left hand during a magazine change, in Model space. `u` = 0..1 through the reload.

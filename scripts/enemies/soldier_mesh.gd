@@ -232,7 +232,14 @@ static func finish_build() -> ArrayMesh:
 
 
 static func use_bone(bone: int) -> void:
+	_bone_fn = Callable()
 	_use_bone(bone)
+
+
+## Blended weights: `fn(rest position) -> [PackedInt32Array bones, PackedFloat32Array weights]`
+## (4 each) decides per vertex until the next use_bone() (AR1b: the arms' wrists).
+static func use_bone_fn(fn: Callable) -> void:
+	_bone_fn = fn
 
 
 static func frustum(a: Vector3, b: Vector3, ra: float, rb: float, sides: int, col: Color, depth: float = 1.0) -> void:
@@ -245,6 +252,11 @@ static func box(center: Vector3, size: Vector3, col: Color) -> void:
 
 static func sphere(center: Vector3, radius: Vector3, segments: int, rings: int, col: Color) -> void:
 	_sphere(center, radius, segments, rings, col)
+
+
+## One triangle (AR1: the arms' folded sleeves are built from their own rings of points).
+static func tri(a: Vector3, b: Vector3, c: Vector3, na: Vector3, nb: Vector3, nc: Vector3, col: Color) -> void:
+	_tri(a, b, c, na, nb, nc, col)
 
 
 static var _bones := PackedInt32Array([0, 0, 0, 0])
