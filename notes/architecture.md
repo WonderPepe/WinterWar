@@ -34,7 +34,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Groups: `game`, `players`, `enemies`, `terrain`, `impact_effects`, `wave_spawner`, `player_spawn`,
   `enemy_spawn`, `attack_point`, `deep_snow`, `navigation_source`, `match_director`, `ammo_crates`,
   `trench_entry`, `day_screen`, `tanks`, `tank_route`, `tank_spawner`, `tank_wrecks`, `molotovs`,
-  `molotov_crates`, `fire_post`, `body_keeper`, `tank_tracks`.
+  `molotov_crates`, `fire_post`, `body_keeper`, `tank_tracks`, `grenades` (GR1).
 - Physics layers: 1 world, 2 players, 3 enemies, 4 triggers, 5 armour (T5: tanks and wrecks are on
   3 AND 5; enemy rays use `Tank.SIGHT_MASK` world + armour / `Tank.BULLET_MASK` world + players +
   armour – never layer 3, or soldiers would shoot and hide each other).

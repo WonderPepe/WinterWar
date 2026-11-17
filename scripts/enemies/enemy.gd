@@ -9,6 +9,8 @@ extends CharacterBody3D
 ## Assault (G1): after firing for a while from his jump-off point in front of the trench, he
 ## rushes the trench, jumps in (NavigationLink3D "trench entries") and fights inside it.
 ## Each state has its own behaviour and rules for switching to another state.
+## GR1: close to the Finnish line he may throw an F-1 hand grenade at a Finn he saw or heard a
+## moment ago (see "hand grenades" below and the GrenadeManager).
 ## G2 "pressure": bullets flying close make him duck (suppression) and throw himself flat
 ## (prone); an officer steadies the soldiers around him and sends them forward with his
 ## whistle; a DP-27 gunner lies down and fires bursts, with a helper next to him.
@@ -58,6 +60,7 @@ var is_kneeling: bool = false:
 	set = _set_kneeling
 var is_prone: bool = false: ## Lying flat (suppressed, or a machine-gun team in position).
 	set = _set_prone
+var is_throwing: bool = false ## GR1: in the middle of a grenade throw (the SoldierVisual swings his arm).
 var health: float = 100.0
 
 ## Set by the WaveSpawner: the place in front of the trench this soldier advances to.
@@ -128,6 +131,16 @@ var _dash_until: float = -100.0     # up and running for a few seconds despite t
 var _hold_offset: float = 0.0       # each soldier waits for the barrage at a slightly different line
 var _panic_until: float = -100.0    # T2: crew of a burning tank – running away, not fighting
 var _flee_point: Vector3
+# --- GR1 hand grenades, host only ---
+var grenades: int = 0 ## Grenades he still carries (1–2 from his EnemyData; tank crews none).
+var grenades_thrown: int = 0 ## Statistics / tests.
+var _throw_t: float = 0.0
+var _throw_released: bool = false
+var _throw_target: Vector3
+var _throw_angle: float = 40.0
+var _seen_target_at: float = -100.0 # when he last had his target in sight
+var _heard_at: float = -100.0       # when he last heard a Finn's gun...
+var _heard_pos: Vector3             # ...and where
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
 
@@ -150,6 +163,7 @@ func _ready() -> void:
 	_whistle_timer = _rng.randf_range(0.0, 3.0)
 	_hold_offset = _rng.randf_range(-8.0, 0.0)
 	mg_ammo = data.mg_magazine
+	grenades = _rng.randi_range(data.grenades_min, data.grenades_max)
 	_mg_final_goal = attack_point
 	_mg_fire_range = _rng.randf_range(data.mg_fire_range_min_m, data.mg_fire_range_max_m)
 	_mg_follow_back = _rng.randf_range(data.mg_follow_back_min_m, data.mg_follow_back_max_m)
@@ -195,6 +209,9 @@ func _physics_process(delta: float) -> void:
 		var interval: float = 0.2 + _rng.randf() * 0.05
 		_update_senses(interval)
 		_sense_timer = interval
+		if _can_see_target:
+			_seen_target_at = _now()
+		_consider_grenade(interval)
 	if _now() < _panic_until:
 		# T2: bailed out of a burning tank – run back towards the forest, don't fight yet.
 		suppression = 0.0
@@ -206,6 +223,10 @@ func _physics_process(delta: float) -> void:
 		_fall_and_slide(delta)
 		return
 	_update_suppression(delta)
+	if is_throwing:
+		_throw_step(delta) # GR1: arm back, throw, arm down – nothing else meanwhile
+		_fall_and_slide(delta)
+		return
 
 	if state == State.HOLD:
 		_hold(delta) # L3: holding the captured trench (also the DP-27 gunner: no team, no moving up)
@@ -325,9 +346,13 @@ func _chest_of(p: Player) -> Vector3:
 ## Called (through the "enemies" group) whenever a shot is fired.
 ## `source` is where the sound came from, `interest` is where to look.
 func hear_noise(source: Vector3, interest: Vector3, radius: float) -> void:
-	if not multiplayer.is_server() or state in [State.DEAD, State.ATTACK, State.ASSAULT, State.HOLD]:
+	if not multiplayer.is_server() or state == State.DEAD or global_position.distance_to(source) > radius:
 		return
-	if global_position.distance_to(source) > radius:
+	if source == interest:
+		# A Finn's own gun (WeaponController sends its muzzle as both): GR1 remembers where he is.
+		_heard_at = _now()
+		_heard_pos = source
+	if state in [State.ATTACK, State.ASSAULT, State.HOLD]:
 		return
 	_noise_position = interest
 	if state == State.ALERT:
@@ -559,6 +584,7 @@ func take_damage(amount: float, attacker_id: int, _hit_position: Vector3, _hit_n
 
 
 func _die() -> void:
+	_end_throw(true)
 	health = 0.0
 	velocity = Vector3.ZERO
 	is_kneeling = false
@@ -829,6 +855,7 @@ func is_panicking() -> bool:
 
 ## Host: the battle is over – stand still.
 func freeze() -> void:
+	_end_throw(false)
 	_stop()
 	velocity = Vector3.ZERO
 	set_physics_process(false)
@@ -888,8 +915,8 @@ func _update_suppression(delta: float) -> void:
 	var prone: bool = is_prone
 	if _deployed:
 		prone = true
-	elif (state == State.ASSAULT and is_in_trench()) or state == State.HOLD:
-		prone = false # (HOLD: ducks behind the trench wall instead, see _hold)
+	elif (state == State.ASSAULT and is_in_trench()) or state == State.HOLD or is_throwing:
+		prone = false # (HOLD: ducks behind the trench wall instead, see _hold; GR1: finishes his throw)
 	elif now < _dash_until and not is_pinned():
 		prone = false # making a dash for it
 	elif suppression >= data.prone_threshold:
@@ -1236,6 +1263,132 @@ func enter_deep_snow() -> void:
 
 func exit_deep_snow() -> void:
 	_deep_snow_count = maxi(_deep_snow_count - 1, 0)
+
+
+# ------------------------------------------------------------------ GR1: hand grenades
+## The middle of the bunker's firing hole, just inside the room (a flat throw from in front)...
+const BUNKER_SLIT_AIM := Vector3(0.0, 0.2, 57.8)
+## ...and the back door, just inside (a lob from behind, e.g. battle 6).
+const BUNKER_DOOR_AIM := Vector3(1.2, -1.1, 61.3)
+
+
+## Host, with his senses (~5×/s): should he throw a grenade now? All the rules first, then the
+## chance, then the flight is tried out – it must not come back to his own feet or land among his
+## comrades – and the GrenadeManager must have a free place (max live grenades, gap).
+func _consider_grenade(dt: float) -> void:
+	if grenades <= 0 or is_throwing or state == State.DEAD:
+		return
+	if not state in [State.PATROL, State.ALERT, State.ATTACK, State.ASSAULT, State.HOLD]:
+		return
+	if (state == State.ASSAULT and is_in_trench()) or is_prone or is_pinned() or is_panicking():
+		return # in the trench fight he would blow himself up; flat on the snow he can't throw
+	if data.kind == EnemyData.Kind.MG_GUNNER or _deployed or is_instance_valid(mg_gunner):
+		return # the gun team has other work
+	if _rng.randf() > data.grenade_chance_per_s * dt:
+		return
+	var aim: Vector3 = _grenade_aim_point()
+	if aim == Vector3.INF:
+		return
+	var flat := Vector2(aim.x - global_position.x, aim.z - global_position.z).length()
+	if flat < data.grenade_range_min_m or flat > data.grenade_range_max_m:
+		return
+	if _comrade_near(aim, data.grenade_comrade_clear_m):
+		return
+	var manager := get_tree().get_first_node_in_group("grenades") as GrenadeManager
+	if manager == null:
+		return
+	# Where it will really go: his aim is not perfect (worse when the bullets fly close).
+	var bunker: bool = _throw_angle != manager.lob_angle_deg
+	var error: float = _rng.randf_range(data.grenade_aim_error_min_m, data.grenade_aim_error_max_m) \
+			* (1.0 + suppression) * spread_multiplier * (0.4 if bunker else 1.0)
+	var around: float = _rng.randf() * TAU
+	var target: Vector3 = aim + Vector3(cos(around), 0.0, sin(around)) * error
+	var origin: Vector3 = _grenade_release_point(target)
+	var flight: Dictionary = manager.simulate(origin, manager.solve_throw(origin, target, _throw_angle), manager.fuse_max)
+	var rest: Vector3 = flight.rest
+	if rest.distance_to(global_position) < data.grenade_range_min_m * 0.8 or _comrade_near(rest, data.grenade_comrade_clear_m):
+		return # it would bounce back to him, or fall among his own men
+	if not manager.reserve():
+		return
+	grenades -= 1
+	_throw_target = target
+	_throw_t = 0.0
+	_throw_released = false
+	is_throwing = true
+
+
+## Where he wants the grenade: the Finn he saw a moment ago (in the bunker: its firing hole or
+## back door), else where he heard a Finn's gun. INF = nobody to throw at.
+func _grenade_aim_point() -> Vector3:
+	var manager := get_tree().get_first_node_in_group("grenades") as GrenadeManager
+	_throw_angle = manager.lob_angle_deg if manager else 40.0
+	var now: float = _now()
+	if _target != null and is_instance_valid(_target) and not _target.is_dead \
+			and now - _seen_target_at <= data.grenade_seen_memory:
+		if ArtilleryBarrage.is_in_bunker(_target):
+			if global_position.z < BUNKER_SLIT_AIM.z - 1.5:
+				if manager:
+					_throw_angle = manager.bunker_angle_deg
+				return BUNKER_SLIT_AIM
+			if global_position.z > BUNKER_DOOR_AIM.z + 1.0:
+				return BUNKER_DOOR_AIM
+		return _target.global_position
+	if now - _heard_at <= data.grenade_heard_memory:
+		return _heard_pos - Vector3(0.0, 1.5, 0.0) # his gun was at his eyes: aim at his feet
+	return Vector3.INF
+
+
+## Where the grenade leaves his hand: above his right shoulder, arm stretched up and forward.
+func _grenade_release_point(target: Vector3) -> Vector3:
+	var to := Vector3(target.x - global_position.x, 0.0, target.z - global_position.z)
+	var dir: Vector3 = to.normalized() if to.length() > 0.01 else -global_basis.z
+	var right: Vector3 = dir.cross(Vector3.UP)
+	return global_position + Vector3.UP * 1.9 + right * 0.15 + dir * 0.25
+
+
+## Any living comrade within `radius` of `point`?
+func _comrade_near(point: Vector3, radius: float) -> bool:
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e and e != self and e.state != State.DEAD and e.global_position.distance_to(point) < radius:
+			return true
+	return false
+
+
+## Host, every frame of the throw: stand, face the target, let go at `grenade_release_at`.
+func _throw_step(delta: float) -> void:
+	_stop()
+	is_kneeling = false
+	_face_towards(_throw_target, delta)
+	_throw_t += delta
+	if not _throw_released and _throw_t >= data.grenade_release_at:
+		_throw_released = true
+		grenades_thrown += 1
+		var manager := get_tree().get_first_node_in_group("grenades") as GrenadeManager
+		if manager:
+			var origin: Vector3 = _grenade_release_point(_throw_target)
+			manager.throw(origin, manager.solve_throw(origin, _throw_target, _throw_angle))
+	if _throw_t >= data.grenade_windup:
+		is_throwing = false
+		_aim_time = 0.0 # has to aim his rifle again
+
+
+## Host: the throw is cut short (killed, or the battle is over). Killed before letting go: the
+## live grenade may fall at his feet (`grenade_drop_chance`).
+func _end_throw(killed: bool) -> void:
+	if not is_throwing:
+		return
+	is_throwing = false
+	if _throw_released:
+		return
+	_throw_released = true
+	var manager := get_tree().get_first_node_in_group("grenades") as GrenadeManager
+	if manager == null:
+		return
+	if killed and _rng.randf() < data.grenade_drop_chance:
+		manager.drop(global_position + Vector3.UP * 1.4)
+	else:
+		manager.cancel_reservation()
 
 
 # ------------------------------------------------------------------ visuals (every computer)

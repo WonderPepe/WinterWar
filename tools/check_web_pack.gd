@@ -51,6 +51,10 @@ func run() -> void:
 		[(RecordedSounds.pick("fire_loop") as AudioStreamOggVorbis).loop, "T2: fire loop loops in the export"],
 		[(load("res://scenes/player.tscn") as PackedScene).instantiate().get_node_or_null("Molotov") is MolotovHandler, "T2: player's Molotov handler in the export"],
 		[(load("res://scenes/game.tscn") as PackedScene).instantiate().get_node_or_null("Molotovs") is MolotovManager, "T2: Molotov manager in the export"],
+		[(load("res://scenes/game.tscn") as PackedScene).instantiate().get_node_or_null("Grenades") is GrenadeManager, "GR1: grenade manager in the export"],
+		[GrenadeManager.make_grenade(true).find_child("Lever", true, false) != null, "GR1: F-1 grenade model (body + lever) in the export"],
+		[(load("res://resources/enemies/soviet_mg_gunner.tres") as EnemyData).grenades_max == 0 and (load("res://resources/enemies/soviet_rifleman.tres") as EnemyData).grenades_max == 2, "GR1: grenade counts kept in the export"],
+		[(load("res://scenes/enemies/soviet_rifleman.tscn") as PackedScene).instantiate().get_node("StateSync").replication_config.has_property(NodePath(".:is_throwing")), "GR1: throw synced in the export"],
 		[(load("res://scenes/enemies/soviet_tank.tscn") as PackedScene).instantiate().get_node_or_null("TrackAnimator") is TrackAnimator, "T6: the tank's TrackAnimator in the export"],
 		[load("res://resources/shaders/tank_track.gdshader") is Shader and load("res://resources/shaders/tank_wheels.gdshader") is Shader, "T6: track and wheel shaders in the export"],
 	]:

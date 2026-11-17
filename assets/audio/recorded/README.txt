@@ -26,6 +26,11 @@ Real sound recordings for the game (used automatically, by file name):
   raid_boom...      A1: a big bomb exploding, deep, with a long rumble
                     (several files = a random one per bomb; silent if there is none)
 
+  grenade_boom...   GR1: an F-1 hand grenade exploding - short, sharp, much smaller than a bomb
+                    (until there is one: the raid_boom recording, higher and quieter)
+  grenade_land...   GR1: the grenade landing - a dull metal thud / clink on frozen ground
+                    (silent until added)
+
 .ogg is best (small). Keep each file short and trimmed (no silence at the start).
 Good free sources:
   - Freesound.org: search e.g. "mosin reload", "rifle stripper clip", "magazine change",

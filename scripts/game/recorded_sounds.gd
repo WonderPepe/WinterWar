@@ -19,6 +19,7 @@ extends RefCounted
 ##   molotov_break…   the bottle breaking and the fuel catching fire
 ##   fire_loop…       burning fuel / a burning tank (should loop)
 ##   raid_engine… / raid_whistle… / raid_boom…  air raid (A1): bomber, falling bomb, explosion
+##   grenade_boom… / grenade_land…  GR1: an F-1 hand grenade exploding / landing on frozen ground
 ## Example: hurt_1.ogg, hurt_2.ogg, hurt_3.ogg, reload_mosin.ogg.
 ## Missing files = silence (better than a bad placeholder). See the README in the folder.
 

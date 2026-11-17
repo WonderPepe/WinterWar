@@ -16,6 +16,9 @@ the game; the models are otherwise unchanged.
 - "Т-26 SD" (the T-26 tank) by MMD_SonicNewYear
   https://sketchfab.com/3d-models/26-sd-75689d006c704894aff88646017a94dc
   (also changed: wheel-axle data added to the running-gear meshes so the wheels can turn)
+- "Grenade F-1 /Ф-1 Лимонка" (the Soviet F-1 hand grenade) by chyzhykov.roman
+  https://sketchfab.com/3d-models/grenade-f-1-1-020f6d6322e44b84a360299a1ee712ec
+  (also changed: simplified to fewer triangles, the pin left out, scaled to metres)
 
 ## Sounds (Creative Commons Attribution 4.0)
 - "Lentokone, potkurikone, syöksy, ylilento / An old aeroplane, old propeller aircraft, Viima,

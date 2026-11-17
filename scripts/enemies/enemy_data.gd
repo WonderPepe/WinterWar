@@ -100,3 +100,27 @@ enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
 @export var mg_burst_pause_max: float = 1.6
 @export var mg_reload_time: float = 6.0 ## Changing the pan alone...
 @export var mg_reload_time_assisted: float = 3.5 ## ...and with his helper next to him.
+
+@export_group("Hand grenades (GR1)")
+## Each soldier carries a random number of F-1 grenades between these two (owner: max 2; the
+## same on every difficulty). The DP-27 gunner carries none.
+@export var grenades_min: int = 1
+@export var grenades_max: int = 2
+## He only throws at a Finn this far away (flat distance to the aim point)...
+@export var grenade_range_min_m: float = 6.0
+@export var grenade_range_max_m: float = 28.0
+## ...whom he saw within this many seconds (or whose gun he heard within `grenade_heard_memory`).
+@export var grenade_seen_memory: float = 4.0
+@export var grenade_heard_memory: float = 3.0
+## Chance per second that he decides to throw while all the rules allow it.
+@export var grenade_chance_per_s: float = 0.25
+@export var grenade_windup: float = 1.0 ## The whole throw: stops, arm back, throws, arm down (s).
+@export var grenade_release_at: float = 0.62 ## The grenade leaves his hand this far into it (s).
+## Aim error: the grenade is aimed at a random point this far from the Finn (metres, × his
+## suppression and the difficulty's aim).
+@export var grenade_aim_error_min_m: float = 1.0
+@export var grenade_aim_error_max_m: float = 2.5
+## Never when a comrade is this close to the aim point.
+@export var grenade_comrade_clear_m: float = 4.0
+## Shot during the wind-up: the chance that the live grenade falls at his own feet.
+@export_range(0.0, 1.0) var grenade_drop_chance: float = 0.5

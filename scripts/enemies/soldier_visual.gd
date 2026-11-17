@@ -47,6 +47,8 @@ var _rifle_pos: Vector3
 var _rifle_rot: Quaternion = Quaternion.IDENTITY
 var _hips_y: float = 0.95
 var _whistle: float = 0.0 # officer: > 0 while the whistle is at his mouth
+var _throw_t: float = 0.0 # GR1: seconds into a grenade throw (0 = not throwing)
+var _hand_grenade: Node3D # GR1: the F-1 in his right hand during the wind-up (made when first needed)
 var _rng := RandomNumberGenerator.new()
 
 # Coats were not all the same colour: grey-brown, greener, darker.
@@ -219,6 +221,13 @@ func _pose(delta: float) -> void:
 	var moving: bool = _speed > 0.4 and not dead and not prone
 	var kneel: bool = _enemy.is_kneeling and not moving and not dead and not prone
 	var attacking: bool = state == Enemy.State.ATTACK or state == Enemy.State.ALERT or state == Enemy.State.ASSAULT
+	# GR1: a grenade throw – he stands, rifle down in his left hand, and swings his right arm.
+	var throwing: bool = _enemy.is_throwing and not dead and not prone
+	_throw_t = _throw_t + delta if throwing else 0.0
+	_update_hand_grenade(throwing)
+	if throwing:
+		moving = false
+		kneel = false
 
 	# Targets for this frame.
 	var t := {}
@@ -254,6 +263,12 @@ func _pose(delta: float) -> void:
 		t[B.SHIN_R] = _x(-maxf(0.0, -cos(_phase)) * amp * 1.4)
 		hips_y = 0.95 - 0.02 + absf(cos(_phase)) * 0.025
 		lean = 0.05 + _speed * 0.05
+	if throwing:
+		var swing: Dictionary = _throw_swing()
+		lean = swing.lean
+		t[B.THIGH_L] = _x(0.3) # left foot forward, weight going onto it
+		t[B.SHIN_L] = _x(-0.15)
+		t[B.THIGH_R] = _x(-0.25)
 	t[B.SPINE] = _x(-lean + _hit * 0.35) # negative = top of the body forward; a hit pushes it back
 	if not prone:
 		t[B.HIPS] = Quaternion.IDENTITY
@@ -304,6 +319,9 @@ func _pose(delta: float) -> void:
 		# Carried across the chest ("port arms"): muzzle up and to the left.
 		rifle_pos = Vector3(0.02, 0.2, -0.22)
 		rifle_rot = Quaternion(Basis.looking_at(Vector3(-0.55, 0.78, -0.3).normalized(), Vector3.FORWARD))
+	if throwing:
+		rifle_pos = Vector3(-0.3, -0.12, -0.18) # hanging in his left hand, muzzle forward and down
+		rifle_rot = _x(-0.55)
 	# Recoil: the rifle jumps back and up.
 	rifle_pos += rifle_rot * Vector3(0, 0.02, 0.07) * _kick
 	rifle_rot = rifle_rot * _x(0.18 * _kick)
@@ -337,8 +355,49 @@ func _pose(delta: float) -> void:
 	if dead and not prone:
 		grip = SoldierMesh.BONE_REST[B.UPPER_ARM_R] + Vector3(0.05, -0.55, 0.0)
 		fore_end = SoldierMesh.BONE_REST[B.UPPER_ARM_L] + Vector3(-0.05, -0.55, 0.0)
-	_reach(B.UPPER_ARM_R, B.FOREARM_R, grip, Vector3(0.5, -1.0, 0.4))
+	var pole_r := Vector3(0.5, -1.0, 0.4)
+	if throwing:
+		grip = _throw_swing().hand # GR1: the throwing arm
+		fore_end = rifle_xf * Vector3(0.0, -0.03, -0.08)
+		pole_r = Vector3(0.8, -0.3, 0.6) # elbow out to the side and back
+	_reach(B.UPPER_ARM_R, B.FOREARM_R, grip, pole_r)
 	_reach(B.UPPER_ARM_L, B.FOREARM_L, fore_end, Vector3(-0.6, -1.0, 0.2))
+
+
+## GR1: the throwing arm at this moment of the throw: {hand: chest-space point, lean: radians}.
+## Arm back and up behind the head → fast swing over the shoulder (the grenade leaves the hand
+## at `grenade_release_at`) → follow through down in front of him.
+func _throw_swing() -> Dictionary:
+	var release: float = _enemy.data.grenade_release_at if _enemy and _enemy.data else 0.62
+	var windup: float = _enemy.data.grenade_windup if _enemy and _enemy.data else 1.0
+	var back := Vector3(0.3, 0.72, 0.34)   # cocked: hand high behind the shoulder
+	var front := Vector3(0.18, 0.78, -0.4) # let go: arm up and forward
+	var down := Vector3(0.12, 0.12, -0.38) # follow-through
+	var cock_end: float = release * 0.7
+	if _throw_t < cock_end:
+		var k: float = smoothstep(0.0, 1.0, _throw_t / cock_end)
+		return {"hand": Vector3(0.2, 0.25, -0.15).lerp(back, k), "lean": lerpf(0.0, -0.18, k)}
+	if _throw_t < release:
+		var k: float = (_throw_t - cock_end) / (release - cock_end)
+		return {"hand": back.lerp(front, k * k), "lean": lerpf(-0.18, 0.3, k)}
+	var k: float = smoothstep(0.0, 1.0, (_throw_t - release) / maxf(windup - release, 0.01))
+	return {"hand": front.lerp(down, k), "lean": lerpf(0.3, 0.1, k)}
+
+
+## GR1: the grenade in his right hand – shown from the start of the throw until it leaves the hand.
+func _update_hand_grenade(throwing: bool) -> void:
+	var release: float = _enemy.data.grenade_release_at if _enemy and _enemy.data else 0.62
+	var show: bool = throwing and _throw_t < release
+	if show and _hand_grenade == null:
+		var attach := BoneAttachment3D.new()
+		attach.name = "HandAttach"
+		_skeleton.add_child(attach)
+		attach.bone_name = SoldierMesh.BONE_NAMES[B.FOREARM_R]
+		_hand_grenade = GrenadeManager.make_grenade(true)
+		_hand_grenade.position = Vector3(0.0, -SoldierMesh.ARM_LOWER + 0.03, -0.02)
+		attach.add_child(_hand_grenade)
+	if _hand_grenade:
+		_hand_grenade.visible = show
 
 
 ## Two-bone arm: shoulder → elbow → hand. Puts the hand at `target` (chest space) with the

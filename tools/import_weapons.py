@@ -1,7 +1,8 @@
 """Unpacks the downloaded weapon and vehicle models (assets_source/*.zip, glTF from Sketchfab) into
 assets/models/weapons/<name>/ (vehicles: assets/models/vehicles/<name>/) and shrinks their textures so the web download stays small.
 Not part of the game. Run from the project folder:  python3 tools/import_weapons.py
-Needs Pillow.
+Needs Pillow. The F-1 grenade (GR1) also needs numpy + meshoptimizer (pip install meshoptimizer):
+    python3 tools/import_weapons.py --f1
 T6: the T-26 also gets its wheel data (which vertex turns around which axle – see
 bake_t26_wheels). To write only that into the model that is already unpacked (no zip needed):
     python3 tools/import_weapons.py --t26-wheels
@@ -219,7 +220,151 @@ def bake_t26_wheels(out_dir: str) -> None:
         json.dump(gltf, f, indent=1)
 
 
+# --- GR1: the Soviet F-1 hand grenade -----------------------------------------------------------
+# Sketchfab "Grenade F-1 / Ф-1 Лимонка" (chyzhykov.roman, CC-BY 4.0). The download is far too heavy for
+# a 12 cm grenade (4,108 triangles, three 2048 px textures), so this one is rebuilt instead of copied:
+#   - the four parts are baked into metres (body 55 mm across, 112 mm tall with the fuze), origin = the
+#     middle of the body, +y = up (fuze on top);
+#   - "Body" = cast-iron body + fuze, "Lever" = the safety lever (on the hand-held grenade only – it
+#     flies off when the grenade is thrown); the pin + ring are left out (already pulled);
+#   - each part is simplified with meshoptimizer (keeps the UVs: it only drops triangles);
+#   - one material: colour + normal map at 256 px, no metal/roughness map (fixed values instead).
+F1_ZIP = "Grenade F_1.zip"
+F1_DIAMETER_M = 0.055
+F1_PARTS = {"Body": ("f_1_main_low", "f_1_zapal_low"), "Lever": ("f_1_extractor_low",)}
+F1_TARGET_TRIS = {"f_1_main_low": 300, "f_1_zapal_low": 120, "f_1_extractor_low": 60}
+
+
+def import_f1() -> None:
+    import numpy as np
+    import meshoptimizer as mo
+    path = os.path.join(SRC, F1_ZIP)
+    if not os.path.exists(path):
+        print("missing", F1_ZIP, "- skipped")
+        return
+    zf = zipfile.ZipFile(path)
+    gltf_name = next(n for n in zf.namelist() if n.endswith(".gltf"))
+    src = json.loads(zf.read(gltf_name))
+    prefix = os.path.dirname(gltf_name)
+    blob = zf.read(os.path.join(prefix, src["buffers"][0]["uri"]) if prefix else src["buffers"][0]["uri"])
+
+    def read(index):
+        a = src["accessors"][index]
+        v = src["bufferViews"][a["bufferView"]]
+        n = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[a["type"]]
+        dt = {5126: np.float32, 5125: np.uint32, 5123: np.uint16}[a["componentType"]]
+        size = n * np.dtype(dt).itemsize
+        stride = v.get("byteStride", 0) or size
+        off = v.get("byteOffset", 0) + a.get("byteOffset", 0)
+        raw = np.frombuffer(blob, np.uint8, (a["count"] - 1) * stride + size, off)
+        rows = np.lib.stride_tricks.as_strided(raw, (a["count"], size), (stride, 1))
+        return np.ascontiguousarray(rows).view(dt).reshape(a["count"], n)
+
+    world = {}
+
+    def walk(i, parent):
+        node = src["nodes"][i]
+        m = np.array(node.get("matrix", np.eye(4).flatten()), dtype=np.float64).reshape(4, 4).T
+        world[i] = parent @ m
+        for c in node.get("children", []):
+            walk(c, world[i])
+    walk(0, np.eye(4))
+    parts = {}  # part name -> (positions, normals, uvs, indices) in model units
+    for i, node in enumerate(src["nodes"]):
+        for c in node.get("children", []):
+            if "mesh" in src["nodes"][c]:
+                prim = src["meshes"][src["nodes"][c]["mesh"]]["primitives"][0]
+                m = world[c]
+                pos = read(prim["attributes"]["POSITION"]).astype(np.float64)
+                nrm = read(prim["attributes"]["NORMAL"]).astype(np.float64)
+                pos = (m @ np.c_[pos, np.ones(len(pos))].T).T[:, :3]
+                nrm = (np.linalg.inv(m[:3, :3]).T @ nrm.T).T
+                nrm /= np.linalg.norm(nrm, axis=1, keepdims=True)
+                uv = read(prim["attributes"]["TEXCOORD_0"]).astype(np.float32)
+                idx = read(prim["indices"]).astype(np.uint32).flatten()
+                parts[node["name"]] = (pos, nrm, uv, idx)
+    body_pos = parts["f_1_main_low"][0]
+    centre = (body_pos.min(0) + body_pos.max(0)) / 2.0
+    scale = F1_DIAMETER_M / (body_pos[:, 0].max() - body_pos[:, 0].min())
+
+    out_dir = os.path.join(DST, "f1_grenade")
+    os.makedirs(os.path.join(out_dir, "textures"), exist_ok=True)
+    binary = bytearray()
+    gltf = {"asset": {"version": "2.0", "generator": "tools/import_weapons.py --f1"}, "scene": 0,
+            "scenes": [{"nodes": []}], "nodes": [], "meshes": [], "accessors": [], "bufferViews": []}
+
+    def add_view(arr, target):
+        while len(binary) % 4:
+            binary.append(0)
+        gltf["bufferViews"].append({"buffer": 0, "byteOffset": len(binary), "byteLength": arr.nbytes, "target": target})
+        binary.extend(arr.tobytes())
+        return len(gltf["bufferViews"]) - 1
+
+    def add_acc(arr, kind, target, minmax=False):
+        a = {"bufferView": add_view(arr, target), "componentType": 5125 if arr.dtype == np.uint32 else 5126,
+             "count": len(arr), "type": kind}
+        if minmax:
+            a["min"] = arr.min(0).tolist()
+            a["max"] = arr.max(0).tolist()
+        gltf["accessors"].append(a)
+        return len(gltf["accessors"]) - 1
+
+    total = 0
+    for part, names in F1_PARTS.items():
+        P, N, U, I = [], [], [], []
+        base = 0
+        for name in names:
+            pos, nrm, uv, idx = parts[name]
+            pos_m = ((pos - centre) * scale).astype(np.float32)
+            dest = np.zeros(len(idx), dtype=np.uint32)
+            count = mo.simplify(dest, idx, pos_m, target_index_count=F1_TARGET_TRIS[name] * 3, target_error=0.02)
+            used = np.unique(dest[:count])
+            remap = np.full(len(pos_m), -1, dtype=np.int64)
+            remap[used] = np.arange(len(used))
+            P.append(pos_m[used]); N.append(nrm[used].astype(np.float32)); U.append(uv[used])
+            I.append((remap[dest[:count]] + base).astype(np.uint32))
+            base += len(used)
+        P, N, U, I = np.concatenate(P), np.concatenate(N), np.concatenate(U), np.concatenate(I)
+        total += len(I) // 3
+        prim = {"attributes": {"POSITION": add_acc(P, "VEC3", 34962, True), "NORMAL": add_acc(N, "VEC3", 34962),
+                               "TEXCOORD_0": add_acc(U, "VEC2", 34962)},
+                "indices": add_acc(I, "SCALAR", 34963), "material": 0}
+        gltf["meshes"].append({"name": part, "primitives": [prim]})
+        gltf["nodes"].append({"name": part, "mesh": len(gltf["meshes"]) - 1})
+        gltf["scenes"][0]["nodes"].append(len(gltf["nodes"]) - 1)
+    with open(os.path.join(out_dir, "scene.bin"), "wb") as f:
+        f.write(binary)
+    gltf["buffers"] = [{"uri": "scene.bin", "byteLength": len(binary)}]
+    images = []
+    for image in src["images"]:
+        uri = image["uri"]
+        if "baseColor" in uri or "normal" in uri:
+            data, new_uri = shrink(zf.read(os.path.join(prefix, uri) if prefix else uri), uri, 256)
+            with open(os.path.join(out_dir, new_uri), "wb") as f:
+                f.write(data)
+            images.append(new_uri)
+    gltf["images"] = [{"uri": u} for u in images]
+    gltf["samplers"] = [{"magFilter": 9729, "minFilter": 9987}]
+    gltf["textures"] = [{"source": i, "sampler": 0} for i in range(len(images))]
+    colour = next(i for i, u in enumerate(images) if "baseColor" in u)
+    normal = next(i for i, u in enumerate(images) if "normal" in u)
+    gltf["materials"] = [{"name": "f1_grenade", "normalTexture": {"index": normal},
+                          "pbrMetallicRoughness": {"baseColorTexture": {"index": colour},
+                                                   "metallicFactor": 0.35, "roughnessFactor": 0.7}}]
+    with open(os.path.join(out_dir, "model.gltf"), "w") as f:
+        json.dump(gltf, f, indent=1)
+    lic = [n for n in zf.namelist() if n.endswith("license.txt")]
+    if lic:
+        with open(os.path.join(out_dir, "license.txt"), "wb") as f:
+            f.write(zf.read(lic[0]))
+    size = sum(os.path.getsize(os.path.join(dp, fn)) for dp, _, fns in os.walk(out_dir) for fn in fns)
+    print(f"{F1_ZIP} -> {os.path.relpath(out_dir, ROOT)}/  ({total} triangles, {size / 1e3:.0f} kB)")
+
+
 def main() -> None:
+    if "--f1" in sys.argv:
+        import_f1()
+        return
     if "--t26-wheels" in sys.argv:
         bake_t26_wheels(os.path.join(VEHICLES, "t26"))
         return
@@ -259,6 +404,7 @@ def main() -> None:
                 f.write(zf.read(lic[0]))
         size = sum(os.path.getsize(os.path.join(dp, fn)) for dp, _, fns in os.walk(out_dir) for fn in fns)
         print(f"{zip_name} -> {os.path.relpath(out_dir, ROOT)}/  ({size / 1e6:.1f} MB)")
+    import_f1()
 
 
 if __name__ == "__main__":

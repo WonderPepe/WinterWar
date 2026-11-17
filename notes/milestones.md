@@ -425,3 +425,16 @@ was fine too – so it is Chrome's default graphics path on that computer.
 - **Owner decision:** if the seams are still there after this, remove the cloud drift (V10a).
 - Owner tested it in Chrome on Default (Run in Browser): the blocks are gone. Released as v0.9.1.
 
+
+## GR1 – Soviet hand grenades (2026-11-17)
+Owner's wish: enemies throw grenades at the Finns when they are close to the trench. Plan: project
+doc `claude/plan-enemy-grenades.md` (GR1 + GR2 throw-back).
+**Owner decisions:** same number on every difficulty, one soldier carries at most 2; from battle 1;
+friendly fire yes; warning = only a grenade icon (no text); they may throw into the bunker;
+GR2 (pick up and throw back, F) right after GR1; the end screen shows grenades thrown back (GR2).
+- Model: owner's download `assets_source/Grenade F_1.zip` (Sketchfab, CC-BY 4.0, in CREDITS.md) →
+  `import_weapons.py --f1` (rebuilt: 1,873 triangles instead of 4,108 – meshoptimizer with a higher
+  error broke the body –, 256 px colour + normal, no pin, metres).
+- Details: `battle.md` ("Hand grenades (GR1)"). Tests: `test_grenades.gd`, `shots_grenades.gd`.
+- Sounds: `grenade_boom…` / `grenade_land…` recordings wanted (owner downloads); until then the
+  raid_boom recording pitched up, landing silent.

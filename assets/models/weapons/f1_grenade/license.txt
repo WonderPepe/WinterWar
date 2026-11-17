@@ -1,0 +1,11 @@
+Model Information:
+* title:	Grenade F-1 /Ф-1 Лимонка
+* source:	https://sketchfab.com/3d-models/grenade-f-1-1-020f6d6322e44b84a360299a1ee712ec
+* author:	chyzhykov.roman (https://sketchfab.com/chijikoff.roma)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Grenade F-1 /Ф-1 Лимонка" (https://sketchfab.com/3d-models/grenade-f-1-1-020f6d6322e44b84a360299a1ee712ec) by chyzhykov.roman (https://sketchfab.com/chijikoff.roma) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

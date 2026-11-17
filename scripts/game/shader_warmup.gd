@@ -86,6 +86,11 @@ func _warm_up() -> void:
 	track_anim.model = tank_model
 	tank_model.add_child(track_anim)
 	_temp.append(tank_model)
+	# GR1: the F-1 hand grenade (its material is first seen when a Soviet throws one).
+	var grenade: Node3D = GrenadeManager.make_grenade(true)
+	player.get_parent().add_child(grenade)
+	grenade.global_position = cam.global_position - cam.global_basis.z * 1.5 - cam.global_basis.x * 0.3
+	_temp.append(grenade)
 
 	for i in frames:
 		progress = float(i + 1) / frames

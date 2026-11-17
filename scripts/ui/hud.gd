@@ -60,9 +60,14 @@ var _message_until: float = 0.0
 var _tank_hint_shown: bool = false # once per match: the first battle that brings tanks
 var _tank_hint_left: float = 0.0
 var _tank_hint_wait: float = 0.0 # it waits for the BATTLE n banner to fade (same place on screen)
+var grenade_warning: GrenadeWarning ## GR1: icons over live grenades near you (made in code).
 
 
 func _ready() -> void:
+	grenade_warning = GrenadeWarning.new()
+	grenade_warning.name = "GrenadeWarning"
+	add_child(grenade_warning)
+	move_child(grenade_warning, damage_indicator.get_index() + 1) # under the menus and screens
 	damage_flash.modulate.a = 0.0
 	wave_banner.modulate.a = 0.0
 	banner_sub.modulate.a = 0.0
@@ -100,6 +105,7 @@ func _find_local_player() -> void:
 			p.resupplied.connect(_show_message.bind("Ammo and bandages refilled"))
 			p.molotov.picked_up.connect(func(n: int) -> void: _show_message("Molotov cocktails: %d   [G]" % n))
 			damage_indicator.set_player(p)
+			grenade_warning.set_player(p)
 			return
 
 

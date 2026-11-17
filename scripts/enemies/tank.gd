@@ -845,6 +845,7 @@ func _bail_out(i: int) -> void:
 	e.rotation.y = _yaw + PI # facing back, away from the trench
 	e.attack_point = _nearest_attack_point(spot)
 	crew_root.add_child(e, true)
+	e.grenades = 0 # GR1: tank crews carry no hand grenades
 	var waves := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	if waves:
 		waves.add_enemy(e) # counted like any other soldier: the battle isn't over while he lives

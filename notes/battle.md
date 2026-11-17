@@ -228,3 +228,44 @@ in as others die. Battle 2 briefing text rewritten by the owner. Edited in `reso
 - Web: the browser keeps `user://` itself (IndexedDB); private windows and "clear site data"
   lose the run. A new release on the same address keeps it; if the number of battles ever
   changes, the saved battle is clamped to the last one.
+
+## Hand grenades (GR1, owner 2026-11-17)
+- `GrenadeManager` (`scripts/weapons/grenade_manager.gd`, Game/Grenades, group `grenades`; in the
+  builder AND hand-added to `scenes/game.tscn`). Host `throw(origin, velocity, thrower = -1,
+  reserved = true, fuse = -1)` works out the WHOLE flight at once (`simulate`: 1/60 s steps, rays
+  world + armour, bounce `restitution` / `tangent_keep` on snow, harder on wood/metal by
+  `ImpactEffects.surface_of`, lies still below `rest_speed` on flat ground), keeps every 2nd point
+  and sends the list with `grenade_thrown` (reliable) – every computer plays the same "recording".
+  Fuse 3.5–4.0 s from the throw → `_explode`: players and soldiers within `harm_radius_m` 9 m
+  (`kill_radius_m` 2 → 300 damage, then `near_damage` 95 … `far_damage` 5) only if a ray (world +
+  armour, `Tank.SIGHT_MASK`) from 0.15 m above the burst reaches chest or head – trench wall,
+  sandbags, bunker walls, wrecks protect; a grenade in the trench / in the bunker room does not.
+  Soldiers within 12 m that the blast reaches get suppression. `grenade_exploded` → the barrage's
+  `show_explosion(pos, 0, 0.55, 30, 0.8)` (no new particles) + sound.
+- Limits (host): `reserve()` before a wind-up – max `max_live` 2 live (+ reserved), `min_gap_s` 4 s
+  between throws on the whole field; `cancel_reservation()` if the throw doesn't happen.
+- Enemy (host): `grenades` = `EnemyData.grenades_min…max` (1–2 riflemen/officers, 0 DP-27 gunner,
+  tank crews set to 0 in `Tank._bail_out`). `_consider_grenade(dt)` after each senses tick: states
+  PATROL/ALERT/ATTACK/ASSAULT (not yet in the trench)/HOLD, not prone/pinned/panicking, not an MG
+  team; chance `grenade_chance_per_s` 0.25 (a soldier waiting ~10 s at his jump-off point near you almost surely throws); aim = his target if seen within `grenade_seen_memory`
+  4 s (`_seen_target_at`), else a Finn's gun heard within 3 s (`hear_noise` with source == interest
+  = a player's shot → `_heard_at/_heard_pos`, recorded even in ATTACK/ASSAULT/HOLD); flat range
+  6–28 m; no comrade within 4 m of the aim point; aim error 1–2.5 m × (1 + suppression) ×
+  `Enemy.spread_multiplier` (difficulty aim); the flight is tried out first (must not end within
+  4.8 m of him or near a comrade). Finn in the bunker (`ArtilleryBarrage.is_in_bunker`): from in
+  front a flat 14° throw at `BUNKER_SLIT_AIM` (just inside the firing hole; error × 0.4 – about 1 in
+  8 gets in), from behind a lob at `BUNKER_DOOR_AIM`.
+- The throw: synced `is_throwing` (StateSync ON_CHANGE, all three soldier scenes + builder; no new
+  `State`), `_throw_step` stands, faces the target, lets go at `grenade_release_at` 0.62 s,
+  done at `grenade_windup` 1.0 s; no prone meanwhile. `_end_throw(killed)` in `_die` / `freeze`:
+  killed before letting go → `grenade_drop_chance` 0.5 the live grenade drops at his feet
+  (`GrenadeManager.drop`), else the place is given back.
+- Looks: `SoldierVisual._throw_swing()` (hand back-up → over the shoulder → down, spine lean),
+  rifle hanging in the left hand, `HandAttach` (BoneAttachment on ForearmR) with the F-1 + lever
+  until the release (made on first use). `GrenadeManager.make_grenade(with_lever)` (no shadows);
+  flying grenades: pool of 6, tumbling / rolling. ShaderWarmup shows one F-1.
+- HUD: `GrenadeWarning` (`scripts/ui/grenade_warning.gd`, made in code by `HUD._ready`): an icon
+  drawn with shapes over every visible live grenade within 10 m (bigger, redder, faster pulse when
+  close); off-screen / behind → at the screen edge with an arrow. No text (owner).
+- Sounds: `RecordedSounds` `grenade_boom…` (else raid_boom pitch 1.4, −4 dB), `grenade_land…`
+  (else silent), throw silent for now.

@@ -901,6 +901,9 @@ func _build_game() -> Node:
 	# T2: flying Molotov cocktails and the fires they start.
 	var molotovs: Node3D = _add(g, Node3D.new(), "Molotovs")
 	molotovs.set_script(load("res://scripts/weapons/molotov_manager.gd"))
+	# GR1: Soviet hand grenades (flights worked out on the host, played back everywhere).
+	var grenades: Node3D = _add(g, Node3D.new(), "Grenades")
+	grenades.set_script(load("res://scripts/weapons/grenade_manager.gd"))
 	var waves: Node = _add(g, Node.new(), "WaveSpawner")
 	waves.set_script(load("res://scripts/enemies/wave_spawner.gd"))
 	waves.set("enemy_scene", load("res://scenes/enemies/soviet_rifleman.tscn"))
@@ -1621,6 +1624,8 @@ func _make_enemy_data() -> void:
 	g.reaction_time_max = 1.8
 	g.shot_noise_radius_m = 200.0
 	g.nerve = 0.85
+	g.grenades_min = 0 # GR1: the gun team carries no hand grenades
+	g.grenades_max = 0
 	ResourceSaver.save(g, "res://resources/enemies/soviet_mg_gunner.tres")
 
 
@@ -1689,6 +1694,7 @@ func _build_enemy(mats: Dictionary, data_name := "soviet_rifleman", node_name :=
 		[".:state", true, ON_CHANGE],
 		[".:is_kneeling", true, ON_CHANGE],
 		[".:is_prone", true, ON_CHANGE],
+		[".:is_throwing", true, ON_CHANGE], # GR1: arm swing of a grenade throw
 		[".:health", true, ON_CHANGE],
 	])
 	return e
