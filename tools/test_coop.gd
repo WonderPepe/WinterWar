@@ -84,6 +84,11 @@ func _run_host() -> void:
 	# The load gate: the host's battle waits with nobody in it until the client is loaded.
 	var gated: bool = await wait_for(func() -> bool: return get_tree().get_first_node_in_group("game") != null, 30.0)
 	check(gated, "host loaded the battle")
+	# A longer countdown than Test mode's 3 s, so the client can watch it run (the host is still
+	# paused at the load gate here, so the timer has not moved yet).
+	var hs := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
+	if hs:
+		hs.start_at_wave(1, 8.0)
 	var two: bool = await wait_for(func() -> bool: return players().size() == 2, TIMEOUT)
 	check(two, "both players exist on the host (load gate opened)")
 	if not two:
@@ -199,6 +204,13 @@ func _run_client() -> void:
 	var me := local_player()
 	ccheck(me != null and me.get_peer_id() == multiplayer.get_unique_id(), "the client has its own local player")
 	ccheck(me != null and me.input.is_multiplayer_authority(), "the client controls its own input")
+	# The countdown to the first wave runs on the host; the client shows the synced copy.
+	var ws := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
+	await wait_for(func() -> bool: return ws != null and ws.get_time_to_next_wave() > 0.0, 3.0)
+	var first: float = ws.get_time_to_next_wave() if ws else 0.0
+	var ticking: bool = await wait_for(func() -> bool:
+		return ws != null and ws.get_time_to_next_wave() > 0.0 and ws.get_time_to_next_wave() < first, 4.0)
+	ccheck(first > 0.0 and ticking, "the client's countdown to the battle moves (%d s → %d s)" % [int(first), int(ws.get_time_to_next_wave()) if ws else -1])
 	var enemies: bool = await wait_for(func() -> bool: return get_tree().get_nodes_in_group("enemies").size() > 0, 40.0)
 	ccheck(enemies, "Soviets appear on the client (MultiplayerSpawner)")
 	var spawner := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner

@@ -58,6 +58,9 @@ var wave_mg_teams: int = 0
 var wave_tanks: int = 0 ## T3
 ## L3: true while the players must first clear the Soviets out of the trench (battle 6).
 var retaking: bool = false
+## NET1 fix: whole seconds until the next wave (0 while a wave runs). The countdown itself
+## (`_timer`) runs only on the host, so the other computers read this synced copy.
+var next_wave_seconds: int = 0
 
 var _phase: Phase = Phase.WAITING
 var _timer: float = 0.0
@@ -79,10 +82,14 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not multiplayer.is_server() or not active:
+	if not multiplayer.is_server():
+		return
+	if not active:
+		next_wave_seconds = 0
 		return
 	if not (hold and _phase == Phase.WAITING):
 		_timer -= delta
+	next_wave_seconds = ceili(maxf(_timer, 0.0)) if _phase == Phase.WAITING else 0
 	if _phase != Phase.WAITING:
 		_wave_clock += delta
 		_send_tanks()
@@ -120,6 +127,8 @@ func start_at_wave(number: int, delay: float) -> void:
 
 ## Seconds until the next wave starts (0 while a wave is running).
 func get_time_to_next_wave() -> float:
+	if not multiplayer.is_server():
+		return float(next_wave_seconds) # NET1: the host's countdown, synced by WaveSync
 	return maxf(_timer, 0.0) if _phase == Phase.WAITING else 0.0
 
 

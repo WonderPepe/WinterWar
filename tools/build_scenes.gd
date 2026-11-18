@@ -920,6 +920,7 @@ func _build_game() -> Node:
 		[".:wave_mg_teams", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:wave_tanks", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE],
 		[".:retaking", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE], # L3
+		[".:next_wave_seconds", true, SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE], # NET1 fix
 	])
 
 	# G1: the rules of the battle (difficulty, victory, defeat) and the evening light.

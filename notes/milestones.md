@@ -466,5 +466,8 @@ saved run (like Test mode); respawn as in single player (same time, at the rear,
   (starts as soon as a second soldier joins), `--coop-join[=address]` (retries until the host is
   there), `--coop-wave=N` (Test mode battle N, with --coop-host).
 - Details: `architecture.md` ("Co-op connection (NET1)"). Test: `test_coop.gd` (two copies).
+- Fix after the owner's first test: player 2's "Battle 1 begins in 5 s" stood still – the countdown
+  ran only on the host. Now `WaveSpawner.next_wave_seconds` (whole seconds) is synced by WaveSync and
+  `get_time_to_next_wave()` reads it on the other computers.
 - Next: NET2 – play a battle as player 2, list what breaks (`notes/coop-issues.md`), fix the worst;
   NET3 – smooth remote soldiers / players / tanks between network updates (picture only).
