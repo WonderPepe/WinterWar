@@ -74,8 +74,11 @@ you work on. Update this file and the right note at the end of every milestone.
   made in code, own body hidden; mesh `FinnMesh` – M/39 fur hat, dirty off-white snow smock + trousers,
   Mosin / Suomi – on the Soviets' skeleton; posed only from state already synced; shared arm IK
   `SoldierMesh.reach`).
-  Next: EX1 (Windows desktop export to play co-op with a friend on the same network), then NET3
-  (smoothing) (owner 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  NET3: Soviets, tanks and other players glide on a guest's computer (`NetSmoother`, child
+  `Smoother`; StateSync sends `Smoother:net_position/net_quat` + `net_stamp` LAST; ~35 ms delay on a
+  LAN, own player never delayed; lag simulator `--net-lag/--net-jitter/--net-loss`).
+  Next: EX1 (Windows desktop export to play co-op with a friend on the same network) (owner
+  2026-11-19); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -123,6 +126,8 @@ you work on. Update this file and the right note at the end of every milestone.
   damage, spawning, game state; use the `players` group, never a "the player" singleton; UI only
   reads state. Details: `notes/architecture.md`.
 - Synced enums (Enemy State, Tank State, Molotov phase…): add new values at the END.
+- Positions of things the host moves are synced through their `Smoother` (`Smoother:net_position`),
+  never `.:position`; `Smoother:net_stamp` stays the LAST synced property (NET3).
 - `@export` PackedStringArray defaults must be `= PackedStringArray()`, not `[]` (export bug).
 - Every new particle effect must go through `ImpactEffects.web_fallback()` (particle colours
   render black in WebGL / on AMD).

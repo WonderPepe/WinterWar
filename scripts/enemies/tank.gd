@@ -167,6 +167,10 @@ var _turret_clunk: AudioStreamPlayer3D
 var _clunks: Array[AudioStream] = []
 var _turret_stop_sound: AudioStream
 var _prev_turret_yaw: float = 0.0
+var _shown_turret_yaw: float = 0.0 # NET3: what the other computers draw (glides after turret_yaw)
+var _shown_gun_pitch: float = 0.0
+## NET3: how quickly the turret picture follows the synced angle on the other computers (1/s).
+@export var turret_smoothing: float = 25.0
 var _turret_rate: float = 0.0 # smoothed |deg/s| heard as sound
 var _turret_moving: bool = false
 var _turret_moved_since: float = 0.0
@@ -285,7 +289,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_apply_pivots()
+	_apply_pivots(delta)
 	_update_turret_sound(delta)
 	if _engine_fire:
 		var light := _engine_fire.get_node("FireLight") as OmniLight3D
@@ -296,9 +300,18 @@ func _process(delta: float) -> void:
 	engine_sound.volume_db = lerpf(-5.0, 0.0, t)
 
 
-func _apply_pivots() -> void:
-	turret_pivot.rotation.y = turret_yaw
-	gun_pivot.rotation.x = gun_pitch
+func _apply_pivots(delta: float = -1.0) -> void:
+	# NET3: on the other computers the synced turret / gun angles arrive in small steps – they
+	# glide after them (picture only; the host aims and fires with the real values).
+	if delta < 0.0 or multiplayer.is_server():
+		_shown_turret_yaw = turret_yaw
+		_shown_gun_pitch = gun_pitch
+	else:
+		var k: float = 1.0 - exp(-delta * turret_smoothing)
+		_shown_turret_yaw = lerp_angle(_shown_turret_yaw, turret_yaw, k)
+		_shown_gun_pitch = lerpf(_shown_gun_pitch, gun_pitch, k)
+	turret_pivot.rotation.y = _shown_turret_yaw
+	gun_pivot.rotation.x = _shown_gun_pitch
 	if _turret_mesh and _gun_mesh:
 		_turret_mesh.global_transform = turret_pivot.global_transform * _turret_offset
 		_gun_mesh.global_transform = gun_pivot.global_transform * _gun_offset

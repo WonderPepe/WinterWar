@@ -43,6 +43,13 @@ var _molotov_phase: int = 0
 var _molotov_t: float = 0.0 # seconds since the Molotov phase changed
 var _grab_t: float = 0.0 # seconds since he grabbed a grenade (GR2)
 var _was_grabbing: bool = false
+# NET3: his view arrives from his computer in small steps – the body turns and looks after it
+# smoothly (picture only, every computer).
+var _shown_yaw: float = 0.0
+var _shown_pitch: float = 0.0
+var _view_started: bool = false
+## NET3: how quickly the body follows his view (1/s): ~40 ms behind, no visible steps.
+@export var view_smoothing: float = 25.0
 
 # The smock was not the same white on everybody (washing, wear).
 const SMOCK_TINTS: Array[Color] = [Color(1, 1, 1), Color(0.97, 0.97, 0.94), Color(1.02, 1.01, 0.98),
@@ -116,10 +123,25 @@ func _process(delta: float) -> void:
 	_speed = lerpf(_speed, minf(instant, 8.0), clampf(delta * 8.0, 0.0, 1.0))
 	_phase += moved.length() / stride_m * PI
 	_kick = move_toward(_kick, 0.0, delta * 6.0)
+	_smooth_view(delta)
 	_update_gun()
 	_update_timers(delta)
 	_update_fall()
 	_pose(delta)
+
+
+## NET3: the skeleton turns after his synced view yaw; the pitch glides the same way.
+func _smooth_view(delta: float) -> void:
+	var yaw: float = _player.global_rotation.y
+	var pitch: float = _player.input.look_pitch
+	if not _view_started:
+		_view_started = true
+		_shown_yaw = yaw
+		_shown_pitch = pitch
+	var k: float = 1.0 - exp(-delta * view_smoothing)
+	_shown_yaw = lerp_angle(_shown_yaw, yaw, k)
+	_shown_pitch = lerpf(_shown_pitch, pitch, k)
+	_skeleton.rotation.y = wrapf(_shown_yaw - yaw, -PI, PI)
 
 
 ## Which gun he holds: the weapon slot that is synced anyway.
@@ -197,7 +219,7 @@ func _pose(delta: float) -> void:
 	var aiming: bool = _player.input.aim_held and hands == Hands.GUN
 	var reloading: bool = _player.weapons.is_reloading and hands == Hands.GUN
 	# Looking up / down: the chest takes 40 %, the head and the gun the rest.
-	var pitch: float = 0.0 if dead else clampf(_player.input.look_pitch, -1.2, 1.2)
+	var pitch: float = 0.0 if dead else clampf(_shown_pitch, -1.2, 1.2)
 	if hands == Hands.MAXIM:
 		pitch *= 0.3
 

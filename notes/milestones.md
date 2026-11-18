@@ -514,3 +514,20 @@ Order after this: EX1 (Windows build to play with a friend on the same network),
   screenshots `shots_net2b.gd` (lineup, portrait in sun / against the sun, back, side, busy, fire,
   dead, Maxim).
 
+## NET3 – smooth movement on the other computers (review item A1, step 3) (2026-11-19)
+Soviets, tanks and the other players jumped from one network update to the next on a guest's
+computer. Now they glide (picture only; the host still decides everything). How it is built:
+`architecture.md` ("Smoothing on the other computers (NET3)").
+**Owner decisions (2026-11-18/19):** keep 60 updates a second; lag compensation (a guest's
+shots at running Soviets) left for the online milestones; NET3 before EX1 (Windows build).
+- `NetSmoother` (`Smoother` child in soviet_rifleman / officer / mg_gunner / tank / player.tscn and
+  build_scenes.gd): host stamps position + facing, guest draws ~35 ms (LAN) – 150 ms in the past
+  and glides; ≤ 0.15 s carrying on; > 1.5 m = jump at once; own player never delayed.
+- PlayerBody: view yaw / pitch smoothed; Tank: turret / gun smoothed on guests.
+- Lag simulator `--net-lag=100 --net-jitter=20 --net-loss=2` (guest). F3 overlay "Net:" line.
+- Measured (cloud, two copies, 144 fps client): frame-to-frame "jerk" 0.0018 m smoothed vs
+  0.015 m raw (no lag), 0.0018 vs 0.019 m with the lag simulator; delay 36 / 57 ms; 61 / 56
+  updates a second; drawn 0.10 / 0.37 m behind the host's walking Soviets (median); no jumps.
+- Tests: `test_net3.gd` (42 checks), `test_net3_coop.gd [--lag]` (two copies, 10 checks);
+  test_net2b now expects 16 synced player values (the time stamp).
+

@@ -37,8 +37,13 @@ code read. Keep this list up to date as co-op work goes on.
 7. **Fixed (NET2, owner: ok).** The host's "Main menu" (pause / end screen) ended the battle for
    everyone without a word: now a line "Main menu ends the battle for everyone."
 
+## Smoothing (NET3, 19 Nov 2026)
+- Done: Soviets, tanks and other players glide on a guest's computer (`NetSmoother`), turret and
+  the other player's view too; own soldier not delayed. `test_net3.gd`, `test_net3_coop.gd [--lag]`.
+
 ## Not checked yet (needs the owner's two-window test)
 - How movement feels for player 2 (host decides his position; one round trip of delay).
 - Sound of the other player's shots / footsteps, effects seen from the other window.
-- NET2b: how the other player's soldier looks moving at network speed (positions arrive in steps
-  until NET3 smooths them – his legs may look a little jerky).
+- NET3: how the smoothed Soviets / tanks / other player look and feel in the owner's two-window
+  test (measured in the cloud: 8–15× more even than the raw updates, ~35 ms behind on one PC;
+  with the lag simulator 100 / 20 ms / 2 % ~60 ms behind, no jumps).

@@ -99,7 +99,7 @@ func run() -> void:
 	check(b.get_node("Skeleton/Mesh").mesh == FinnMesh.get_mesh(0), "he starts with the Mosin")
 	check(b.get_node("Skeleton").get_bone_count() == 12, "same 12-bone skeleton as the Soviets")
 	var cfg: SceneReplicationConfig = (f.get_node("StateSync") as MultiplayerSynchronizer).replication_config
-	check(cfg.get_properties().size() == 15, "no new synced state (StateSync has %d properties)" % cfg.get_properties().size())
+	check(cfg.get_properties().size() == 16, "only NET3's time stamp added to the synced state (StateSync has %d properties)" % cfg.get_properties().size())
 
 	# --- turns with his view ---
 	f.input.look_yaw = deg_to_rad(90.0)

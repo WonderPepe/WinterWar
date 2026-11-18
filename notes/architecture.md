@@ -42,6 +42,34 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `_stop_battle` RPC (others disable their scene) → host loads → `_load_battle` to each peer.
   `NetworkManager.is_coop_host()`. `--mute` mutes the Master bus for that program start.
 
+## Smoothing on the other computers (NET3)
+- Soviet soldiers, tanks and players have a `Smoother` child (`NetSmoother`,
+  `scripts/game/net_smoother.gd`, in their scenes). Their StateSync sends
+  `Smoother:net_position` (+ `Smoother:net_quat` for Soviets / tanks) instead of `.:position` /
+  `.:rotation`, and `Smoother:net_stamp` (host clock, `NetSmoother.now()`) as the **last**
+  property – its setter takes the update in, so position and facing of the same update are
+  already there. Keep it last when adding synced values.
+- Host: `_physics_process` (priority 100, after the parent moved) copies the parent's position /
+  quaternion and stamps it. Never moves anything. Single player = host, so nothing changes there.
+- Guest: updates go into a short list (duplicates / older ones dropped). Clock difference = the
+  smallest (receive − stamp) of the last 2 s; drawing delay = 1.5 × update interval + 2 × jitter
+  (30–150 ms; ~35 ms on a LAN at 60 updates/s). Between updates: lerp / slerp; past the newest:
+  carries on ≤ `max_extrapolate` 0.15 s; a jump > `snap_distance` 1.5 m (both drawn and newest)
+  is shown at once (`snaps`). `process_priority` −50, so SoldierVisual / PlayerBody / TrackAnimator
+  read the smoothed position the same frame.
+- Your OWN player on a guest: `own_player` – the newest update at once, as before NET3.
+- Players turn by their synced view: PlayerBody smooths yaw (turns its Skeleton after
+  `Player.rotation.y`) and pitch, `view_smoothing` 25/s, on every computer. Tank turret / gun:
+  `Tank.turret_smoothing` 25/s on guests (`_apply_pivots(delta)`); the host aims with the real values.
+- Sending rate unchanged (owner 2026-11-18: keep 60): every network frame; only new stamps (one per
+  host physics tick, 60/s) are used. `replication_interval` 1/60 was tried and dropped – it is
+  rounded up to whole frames (144 fps → 48/s, 60 fps vsync → 30/s).
+- Lag simulator (guest, these updates only): `--net-lag=ms --net-jitter=ms --net-loss=%`.
+  F3 overlay on a guest: "Net: n smoothed, updates/s, delay, jumps".
+- A guest sees the Soviets `delay` + half a round trip late, so his shots at running Soviets
+  can miss a little over the internet; lag compensation (host checks where the guest saw them)
+  is left for the online milestones (owner OK 2026-11-18).
+
 ## Conventions
 - Folders: `scenes/`, `scripts/` (player, weapons, enemies, world, game), `resources/`
   (materials, weapons, enemies), `levels/`, `ui/`, `autoload/`, `assets/`, `tools/` (helpers,

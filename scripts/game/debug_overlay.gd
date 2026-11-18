@@ -36,6 +36,9 @@ func _process(_delta: float) -> void:
 		wave_line = "Battle %d   Enemies alive: %d" % [waves.wave_number, waves.alive_count]
 		if waves.get_time_to_next_wave() > 0.0:
 			wave_line += "   Next battle in %d s" % ceili(waves.get_time_to_next_wave())
+	var net_line: String = NetSmoother.debug_line(get_tree()) # NET3 (guests only)
+	if net_line != "":
+		wave_line += "\n" + net_line
 	text = "Speed: %.1f m/s   Stamina: %d   Health: %d%s\nState: %s   Deep snow: %s\n%s\n%s\n%s\nFPS: %d   Mouse: %s   [F1 god mode, F2 enemy labels, F3 hide]" % [
 		player.get_speed(), int(player.stamina), player.health, "  (GOD MODE)" if player.god_mode else "",
 		state, "YES" if player.is_in_deep_snow() else "no",

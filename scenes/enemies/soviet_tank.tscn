@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/enemies/tank.gd" id="1_utsw7"]
 [ext_resource type="PackedScene" path="res://assets/models/vehicles/t26/model.gltf" id="2_xuiai"]
 [ext_resource type="Script" path="res://scripts/enemies/track_animator.gd" id="3_trk6a"]
+[ext_resource type="Script" path="res://scripts/game/net_smoother.gd" id="90_net3"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fx0oc"]
 size = Vector3(2.35, 1.4, 4.65)
@@ -12,10 +13,10 @@ height = 0.85
 radius = 0.78
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nciiy"]
-properties/0/path = NodePath(".:position")
+properties/0/path = NodePath("Smoother:net_position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath(".:rotation")
+properties/1/path = NodePath("Smoother:net_quat")
 properties/1/spawn = true
 properties/1/replication_mode = 1
 properties/2/path = NodePath(".:turret_yaw")
@@ -30,6 +31,9 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath(".:state")
 properties/5/spawn = true
 properties/5/replication_mode = 2
+properties/6/path = NodePath("Smoother:net_stamp")
+properties/6/spawn = true
+properties/6/replication_mode = 1
 
 [node name="SovietTank" type="AnimatableBody3D" unique_id=1564799713]
 collision_layer = 20
@@ -85,6 +89,9 @@ max_distance = 450.0
 bus = &"SFX"
 attenuation_filter_cutoff_hz = 3000.0
 attenuation_filter_db = -20.0
+
+[node name="Smoother" type="Node" parent="."]
+script = ExtResource("90_net3")
 
 [node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=29771725]
 replication_config = SubResource("SceneReplicationConfig_nciiy")

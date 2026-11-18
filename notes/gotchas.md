@@ -120,3 +120,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   that the wheels' shadows turn with them (the importer's "shadow mesh" has no UV2).
 - Shader random numbers: use whole-number (uint) hashes on `ivec2` cells, not `fract(sin(...))` or
   `fract(p * 123.34)` – those need every float digit and gave seams in Chrome's default path (S1).
+- `MultiplayerSynchronizer.replication_interval` is rounded up to whole process frames: 1/60 s
+  gives 48 updates/s at 144 fps and 30/s at 60 fps (NET3). Leave it 0 and drop duplicates.
+- NET3: a new synced position for something the host moves goes through its `Smoother`
+  (`Smoother:net_position`), never `.:position`, and `Smoother:net_stamp` stays the last property.

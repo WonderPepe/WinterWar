@@ -5,16 +5,17 @@
 [ext_resource type="Script" path="res://scripts/enemies/soldier_visual.gd" id="3_af7m1"]
 [ext_resource type="Material" path="res://resources/materials/soldier.tres" id="4_1q581"]
 [ext_resource type="AudioStream" path="res://assets/audio/mosin_shot.wav" id="5_6rr1w"]
+[ext_resource type="Script" path="res://scripts/game/net_smoother.gd" id="90_net3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5au3s"]
 radius = 0.33
 height = 1.8
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_x7j7f"]
-properties/0/path = NodePath(".:position")
+properties/0/path = NodePath("Smoother:net_position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath(".:rotation")
+properties/1/path = NodePath("Smoother:net_quat")
 properties/1/spawn = true
 properties/1/replication_mode = 1
 properties/2/path = NodePath(".:state")
@@ -32,6 +33,9 @@ properties/5/replication_mode = 2
 properties/6/path = NodePath(".:health")
 properties/6/spawn = true
 properties/6/replication_mode = 2
+properties/7/path = NodePath("Smoother:net_stamp")
+properties/7/spawn = true
+properties/7/replication_mode = 1
 
 [node name="SovietMGGunner" type="CharacterBody3D" unique_id=1355656420]
 collision_layer = 4
@@ -75,6 +79,9 @@ billboard = 1
 no_depth_test = true
 fixed_size = true
 outline_size = 8
+
+[node name="Smoother" type="Node" parent="."]
+script = ExtResource("90_net3")
 
 [node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=775733481]
 replication_config = SubResource("SceneReplicationConfig_x7j7f")

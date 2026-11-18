@@ -317,10 +317,14 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:aim_held", false, ON_CHANGE],
 	])
 
+	# NET3: other players glide on a guest's computer (your own is never delayed).
+	var smoother: Node = _add(p, Node.new(), "Smoother")
+	smoother.set_script(load("res://scripts/game/net_smoother.gd"))
+	smoother.set("sync_rotation", false) # players turn by their synced view (look_yaw)
 	var state_sync: MultiplayerSynchronizer = _add(p, MultiplayerSynchronizer.new(), "StateSync")
 	state_sync.root_path = NodePath("..")
 	state_sync.replication_config = _sync_config([
-		[".:position", true, ALWAYS],
+		["Smoother:net_position", true, ALWAYS],
 		[".:velocity", false, ALWAYS],
 		[".:rotation", true, NEVER],
 		[".:health", true, ON_CHANGE],
@@ -335,6 +339,7 @@ func _build_player(mats: Dictionary) -> Node:
 		[".:bandages", true, ON_CHANGE],
 		[".:is_bandaging", true, ON_CHANGE],
 		[".:is_climbing", true, ON_CHANGE],
+		["Smoother:net_stamp", true, ALWAYS], # NET3: must stay last
 	])
 	return p
 
@@ -815,17 +820,20 @@ func _build_tank() -> Node:
 	engine.attenuation_filter_db = -20.0
 	engine.position = Vector3(0, 1.0, 1.2) # engine at the back
 
+	var smoother: Node = _add(t, Node.new(), "Smoother") # NET3
+	smoother.set_script(load("res://scripts/game/net_smoother.gd"))
 	var sync: MultiplayerSynchronizer = _add(t, MultiplayerSynchronizer.new(), "StateSync")
 	sync.root_path = NodePath("..")
 	var ALWAYS := SceneReplicationConfig.REPLICATION_MODE_ALWAYS
 	var ON_CHANGE := SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
 	sync.replication_config = _sync_config([
-		[".:position", true, ALWAYS],
-		[".:rotation", true, ALWAYS],
+		["Smoother:net_position", true, ALWAYS],
+		["Smoother:net_quat", true, ALWAYS],
 		[".:turret_yaw", true, ALWAYS],
 		[".:gun_pitch", true, ALWAYS],
 		[".:drive_speed", true, ON_CHANGE],
 		[".:state", true, ON_CHANGE],
+		["Smoother:net_stamp", true, ALWAYS], # NET3: must stay last
 	])
 	# T6: runs the tracks and turns the wheels from how the hull really moves (picture only,
 	# every computer by itself; tank.gd knows nothing about it).
@@ -1680,18 +1688,22 @@ func _build_enemy(mats: Dictionary, data_name := "soviet_rifleman", node_name :=
 	label.no_depth_test = true
 	label.visible = false
 
+	# NET3: the Smoother sends position + facing with the host's time stamp; guests glide.
+	var smoother: Node = _add(e, Node.new(), "Smoother")
+	smoother.set_script(load("res://scripts/game/net_smoother.gd"))
 	var sync: MultiplayerSynchronizer = _add(e, MultiplayerSynchronizer.new(), "StateSync")
 	sync.root_path = NodePath("..")
 	var ALWAYS := SceneReplicationConfig.REPLICATION_MODE_ALWAYS
 	var ON_CHANGE := SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
 	sync.replication_config = _sync_config([
-		[".:position", true, ALWAYS],
-		[".:rotation", true, ALWAYS],
+		["Smoother:net_position", true, ALWAYS],
+		["Smoother:net_quat", true, ALWAYS],
 		[".:state", true, ON_CHANGE],
 		[".:is_kneeling", true, ON_CHANGE],
 		[".:is_prone", true, ON_CHANGE],
 		[".:is_throwing", true, ON_CHANGE], # GR1: arm swing of a grenade throw
 		[".:health", true, ON_CHANGE],
+		["Smoother:net_stamp", true, ALWAYS], # NET3: must stay last
 	])
 	return e
 

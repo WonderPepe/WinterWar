@@ -11,6 +11,7 @@
 [ext_resource type="Material" path="res://resources/materials/snowflake.tres" id="9_fulsm"]
 [ext_resource type="Script" path="res://scripts/player/player_input.gd" id="10_4r5pv"]
 [ext_resource type="Script" path="res://scripts/player/climb_handler.gd" id="11_c1clm"]
+[ext_resource type="Script" path="res://scripts/game/net_smoother.gd" id="90_net3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v2ag"]
 radius = 0.35
@@ -72,7 +73,7 @@ properties/5/spawn = false
 properties/5/replication_mode = 2
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_4r5pv"]
-properties/0/path = NodePath(".:position")
+properties/0/path = NodePath("Smoother:net_position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
 properties/1/path = NodePath(".:velocity")
@@ -117,6 +118,9 @@ properties/13/replication_mode = 2
 properties/14/path = NodePath(".:is_climbing")
 properties/14/spawn = true
 properties/14/replication_mode = 2
+properties/15/path = NodePath("Smoother:net_stamp")
+properties/15/spawn = true
+properties/15/replication_mode = 1
 
 [node name="Player" type="CharacterBody3D" unique_id=992209146]
 collision_layer = 2
@@ -206,6 +210,10 @@ script = ExtResource("10_4r5pv")
 
 [node name="InputSync" type="MultiplayerSynchronizer" parent="PlayerInput" unique_id=376278510]
 replication_config = SubResource("SceneReplicationConfig_fulsm")
+
+[node name="Smoother" type="Node" parent="."]
+script = ExtResource("90_net3")
+sync_rotation = false
 
 [node name="StateSync" type="MultiplayerSynchronizer" parent="." unique_id=954353018]
 replication_config = SubResource("SceneReplicationConfig_4r5pv")
