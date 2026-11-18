@@ -24,6 +24,8 @@ enum Result { PLAYING, VICTORY, DEFEAT }
 ## Test mode (main menu, only in the Godot editor): the battle starts at this wave (0 = normal).
 ## Kept for "Play again"; the normal Single Player button sets it back to 0.
 static var test_start_wave: int = 0
+## NET2: co-op "Retry battle n" – the battle this co-op match starts at (1 = from the start).
+static var coop_start_battle: int = 1
 
 # --- Synced from the host by MatchSync ---
 var difficulty: int = 1
@@ -69,6 +71,8 @@ func _ready() -> void:
 	spawner.wave_cleared.connect(_on_wave_cleared)
 	if test_start_wave > 0:
 		_start_test_mode(clampi(test_start_wave, 1, maxi(waves_to_win, 1)))
+	elif NetworkManager.coop_battle and coop_start_battle > 1:
+		_start_at_wave(clampi(coop_start_battle, 1, maxi(waves_to_win, 1))) # NET2: co-op retry
 	elif in_run and RunSave.battle > 1:
 		# D1: retry / continue – the battles before the saved one are already held.
 		match_time = RunSave.time

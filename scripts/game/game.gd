@@ -76,6 +76,7 @@ func _on_player_died(player: Player) -> void:
 	var points := _rear_points()
 	if points.is_empty():
 		points = get_tree().get_nodes_in_group(spawn_points_group)
+	points = _free_points(points, player) # NET2: not where another player is standing
 	var spawn: Node3D = points.pick_random() if not points.is_empty() else self
 	if _coming_battle_is_retake():
 		spawn = _farthest_from_enemies(points) # L3: as far from the Soviets in the trench as possible
@@ -132,6 +133,21 @@ func _rear_points(side: String = "") -> Array[Node]:
 		if side == "" or String(node.get_meta("side", "")) == side:
 			list.append(node)
 	return list
+
+
+## NET2: the points with no other living player within 2 m (all of them if none is free).
+func _free_points(points: Array[Node], player: Player) -> Array[Node]:
+	var free: Array[Node] = []
+	for node in points:
+		var taken: bool = false
+		for other in get_players():
+			var o := other as Player
+			if o != player and not o.is_dead and o.global_position.distance_to((node as Node3D).global_position) < 2.0:
+				taken = true
+				break
+		if not taken:
+			free.append(node)
+	return free if not free.is_empty() else points
 
 
 ## L3: the spawn point farthest from every living Soviet.

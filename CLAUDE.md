@@ -66,8 +66,12 @@ you work on. Update this file and the right note at the end of every milestone.
   NET1 (review item A1, step 1): co-op over ENet – Host / Join Co-op lobby (desktop only, port
   7777, 2–4), load gate (host waits paused until every computer has loaded), launch options
   `--coop-host` / `--coop-join` / `--coop-wave=N` for two windows on one PC; co-op never touches the
-  saved run. NET2 (play as player 2, list + fix what breaks) and NET3 (smoothing) are next.
-  Next: NET2, then NET3 (owner chose co-op 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  saved run.
+  NET2 (A1 step 2): `tools/soak_coop.gd` scenario + `notes/coop-issues.md`; the next battle waits
+  until every player closed his day screen; host's end screen "Retry battle n" / "New game" for all;
+  host's Main menu warns it ends the battle for everyone; free respawn spot; `--mute`.
+  Next: NET2b (Finnish soldier body for the other players, not the grey capsule), then NET3
+  (smoothing) (owner chose co-op 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -125,7 +129,8 @@ you work on. Update this file and the right note at the end of every milestone.
 
 ## Notes index (`notes/`, ignored by Godot)
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
-- `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1), conventions, groups, physics layers, map coordinates
+- `coop-issues.md` – co-op: what works, what breaks, status (NET2)
+- `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1) + retry / day-screen hold (NET2), conventions, groups, physics layers, map coordinates
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)

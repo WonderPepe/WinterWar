@@ -79,6 +79,8 @@ func _process(delta: float) -> void:
 		_find_local_player()
 		if _player == null:
 			return
+	if not _player.is_inside_tree():
+		return # NET2: removed by the host this frame (co-op retry) – nothing to show
 	if _director == null or not is_instance_valid(_director):
 		_director = get_tree().get_first_node_in_group("match_director") as MatchDirector
 	_update_vitals()
@@ -247,6 +249,9 @@ func _update_waves(delta: float) -> void:
 	var next: float = waves.get_time_to_next_wave()
 	next_wave_label.visible = next > 0.0
 	next_wave_label.text = "Battle %d begins in %d s" % [waves.wave_number + 1, ceili(next)]
+	if waves.waiting_for_readers and not day_screen.is_open:
+		# NET2: another player is still reading his briefing.
+		next_wave_label.text = "Battle %d – waiting for the others to read the briefing" % (waves.wave_number + 1)
 	score_label.text = "Kills %d   Deaths %d" % [_player.kills, _player.deaths]
 	_update_day_screen()
 	# Big "BATTLE n" banner when a new wave starts.

@@ -471,3 +471,16 @@ saved run (like Test mode); respawn as in single player (same time, at the rear,
   `get_time_to_next_wave()` reads it on the other computers.
 - Next: NET2 – play a battle as player 2, list what breaks (`notes/coop-issues.md`), fix the worst;
   NET3 – smooth remote soldiers / players / tanks between network updates (picture only).
+
+## NET2 – co-op: play as player 2, fix what breaks (review item A1, step 2) (2026-11-18)
+The list (what works, what breaks, status): `coop-issues.md`, found with the new scenario
+`tools/soak_coop.gd` (player 2 does everything a player can; 72 checks, both copies' errors read).
+**Owner decisions (2026-11-18):** retry in co-op yes; a warning line on the host's Main menu ok;
+order NET2 → NET2b (a Finnish soldier body for the other players instead of the grey capsule) → NET3.
+- The next battle waits until every player has closed his own day screen (`WaveSpawner.set_reader_hold`,
+  `_peer_holds`, synced `waiting_for_readers` → HUD "waiting for the others to read the briefing").
+- Host's end screen: "Retry battle n" / "New game" for everyone (`NetworkManager.begin_battle(test, start)`,
+  `MatchDirector.coop_start_battle`); retry in three steps (others stop their battle → host leaves →
+  everyone loads) so no message arrives for a battle that is gone. Others: "Waiting for the host…".
+- Host's pause / end screen: "Main menu ends the battle for everyone." Respawn never on another
+  living player's spot. Refused join: "…or the battle has already started." Launch option `--mute`.

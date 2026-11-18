@@ -5,7 +5,7 @@ extends Control
 ## static for the first seconds. (Battle 1's briefing is on the loading screen.) Space / Enter continues, otherwise it closes by itself after reading time.
 ##
 ## Part of the HUD (only reads the synced `MatchDirector.waves_cleared`), so co-op players see it
-## too. On the host it holds the next wave's countdown (`WaveSpawner.hold`) while it is open.
+## too. It holds the next wave's countdown while it is open (NET2: on every player's computer).
 ## The game is not paused: the battle sounds are only turned down behind it.
 
 signal closed
@@ -215,13 +215,14 @@ func _duck(amount: float) -> void:
 		AudioServer.set_bus_volume_db(amb, linear_to_db(maxf(Settings.ambience_volume, 0.0001)) - 3.0 + db)
 
 
-## Host: the next wave's countdown waits while the day screen is open.
+## The next wave's countdown waits while the day screen is open. NET2: on every computer –
+## the host waits until each player has closed his own (Space only closes your own screen).
 func _set_hold(on: bool) -> void:
-	if not is_inside_tree() or not multiplayer.is_server():
+	if not is_inside_tree():
 		return
 	var spawner := get_tree().get_first_node_in_group("wave_spawner") as WaveSpawner
 	if spawner:
-		spawner.hold = on
+		spawner.set_reader_hold(on)
 
 
 func _finish() -> void:

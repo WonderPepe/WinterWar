@@ -49,7 +49,12 @@ func open(director: MatchDirector, player: Player, reports: FrontReports = null)
 	stats.text += "\nGrenades thrown back: %d" % player.grab.thrown_back # GR2
 	if director.is_run():
 		stats.text += "\nRetries: %d" % RunSave.retries
-	again_button.visible = NetworkManager.is_single_player()
+	again_button.visible = NetworkManager.is_single_player() or NetworkManager.is_coop_host()
+	if NetworkManager.coop_battle:
+		# NET2: in co-op the host decides – retry the lost battle / a new game, for everyone.
+		again_button.text = "New game" if won else "Retry battle %d" % _lost_battle
+		_set_note(menu_button, "Main menu ends the battle for everyone." if NetworkManager.is_coop_host()
+				else "Waiting for the host: he can retry the battle for everyone.")
 	visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if NetworkManager.is_single_player():
@@ -60,6 +65,11 @@ func open(director: MatchDirector, player: Player, reports: FrontReports = null)
 ## Single player. Defeat: the lost battle again, from the last checkpoint (the numbers of the
 ## failed try are dropped). Victory: a new run from battle 1.
 func _on_play_again() -> void:
+	if NetworkManager.coop_battle:
+		# NET2: the host starts the battle again on every computer (lost battle / battle 1).
+		NetworkManager.begin_battle(_lost_battle if MatchDirector.test_start_wave > 0 and not _won else 0,
+				1 if _won else _lost_battle)
+		return
 	prepare_again()
 	NetworkManager.start_single_player()
 	LoadingScreen.go(get_tree(), GAME_SCENE)
@@ -78,3 +88,23 @@ func prepare_again() -> void:
 			RunSave.start_new(Settings.difficulty)
 			RunSave.battle = _lost_battle
 		RunSave.retry()
+
+
+## NET2: a small grey line under the buttons (made once, in code).
+static func _set_note(beside: Control, text: String) -> void:
+	var node: Node = beside.get_parent()
+	while node != null and not node is VBoxContainer: # the panel's VBox (the buttons may sit in a row)
+		node = node.get_parent()
+	var box := node as VBoxContainer
+	if box == null:
+		return
+	var note := box.get_node_or_null("CoopNote") as Label
+	if note == null:
+		note = Label.new()
+		note.name = "CoopNote"
+		note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		note.add_theme_font_size_override("font_size", 15)
+		note.add_theme_color_override("font_color", Color(0.8, 0.8, 0.75))
+		box.add_child(note)
+	note.text = text
+	note.visible = text != ""

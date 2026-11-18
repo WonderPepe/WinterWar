@@ -42,6 +42,10 @@ var last_message: String = ""
 
 
 func _ready() -> void:
+	# NET2: launch option `--mute` – no sound in this window (two copies on one PC play every
+	# sound twice). Only for this program start; the volume settings are not changed.
+	if OS.get_cmdline_args().has("--mute") or OS.get_cmdline_user_args().has("--mute"):
+		AudioServer.set_bus_mute(0, true)
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
@@ -128,6 +132,11 @@ func is_coop() -> bool:
 	return multiplayer.multiplayer_peer is ENetMultiplayerPeer
 
 
+## NET2: true for the host of a co-op game – his "Main menu" ends the battle for everyone.
+func is_coop_host() -> bool:
+	return is_coop() and multiplayer.is_server()
+
+
 # --- Lobby ---------------------------------------------------------------------------------
 
 func _on_peer_connected(id: int) -> void:
@@ -174,7 +183,7 @@ func _on_connected_to_server() -> void:
 
 func _on_connection_failed() -> void:
 	close_connection()
-	connection_lost.emit("Could not reach the host.")
+	connection_lost.emit("Could not reach the host – or the battle has already started.")
 
 
 func _on_server_disconnected() -> void:
@@ -191,21 +200,47 @@ func _on_server_disconnected() -> void:
 # --- Starting the battle -------------------------------------------------------------------
 
 ## Host: everyone in the lobby loads the battle. `test_wave` > 0 = Test mode (editor / tests).
-func begin_battle(test_wave: int = 0) -> void:
+## NET2: `start_battle` > 1 = the end screen's "Retry battle n" (everyone again, at battle n).
+func begin_battle(test_wave: int = 0, start_battle: int = 1) -> void:
 	if not is_coop() or not multiplayer.is_server():
 		return
 	(multiplayer.multiplayer_peer as ENetMultiplayerPeer).refuse_new_connections = true
 	_battle_peers = lobby_peers.duplicate()
 	_loaded.clear()
-	_load_battle.rpc(Settings.difficulty, test_wave)
+	if not coop_battle:
+		_load_battle.rpc(Settings.difficulty, test_wave, start_battle) # from the lobby: all at once
+		return
+	# NET2 retry, in three steps so no message arrives for a battle that is already gone:
+	# 1) everyone else stops his old battle (no more key presses sent), 2) the host leaves it
+	# (its "these nodes are gone" messages reach the others while they still have it),
+	# 3) everyone loads the new one.
+	_stop_battle.rpc()
+	for i in 3:
+		await get_tree().process_frame
+	_load_battle(Settings.difficulty, test_wave, start_battle)
+	for i in 3:
+		await get_tree().process_frame
+	for id in _battle_peers:
+		if id != 1 and multiplayer.get_peers().has(id):
+			_load_battle.rpc_id(id, Settings.difficulty, test_wave, start_battle)
+
+
+## Host → the others: a retry is coming – stop this battle (it stays on screen until the new
+## one loads), so nothing more is sent from it.
+@rpc("authority", "call_remote", "reliable")
+func _stop_battle() -> void:
+	var scene := get_tree().current_scene
+	if scene and scene != self:
+		scene.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 ## Host → everyone (and the host itself): load the battle.
 @rpc("authority", "call_local", "reliable")
-func _load_battle(difficulty: int, test_wave: int) -> void:
+func _load_battle(difficulty: int, test_wave: int, start_battle: int = 1) -> void:
 	coop_battle = true
 	RunSave.active = false # owner 2026-11-18: co-op never touches the single-player saved run
 	MatchDirector.test_start_wave = test_wave
+	MatchDirector.coop_start_battle = maxi(start_battle, 1)
 	if multiplayer.is_server():
 		Settings.difficulty = difficulty
 	MainMenu.start_pressed_msec = Time.get_ticks_msec()

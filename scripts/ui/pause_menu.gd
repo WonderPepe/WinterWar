@@ -70,6 +70,8 @@ func open() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if NetworkManager.is_single_player():
 		get_tree().paused = true
+	# NET2: the host's "Main menu" ends the co-op battle for everyone.
+	EndScreen._set_note(menu_button, "Main menu ends the battle for everyone." if NetworkManager.is_coop_host() else "")
 	resume_button.grab_focus()
 
 

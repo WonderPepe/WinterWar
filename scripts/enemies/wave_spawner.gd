@@ -61,6 +61,12 @@ var retaking: bool = false
 ## NET1 fix: whole seconds until the next wave (0 while a wave runs). The countdown itself
 ## (`_timer`) runs only on the host, so the other computers read this synced copy.
 var next_wave_seconds: int = 0
+## NET2: true while the countdown waits for another computer's day screen (synced, for the HUD).
+var waiting_for_readers: bool = false
+
+## NET2 (host): the other computers whose day screen is open (peer id -> true). The countdown
+## waits until every player has closed his own day screen; `hold` is the host's own screen.
+var _peer_holds: Dictionary = {}
 
 var _phase: Phase = Phase.WAITING
 var _timer: float = 0.0
@@ -87,7 +93,9 @@ func _process(delta: float) -> void:
 	if not active:
 		next_wave_seconds = 0
 		return
-	if not (hold and _phase == Phase.WAITING):
+	var others: bool = _others_reading()
+	waiting_for_readers = others and not hold and _phase == Phase.WAITING
+	if not ((hold or others) and _phase == Phase.WAITING):
 		_timer -= delta
 	next_wave_seconds = ceili(maxf(_timer, 0.0)) if _phase == Phase.WAITING else 0
 	if _phase != Phase.WAITING:
@@ -116,6 +124,36 @@ func _process(delta: float) -> void:
 				if max_waves > 0 and wave_number >= max_waves:
 					active = false # that was the last one
 				wave_cleared.emit(wave_number)
+
+
+## NET2: a player's day screen opened / closed on his computer (called by DayScreen).
+func set_reader_hold(on: bool) -> void:
+	if multiplayer.is_server():
+		hold = on
+	else:
+		_reader_hold.rpc_id(1, on)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _reader_hold(on: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	var peer: int = multiplayer.get_remote_sender_id()
+	if on:
+		_peer_holds[peer] = true
+	else:
+		_peer_holds.erase(peer)
+
+
+## Host: is another computer's day screen still open? (A computer that has left doesn't count.)
+func _others_reading() -> bool:
+	if _peer_holds.is_empty():
+		return false
+	var connected: PackedInt32Array = multiplayer.get_peers()
+	for peer in _peer_holds.keys():
+		if not connected.has(int(peer)):
+			_peer_holds.erase(peer)
+	return not _peer_holds.is_empty()
 
 
 ## Test mode: the next wave to come is `number`, in `delay` seconds.

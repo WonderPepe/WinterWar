@@ -37,5 +37,6 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `web_guard_test.py` (web export: Leave-site warning, fullscreen "hold Esc" notice),
   `test_grenades.gd`, `shots_grenades.gd` (GR1 hand grenades: model, throw maths, bounce, blast + cover, limits, when a soldier throws, bunker throws, dropped grenade, HUD icon; GR2 throwing back: grab range, rules, fuse in the hand, kill credit, F key, saved run, end screen; the shots script needs xvfb), `import_weapons.py --f1` (GR1: rebuilds the F-1 grenade model; needs numpy + meshoptimizer),
   `test_coop.gd` (NET1 co-op: starts a second headless copy as the client over ENet on port 7791 – lobby, load gate, players on both, Soviets and wave number on the client, a client shot kills a Soviet and counts for him, his player goes when he leaves; ~40 s),
+  `soak_coop.gd [--log=file]` (NET2 co-op scenario: a headless client copy, muted, does everything – walk, fire, reload, Suomi, Maxim, Molotov, grenade throw-back, climb, bandage, death, both die at once, day screen waits for him, defeat, host's retry to battle 2 – and reports what his own screen shows; its output goes to the log file; ~3 min; run before co-op commits),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
   Run all tests before every commit.

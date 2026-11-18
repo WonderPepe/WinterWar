@@ -61,6 +61,9 @@ properties/6/replication_mode = 2
 properties/7/path = NodePath(".:next_wave_seconds")
 properties/7/spawn = true
 properties/7/replication_mode = 2
+properties/8/path = NodePath(".:waiting_for_readers")
+properties/8/spawn = true
+properties/8/replication_mode = 2
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_n8ral"]
 properties/0/path = NodePath(".:difficulty")

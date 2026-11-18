@@ -37,6 +37,10 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - `leave_game()` disables the current scene before closing the connection: an offline peer counts
   as the server, so host-only code would otherwise run on a client's battle for one frame.
 - Godot prints "Co-op: ..." lines (joined / everyone loaded / left) to the Output panel.
+- NET2: the day screen's hold is per computer (`WaveSpawner.set_reader_hold` → `_reader_hold` RPC;
+  host = `hold`); a co-op retry is `begin_battle(test_wave, start_battle)` while a battle runs:
+  `_stop_battle` RPC (others disable their scene) → host loads → `_load_battle` to each peer.
+  `NetworkManager.is_coop_host()`. `--mute` mutes the Master bus for that program start.
 
 ## Conventions
 - Folders: `scenes/`, `scripts/` (player, weapons, enemies, world, game), `resources/`
