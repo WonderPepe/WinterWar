@@ -98,3 +98,17 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 - Seen while measuring (not caused by V10b): looking south from a firing position on High the
   frame is already ~260 draw calls and ~450k triangles with nobody on the field – above the
   README's budget numbers, which are averages from the benchmark flight.
+
+## Finnish soldier body for the other players (NET2b) – how it is built
+- `FinnMesh` (`scripts/player/finn_mesh.gd`) builds the mesh with SoldierMesh's helpers on the same
+  skeleton (`SoldierMesh.Bone`); `get_mesh(FinnMesh.Gun.MOSIN / SUOMI)` is cached. Grip / fore-end
+  points and muzzles per gun: `grip_for`, `fore_for`, `muzzle_for`. Grime: `_grime()` through
+  `SoldierMesh.use_color_fn` (only cloth with alpha > 0.75), `DIRT_STRENGTH` 0.5.
+- `PlayerBody` (`scripts/player/player_body.gd`, Player child `Body`, made in `Player._ready`):
+  `visible` only when the player is not this computer's (`force_visible` for shots), `_process` off
+  when hidden. Poses like SoldierVisual (smoothed bone targets, `pose_speed`), hands by `Hands` enum;
+  `muzzle` Marker3D on a BoneAttachment3D (gun bone); `play_fire()` kick; the Molotov bottle is a
+  small CylinderMesh on the right forearm. Fall: tween on the Body node from `hash(player.name)`.
+- `SoldierMesh.reach(skeleton, upper, fore, target, pole)` = the shared two-bone arm IK (targets in
+  chest = spine space). SoldierVisual._reach calls it.
+

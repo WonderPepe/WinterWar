@@ -400,25 +400,9 @@ func _update_hand_grenade(throwing: bool) -> void:
 		_hand_grenade.visible = show
 
 
-## Two-bone arm: shoulder → elbow → hand. Puts the hand at `target` (chest space) with the
-## elbow bending towards `pole`.
+## Two-bone arm (shared with the Finns' PlayerBody: SoldierMesh.reach).
 func _reach(upper: int, fore: int, target: Vector3, pole: Vector3) -> void:
-	var shoulder: Vector3 = SoldierMesh.BONE_REST[upper]
-	var to_target: Vector3 = target - shoulder
-	var dist: float = clampf(to_target.length(), 0.05, SoldierMesh.ARM_UPPER + SoldierMesh.ARM_LOWER - 0.001)
-	var dir: Vector3 = to_target.normalized()
-	var l1: float = SoldierMesh.ARM_UPPER
-	var l2: float = SoldierMesh.ARM_LOWER
-	# Law of cosines: angle between the upper arm and the shoulder→hand line.
-	var cos_a: float = clampf((l1 * l1 + dist * dist - l2 * l2) / (2.0 * l1 * dist), -1.0, 1.0)
-	var bend: Vector3 = pole.normalized() - dir * dir.dot(pole.normalized())
-	bend = bend.normalized() if bend.length() > 0.001 else Vector3.DOWN
-	var elbow: Vector3 = shoulder + dir * (l1 * cos_a) + bend * (l1 * sqrt(1.0 - cos_a * cos_a))
-	var hand: Vector3 = shoulder + dir * dist
-	var upper_q := Quaternion(Vector3.DOWN, (elbow - shoulder).normalized())
-	var fore_q := upper_q.inverse() * Quaternion(Vector3.DOWN, (hand - elbow).normalized())
-	_skeleton.set_bone_pose_rotation(upper, upper_q)
-	_skeleton.set_bone_pose_rotation(fore, fore_q)
+	SoldierMesh.reach(_skeleton, upper, fore, target, pole)
 
 
 const PRONE_HIPS_Y: float = 0.2

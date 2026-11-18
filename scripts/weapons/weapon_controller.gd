@@ -512,9 +512,17 @@ func remote_fire_effects() -> void:
 func _play_remote_fire_effects() -> void:
 	_play(remote_audio, get_current_weapon().fire_sound)
 	var effects := get_tree().get_first_node_in_group("impact_effects") as ImpactEffects
+	# NET2b: from the muzzle of the gun in his soldier body's hands (else in front of his eyes).
+	var at: Vector3 = camera.global_position - camera.global_basis.z * 0.9
+	var dir: Vector3 = -camera.global_basis.z
+	var body: PlayerBody = player.body
+	if body and body.is_shown() and body.muzzle:
+		body.play_fire()
+		at = body.muzzle.global_position
+		dir = -body.muzzle.global_basis.z
 	if effects:
-		effects.spawn_flash(camera.global_position - camera.global_basis.z * 0.9)
-	_spawn_smoke(camera.global_position - camera.global_basis.z * 0.9, -camera.global_basis.z)
+		effects.spawn_flash(at)
+	_spawn_smoke(at, dir)
 
 
 ## Gun smoke at the muzzle. Automatic fire makes one puff every ~0.15 s, not one per round.

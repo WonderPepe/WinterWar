@@ -19,8 +19,9 @@ code read. Keep this list up to date as co-op work goes on.
   every player (the `players` group).
 
 ## Breaks / missing (status after NET2)
-1. **Open – NET2b.** **The other player is a grey capsule** (`BodyMesh`): no soldier, no gun, and it never turns
-   (Player `rotation` is not synced – mode 0; his view direction `look_yaw` is).
+1. **Fixed (NET2b).** **The other player was a grey capsule** (`BodyMesh`): no soldier, no gun, and it never
+   turned. Now a Finnish soldier (`PlayerBody`) that turns with his view (`look_yaw`), holds his gun,
+   crouches, aims, mans the Maxim, throws, climbs and falls.
 2. **Fixed (NET2).** **Day screen + Space:** the host's Space closes the host's screen and starts the countdown
    (5 s) while player 2 may still be reading; his screen is then closed by the next battle. Player
    2's Space changes nothing for the battle. Now every computer tells the host when its own day
@@ -39,3 +40,5 @@ code read. Keep this list up to date as co-op work goes on.
 ## Not checked yet (needs the owner's two-window test)
 - How movement feels for player 2 (host decides his position; one round trip of delay).
 - Sound of the other player's shots / footsteps, effects seen from the other window.
+- NET2b: how the other player's soldier looks moving at network speed (positions arrive in steps
+  until NET3 smooths them – his legs may look a little jerky).

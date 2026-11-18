@@ -209,13 +209,7 @@ func _build_player(mats: Dictionary) -> Node:
 	cs.shape = capsule
 	cs.position.y = 0.9
 
-	var body_mesh: MeshInstance3D = _add(p, MeshInstance3D.new(), "BodyMesh")
-	var cm := CapsuleMesh.new()
-	cm.radius = 0.35
-	cm.height = 1.8
-	cm.material = mats.player_body
-	body_mesh.mesh = cm
-	body_mesh.position.y = 0.9
+	# NET2b: no capsule picture any more – the Player makes its PlayerBody (Finnish soldier) in code.
 
 	var head: Node3D = _add(p, Node3D.new(), "Head")
 	head.position.y = 1.6

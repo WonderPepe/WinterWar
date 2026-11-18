@@ -484,3 +484,33 @@ order NET2 → NET2b (a Finnish soldier body for the other players instead of th
   everyone loads) so no message arrives for a battle that is gone. Others: "Waiting for the host…".
 - Host's pause / end screen: "Main menu ends the battle for everyone." Respawn never on another
   living player's spot. Refused join: "…or the battle has already started." Launch option `--mute`.
+
+## NET2b – a Finnish soldier body for the other players (2026-11-18)
+The other players were a grey capsule that never turned. Now every player except your own is
+drawn as a Finnish soldier (`PlayerBody`, Player child `Body`, made in code; your own stays hidden).
+**Owner decisions (2026-11-18):** M/39 fur hat; snow smock in dirty off-white / undyed white (not
+optical white), loose (an outer layer), to mid-thigh, gathered at the waist with a drawcord, grey
+uniform collar and cuffs just showing, subtle grime on elbows / stomach / lower hem / knees, no
+modern pockets, zips, Velcro, elastic cuffs, padded elbows or camouflage patterns; hood down but
+visibly bunched round the back of the neck and shoulders; full white snow trousers; dark-medium
+brown leather boots, toe moderately raised, mostly hidden by the trousers; keep it low-poly.
+Order after this: EX1 (Windows build to play with a friend on the same network), then NET3.
+- `FinnMesh` (scripts/player/finn_mesh.gd): code-built like SoldierMesh, same 12-bone skeleton,
+  two versions (Mosin M/28-30, Suomi KP/-31), ~1050 triangles, one draw call. Grime = vertex colour
+  (`SoldierMesh.use_color_fn`), drawn with soldier.gdshader (smock alpha 1 = gets the grain and a
+  per-player tint from `SMOCK_TINTS`).
+- `PlayerBody` poses it every frame from state that is synced anyway (no new network traffic):
+  walk/run from the position change, view yaw (the Player turns) and pitch (chest 40 %, head and gun
+  the rest), crouch (kneel / bent-low walk), sprint (port arms), aim (shouldered), reload, weapon slot,
+  Maxim (hands on `MountedGun.get_hand_grips()`), Molotov phase (bottle in the hand, overhand throw),
+  grenade grab (GR2), climbing, bandaging, dead (tips over like the Soviets; up again at respawn).
+  Hands busy → the gun is slung on his back. Arms: `SoldierMesh.reach` (the IK moved there from
+  SoldierVisual; the Soviet meshes are byte-for-byte unchanged – test_net2b checks it).
+- The other player's muzzle flash + smoke come from his gun's muzzle (`WeaponController.
+  _play_remote_fire_effects`), and his gun kicks. Collision / hits unchanged (the capsule shape).
+- The capsule picture (`BodyMesh`) is gone from player.tscn and build_scenes.gd
+  (`resources/materials/player_body.tres` is no longer used).
+- Tests: `test_net2b.gd` (43 checks), `soak_coop.gd` (now 73 checks) also checks player 2 sees the host as a Finn;
+  screenshots `shots_net2b.gd` (lineup, portrait in sun / against the sun, back, side, busy, fire,
+  dead, Maxim).
+

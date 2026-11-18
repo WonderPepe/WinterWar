@@ -89,6 +89,7 @@ static func get_mesh(kind: int = 0) -> ArrayMesh:
 # ------------------------------------------------------------------ building
 static var _st: SurfaceTool
 static var _bone_fn: Callable # Vector3 -> [PackedInt32Array, PackedFloat32Array]
+static var _color_fn: Callable # NET2b: (Vector3, Color) -> Color, see use_color_fn()
 
 
 static func _build(kind: int = 0) -> ArrayMesh:
@@ -215,6 +216,27 @@ static func _build_dp27(r: Vector3) -> void:
 		_frustum(r + Vector3(0.0, 0.0, -0.52), r + Vector3(side * 0.12, -0.3, -0.64), 0.008, 0.008, 4, METAL)
 
 
+## Two-bone arm: shoulder → elbow → hand. Puts the hand at `target` (chest = spine-bone space)
+## with the elbow bending towards `pole`. Used by SoldierVisual and (NET2b) PlayerBody.
+static func reach(skeleton: Skeleton3D, upper: int, fore: int, target: Vector3, pole: Vector3) -> void:
+	var shoulder: Vector3 = BONE_REST[upper]
+	var to_target: Vector3 = target - shoulder
+	var dist: float = clampf(to_target.length(), 0.05, ARM_UPPER + ARM_LOWER - 0.001)
+	var dir: Vector3 = to_target.normalized()
+	var l1: float = ARM_UPPER
+	var l2: float = ARM_LOWER
+	# Law of cosines: angle between the upper arm and the shoulder→hand line.
+	var cos_a: float = clampf((l1 * l1 + dist * dist - l2 * l2) / (2.0 * l1 * dist), -1.0, 1.0)
+	var bend: Vector3 = pole.normalized() - dir * dir.dot(pole.normalized())
+	bend = bend.normalized() if bend.length() > 0.001 else Vector3.DOWN
+	var elbow: Vector3 = shoulder + dir * (l1 * cos_a) + bend * (l1 * sqrt(1.0 - cos_a * cos_a))
+	var hand: Vector3 = shoulder + dir * dist
+	var upper_q := Quaternion(Vector3.DOWN, (elbow - shoulder).normalized())
+	var fore_q := upper_q.inverse() * Quaternion(Vector3.DOWN, (hand - elbow).normalized())
+	skeleton.set_bone_pose_rotation(upper, upper_q)
+	skeleton.set_bone_pose_rotation(fore, fore_q)
+
+
 # ------------------------------------------------------------------ shared building blocks
 ## Other code-built skinned meshes (FirstPersonArms) use the same helpers:
 ## begin_build(), use_bone(), frustum()/box()/sphere(), then finish_build().
@@ -223,11 +245,13 @@ static func begin_build() -> void:
 	_st.set_skin_weight_count(SurfaceTool.SKIN_4_WEIGHTS) # must come before begin()
 	_st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	_bone_fn = Callable()
+	_color_fn = Callable()
 
 
 static func finish_build() -> ArrayMesh:
 	var mesh := _st.commit()
 	_st = null
+	_color_fn = Callable()
 	return mesh
 
 
@@ -242,12 +266,18 @@ static func use_bone_fn(fn: Callable) -> void:
 	_bone_fn = fn
 
 
+## NET2b: `fn(rest position, colour) -> Color` changes each vertex's colour until set back to
+## Callable() (the Finn's smock gets grime on the elbows, knees, stomach and hem this way).
+static func use_color_fn(fn: Callable) -> void:
+	_color_fn = fn
+
+
 static func frustum(a: Vector3, b: Vector3, ra: float, rb: float, sides: int, col: Color, depth: float = 1.0) -> void:
 	_frustum(a, b, ra, rb, sides, col, depth)
 
 
-static func box(center: Vector3, size: Vector3, col: Color) -> void:
-	_box(center, size, col)
+static func box(center: Vector3, size: Vector3, col: Color, rot := Vector3.ZERO) -> void:
+	_box(center, size, col, rot)
 
 
 static func sphere(center: Vector3, radius: Vector3, segments: int, rings: int, col: Color) -> void:
@@ -269,6 +299,8 @@ static func _use_bone(bone: int) -> void:
 
 
 static func _vertex(p: Vector3, n: Vector3, c: Color) -> void:
+	if _color_fn.is_valid():
+		c = _color_fn.call(p, c)
 	_st.set_color(c)
 	_st.set_normal(n)
 	_st.set_uv(Vector2(p.x + p.z, p.y))

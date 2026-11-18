@@ -70,8 +70,12 @@ you work on. Update this file and the right note at the end of every milestone.
   NET2 (A1 step 2): `tools/soak_coop.gd` scenario + `notes/coop-issues.md`; the next battle waits
   until every player closed his day screen; host's end screen "Retry battle n" / "New game" for all;
   host's Main menu warns it ends the battle for everyone; free respawn spot; `--mute`.
-  Next: NET2b (Finnish soldier body for the other players, not the grey capsule), then NET3
-  (smoothing) (owner chose co-op 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  NET2b: the other players are Finnish soldiers, not grey capsules (`PlayerBody`, Player child `Body`
+  made in code, own body hidden; mesh `FinnMesh` – M/39 fur hat, dirty off-white snow smock + trousers,
+  Mosin / Suomi – on the Soviets' skeleton; posed only from state already synced; shared arm IK
+  `SoldierMesh.reach`).
+  Next: EX1 (Windows desktop export to play co-op with a friend on the same network), then NET3
+  (smoothing) (owner 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -133,7 +137,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1) + retry / day-screen hold (NET2), conventions, groups, physics layers, map coordinates
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
-- `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)
+- `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b), Finnish soldier body for the other players (NET2b)
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1), hand grenades (GR1) + throwing them back (GR2) + round a corner in the trench (GR3)
 - `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1), tank tracks (V10b), running tracks + turning wheels (T6)

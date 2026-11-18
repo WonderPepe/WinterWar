@@ -78,13 +78,13 @@ var _shake: float = 0.0 # camera shake (artillery), local
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var collision: CollisionShape3D = $CollisionShape3D
-@onready var body_mesh: MeshInstance3D = $BodyMesh
 @onready var ceiling_check: ShapeCast3D = $CeilingCheck
 @onready var snow_particles: CPUParticles3D = $SnowParticles
 @onready var weapons: WeaponController = $WeaponController
 @onready var molotov: MolotovHandler = $Molotov
 @onready var climb: ClimbHandler = $Climb
 var grab: GrenadeGrabHandler ## GR2: picking up a live grenade and throwing it back (made in _ready).
+var body: PlayerBody ## NET2b: the Finnish soldier the other players see (made in _ready).
 
 
 func _enter_tree() -> void:
@@ -97,13 +97,15 @@ func _ready() -> void:
 	grab = GrenadeGrabHandler.new()
 	grab.name = "GrenadeGrab"
 	add_child(grab)
+	body = PlayerBody.new()
+	body.name = "Body"
+	add_child(body) # shows itself only on the other players' computers
 	collision.shape = collision.shape.duplicate() # each player needs its own capsule to resize
 	health = max_health
 	stamina = max_stamina
 	bandages = max_bandages
 	var local: bool = is_local_player()
 	camera.current = local
-	body_mesh.visible = not local          # don't see your own body from inside
 	snow_particles.emitting = local        # each player only simulates their own snowfall
 	snow_particles.amount = Settings.preset().snow_amount
 	var weather := get_tree().get_first_node_in_group("weather") as DuskLight
@@ -349,8 +351,6 @@ func _update_crouch_shape(delta: float) -> void:
 	var target_height: float = crouch_height if is_crouching else stand_height
 	capsule.height = move_toward(capsule.height, target_height, crouch_change_speed * delta)
 	collision.position.y = capsule.height / 2.0 # keep the feet on the ground
-	body_mesh.scale.y = capsule.height / stand_height
-	body_mesh.position.y = capsule.height / 2.0
 	var target_eye: float = crouch_eye_height if is_crouching else stand_eye_height
 	if is_dead:
 		target_eye = 0.3
@@ -413,8 +413,7 @@ func _set_dead(value: bool) -> void:
 	# Dead bodies are ignored by bullets and other bodies; keep colliding with the ground only.
 	collision_layer = 0 if is_dead else 0b10
 	collision_mask = 0b1 if is_dead else 0b111
-	if is_node_ready():
-		body_mesh.rotation.x = deg_to_rad(-85.0) if is_dead else 0.0
+	# (NET2b: the PlayerBody falls over by itself when it sees is_dead.)
 
 
 # --- Called by DeepSnowZone areas ---

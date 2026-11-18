@@ -120,6 +120,7 @@ func _run_host(log_path: String) -> void:
 	check(s.get("my_view_model", false), "client: his own first-person gun is shown")
 	check(not s.get("my_body_visible", true), "client: his own third-person body is hidden")
 	check(s.get("host_body_visible", false), "client: the host's soldier body is shown")
+	check(s.get("host_body_finn", false), "client: the host is a Finnish soldier body (NET2b), not a capsule")
 	check(not s.get("host_view_model", true), "client: the host's first-person gun is hidden")
 	check(String(s.get("next_wave", "")).contains("begins in"), "client: countdown shown (%s)" % s.get("next_wave", ""))
 	check(not s.get("paused", true), "client: the game is not paused")
@@ -440,13 +441,14 @@ func _make_snapshot() -> Dictionary:
 	d.slot = me.weapons.current_slot
 	d.mag_ammo = me.weapons.get_mag_ammo()
 	d.my_view_model = me.weapons.holder.is_visible_in_tree()
-	var vis := me.get_node_or_null("BodyMesh") as Node3D
+	var vis := me.get_node_or_null("Body") as Node3D
 	d.my_body_visible = vis != null and vis.is_visible_in_tree()
 	for n in get_tree().get_nodes_in_group("players"):
 		var p := n as Player
 		if p != me:
-			var hv := p.get_node_or_null("BodyMesh") as Node3D
+			var hv := p.get_node_or_null("Body") as Node3D
 			d.host_body_visible = hv != null and hv.is_visible_in_tree()
+			d.host_body_finn = hv is PlayerBody # NET2b: a Finnish soldier, not the grey capsule
 			d.host_view_model = p.weapons.holder.is_visible_in_tree()
 	d.on_gun = me.get_mounted_gun() != null
 	var gun := get_tree().get_first_node_in_group("mounted_guns") as MountedGun
