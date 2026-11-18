@@ -63,7 +63,11 @@ you work on. Update this file and the right note at the end of every milestone.
   kills count for you; `GrenadeGrabHandler`, child `GrenadeGrab` made in code); [F] key on its icon;
   end screen + saved run count "Grenades thrown back".
   GR3: in the trench a soldier throws only round a corner (a Finn he can't see but knows of, ≥ 8 m).
-  Next: AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
+  NET1 (review item A1, step 1): co-op over ENet – Host / Join Co-op lobby (desktop only, port
+  7777, 2–4), load gate (host waits paused until every computer has loaded), launch options
+  `--coop-host` / `--coop-join` / `--coop-wave=N` for two windows on one PC; co-op never touches the
+  saved run. NET2 (play as player 2, list + fix what breaks) and NET3 (smoothing) are next.
+  Next: NET2, then NET3 (owner chose co-op 2026-11-18); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
   U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
@@ -121,7 +125,7 @@ you work on. Update this file and the right note at the end of every milestone.
 
 ## Notes index (`notes/`, ignored by Godot)
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
-- `architecture.md` – multiplayer architecture, conventions, groups, physics layers, map coordinates
+- `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1), conventions, groups, physics layers, map coordinates
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b)

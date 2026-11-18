@@ -21,11 +21,36 @@ var _start_points: Dictionary = {} ## Player name (peer id) -> the spawn point t
 func _ready() -> void:
 	add_to_group("game")
 	set_leave_warning(true) # browser: Ctrl+W / closing the tab asks "Leave site?" during the battle
+	if NetworkManager.coop_battle:
+		_start_coop.call_deferred()
+		return
 	if not multiplayer.is_server():
 		return
 	multiplayer.peer_connected.connect(_spawn_player)
 	multiplayer.peer_disconnected.connect(_remove_player)
 	_spawn_player(multiplayer.get_unique_id()) # the host's own player
+
+
+## NET1 load gate. A computer that is still loading can't receive the host's soldiers and
+## players yet, so the host's battle stays paused, with nobody in it, until every computer
+## reports that its battle scene is here. Then the host places all players (the
+## MultiplayerSpawner makes them on every computer) and lets the battle run.
+func _start_coop() -> void:
+	if not multiplayer.is_server():
+		NetworkManager.report_loaded()
+		return
+	multiplayer.peer_disconnected.connect(_remove_player)
+	get_tree().paused = true
+	NetworkManager.all_loaded.connect(_on_all_loaded, CONNECT_ONE_SHOT)
+	NetworkManager.report_loaded() # the host's own scene is here; may fire all_loaded at once
+
+
+func _on_all_loaded() -> void:
+	for id in NetworkManager.battle_peers():
+		if multiplayer.get_peers().has(id) or id == multiplayer.get_unique_id():
+			_spawn_player(id)
+	print("Co-op: every computer has loaded – %d soldiers in the battle." % players_root.get_child_count())
+	get_tree().paused = false
 
 
 func _spawn_player(peer_id: int) -> void:

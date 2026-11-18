@@ -449,3 +449,22 @@ Details: `battle.md` ("Throwing a grenade back (GR2)"). Tests: `test_grenades.gd
 Owner noticed soldiers in the trench never throw (the GR1 rule). **Owner decision:** in the trench
 only at a Finn he can't see but knows is there, at least 8 m away, no comrade within 4 m of the
 landing spot, never landing near himself; same limits (2 live, 4 s). Details: `battle.md` (GR3).
+
+## NET1 – co-op: host and join over ENet (review item A1, step 1) (2026-11-18)
+Review item A1 "prove co-op early", steps 1–3 as NET1–NET3 (the name A1 is already the air raid).
+**Owner decisions (2026-11-18):** names NET1–NET3; a co-op battle never touches the single-player
+saved run (like Test mode); respawn as in single player (same time, at the rear, for everyone).
+- Host Co-op / Join Co-op open a lobby (`CoopLobby`, made in code by the main menu). ENet, port
+  7777, 2–4 soldiers. Desktop only: in the browser both buttons stay greyed out (ENet needs real
+  sockets; the web needs WebRTC = A1 steps 4–5, later).
+- Start → every computer loads the battle (difficulty + Test-mode battle from the host).
+  **Load gate:** the host's battle stays paused with nobody in it until every computer reports its
+  battle scene (`NetworkManager.report_loaded`); then the host spawns all players and unpauses.
+  Nobody can join a running battle; one who drops out disappears; host leaves → the others go back
+  to the menu with "The host left the game."
+- Launch options for two windows on one PC (Debug → Customize Run Instances): `--coop-host`
+  (starts as soon as a second soldier joins), `--coop-join[=address]` (retries until the host is
+  there), `--coop-wave=N` (Test mode battle N, with --coop-host).
+- Details: `architecture.md` ("Co-op connection (NET1)"). Test: `test_coop.gd` (two copies).
+- Next: NET2 – play a battle as player 2, list what breaks (`notes/coop-issues.md`), fix the worst;
+  NET3 – smooth remote soldiers / players / tanks between network updates (picture only).

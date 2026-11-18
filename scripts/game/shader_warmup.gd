@@ -36,7 +36,10 @@ func _ready() -> void:
 
 func _warm_up() -> void:
 	var player: Player = null
-	for i in 5: # the player is spawned by the Game in the same frame - wait for it
+	# The player is spawned by the Game in the same frame - wait for it. NET1 co-op: the players
+	# come only when every computer has loaded (the Game's load gate), so wait up to ~2 minutes.
+	var tries: int = 7200 if NetworkManager.coop_battle else 5
+	for i in tries:
 		player = _local_player()
 		if player:
 			break

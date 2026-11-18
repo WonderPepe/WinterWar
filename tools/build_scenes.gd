@@ -2248,8 +2248,8 @@ func _build_main_menu(theme: Theme) -> Node:
 	spacer.custom_minimum_size = Vector2(0, 14)
 	for b in [["ContinueButton", "Continue", "Go on with your saved run from the last battle you held"], # D1: hidden without a saved run
 			["SinglePlayerButton", "Single Player", ""],
-			["TestModeButton", "Test Mode", "Start at any battle (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Co-op is coming in a later version"],
-			["JoinCoopButton", "Join Co-op", "Co-op is coming in a later version"], ["SettingsButton", "Settings", ""],
+			["TestModeButton", "Test Mode", "Start at any battle (only shown in the Godot editor)"], ["HostCoopButton", "Host Co-op", "Open a co-op game on this computer for 2–4 soldiers"],
+			["JoinCoopButton", "Join Co-op", "Join a co-op game hosted on this or another computer"], ["SettingsButton", "Settings", ""],
 			["ControlsButton", "Controls", "Which key does what"], ["BenchmarkButton", "Benchmark", "A 60-second performance test"], ["CreditsButton", "Credits", ""],
 			["QuitButton", "Quit", ""]]:
 		var btn: Button = _add(vb, Button.new(), b[0])
@@ -2270,6 +2270,7 @@ func _build_main_menu(theme: Theme) -> Node:
 	opt.tooltip_text = "10 battles on every level.\nEasy: fewer riflemen, weaker enemy fire, the line breaks at 6 Soviets in the trench.\nNormal: 4 in the trench.\nHard: more soldiers, 3 in the trench, better enemy aim."
 	vb.move_child(row, vb.get_node("ContinueButton").get_index())
 	vb.get_node("ContinueButton").visible = false # D1: MainMenu shows it when a saved run exists
+	# NET1: off by default; MainMenu._setup_coop switches them on (not in the browser).
 	vb.get_node("HostCoopButton").disabled = true
 	vb.get_node("JoinCoopButton").disabled = true
 

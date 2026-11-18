@@ -382,7 +382,10 @@ func _run() -> void:
 		var warmup := get_tree().get_first_node_in_group("shader_warmup") as ShaderWarmup
 		if warmup == null:
 			break
-		_step(0.85 + 0.14 * warmup.progress, "Preparing the effects...")
+		var waiting: bool = NetworkManager.coop_battle and warmup.progress <= 0.0 \
+				and get_tree().get_nodes_in_group("players").is_empty()
+		# NET1: in co-op the players come when every computer has loaded the battle.
+		_step(0.85 + 0.14 * warmup.progress, "Waiting for the other soldiers..." if waiting else "Preparing the effects...")
 		await get_tree().process_frame
 	_step(1.0, "Ready")
 	bar.value = 100.0

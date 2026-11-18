@@ -22,6 +22,22 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   pauses only in single player (`NetworkManager.is_single_player()`), and opens itself whenever
   the mouse is not captured (browser pointer lock needs a click).
 
+## Co-op connection (NET1)
+- `NetworkManager`: `host_coop(port)` / `join_coop(address, port)` make an `ENetMultiplayerPeer`
+  (port 7777, `MAX_PLAYERS` 4); `coop_available()` is false in the browser. Lobby list
+  `lobby_peers` (host 1 first), kept by the host and sent with `_lobby_list` RPC; signals
+  `lobby_changed`, `joined`, `connection_lost(text)`, `all_loaded`.
+- `begin_battle(test_wave)` (host): `refuse_new_connections`, then `_load_battle` RPC (call_local)
+  → everyone sets `coop_battle`, `RunSave.active = false`, `MatchDirector.test_start_wave`, and
+  `LoadingScreen.go(game)`.
+- **Load gate** (`Game._start_coop`): a client's Game calls `report_loaded()` from `_ready`; the
+  host pauses the tree (so no spawns / syncs go to a computer still loading), and on `all_loaded`
+  spawns one player per battle peer and unpauses. `ShaderWarmup` waits (up to ~2 min in co-op) for
+  the local player; the loading screen shows "Waiting for the other soldiers...".
+- `leave_game()` disables the current scene before closing the connection: an offline peer counts
+  as the server, so host-only code would otherwise run on a client's battle for one frame.
+- Godot prints "Co-op: ..." lines (joined / everyone loaded / left) to the Output panel.
+
 ## Conventions
 - Folders: `scenes/`, `scripts/` (player, weapons, enemies, world, game), `resources/`
   (materials, weapons, enemies), `levels/`, `ui/`, `autoload/`, `assets/`, `tools/` (helpers,

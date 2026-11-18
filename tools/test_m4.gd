@@ -27,7 +27,9 @@ func run() -> void:
 	await seconds(0.3)
 	check(get_tree().current_scene.name == "MainMenu", "main menu is shown")
 	var vb := get_tree().current_scene.get_node("Center/VBox")
-	check(vb.get_node("HostCoopButton").disabled and vb.get_node("JoinCoopButton").disabled, "co-op buttons are greyed out")
+	# NET1: on the desktop the co-op buttons work (in the browser they stay greyed out).
+	check(not vb.get_node("HostCoopButton").disabled and not vb.get_node("JoinCoopButton").disabled, "co-op buttons are on (desktop)")
+	check(get_tree().current_scene.get_node_or_null("CoopLobby") is CoopLobby, "the co-op lobby exists (hidden)")
 	vb.get_node("SinglePlayerButton").pressed.emit()
 	await seconds(0.3)
 	var loading := get_tree().root.get_node_or_null("LoadingScreen")

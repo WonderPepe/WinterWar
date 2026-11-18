@@ -463,7 +463,7 @@ text = "Test Mode"
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
-tooltip_text = "Co-op is coming in a later version"
+tooltip_text = "Open a co-op game on this computer for 2–4 soldiers"
 disabled = true
 text = "Host Co-op"
 
@@ -471,7 +471,7 @@ text = "Host Co-op"
 custom_minimum_size = Vector2(340, 44)
 layout_mode = 2
 size_flags_horizontal = 4
-tooltip_text = "Co-op is coming in a later version"
+tooltip_text = "Join a co-op game hosted on this or another computer"
 disabled = true
 text = "Join Co-op"
 

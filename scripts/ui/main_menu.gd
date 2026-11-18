@@ -88,9 +88,91 @@ func _ready() -> void:
 	if test_button.visible and continue_button.visible and quit_button.visible:
 		# Only in the editor: with both extra buttons the list is one row too tall for 720 p.
 		(single_button.get_parent() as VBoxContainer).add_theme_constant_override("separation", 3)
-	host_button.disabled = true # co-op comes later
-	join_button.disabled = true
+	_setup_coop()
 	(continue_button if continue_button.visible else single_button).grab_focus()
+	if NetworkManager.last_message != "":
+		# NET1: why the co-op game ended (e.g. the host left).
+		var note := Label.new()
+		note.text = NetworkManager.last_message
+		note.add_theme_color_override("font_color", Color(1.0, 0.8, 0.6))
+		note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		(single_button.get_parent() as VBoxContainer).add_child(note)
+		NetworkManager.last_message = ""
+	_auto_coop.call_deferred()
+
+
+## NET1: Host / Join Co-op open the lobby. ENet needs real network sockets, which a web page
+## doesn't have, so in the browser both buttons stay off (co-op there needs WebRTC, later).
+func _setup_coop() -> void:
+	var lobby := CoopLobby.new()
+	lobby.name = "CoopLobby"
+	add_child(lobby)
+	lobby.closed.connect(func() -> void:
+		menu_box.visible = true
+		host_button.grab_focus())
+	if not NetworkManager.coop_available():
+		host_button.disabled = true
+		join_button.disabled = true
+		host_button.tooltip_text = "Co-op in the browser comes later. The desktop version can host."
+		join_button.tooltip_text = host_button.tooltip_text
+		return
+	host_button.disabled = false
+	join_button.disabled = false
+	host_button.tooltip_text = "Open a co-op game on this computer for 2–4 soldiers"
+	join_button.tooltip_text = "Join a co-op game hosted on this or another computer"
+	host_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		lobby.open_host())
+	join_button.pressed.connect(func() -> void:
+		menu_box.visible = false
+		lobby.open_join())
+
+
+## Launch options for testing two copies on one PC (Godot: Debug → Customize Run Instances):
+##   --coop-host           host, and start the battle as soon as a second soldier has joined
+##   --coop-join[=address] join (default 127.0.0.1), trying again until the host is there
+##   --coop-wave=N         (with --coop-host) Test mode: start at battle N
+## Only once per program start (not again after coming back to the menu).
+static var _auto_done: bool = false
+
+func _auto_coop() -> void:
+	if _auto_done or not NetworkManager.coop_available():
+		return
+	_auto_done = true
+	var args := PackedStringArray()
+	args.append_array(OS.get_cmdline_args())
+	args.append_array(OS.get_cmdline_user_args())
+	var host: bool = false
+	var join_address: String = ""
+	var wave: int = 0
+	for a in args:
+		if a == "--coop-host":
+			host = true
+		elif a == "--coop-join":
+			join_address = "127.0.0.1"
+		elif a.begins_with("--coop-join="):
+			join_address = a.get_slice("=", 1)
+		elif a.begins_with("--coop-wave="):
+			wave = int(a.get_slice("=", 1))
+	var lobby := get_node("CoopLobby") as CoopLobby
+	if host:
+		menu_box.visible = false
+		lobby.open_host()
+		while is_inside_tree() and NetworkManager.is_coop() and NetworkManager.lobby_peers.size() < 2:
+			await get_tree().process_frame
+		if is_inside_tree() and NetworkManager.is_coop():
+			NetworkManager.begin_battle(wave)
+	elif join_address != "":
+		menu_box.visible = false
+		lobby.open_join(join_address)
+		# The host's window may start a moment later: try again every second until connected.
+		while is_inside_tree() and lobby.visible:
+			if not NetworkManager.is_coop():
+				lobby._on_connect()
+			await get_tree().create_timer(1.0).timeout
+			if multiplayer.multiplayer_peer is ENetMultiplayerPeer \
+					and multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+				break
 
 
 ## D1: go on with the saved run, from the battle after the last one held.
