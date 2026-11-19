@@ -77,9 +77,12 @@ you work on. Update this file and the right note at the end of every milestone.
   NET3: Soviets, tanks and other players glide on a guest's computer (`NetSmoother`, child
   `Smoother`; StateSync sends `Smoother:net_position/net_quat` + `net_stamp` LAST; ~35 ms delay on a
   LAN, own player never delayed; lag simulator `--net-lag/--net-jitter/--net-loss`).
-  Next: EX1 (Windows desktop export to play co-op with a friend on the same network) (owner
-  2026-11-19); later AR4 (reloads: Mosin stripper clip, grey cuff reveal), or owner's choice – the v0.6.0 review's list (project doc `claude/review-2026-11-12.md`: U3,
-  U4, D6, P2, V5, …) or wreck cover / field cover (idea 0). See `notes/milestones.md`.
+  EX1: Windows desktop export preset (`.exe` + `.pck`, unsigned) for co-op with a friend on the same
+  network – private builds, not releases (RELEASES.md "Windows build", `tools/windows_readme.txt`).
+  Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
+  `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
+  review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
+  field cover (idea 0). See `notes/milestones.md`.
 
 ## Working with the owner
 - **Privacy:** never put the owner's real name, e-mail or personal details in any project file,
@@ -117,6 +120,8 @@ you work on. Update this file and the right note at the end of every milestone.
   the launcher, because `--script` files compile before autoloads exist). **Run all tests
   before every commit.** List: `notes/tools.md`.
 - New `class_name` or new audio files: run `godot --headless --import` first.
+- Windows export: `godot --headless --path . --export-release "Windows Desktop" export/windows/WinterWarSumma.exe`
+  (`mkdir -p export/windows` first; needs the windows templates).
 - Web export (`mkdir -p export/web` first in a fresh clone): `godot --headless --path . --export-release "Web" export/web/index.html`, then
   `python3 tools/web_smoke_test.py` and `tools/check_web_pack.gd`.
 - Shader errors only show with a real GL window (xvfb + `--rendering-driver opengl3`).

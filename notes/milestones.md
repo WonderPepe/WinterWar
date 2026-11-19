@@ -531,3 +531,21 @@ shots at running Soviets) left for the online milestones; NET3 before EX1 (Windo
 - Tests: `test_net3.gd` (42 checks), `test_net3_coop.gd [--lag]` (two copies, 10 checks);
   test_net2b now expects 16 synced player values (the time stamp).
 
+## EX1 – Windows desktop build for co-op on the same network (2026-11-19)
+The owner wants to play co-op with a friend on the same home network; co-op is desktop only.
+**Owner decisions (2026-11-18):** a Windows build is worth making even during development (a
+build is a snapshot, re-made in a minute); share it only privately with the friend, not as a
+public release; first NET2b and NET3, then EX1.
+- `export_presets.cfg`: preset 1 "Windows Desktop" – x86_64, `.exe` + separate `.pck`
+  (`embed_pck` off), S3TC/BPTC textures, no code signing, `application/modify_resources` off
+  (needs rcedit + Wine on Linux, and only sets the icon / file details), same exclude filter as Web.
+  Path `export/windows/WinterWarSumma.exe`. The .pck is the same 18 MB as the web build's.
+- `tools/windows_readme.txt` = the README.txt for the friend (start, SmartScreen, firewall,
+  Host / Join, same version on both).
+- How to make a build: RELEASES.md ("Windows build"). Not in git: `releases/WinterWarSumma-windows.zip`.
+- Checked in the cloud: exported with the 4.7.2 templates; the exported .pck runs (Linux Godot
+  with `--main-pack`: main menu, no script errors), and two copies of it host + join and both load
+  battle 3 ("every computer has loaded – 2 soldiers"). The .exe itself can only be tried on Windows.
+- Ideas for later: a game icon for the .exe (needs rcedit), a "your address is …" line in the
+  Host Co-op lobby so the host doesn't have to look up his IPv4 address.
+

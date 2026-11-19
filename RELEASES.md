@@ -24,6 +24,31 @@ Notes:
 - The game is exported without threads, so no special web-server headers are needed.
 - The 3D models are CC-BY 4.0: their authors are credited in the game (Credits) and in `CREDITS.md`.
 
+## Windows build (co-op with a friend on the same network) – EX1
+Co-op needs the desktop version (the browser can't host or join). The Windows build is not a
+public release: it is made whenever you want to play, and given straight to the friend (USB
+stick, cloud drive). It is not put on GitHub.
+
+**Make a new build (about a minute):**
+1. One time only: Editor → Manage Export Templates → Download and Install (Godot 4.7.2).
+2. Project → Export → **Windows Desktop** → Export Project → keep the path
+   `export/windows/WinterWarSumma.exe` → untick "Export With Debug" → Save.
+   (Command line: `godot --headless --path . --export-release "Windows Desktop" export/windows/WinterWarSumma.exe`.)
+3. Make a folder `WinterWarSumma` with `WinterWarSumma.exe`, `WinterWarSumma.pck` and
+   `tools/windows_readme.txt` renamed to `README.txt`; zip it as
+   `releases/WinterWarSumma-windows.zip` (the `releases/` folder is not in git).
+
+Notes:
+- The .exe and the .pck must stay together (the .pck holds the whole game, ~18 MB; the .exe is
+  the Godot engine, ~110 MB, and only changes with a new Godot version).
+- **Both computers must run the same build.** Make a fresh build before each session and give
+  the friend the new zip; you can play from the editor or from the same .exe.
+- The build is not signed: Windows SmartScreen says "Windows protected your PC" → More info →
+  Run anyway. Windows Firewall asks the first time: tick Private networks → Allow.
+- Same network: Host Co-op on one computer; the other Join Co-op with the host's IPv4 address
+  (Settings → Network & internet). Port 7777 (UDP). Over the internet: forward UDP 7777 on the
+  router, or both use a "virtual LAN" app (Tailscale, ZeroTier) – until online co-op comes.
+
 ## Versions
 | Version | Content |
 |---|---|
