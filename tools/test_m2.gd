@@ -71,6 +71,12 @@ func run() -> void:
 	# so he shoots from the straight at x = -10 (the targets keep their old spots).
 	p.global_position = Vector3(-17, -1.3, 61)
 	p.velocity = Vector3.ZERO
+	# Set up all practice targets now: a target made just before a shot may not be in the
+	# physics world yet (no physics step in between), and the bullet's ray flies through it.
+	for n: String in TARGETS:
+		target(n)
+	for i in 3:
+		await get_tree().physics_frame
 	await frames(10)
 
 	# --- Mosin: aimed shot at 25 m target ---

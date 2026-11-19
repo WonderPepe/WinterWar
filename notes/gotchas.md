@@ -124,3 +124,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   gives 48 updates/s at 144 fps and 30/s at 60 fps (NET3). Leave it 0 and drop duplicates.
 - NET3: a new synced position for something the host moves goes through its `Smoother`
   (`Smoother:net_position`), never `.:position`, and `Smoother:net_stamp` stays the last property.
+- Tests: a body made (or moved) just before a raycast may not be in the physics world yet – with
+  no physics step in between, the ray flies through it. Headless tests run many frames per physics
+  step, so `await frames(2)` is not enough: create targets early or `await get_tree().physics_frame`.
+  (test_m2's 100 m shot failed ~1 in 10 this way until 19 Nov 2026.)
