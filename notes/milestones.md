@@ -578,4 +578,9 @@ height; the saving comes only from Godot skipping tiles outside the camera's vie
   collision height, shared edge points identical, no LOD, no shadow casting, and 2,000 rays down
   show the drawn triangles are the collision surface between the points too (same diagonal as Jolt's
   height field; worst 0.0000 m).
+- **Owner tested and approved (2026-11-20), 4×4 kept.** Benchmark on his PC (Windows, Radeon 780M,
+  High, 1904 × 1022): 474.9 FPS (2.11 ms), 1% low 360, worst 12.8 ms, draw calls 203 avg / 302 max,
+  235k triangles (was 306–310k on 16 Nov), physics 1.84 ms. At 1280 × 720: 635.2 FPS, 192 / 306 draw
+  calls, 225k triangles. The max draw calls are now a little over the README's 300 – accepted; win
+  them back elsewhere (forest, props) before adding much new art.
 
