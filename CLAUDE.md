@@ -82,7 +82,10 @@ you work on. Update this file and the right note at the end of every milestone.
   TR1 (review item P3): the drawn ground is 4 × 4 tiles (`GroundTiles`) so tiles behind you are
   skipped – ~28 % fewer triangles on the benchmark flight; never LOD on the ground (owner: far
   soldiers must not look sunk in / floating); collision + navmesh unchanged.
-  Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
+  A7 (review item A7): `tools/run_all.gd` runs every test in `tools/tests.cfg` in its own Godot,
+  judges the output (FAIL lines, script errors, missing end line, time limit), exit code 1 on a
+  failure; GitHub Actions runs it on every push (not the manual co-op soak, no web export).
+  Next: owner's choice – watch the first ✅ / ❌ on GitHub; online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
   field cover (idea 0). See `notes/milestones.md`.
@@ -119,9 +122,13 @@ you work on. Update this file and the right note at the end of every milestone.
 - Clean up your temporary files in `Claude outputs/` at the end.
 
 ## Commands
-- Tests: `godot --headless --path . --script tools/run.gd -- tools/test_m1.gd` (plain Nodes via
-  the launcher, because `--script` files compile before autoloads exist). **Run all tests
-  before every commit.** List: `notes/tools.md`.
+- All tests (A7): `godot --headless --path . --script tools/run_all.gd` (in the cloud under
+  `xvfb-run -a` so `test_mouse` gets a window; `-- --quick`, `-- --only t5,d9`, `-- --all`). List +
+  time limits: `tools/tests.cfg` – **a new test gets a line there**. Logs: `tools/test_logs/`.
+  **Run all tests before every commit.** GitHub runs the same on every push
+  (`.github/workflows/tests.yml`, ✅ / ❌ beside the commit).
+- One test: `godot --headless --path . --script tools/run.gd -- tools/test_m1.gd` (plain Nodes via
+  the launcher, because `--script` files compile before autoloads exist). Tools: `notes/tools.md`.
 - New `class_name` or new audio files: run `godot --headless --import` first.
 - Windows export: `godot --headless --path . --export-release "Windows Desktop" export/windows/WinterWarSumma.exe`
   (`mkdir -p export/windows` first; needs the windows templates).

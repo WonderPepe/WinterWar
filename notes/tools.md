@@ -2,6 +2,30 @@
 
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
+## Running all tests (A7, 2026-11-20)
+- `godot --headless --path . --script tools/run_all.gd` runs every test listed in `tools/tests.cfg`,
+  one after another, each in its own fresh Godot (so one test can't spoil the next), and prints a
+  table. Options after `--`: `--quick` (skip test_coop, test_net3_coop, test_benchmark),
+  `--only t5,d9` (names without `test_` / `.gd`; also runs "manual" ones), `--all` (also "manual"),
+  `--no-window` (skip `window` tests). Exit code 1 if any test failed.
+- A test FAILS if a line starts with `FAIL`, a line says `RESULT: FAILED` / `BROKEN` or its end line
+  has a count above 0 ("2 failure(s)"), Godot prints `SCRIPT ERROR` / `Parse Error` / `Invalid call` /
+  `Invalid access` / `Failed to load script` (the test is then stopped 3 s later), it quits with a
+  code other than 0, its end line (`end=` in tests.cfg, default `RESULT:`) never comes, or it runs
+  past its time limit. The "leaked at exit" ERROR lines at the end are normal and ignored.
+- Whole output of each test: `tools/test_logs/<name>.log` (git-ignored).
+- `window` tests (`test_mouse`) need a display: on Linux without `DISPLAY` they are skipped, so run
+  the whole runner under `xvfb-run -a` in the cloud. On Windows a window opens for a moment.
+- `tests.cfg` line: `<script> <limit s> [window] [manual] [args=a,b] [end=TEXT]` (end= last).
+  `soak_coop.gd` is `manual`. The other soaks (`soak_m3/g1/g2`) only report, they don't check,
+  so they are not in the list.
+- GitHub: `.github/workflows/tests.yml` runs it on every push / pull request (not for pushes that
+  only change `docs/`, `notes/` or `*.md`) on ubuntu-24.04 with Godot 4.7.2 (cached), a project
+  import and xvfb. A failed run keeps `tools/test_logs/` as the "test-logs" download for 14 days.
+  By hand: Actions → Tests → Run workflow, tick "all" for the manual tests too.
+- `test_benchmark.gd` was flaky ("15 soldiers spawned"): the player fires, so one soldier may just
+  have fallen at the end. It now counts the most soldiers at once during the run.
+
 ## Helper tools (`tools/`, not part of the game)
 Run with a Godot 4.7.2 binary from the project folder, e.g.
 `godot --headless --path . --script tools/test_m3.gd`.
@@ -42,4 +66,4 @@ Run with a Godot 4.7.2 binary from the project folder, e.g.
   `test_net3.gd` (NET3 NetSmoother on made-up updates: even walking on a LAN / bad connection, delay, extrapolation limit, teleport jump, own player not delayed, turning, lag simulator, scenes' sync settings, host copy), `test_net3_coop.gd [--lag] [--log=file]` (NET3 two copies, port 7793: the client measures how evenly walking Soviets move smoothed vs raw, delay, updates/s, jumps, how far behind the host; `--lag` = client with the lag simulator; ~1 min),
   `test_tr1.gd` (TR1 ground tiles: every point drawn at the collision height, edges match, no LOD, drawn surface = collision surface), `bench_tr1.gd [counts]` (TR1: draw calls / triangles per ground tile count, static views + benchmark route; needs xvfb),
   `soak_m3.gd`: automated checks. `shots*.gd`: screenshots (need a GL window).
-  Run all tests before every commit.
+  Run all tests before every commit (`tools/run_all.gd`, see above).

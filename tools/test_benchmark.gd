@@ -13,10 +13,14 @@ func _ready() -> void:
 			break
 	var ok: bool = get_tree().current_scene.name == "Benchmark"
 	print(("PASS" if ok else "FAIL") + "  benchmark scene started")
-	await get_tree().create_timer(63.0).timeout
+	# Count the soldiers during the whole run, not only at the end: the player fires at them, so
+	# one may just have fallen when the run ends (A7: was flaky, "15 soldiers spawned").
+	var enemies := 0
+	for i in 63:
+		await get_tree().create_timer(1.0).timeout
+		enemies = maxi(enemies, get_tree().get_nodes_in_group("enemies").size())
 	var bench: Node = get_tree().current_scene
-	var enemies: int = get_tree().get_nodes_in_group("enemies").size()
-	print(("PASS" if enemies >= 16 else "FAIL") + "  %d soldiers spawned" % enemies)
+	print(("PASS" if enemies >= 16 else "FAIL") + "  %d soldiers spawned (most at once)" % enemies)
 	print(("PASS" if bench._results_text != "" else "FAIL") + "  results screen shown")
 	print(("PASS" if get_tree().root.get_node_or_null("LoadingScreen") == null else "FAIL") + "  loading screen gone")
 	print("RESULT: done")

@@ -8,6 +8,9 @@
 # Screenshots made by the helper tools
 /tools/shots/
 
+# Output of tools/run_all.gd (A7)
+/tools/test_logs/
+
 # Files the Claude desktop app saves into the project
 /Claude outputs/
 

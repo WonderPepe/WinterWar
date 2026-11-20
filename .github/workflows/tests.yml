@@ -1,0 +1,69 @@
+# A7: GitHub runs all the game's tests on every push and shows ✅ / ❌ next to the commit.
+# It changes nothing in the repository, GitHub Pages or the releases - it only reports.
+# What runs: tools/run_all.gd with the list in tools/tests.cfg (the "manual" ones only when
+# started by hand: Actions tab → Tests → Run workflow → tick "all").
+name: Tests
+
+on:
+  push:
+    paths-ignore:          # pushes that only change these don't need the tests
+      - "docs/**"          # the web build on GitHub Pages
+      - "notes/**"
+      - "**.md"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Also run the slow manual tests (co-op soak, ~3 min)"
+        type: boolean
+        default: false
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Get the project
+        uses: actions/checkout@v7
+
+      - name: Programs for a virtual screen
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa > /dev/null
+
+      - name: Godot from the cache
+        id: godot-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+
+      - name: Download Godot ${{ env.GODOT_VERSION }}
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          rm godot.zip
+
+      - name: Import the project
+        # The .godot folder isn't in git: this makes it (textures, sounds, class names).
+        run: ~/godot/godot --headless --path . --import
+
+      - name: Run the tests
+        run: |
+          EXTRA=""
+          if [ "${{ github.event.inputs.all }}" = "true" ]; then EXTRA="-- --all"; fi
+          xvfb-run -a -s "-screen 0 1280x720x24" ~/godot/godot --headless --path . --script tools/run_all.gd $EXTRA
+
+      - name: Keep the test logs if something failed
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs
+          path: tools/test_logs/
+          retention-days: 14

@@ -584,3 +584,16 @@ height; the saving comes only from Godot skipping tiles outside the camera's vie
   calls, 225k triangles. The max draw calls are now a little over the README's 300 – accepted; win
   them back elsewhere (forest, props) before adding much new art.
 
+
+## A7 – all tests with one command, and on every push (review item A7) (2026-11-20)
+Owner asked whether to do it while the game is still developed: yes – that is when it pays.
+**Owner decisions (2026-11-20):** the slow co-op soak (`soak_coop.gd`, ~3 min) stays out of the
+automatic run (only by hand, "all"); no web export / web smoke test on GitHub for now.
+- `tools/run_all.gd` + the list `tools/tests.cfg` (41 tests + `soak_coop` as manual). Each test in its
+  own Godot; judged from its output, because most tests quit with code 0 even when a check fails.
+  Details and the failure rules: `notes/tools.md` "Running all tests".
+- `.github/workflows/tests.yml`: every push / pull request (not docs/, notes/, *.md only), Ubuntu,
+  Godot 4.7.2 cached, import, xvfb, run_all; logs kept as a download when it fails. Changes nothing
+  in the repo, GitHub Pages or the releases.
+- Fixed a flaky check: `test_benchmark` counted the soldiers only at the end ("15 soldiers spawned").
+- Cloud run 20 Nov 2026: 41 OK in 13.1 min (only ~3 min of it CPU – the tests wait on game time).
