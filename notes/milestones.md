@@ -549,3 +549,33 @@ public release; first NET2b and NET3, then EX1.
 - Ideas for later: a game icon for the .exe (needs rcedit), a "your address is …" line in the
   Host Co-op lobby so the host doesn't have to look up his IPv4 address.
 
+## TR1 – ground cut into tiles (review item P3) (2026-11-20)
+Review item P3 ("the ground is one mesh of 180,000 triangles, drawn whole even when most is behind
+you"). Named TR1 because the repo's "P3" is the 3D resolution cap.
+**Owner decision (2026-11-20):** no simpler far-away ground (LOD) – a far soldier must never look
+sunk into the snow or floating, on any computer. So every tile keeps every 1 m point at its exact
+height; the saving comes only from Godot skipping tiles outside the camera's view.
+- `TerrainGenerator.tiles_per_side` (default 4 → 16 tiles of 75 m) under the generated node
+  `GroundTiles` (`Tile_x_z`), replacing `GroundMesh`. Heights, normals and vertex colours are
+  still worked out once for the whole grid; neighbours share their edge points exactly.
+- Collision (`GroundCollision`), navmesh, horizon, `get_height()` unchanged – no navmesh re-bake.
+  Picture only, nothing synced: no effect on co-op traffic.
+- Tile count chosen by measuring (`tools/bench_tr1.gd`, High, 1280 × 720, no enemies). Benchmark
+  flight route average / max:
+  | tiles | draw calls avg / max | triangles avg / max |
+  |---|---|---|
+  | 1 (old) | 130 / 213 | 283k / 406k |
+  | 3×3 | 135 / 216 | 217k / 306k |
+  | **4×4** | **138 / 219** | **204k / 304k** |
+  | 5×5 | 142 / 223 | 196k / 290k |
+  | 6×6 | 147 / 226 | 193k / 281k |
+  | 8×8 | 158 / 238 | 186k / 276k |
+  4×4 gives most of the saving for +6–9 draw calls (each visible tile costs a few draw calls, and
+  the in-game peak is already near 300). Firing position looking south 227k → 171k, trench looking
+  north 366k → 242k; the overview (whole map in view) stays ~417k.
+- Screenshots (tiles 1 vs 4) differ only by the same run-to-run noise as two runs of the same build.
+- Test `tools/test_tr1.gd`: all 90,601 points drawn, 180,000 triangles, every point at exactly the
+  collision height, shared edge points identical, no LOD, no shadow casting, and 2,000 rays down
+  show the drawn triangles are the collision surface between the points too (same diagonal as Jolt's
+  height field; worst 0.0000 m).
+

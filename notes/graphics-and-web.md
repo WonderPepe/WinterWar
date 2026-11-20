@@ -130,6 +130,12 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `scaling_3d_scale` < 1, so presets would change the colours.
 - `display/window/stretch/mode = canvas_items` so UI scales with the browser window.
 - Terrain mesh does not cast shadows (it doubled the triangle count for nothing).
+- Ground tiles (TR1, review item P3): the drawn ground is 4 × 4 tiles (`TerrainGenerator.tiles_per_side`,
+  node `GroundTiles/Tile_x_z`) so tiles outside the view are skipped. **No LOD on the ground, ever**
+  (owner): every tile has every 1 m point at the collision height, so far soldiers never look sunk in
+  or floating. Each cell is split b→c like Jolt's height field, so even between the points the drawn
+  surface is the collision surface. More tiles = fewer triangles but more draw calls (measurements in
+  milestones.md, TR1). Bench: `tools/bench_tr1.gd [counts]`.
 - 3D resolution cap (P3, review item P1): `Settings.resolution` = `Resolution.AUTO` (default) or
   `FULL`, saved as `graphics/resolution`. Each preset has `max_lines` (720 / 900 / 1080). Auto:
   3D picture height = min(window height × `render_scale`, `max_lines`); `Settings.scale_for()`

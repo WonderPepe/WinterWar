@@ -1,7 +1,7 @@
 @tool
 class_name TerrainGenerator
 extends StaticBody3D
-## Builds the snowy ground: one grid mesh for drawing and a HeightMapShape3D for collision.
+## Builds the snowy ground: a grid of mesh tiles for drawing and a HeightMapShape3D for collision.
 ##
 ## Heights come from noise for now. Later you can put an image made from real
 ## elevation data into `heightmap` and the same code will use it instead.
@@ -19,6 +19,10 @@ extends StaticBody3D
 @export var edge_height: float = -0.3 ## Height at the map border; a flat "horizon" ground continues from here.
 @export var edge_falloff_m: float = 25.0 ## Hills fade out over this distance near the border.
 @export var horizon_size_m: float = 1500.0 ## How far the flat horizon ground reaches (hidden by fog).
+## TR1: the drawn ground is cut into this many tiles per side, so Godot can skip the tiles that are
+## outside the camera's view. Every tile keeps every 1 m point at its exact height (no simpler
+## far-away versions), so the snow you see is always exactly where the collision ground is.
+@export_range(1, 16) var tiles_per_side: int = 4
 
 @export_group("Heightmap (real elevation data, later)")
 @export var heightmap: Texture2D ## Grey image: black = lowest, white = highest. Leave empty to use noise.
@@ -174,38 +178,73 @@ func _add_mesh(heights: PackedFloat32Array, n: int, half: float) -> void:
 			colors[i] = Color(1.0 - ice, 1.0 - dirt, 1.0)
 			uvs[i] = Vector2(x, z) * 0.25
 
-	var indices := PackedInt32Array()
-	indices.resize((n - 1) * (n - 1) * 6)
-	var k: int = 0
-	for iz in n - 1:
-		for ix in n - 1:
-			var a: int = iz * n + ix
-			var b: int = a + 1
-			var c: int = a + n
-			var d: int = c + 1
-			indices[k] = a; indices[k + 1] = b; indices[k + 2] = c
-			indices[k + 3] = b; indices[k + 4] = d; indices[k + 5] = c
-			k += 6
+	# Cut the grid into tiles. Neighbouring tiles share their edge row of points (same position,
+	# normal and colour), so there are no cracks or light seams between them.
+	var tiles := Node3D.new()
+	tiles.name = "GroundTiles"
+	tiles.set_meta("generated", true)
+	add_child(tiles)
+	var count: int = clampi(tiles_per_side, 1, size_m)
+	for tz in count:
+		for tx in count:
+			var x0: int = roundi(float(tx) * size_m / count)
+			var x1: int = roundi(float(tx + 1) * size_m / count)
+			var z0: int = roundi(float(tz) * size_m / count)
+			var z1: int = roundi(float(tz + 1) * size_m / count)
+			var mi := MeshInstance3D.new()
+			mi.name = "Tile_%d_%d" % [tx, tz]
+			mi.mesh = _tile_mesh(verts, normals, colors, uvs, n, x0, x1, z0, z1)
+			# The gentle ground hardly casts visible shadows, but drawing its triangles again
+			# into the shadow map is expensive - so it only receives shadows.
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			tiles.add_child(mi)
 
+
+## One tile: the grid points x0..x1, z0..z1 (grid indices, both ends included) of the whole map.
+## Built straight from arrays, so it has no LOD versions (Godot only makes those on import).
+func _tile_mesh(verts: PackedVector3Array, normals: PackedVector3Array, colors: PackedColorArray,
+		uvs: PackedVector2Array, n: int, x0: int, x1: int, z0: int, z1: int) -> ArrayMesh:
+	var w: int = x1 - x0 + 1
+	var d: int = z1 - z0 + 1
+	var tv := PackedVector3Array()
+	var tn := PackedVector3Array()
+	var tc := PackedColorArray()
+	var tu := PackedVector2Array()
+	tv.resize(w * d)
+	tn.resize(w * d)
+	tc.resize(w * d)
+	tu.resize(w * d)
+	for iz in d:
+		for ix in w:
+			var src: int = (z0 + iz) * n + x0 + ix
+			var dst: int = iz * w + ix
+			tv[dst] = verts[src]
+			tn[dst] = normals[src]
+			tc[dst] = colors[src]
+			tu[dst] = uvs[src]
+	var indices := PackedInt32Array()
+	indices.resize((w - 1) * (d - 1) * 6)
+	var k: int = 0
+	for iz in d - 1:
+		for ix in w - 1:
+			var a: int = iz * w + ix
+			var b: int = a + 1
+			var c: int = a + w
+			var e: int = c + 1
+			indices[k] = a; indices[k + 1] = b; indices[k + 2] = c
+			indices[k + 3] = b; indices[k + 4] = e; indices[k + 5] = c
+			k += 6
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = verts
-	arrays[Mesh.ARRAY_NORMAL] = normals
-	arrays[Mesh.ARRAY_COLOR] = colors
-	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_VERTEX] = tv
+	arrays[Mesh.ARRAY_NORMAL] = tn
+	arrays[Mesh.ARRAY_COLOR] = tc
+	arrays[Mesh.ARRAY_TEX_UV] = tu
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh.surface_set_material(0, snow_material)
-
-	var mi := MeshInstance3D.new()
-	mi.name = "GroundMesh"
-	mi.mesh = mesh
-	# The gentle ground hardly casts visible shadows, but drawing its 180 000 triangles
-	# again into the shadow map is expensive - so it only receives shadows.
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.set_meta("generated", true)
-	add_child(mi)
+	return mesh
 
 
 func _add_collision(heights: PackedFloat32Array, n: int) -> void:

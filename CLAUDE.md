@@ -79,6 +79,9 @@ you work on. Update this file and the right note at the end of every milestone.
   LAN, own player never delayed; lag simulator `--net-lag/--net-jitter/--net-loss`).
   EX1: Windows desktop export preset (`.exe` + `.pck`, unsigned) for co-op with a friend on the same
   network – private builds, not releases (RELEASES.md "Windows build", `tools/windows_readme.txt`).
+  TR1 (review item P3): the drawn ground is 4 × 4 tiles (`GroundTiles`) so tiles behind you are
+  skipped – ~28 % fewer triangles on the benchmark flight; never LOD on the ground (owner: far
+  soldiers must not look sunk in / floating); collision + navmesh unchanged.
   Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
@@ -145,7 +148,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `milestones.md` – milestone history, owner decisions per milestone, development ideas
 - `coop-issues.md` – co-op: what works, what breaks, status (NET2)
 - `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1) + retry / day-screen hold (NET2), conventions, groups, physics layers, map coordinates
-- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a)
+- `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a), ground tiles (TR1)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
 - `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b), Finnish soldier body for the other players (NET2b)
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1), hand grenades (GR1) + throwing them back (GR2) + round a corner in the trench (GR3)
