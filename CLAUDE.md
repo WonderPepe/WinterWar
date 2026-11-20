@@ -88,6 +88,7 @@ you work on. Update this file and the right note at the end of every milestone.
   first GitHub run green (20 Nov 2026).
   TC1: Soviets in the trench at the limit (6 on every difficulty) start a 30 s countdown – kill them
   below it and the clock resets, run out and the line is broken; no hard cap (`breach_time_left`).
+  Public v0.11.0 (TC1 + TR1).
   Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
