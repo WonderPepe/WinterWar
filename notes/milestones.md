@@ -597,3 +597,4 @@ automatic run (only by hand, "all"); no web export / web smoke test on GitHub fo
   in the repo, GitHub Pages or the releases.
 - Fixed a flaky check: `test_benchmark` counted the soldiers only at the end ("15 soldiers spawned").
 - Cloud run 20 Nov 2026: 41 OK in 13.1 min (only ~3 min of it CPU – the tests wait on game time).
+- Committed 20 Nov 2026 (commit f02abd7). **Owner pushed; the first GitHub run was green (all OK).**

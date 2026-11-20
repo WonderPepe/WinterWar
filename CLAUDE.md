@@ -84,8 +84,9 @@ you work on. Update this file and the right note at the end of every milestone.
   soldiers must not look sunk in / floating); collision + navmesh unchanged.
   A7 (review item A7): `tools/run_all.gd` runs every test in `tools/tests.cfg` in its own Godot,
   judges the output (FAIL lines, script errors, missing end line, time limit), exit code 1 on a
-  failure; GitHub Actions runs it on every push (not the manual co-op soak, no web export).
-  Next: owner's choice – watch the first ✅ / ❌ on GitHub; online co-op ON0–ON5 (plan in Claude Docs, project doc
+  failure; GitHub Actions runs it on every push (not the manual co-op soak, no web export) –
+  first GitHub run green (20 Nov 2026).
+  Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
   field cover (idea 0). See `notes/milestones.md`.
