@@ -42,6 +42,9 @@ var _was_retaking: bool = false # L3: battle 6 – the players are retaking the 
 @onready var interact_prompt: Label = $InteractPrompt
 @onready var damage_indicator: DamageIndicator = $DamageIndicator
 @onready var hurt_sound: AudioStreamPlayer = $HurtSound
+const TRENCH_ALERT := Color(1.0, 0.42, 0.32) ## Same colour as the builder's TrenchAlert label.
+const TRENCH_URGENT := Color(1.0, 0.12, 0.08) ## TC1: last 10 s of the countdown.
+
 @onready var trench_label: Label = $WavePanel/TrenchAlert
 @onready var test_tag: Label = $WavePanel/TestTag
 @onready var banner_sub: Label = $WaveBannerSub
@@ -243,7 +246,13 @@ func _update_waves(delta: float) -> void:
 		trench_label.modulate.a = 0.85
 	elif inside > 0:
 		trench_label.text = "SOVIETS IN THE TRENCH: %d / %d" % [inside, _director.trench_limit]
-		trench_label.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / 110.0)
+		var left: float = _director.breach_time_left
+		var urgent: bool = left >= 0.0 and left <= 10.0
+		if left >= 0.0:
+			# TC1: the trench is full – kill them below the limit before the time runs out.
+			trench_label.text += " – CLEAR IT: %d s" % ceili(left)
+		trench_label.add_theme_color_override("font_color", TRENCH_URGENT if urgent else TRENCH_ALERT)
+		trench_label.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() / (60.0 if urgent else 110.0))
 	enemies_label.text = "Enemies: %d" % waves.alive_count
 	test_tag.visible = _director != null and _director.test_wave > 0
 	var next: float = waves.get_time_to_next_wave()

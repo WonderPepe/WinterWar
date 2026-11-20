@@ -7,7 +7,9 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   `delta_interval = 0.25`): host applies `DifficultyData` (`Settings.difficulty`, chosen in the
   main menu) to WaveSpawner (`base_enemies`, `enemies_added_per_wave`, `max_waves`),
   `Game.respawn_time`, `Enemy.spread_multiplier` and `Enemy.damage_multiplier` (static). Counts living enemies with
-  `is_in_trench()` (y < -0.85 and z > 48) 4×/s → `in_trench`; ≥ `trench_limit` → DEFEAT.
+  `is_in_trench()` (y < -0.85 and z > 48) 4×/s → `in_trench`; ≥ `trench_limit` (6 on every
+  difficulty since TC1) starts a `trench_clear_time` (30 s) countdown, `breach_time_left` (synced,
+  -1 = none); below the limit → -1 (next time the full 30 s again); reaches 0 → DEFEAT. No hard cap.
   `wave_cleared(n)` → heal all players, n ≥ `waves_to_win` → VICTORY. `end_match()` stops the
   spawner (`active = false`) and `freeze()`s enemies. HUD opens `EndScreen` when `is_over()`;
   single player pauses the tree; PauseMenu stays closed while the match is over.

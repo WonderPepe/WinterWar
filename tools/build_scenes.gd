@@ -939,7 +939,8 @@ func _build_game() -> Node:
 	var OC := SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE
 	match_sync.replication_config = _sync_config([
 		[".:difficulty", true, OC], [".:waves_to_win", true, OC], [".:trench_limit", true, OC],
-		[".:in_trench", true, OC], [".:waves_cleared", true, OC], [".:result", true, OC],
+		[".:in_trench", true, OC], [".:breach_time_left", true, OC], # TC1
+		[".:waves_cleared", true, OC], [".:result", true, OC],
 		[".:match_time", true, OC], [".:test_wave", true, OC], [".:start_wave", true, OC],
 	])
 	var dusk: Node = _add(g, Node.new(), "Dusk")
@@ -1432,8 +1433,8 @@ func _make_difficulty_data() -> void:
 	DirAccess.make_dir_recursive_absolute("res://resources/difficulty")
 	# name, waves to win, trench limit, wave 1 size, added per wave, enemy spread ×, respawn s,
 	# enemy damage ×
-	for d in [["Easy", 10, 6, 4, 1, 1.4, 5.0, 0.6], ["Normal", 10, 4, 6, 2, 1.0, 5.0, 1.0],
-			["Hard", 10, 3, 8, 2, 0.75, 10.0, 1.0]]:
+	for d in [["Easy", 10, 6, 4, 1, 1.4, 5.0, 0.6], ["Normal", 10, 6, 6, 2, 1.0, 5.0, 1.0],
+			["Hard", 10, 6, 8, 2, 0.75, 10.0, 1.0]]:
 		var r := DifficultyData.new()
 		r.display_name = d[0]
 		r.waves_to_win = d[1]

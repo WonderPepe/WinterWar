@@ -340,7 +340,7 @@ func _run_host(log_path: String) -> void:
 		if en and en.state != Enemy.State.DEAD and n <= director.trench_limit:
 			en.global_position = Vector3(-30.0 + n * 3.0, -1.4, 61.0)
 			n += 1
-	var over: bool = await wait_for(func() -> bool: return director.is_over(), 20.0)
+	var over: bool = await wait_for(func() -> bool: return director.is_over(), director.trench_clear_time + 20.0) # TC1 countdown
 	check(over, "host: the line breaks (defeat) with %d Soviets in the trench" % n)
 	await sec(1.5)
 	s = await snap()

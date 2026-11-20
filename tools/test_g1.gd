@@ -72,7 +72,7 @@ func run() -> void:
 	Settings.difficulty = 1
 	await start_game()
 	check(director != null and director.get_difficulty_name() == "Normal", "match uses the chosen difficulty (Normal)")
-	check(director.waves_to_win == 10 and director.trench_limit == 4 and spawner.max_waves == 10, "Normal: 10 waves to hold, line breaks at 4")
+	check(director.waves_to_win == 10 and director.trench_limit == 6 and spawner.max_waves == 10, "Normal: 10 waves to hold, trench countdown at 6 (TC1)")
 
 	# --- Ammo crate ---
 	var crate := get_tree().get_first_node_in_group("ammo_crates") as AmmoCrate
@@ -164,18 +164,24 @@ func run() -> void:
 	await seconds(1.0)
 	check(director.in_trench >= 1, "HUD counter: Soviets in the trench (%d)" % director.in_trench)
 	await frames(2)
-	check(hud.trench_label.visible and hud.trench_label.text.contains("/ 4"), "HUD warns: '%s'" % hud.trench_label.text)
+	check(hud.trench_label.visible and hud.trench_label.text.contains("/ 6"), "HUD warns: '%s'" % hud.trench_label.text)
 	# He fights in the trench: closes in on / shoots at the player.
 	var shots_before: int = e._shots_at_target
 	await seconds(8.0)
 	check(e._shots_at_target > shots_before or e.global_position.distance_to(p.global_position) < 8.0,
 		"in the trench he goes for the player (%.1f m away, %d shots)" % [e.global_position.distance_to(p.global_position), e._shots_at_target])
 
-	# --- Defeat: 4 in the trench at once ---
+	# --- Defeat: the trench full for too long (TC1: the 30 s countdown itself is in test_tc1.gd;
+	# here a lower limit and a 1 s countdown so the real soldiers above can fill it) ---
+	director.trench_limit = 4
+	director.trench_clear_time = 1.0
 	for x in [50.0, 70.0, 90.0]: # on the trench centre line (the line passes z = 61 at x = 50, 70, 90)
 		spawn_enemy(Vector3(x, -1.3, 61)).state = Enemy.State.ASSAULT
-	await seconds(1.0)
-	check(director.result == MatchDirector.Result.DEFEAT, "4 Soviets in the trench: the line is broken")
+	await seconds(0.6)
+	check(director.result == MatchDirector.Result.PLAYING and director.breach_time_left >= 0.0,
+		"4 Soviets in the trench: the countdown starts, no defeat at once (%.2f s left)" % director.breach_time_left)
+	await seconds(1.2)
+	check(director.result == MatchDirector.Result.DEFEAT, "countdown ran out: the line is broken")
 	await frames(3)
 	check(hud.end_screen.visible and hud.end_screen.title.text == "THE LINE IS BROKEN", "end screen: defeat")
 	check(get_tree().paused, "single player: the game stops behind the end screen")
@@ -194,8 +200,8 @@ func run() -> void:
 	get_tree().paused = false
 	Settings.difficulty = 2
 	await start_game()
-	check(director.waves_to_win == 10 and director.trench_limit == 3 and (game as Game).respawn_time == 10.0 \
-		and Enemy.spread_multiplier < 1.0, "Hard: 10 waves, breaks at 3, slower respawn, better enemy aim")
+	check(director.waves_to_win == 10 and director.trench_limit == 6 and (game as Game).respawn_time == 10.0 \
+		and Enemy.spread_multiplier < 1.0, "Hard: 10 waves, trench limit 6 too, slower respawn, better enemy aim")
 	check(is_equal_approx(Enemy.damage_multiplier, 1.0), "Hard: full enemy damage")
 
 	# --- Easy: also 10 waves, softer bullets ---

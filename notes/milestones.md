@@ -598,3 +598,19 @@ automatic run (only by hand, "all"); no web export / web smoke test on GitHub fo
 - Fixed a flaky check: `test_benchmark` counted the soldiers only at the end ("15 soldiers spawned").
 - Cloud run 20 Nov 2026: 41 OK in 13.1 min (only ~3 min of it CPU – the tests wait on game time).
 - Committed 20 Nov 2026 (commit f02abd7). **Owner pushed; the first GitHub run was green (all OK).**
+
+
+## TC1 – clear the trench in 30 s (2026-11-20)
+**Owner decisions (2026-11-20):** Soviets in the trench no longer break the line at once. At the limit a
+30 s countdown starts; kill them below the limit and it resets to the full 30 s (starts again the next
+time the trench is full). **No hard cap** (more than the limit still gets the full time). The limit is
+**6 on every difficulty** (was Easy 6 / Normal 4 / Hard 3) – difficulty will show in other ways later
+(e.g. how the enemies shoot).
+- `MatchDirector`: `breach_time_left` (synced by MatchSync, -1 = no countdown; counts down every frame
+  on the host), `trench_clear_time` from `DifficultyData.trench_clear_time` (30; 0 = the old instant
+  defeat). Battle 6 retake: no countdown. `scenes/game.tscn` MatchSync list edited by hand (no builder run).
+- HUD: "SOVIETS IN THE TRENCH: 6 / 6 – CLEAR IT: 23 s"; last 10 s brighter red and faster pulse
+  (`HUD.TRENCH_ALERT` / `TRENCH_URGENT`).
+- Tests: new `tools/test_tc1.gd` (in tests.cfg); `test_g1` (limit 6, countdown with a 1 s clear time),
+  `soak_coop` waits for the countdown. Cloud run: 42 OK.
+

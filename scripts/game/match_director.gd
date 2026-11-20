@@ -5,8 +5,10 @@ extends Node
 ## Runs on the HOST (in co-op the others only read the synced values below, via MatchSync):
 ## - applies the difficulty chosen in the main menu (DifficultyData),
 ## - wins the match when the last wave is cleared,
-## - loses it when too many Soviets are inside the trench at the same time (not while the players
-##   are retaking a captured trench, L3 battle 6 – the Soviets are in it then by definition),
+## - loses it when too many Soviets are inside the trench at the same time FOR TOO LONG: TC1 – at
+##   `trench_limit` a countdown of `trench_clear_time` s starts; kill them below the limit and it
+##   goes back to the full time, run out and the line is broken (not while the players are retaking
+##   a captured trench, L3 battle 6 – the Soviets are in it then by definition),
 ## - patches everyone up (full health) after every cleared wave,
 ## - puts everyone back at their start spot for the next battle (behind the black day screen).
 
@@ -30,8 +32,10 @@ static var coop_start_battle: int = 1
 # --- Synced from the host by MatchSync ---
 var difficulty: int = 1
 var waves_to_win: int = 8
-var trench_limit: int = 4
+var trench_limit: int = 6
 var in_trench: int = 0 ## Living Soviets inside the trench right now.
+## TC1: seconds left to clear the trench below `trench_limit`; -1 = no countdown (fewer inside).
+var breach_time_left: float = -1.0
 var waves_cleared: int = 0
 var result: int = Result.PLAYING:
 	set = _set_result
@@ -40,6 +44,8 @@ var test_wave: int = 0 ## Test mode: the wave this battle started at (0 = a norm
 ## The wave this match started at when the earlier ones were skipped: Test mode, or D1 a retried /
 ## continued run (0 = from battle 1). The HUD shows no banners or day screens for the skipped ones.
 var start_wave: int = 0
+
+var trench_clear_time: float = 30.0 ## TC1: host only – from DifficultyData.
 
 var _check_timer: float = 0.0
 var _run_restored: bool = false ## D1: the players have got their saved totals back.
@@ -59,6 +65,7 @@ func _ready() -> void:
 	var d: DifficultyData = difficulties[difficulty]
 	waves_to_win = d.waves_to_win
 	trench_limit = d.trench_limit
+	trench_clear_time = d.trench_clear_time
 	spawner.base_enemies = d.base_enemies
 	spawner.enemies_added_per_wave = d.enemies_added_per_wave
 	spawner.wave_list = d.waves
@@ -123,12 +130,15 @@ func _process(delta: float) -> void:
 			for node in get_tree().get_nodes_in_group("players"):
 				RunSave.restore_player(node as Player)
 	match_time += delta
+	if breach_time_left > 0.0:
+		breach_time_left = maxf(breach_time_left - delta, 0.0) # TC1: the clock runs every frame
 	_check_timer -= delta
 	if _check_timer > 0.0:
 		return
 	_check_timer = check_interval
 	if spawner.retaking:
 		in_trench = 0 # L3: they hold it – the players are taking it back, no "line broken" defeat
+		breach_time_left = -1.0
 		return
 	var count: int = 0
 	for node in get_tree().get_nodes_in_group("enemies"):
@@ -136,7 +146,12 @@ func _process(delta: float) -> void:
 		if e and e.state != Enemy.State.DEAD and e.is_in_trench():
 			count += 1
 	in_trench = count
-	if in_trench >= trench_limit:
+	if in_trench < trench_limit:
+		breach_time_left = -1.0 # TC1: cleared below the limit – next time the full time again
+		return
+	if breach_time_left < 0.0:
+		breach_time_left = trench_clear_time # TC1: the trench is full – the countdown starts
+	if breach_time_left <= 0.0:
 		end_match(Result.DEFEAT)
 
 
