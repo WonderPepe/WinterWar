@@ -177,7 +177,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 Easy [riflemen, officers, MG teams, barrage, tanks]: 1 [8,1,0,-,0]; 2 [10,1,2,-,0]; 3 [10,1,0,-,2]; 4 [14,1,2,-,0] + air raid;
 5 [10,1,1,barrage,1]; 6 [14,2,1,barrage,0]; 7 [16,2,1,barrage,2]; 8 [18,2,0,barrage,0] + raid; 9 [20,2,2,-,0];
 10 [22,2,2,barrage,0] + raid. Normal = Easy + 1 rifleman per battle, Hard = Easy + 2. Barrages, tanks, officers, MGs and
-raids are the same on every difficulty. Wave sizes now exceed `max_alive` 16 (e.g. battle 10 Hard = 24+2+4): groups come
+raids are the same on every difficulty. Wave sizes now exceed `max_alive` (16; V10c 2026-11-24: 24) (e.g. battle 10 Hard = 24+2+4): groups come
 in as others die. Battle 2 briefing text rewritten by the owner. Edited in `resources/difficulty/*.tres` + builder `WAVE_LISTS`/`MISSIONS`.
 
 ## Retake the trench (L3, battle 6)

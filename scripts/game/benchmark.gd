@@ -2,12 +2,12 @@ extends Node
 ## Benchmark: the same 60-second run every time, so performance can be compared
 ## between computers, browsers and quality settings.
 ## The player (in god mode) follows a fixed camera route over the trench and the bog,
-## fires the Suomi in bursts, and a 16-soldier attack plays out. Then a results
+## fires the Suomi in bursts, and a 24-soldier attack plays out. Then a results
 ## screen shows FPS, slow frames, draw calls, triangles, script/physics time and memory.
 
 @export var duration: float = 60.0
 @export var warmup: float = 2.0 ## Seconds ignored at the start (everything is still loading).
-@export var enemy_count: int = 16
+@export var enemy_count: int = 24 ## V10c: as many as can be alive in a battle (16 before v0.12).
 
 ## Camera route: [time (s), position (y = height above the ground), point to look at]
 const ROUTE: Array = [

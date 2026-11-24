@@ -89,6 +89,10 @@ you work on. Update this file and the right note at the end of every milestone.
   TC1: Soviets in the trench at the limit (6 on every difficulty) start a 30 s countdown – kill them
   below it and the clock resets, run out and the line is broken; no hard cap (`breach_time_left`).
   Public v0.11.0 (TC1 + TR1).
+  V10c: bodies 24 / 24 / 36 per quality, the newest 24 stay overnight – baked (pose frozen, no
+  skeleton) and glued into batches of ≤ 6 (`BodyBatch…`, one draw call each: 24 bodies ≈ +5 draw
+  calls instead of +23); max 24 soldiers alive on every difficulty (was 16); far soldiers posed every
+  2nd / 3rd frame (60 / 120 m).
   Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
@@ -161,7 +165,7 @@ you work on. Update this file and the right note at the end of every milestone.
 - `architecture.md` – multiplayer architecture, co-op connection + load gate (NET1) + retry / day-screen hold (NET2), conventions, groups, physics layers, map coordinates
 - `graphics-and-web.md` – web export limits, quality presets, P1 graphics (sky, snow, forest LOD), weather per battle (B3), motion: spruce sway + cloud drift (V10a), ground tiles (TR1)
 - `weapons.md` – Mosin/Suomi view models, Maxim, first-person arms (W1, W2, AR1 clothing), Suomi cocking handle + cases (W3), hit zones (D9)
-- `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b), Finnish soldier body for the other players (NET2b)
+- `soldiers-effects-sound.md` – soldier mesh/poses, impact effects, audio buses, background sounds, bodies that stay (V10b) + baked body batches (V10c), Finnish soldier body for the other players (NET2b)
 - `battle.md` – MatchDirector, assault, ammo/bandages, dusk, waves, suppression, officers, MGs, artillery, air raid (A1), saved run / retry / continue (D1), hand grenades (GR1) + throwing them back (GR2) + round a corner in the trench (GR3), trench countdown (TC1)
 - `day-screen.md` – battle briefings (B1), photos, day screen
 - `tank-and-molotov.md` – T-26 tank (T1), Molotov cocktail (T2), tanks in the waves (T3), turret feel (T4), armour stops enemy fire (T5), climbing out of the trench (C1), tank tracks (V10b), running tracks + turning wheels (T6)

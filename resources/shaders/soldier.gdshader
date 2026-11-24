@@ -8,6 +8,9 @@ uniform vec3 coat_tint : source_color = vec3(1.0); // Each soldier gets a slight
 // V10b: snow lying on a body left on the field over the night (0 = none, 1 = nearly covered).
 // It settles on the parts that face up, in patches.
 uniform float snow_cover : hint_range(0.0, 1.0) = 0.0;
+// V10c: bodies baked together into one shape (BodyKeeper batch): each body's snow is in UV2.x,
+// and the coat tint is already in the vertex colours.
+uniform bool baked_snow = false;
 
 void fragment() {
 	vec3 col = COLOR.rgb;
@@ -22,10 +25,11 @@ void fragment() {
 	float snow = smoothstep(0.55, 0.75, texture(noise_texture, UV * 1.7).r) * (1.0 - smoothstep(0.25, 0.6, UV.y)) * 0.6;
 	col = mix(col, vec3(0.88, 0.91, 0.96), snow);
 	float lying = 0.0;
-	if (snow_cover > 0.0) {
+	float cover = baked_snow ? UV2.x : snow_cover;
+	if (cover > 0.0) {
 		float facing_up = (INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).y;
 		float patches = texture(noise_texture, UV * 2.3 + vec2(0.17, 0.61)).r;
-		float level = facing_up * 0.6 + patches * 0.55 + snow_cover * 0.9;
+		float level = facing_up * 0.6 + patches * 0.55 + cover * 0.9;
 		lying = smoothstep(0.95, 1.15, level);
 		col = mix(col, vec3(0.9, 0.93, 0.98), lying);
 	}

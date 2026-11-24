@@ -84,17 +84,31 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   while the body was not handed over yet.
 - A soldier killed in the air (jumping into the trench) used to hang there until he vanished:
   `BodyKeeper._drop_to_ground()` (a ray down on the world layer) brings the body down.
-- Limits: `Settings.PRESETS[...].max_bodies` 12 / 24 / 36 (re-checked on `Settings.changed`). One
-  body too many: the oldest sinks into the snow (`sink_time` 3 s, `sink_depth` 0.7 m), then freed.
+- Limits: `Settings.PRESETS[...].max_bodies` 24 / 24 / 36 (V10c; was 12 on Low; re-checked on
+  `Settings.changed`). One body too many: the oldest sinks into the snow (`sink_time` 3 s,
+  `sink_depth` 0.7 m), then freed. A baked one first leaves his batch and gets his own plain
+  MeshInstance3D "Sinking" for those 3 s (`_show_alone`).
 - New day: `BodyKeeper` polls the day screen (`is_black()`, 2×/s, like the tank wrecks). At the
-  moment it turns black `new_day()` frees all but the newest `keep_overnight` (12) and adds
+  moment it turns black `new_day()` frees all but the newest `keep_overnight` (24, V10c; was 12) and adds
   `overnight_snow` (0.3, at most 0.9 in all) to the rest: `SoldierVisual.set_snow_cover()` →
   `soldier.gdshader` uniform `snow_cover` (snow on the parts that face up, in patches from
   snow_mask.png). A retry / Continue reloads the scene: no bodies.
 - Cost measured (xvfb, High): one body = 1 draw call and ~780 triangles (a living soldier with
   shadows: ~2.6 draw calls, ~2 200 triangles). 36 bodies all in view = +36 draw calls, +28 000
   triangles. With shadows on (`cast_shadows`) it would be up to +95 draw calls – that is why they
-  are off. If more bodies are ever wanted: bake each pose into a static mesh and merge them.
+  are off. V10c did the "bake and merge" (below).
+- **V10c baked batches.** `take()` → `_bake()` (after the drop, if he was killed in the air):
+  `SoldierVisual.bake_body()` freezes the pose with `bake_mesh_from_current_skeleton_pose()` (headless,
+  without a renderer, that fails – then `_pose_on_cpu()` does the same skinning in GDScript, ~1.4 ms;
+  both give the same shape to 0.01 mm), drops indices (`SurfaceTool.deindex`, so arrays can just be
+  appended), puts the coat tint into the vertex colours, keeps positions/normals/colours/UV in the
+  body node's space in `baked`, and frees the Skeleton. The node stays as a light, empty Node3D (so
+  `get_bodies()`, snow cover, sinking keep working). The keeper puts him into the nearest `Batch` with
+  room (`batch_size` 6, first body within `batch_radius_m` 35 m) or a new one; `_rebuild()` joins
+  the arrays (native `append_array`, transform with `Transform3D * PackedVector3Array`) – only the
+  batch that changed. Snow per body goes into UV2.x; `soldier.gdshader` uses it when the batch
+  material has `baked_snow` = true. Batches: no shadow, `visibility_range_end` 170 + 17.5 m (from the
+  batch's middle). New day: all batches rebuilt behind the black screen.
 - Seen while measuring (not caused by V10b): looking south from a firing position on High the
   frame is already ~260 draw calls and ~450k triangles with nobody on the field – above the
   README's budget numbers, which are averages from the benchmark flight.

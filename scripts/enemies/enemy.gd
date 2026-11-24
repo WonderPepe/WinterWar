@@ -89,7 +89,7 @@ var _mg_deployed_at: float = 0.0   # gunner: when the gun was last set up
 
 # --- Host-only memory ---
 var _state_time: float = 0.0
-var _sense_timer: float = 0.0
+var _sense_timer: float = -1.0 # V10c: set to a random start in _ready, so a group's looks are spread over frames
 var _target: Player = null
 var _can_see_target: bool = false
 var _spot_progress: float = 0.0     # 0..1, how close we are to noticing a player
@@ -162,6 +162,7 @@ func _ready() -> void:
 	_assault_after = _rng.randf_range(data.assault_hold_min, data.assault_hold_max)
 	_whistle_timer = _rng.randf_range(0.0, 3.0)
 	_hold_offset = _rng.randf_range(-8.0, 0.0)
+	_sense_timer = _rng.randf_range(0.0, 0.2) # V10c: a group spawned together does not look around on the same frame
 	mg_ammo = data.mg_magazine
 	grenades = _rng.randi_range(data.grenades_min, data.grenades_max)
 	_mg_final_goal = attack_point
@@ -598,7 +599,7 @@ func _die() -> void:
 ## Host: the dead soldier's node goes (the other computers follow). His body stays behind
 ## with the BodyKeeper (V10b) – handed over here at the latest.
 func _remove_dead() -> void:
-	if not visual.is_body:
+	if is_instance_valid(visual) and not visual.is_body: # (V10c: a body may already have sunk away)
 		visual.hand_over_body()
 	queue_free()
 
@@ -1435,7 +1436,7 @@ func _update_visuals() -> void:
 	var capsule := collision.shape as CapsuleShape3D
 	if state == State.DEAD:
 		collision.set_deferred("disabled", true) # bullets and players pass through bodies
-		if is_prone or visual.is_body:
+		if is_prone or not is_instance_valid(visual) or visual.is_body:
 			return # already lying in the snow: the visual just goes limp (or is a kept body, V10b)
 		# Fall: backwards most of the time, sometimes forwards, a little twisted. Chosen from the
 		# soldier's name so every computer shows the same fall.

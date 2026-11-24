@@ -2,7 +2,7 @@ extends Node
 ## Test for V10b "the battle leaves marks" (not part of the game):
 ##   godot --headless --path . --script tools/run.gd -- tools/test_v10b.gd
 ## Bodies: a fallen soldier's picture is handed to the BodyKeeper and stays when the soldier
-## node is removed; caps per quality; a new day keeps the newest 12 with snow on them; a soldier
+## node is removed; caps per quality; a new day keeps the newest 24 with snow on them; a soldier
 ## killed in the air comes down. Tracks: a driving tank lays strips on the ground, one draw
 ## call, the pool wraps round, a new day clears them.
 
@@ -56,8 +56,8 @@ func ground(x: float, z: float) -> Vector3:
 func run() -> void:
 	Settings.difficulty = 1
 	quality_before = Settings.quality
-	check(Settings.PRESETS[Settings.Quality.LOW].max_bodies == 12 and Settings.PRESETS[Settings.Quality.MEDIUM].max_bodies == 24
-			and Settings.PRESETS[Settings.Quality.HIGH].max_bodies == 36, "body caps are 12 / 24 / 36 (Low / Medium / High)")
+	check(Settings.PRESETS[Settings.Quality.LOW].max_bodies == 24 and Settings.PRESETS[Settings.Quality.MEDIUM].max_bodies == 24
+			and Settings.PRESETS[Settings.Quality.HIGH].max_bodies == 36, "body caps are 24 / 24 / 36 (Low / Medium / High, V10c)")
 	Settings.quality = Settings.Quality.HIGH
 	game = load("res://scenes/game.tscn").instantiate()
 	get_tree().root.add_child(game)
@@ -85,7 +85,7 @@ func run() -> void:
 	if keeper == null or tracks == null:
 		get_tree().quit(1)
 		return
-	check(keeper.keep_overnight == 12, "12 bodies stay for the next day")
+	check(keeper.keep_overnight == 24, "24 bodies stay for the next day (V10c)")
 
 	# --- One soldier falls: his body stays, the soldier node goes.
 	var e: Enemy = spawn(0, ground(0.0, 20.0))
@@ -104,9 +104,15 @@ func run() -> void:
 	e.is_kneeling = true # a late change from the host must not move a kept body
 	await frames(5)
 	check(visual.global_transform.is_equal_approx(lying), "a late pose change does not move the body")
-	var mesh := visual.get_node("Skeleton/Body") as MeshInstance3D
-	check(mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF and mesh.visibility_range_end > 100.0,
-			"the body casts no shadow and is hidden far away (%d m)" % mesh.visibility_range_end)
+	check(not visual.baked.is_empty() and visual.get_node_or_null("Skeleton") == null, "V10c: the body is baked, his skeleton is gone")
+	check(keeper.batch_count() == 1, "V10c: he is drawn by one batch (%d)" % keeper.batch_count())
+	var mesh: MeshInstance3D = keeper.get_batch_nodes()[0] if keeper.batch_count() > 0 else null
+	check(mesh != null and mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF and mesh.visibility_range_end > 100.0,
+			"the body casts no shadow and is hidden far away (%d m)" % (mesh.visibility_range_end if mesh else 0.0))
+	var aabb: AABB = mesh.get_aabb() if mesh else AABB()
+	aabb = mesh.global_transform * aabb if mesh else aabb
+	check(mesh != null and aabb.grow(0.2).has_point(visual.global_position) and aabb.size.y < 1.2 and aabb.size.length() > 1.0,
+			"V10c: the batch shape lies where he fell, flat on the snow (%s)" % str(aabb.size))
 	await wait(3.5)
 	check(not is_instance_valid(e), "7 s after the fall the soldier node is gone")
 	check(is_instance_valid(visual) and visual.is_inside_tree() and keeper.get_bodies().size() == 1, "...and the body is still on the field")
@@ -155,7 +161,15 @@ func run() -> void:
 	check(is_instance_valid(visual) and visual.global_position.y < y_before - 0.1, "...it sinks into the snow")
 	await wait(keeper.sink_time)
 	check(not is_instance_valid(visual), "...and is gone after %.0f s" % keeper.sink_time)
-	check(keeper.get_child_count() == 36, "only the 36 kept bodies are left under Bodies (%d)" % keeper.get_child_count())
+	check(keeper.get_child_count() == 36 + keeper.batch_count(), "only the 36 kept bodies (+ %d batches) are left under Bodies (%d)" % [keeper.batch_count(), keeper.get_child_count()])
+	var in_batches: int = 0
+	var verts: int = 0
+	for b in keeper.get_batch_nodes():
+		verts += (b.mesh as ArrayMesh).surface_get_array_len(0)
+	for b in keeper.get_bodies():
+		in_batches += 1 if not b.baked.is_empty() else 0
+	check(in_batches == 36 and verts == 36 * (visual_verts(keeper)), "V10c: all 36 bodies are baked into the batches (%d vertices)" % verts)
+	check(keeper.batch_count() <= 10, "V10c: 36 bodies in a 80 m row are drawn with %d batches (draw calls), not 36" % keeper.batch_count())
 
 	# --- Quality turned down: fewer bodies.
 	Settings.quality = Settings.Quality.MEDIUM # (not set_quality: that would save it in the player's settings)
@@ -163,22 +177,38 @@ func run() -> void:
 	await frames(2)
 	check(keeper.get_bodies().size() == 24, "quality Medium: 24 bodies (%d)" % keeper.get_bodies().size())
 	await wait(keeper.sink_time + 0.3)
+	Settings.quality = Settings.Quality.LOW
+	Settings.changed.emit()
+	await frames(2)
+	check(keeper.get_bodies().size() == 24, "V10c: quality Low: also 24 bodies (%d)" % keeper.get_bodies().size())
 	Settings.quality = Settings.Quality.HIGH
 	Settings.changed.emit()
 
-	# --- A new day: the newest 12 stay, with snow on them.
+	# --- A new day: the newest 24 stay, with snow on them. (Make it 30 first.)
+	for i in 6:
+		spawn(80 + i, ground(-30.0 + i * 2.0, 0.0))
+	await frames(3)
+	for n in get_tree().get_nodes_in_group("enemies"):
+		(n as Enemy).take_damage(1000.0, 1, (n as Enemy).global_position, Vector3.UP)
+	await wait(3.6)
+	check(keeper.get_bodies().size() == 30, "30 bodies before the night (%d)" % keeper.get_bodies().size())
 	var newest: SoldierVisual = keeper.get_bodies().back()
 	check(newest.get_snow_cover() == 0.0, "a fresh body has no snow on it")
 	screen.black = true
 	await wait(0.8)
-	check(keeper.get_bodies().size() == 12, "behind the black day screen: 12 bodies stay (%d)" % keeper.get_bodies().size())
+	check(keeper.get_bodies().size() == 24, "behind the black day screen: 24 bodies stay (%d)" % keeper.get_bodies().size())
 	check(keeper.get_bodies().has(newest), "...the newest ones")
 	check(newest.get_snow_cover() > 0.2, "...with snow on them (%.2f)" % newest.get_snow_cover())
+	var snow_in_batch: bool = true
+	for b in keeper.get_batch_nodes():
+		var uv2: PackedVector2Array = (b.mesh as ArrayMesh).surface_get_arrays(0)[Mesh.ARRAY_TEX_UV2]
+		snow_in_batch = snow_in_batch and uv2.size() > 0 and uv2[0].x > 0.2
+	check(snow_in_batch and keeper.get_child_count() == 24 + keeper.batch_count(), "V10c: the batches carry the snow, the others are gone")
 	await wait(1.2)
-	check(keeper.get_bodies().size() == 12, "the day screen staying black changes nothing more")
+	check(keeper.get_bodies().size() == 24, "the day screen staying black changes nothing more")
 	screen.black = false
 	await wait(0.8)
-	# The next day: 5 more fall; the night after, the newest 12 stay (5 new + 7 old).
+	# The next day: 5 more fall; the night after, the newest 24 stay (5 new + 19 old).
 	var fresh: Array[SoldierVisual] = []
 	for i in 5:
 		var s: Enemy = spawn(60 + i, ground(-10.0 + i * 2.0, 5.0))
@@ -187,7 +217,7 @@ func run() -> void:
 	for n in get_tree().get_nodes_in_group("enemies"):
 		(n as Enemy).take_damage(1000.0, 1, (n as Enemy).global_position, Vector3.UP)
 	await wait(3.6)
-	check(keeper.get_bodies().size() == 17, "next day: 12 old + 5 new bodies (%d)" % keeper.get_bodies().size())
+	check(keeper.get_bodies().size() == 29, "next day: 24 old + 5 new bodies (%d)" % keeper.get_bodies().size())
 	var snow_first_night: float = newest.get_snow_cover()
 	screen.black = true
 	await wait(0.8)
@@ -195,7 +225,7 @@ func run() -> void:
 	var all_fresh_kept: bool = true
 	for f in fresh:
 		all_fresh_kept = all_fresh_kept and kept.has(f)
-	check(kept.size() == 12 and all_fresh_kept, "second night: 12 stay, all 5 new ones among them")
+	check(kept.size() == 24 and all_fresh_kept, "second night: 24 stay, all 5 new ones among them")
 	check(newest.get_snow_cover() > snow_first_night and newest.get_snow_cover() <= 0.9, "a second night adds snow (%.2f, never more than 0.9)" % newest.get_snow_cover())
 	check(fresh[0].get_snow_cover() < newest.get_snow_cover(), "yesterday's bodies have less snow than the older ones")
 	screen.black = false
@@ -276,3 +306,9 @@ func run() -> void:
 	Settings.quality = quality_before as Settings.Quality
 	print("TEST V10B DONE: %d failure(s)" % fails)
 	get_tree().quit(1 if fails > 0 else 0)
+
+
+## V10c: how many corners one baked rifleman has (all riflemen use the same mesh).
+func visual_verts(keeper: BodyKeeper) -> int:
+	var b: Array[SoldierVisual] = keeper.get_bodies()
+	return (b[0].baked[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() if not b.is_empty() else -1

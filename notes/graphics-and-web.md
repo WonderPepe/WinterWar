@@ -45,7 +45,9 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   (`_hide_briefing()`, `BRIEFING_FADE` 0.6 s, layout kept so nothing jumps); march, ALARM line and
   "CLICK TO START THE BATTLE" stay over the dimmed battlefield.
 - CSG trench/bunker should be converted to static meshes before the web export (M5).
-- Max 16 enemies alive; enemy senses run ~5×/s; no RVO avoidance.
+- Max 24 enemies alive (V10c; was 16); enemy senses run ~5×/s with a random start; no RVO avoidance.
+  Soldiers beyond 60 m are posed every 2nd frame, beyond 120 m every 3rd (`SoldierVisual.far_pose_distance`).
+  Bodies are baked into batches (V10c): 24 bodies ≈ 5 draw calls.
 
 ## Weather and time of day (B3) – how it is built
 - Every battle has its own look: `WeatherData` (`scripts/game/weather_data.gd`) in

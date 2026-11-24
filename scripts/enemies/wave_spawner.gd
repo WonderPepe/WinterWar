@@ -34,7 +34,7 @@ enum Phase { WAITING, SPAWNING, FIGHTING, RETAKE } # RETAKE (L3): clearing the c
 @export var group_size_max: int = 3
 @export var time_between_groups: float = 4.0
 @export var time_between_waves: float = 5.0 ## "Battle n begins in …" after a cleared battle (held while the day screen is open).
-@export var max_alive: int = 16 ## Performance limit for the web version.
+@export var max_alive: int = 24 ## Performance limit for the web version (V10c: 16 -> 24, owner 2026-11-24, every difficulty).
 @export var spawn_spread_m: float = 5.0 ## Random offset around each spawn point.
 @export var max_waves: int = 0 ## Stop after this many waves (0 = endless). Set by the MatchDirector.
 @export var first_tank_delay: float = 12.0 ## T3: seconds after the wave starts before the first tank sets off in the forest.

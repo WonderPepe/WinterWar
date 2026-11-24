@@ -614,3 +614,20 @@ time the trench is full). **No hard cap** (more than the limit still gets the fu
 - Tests: new `tools/test_tc1.gd` (in tests.cfg); `test_g1` (limit 6, countdown with a 1 s clear time),
   `soak_coop` waits for the countdown. Cloud run: 42 OK.
 
+
+## V10c – more of the fallen, more of the living (2026-11-24)
+**Owner decisions (2026-11-24):** more bodies "for a more realistic feeling of war": at least **24 on every
+quality** (Low 12 → 24; Medium 24, High 36 unchanged) and the newest **24** (was 12) stay for the next day.
+At most **24 soldiers alive** at once (was 16), **on every difficulty** – the later battles get harder
+because more come at once; difficulty will be tuned later in other ways (e.g. how well the enemies shoot).
+- Bodies are "baked" and drawn in batches: `BodyKeeper` freezes each body's pose (`SoldierVisual.bake_body`,
+  skeleton freed) and glues up to 6 bodies lying within 35 m into one MeshInstance3D `BodyBatch…` – one draw
+  call per batch. Measured (xvfb, High, looking south from the trench): 24 bodies +23 → **+5** draw calls,
+  36 bodies +33 → **+7**; triangles unchanged (~780 per body).
+- `WaveSpawner.max_alive` 24, benchmark 24 soldiers (`test_benchmark` expects 24). Cheaper living soldiers:
+  `SoldierVisual` poses every 2nd frame beyond 60 m, every 3rd beyond 120 m (`far_pose_distance`; script time of
+  24 soldiers 30–150 m away: ~2.0 → ~0.85 ms/frame, cloud), and `Enemy._sense_timer` starts at a random
+  0–0.2 s so a group does not look around on the same frame. AI/physics grows with the number (~+1 ms native
+  for 16 → 24 in the benchmark, noisy).
+- Tests: `test_v10b.gd` extended (caps 24/24/36, keep 24, baked + batches, snow in the batches). Tool:
+  `tools/bench_v10c.gd bodies|alive|pose N`. Pictures: `shots_v10b.gd` – baked bodies look the same.

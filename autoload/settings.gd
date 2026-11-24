@@ -22,7 +22,7 @@ const PRESETS: Dictionary = {
 	Quality.LOW: {
 		"shadows": false, "shadow_distance": 0.0, "tree_distance": 140.0, "tree_detail_distance": 35.0,
 		"snow_amount": 250, "drift_amount": 0, "render_scale": 0.75, "max_lines": 720, "fog_density": 0.006,
-		"max_bodies": 12,
+		"max_bodies": 24,
 	},
 	Quality.MEDIUM: {
 		"shadows": true, "shadow_distance": 40.0, "tree_distance": 180.0, "tree_detail_distance": 50.0,

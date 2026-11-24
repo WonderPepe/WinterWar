@@ -54,7 +54,7 @@ Godot 4.7, GDScript, Compatibility renderer (so it can be exported to the web).
 |---|---|---|
 | Draw calls per frame | ~165 average, ~220 max | ≤ 300 |
 | Triangles per frame (incl. shadows) | ~275 000 | ≤ 400 000 |
-| CPU: physics (16 enemies) | ~2.5–3 ms (desktop) | ≤ 8 ms total in the browser |
+| CPU: physics (16 enemies; 24 since v0.12: ~+1 ms) | ~2.5–3 ms (desktop) | ≤ 8 ms total in the browser |
 | Download | ~52 MB (≈17 MB compressed) | ≤ 60 MB |
 | Textures | 6 generated textures, ≤ 2048 px, VRAM-compressed | ≤ 2048 px, VRAM-compressed |
 

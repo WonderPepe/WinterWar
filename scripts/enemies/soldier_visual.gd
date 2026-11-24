@@ -13,7 +13,9 @@ extends Node3D
 ##
 ## V10b: a few seconds after he falls, this node leaves the soldier and is kept by the
 ## BodyKeeper as a plain picture (`become_body`) – the body stays on the field, the soldier
-## node itself is removed as before.
+## node itself is removed as before. V10c: once he lies still the BodyKeeper "bakes" him
+## (`bake_body`): the pose is frozen into a plain shape, the skeleton goes, and the keeper draws
+## him together with other bodies in one batch.
 
 const B := SoldierMesh.Bone
 
@@ -24,9 +26,13 @@ const B := SoldierMesh.Bone
 @export var kind: EnemyData.Kind = EnemyData.Kind.RIFLEMAN ## Used when there is no Enemy parent (warm-up, screenshots).
 ## V10b: this long after he fell (he lies still by then) the body is handed to the BodyKeeper.
 @export var body_after: float = 3.0
+## V10c: further away than this he is posed every 2nd frame, beyond twice this every 3rd – from
+## that far nobody sees the difference, and posing the bones is most of a soldier's cost.
+@export var far_pose_distance: float = 60.0
 
 var muzzle: Marker3D ## Where his shots come from (follows the rifle).
 var is_body: bool = false ## V10b: true once this is only a body kept by the BodyKeeper.
+var baked: Array = [] ## V10c: the frozen body (mesh arrays in this node's space) once baked; empty before.
 
 var _enemy: Enemy
 var _skeleton: Skeleton3D
@@ -50,6 +56,10 @@ var _whistle: float = 0.0 # officer: > 0 while the whistle is at his mouth
 var _throw_t: float = 0.0 # GR1: seconds into a grenade throw (0 = not throwing)
 var _hand_grenade: Node3D # GR1: the F-1 in his right hand during the wind-up (made when first needed)
 var _rng := RandomNumberGenerator.new()
+var _tint: Color = Color(1, 1, 1) # his coat tint
+var _snow_cover: float = 0.0 # V10b/V10c: snow on the body
+var _pose_wait: int = 0 # V10c: frames left before the next pose (far away)
+var _pose_delta: float = 0.0 # V10c: time gathered since the last pose
 
 # Coats were not all the same colour: grey-brown, greener, darker.
 const COAT_TINTS: Array[Color] = [Color(1, 1, 1), Color(0.92, 0.97, 0.9), Color(1.05, 1.0, 0.95),
@@ -58,6 +68,7 @@ const COAT_TINTS: Array[Color] = [Color(1, 1, 1), Color(0.92, 0.97, 0.9), Color(
 
 func _ready() -> void:
 	_rng.randomize()
+	_pose_wait = _rng.randi() % 3 # far soldiers are not all posed on the same frame
 	_enemy = get_parent() as Enemy
 	if _enemy and _enemy.data:
 		kind = _enemy.data.kind
@@ -72,7 +83,8 @@ func _ready() -> void:
 	_mesh.skeleton = NodePath("..")
 	if material:
 		var m: ShaderMaterial = material.duplicate()
-		m.set_shader_parameter("coat_tint", COAT_TINTS[_rng.randi() % COAT_TINTS.size()])
+		_tint = COAT_TINTS[_rng.randi() % COAT_TINTS.size()]
+		m.set_shader_parameter("coat_tint", _tint)
 		_mesh.material_override = m
 	_skeleton.scale = Vector3.ONE * _rng.randf_range(0.95, 1.06) # not all the same height
 
@@ -129,7 +141,8 @@ func _process(delta: float) -> void:
 	_speed = lerpf(_speed, minf(instant, 8.0), clampf(delta * 8.0, 0.0, 1.0))
 	var steps_before: int = int(_phase / PI)
 	_phase += moved.length() / stride_m * PI
-	var near: bool = _is_near_camera()
+	var cam_dist: float = _camera_distance()
+	var near: bool = cam_dist < effects_distance
 	if near and int(_phase / PI) != steps_before and _speed > 0.5:
 		_play_step()
 	if near and _enemy.state != Enemy.State.DEAD:
@@ -149,7 +162,13 @@ func _process(delta: float) -> void:
 		_footsteps.volume_db = -2.0
 		get_tree().create_timer(0.45).timeout.connect(_footsteps.play)
 	_was_dead = dead
-	_pose(delta)
+	# V10c: far away he is posed less often (with the time gathered meanwhile).
+	_pose_delta += delta
+	_pose_wait -= 1
+	if _pose_wait <= 0:
+		_pose_wait = 1 if cam_dist < far_pose_distance or cam_dist == INF else (2 if cam_dist < far_pose_distance * 2.0 else 3)
+		_pose(_pose_delta)
+		_pose_delta = 0.0
 	if dead:
 		_dead_time += delta
 		if _dead_time >= body_after:
@@ -186,22 +205,106 @@ func become_body(hide_distance_m: float, shadows: bool) -> void:
 		_mesh.visibility_range_end = hide_distance_m
 
 
-## V10b: how much snow lies on the body (0 = none … 1 = nearly covered).
+## V10b: how much snow lies on the body (0 = none … 1 = nearly covered). A baked body (V10c)
+## only keeps the number – the BodyKeeper puts it into the batch.
 func set_snow_cover(amount: float) -> void:
+	_snow_cover = clampf(amount, 0.0, 1.0)
 	var m: ShaderMaterial = (_mesh.material_override as ShaderMaterial) if _mesh else null
 	if m:
-		m.set_shader_parameter("snow_cover", clampf(amount, 0.0, 1.0))
+		m.set_shader_parameter("snow_cover", _snow_cover)
 
 
 func get_snow_cover() -> float:
-	var m: ShaderMaterial = (_mesh.material_override as ShaderMaterial) if _mesh else null
-	var v: Variant = m.get_shader_parameter("snow_cover") if m else null
-	return float(v) if v != null else 0.0
+	return _snow_cover
+
+
+## V10c: the material of this soldier (the BodyKeeper copies it once for its batches).
+func get_material() -> ShaderMaterial:
+	return (_mesh.material_override as ShaderMaterial) if _mesh else null
+
+
+## V10c: freezes the body as it lies now into a plain shape and frees the skeleton (and the
+## rifle marker, a grenade in the hand…). Fills `baked` with the shape's arrays in this node's
+## space: positions, normals, colours (coat tint already in them) and UV – no bones, no indices
+## (every triangle has its own 3 corners, so bodies can be glued together without renumbering).
+## Called by the BodyKeeper; after this the node draws nothing itself.
+func bake_body() -> void:
+	if not baked.is_empty() or _mesh == null:
+		return
+	# Godot freezes the pose itself (fast). Without a real renderer (the tests run "headless") it
+	# can't, so then the script does the same: `_pose_on_cpu`.
+	var posed: ArrayMesh = _mesh.bake_mesh_from_current_skeleton_pose() if RenderingServer.get_video_adapter_name() != "" else null
+	if posed == null:
+		posed = _pose_on_cpu()
+	var st := SurfaceTool.new()
+	st.create_from(posed, 0)
+	st.deindex()
+	var src: Array = st.commit_to_arrays()
+	var xf: Transform3D = global_transform.affine_inverse() * _mesh.global_transform
+	var nxf := Transform3D(xf.basis.inverse().transposed(), Vector3.ZERO)
+	var colors: PackedColorArray = src[Mesh.ARRAY_COLOR]
+	if _tint != Color(1, 1, 1):
+		for i in colors.size():
+			var c: Color = colors[i]
+			if c.a > 0.75: # greatcoat (see soldier.gdshader)
+				colors[i] = Color(c.r * _tint.r, c.g * _tint.g, c.b * _tint.b, c.a)
+	baked.resize(Mesh.ARRAY_MAX)
+	baked[Mesh.ARRAY_VERTEX] = xf * (src[Mesh.ARRAY_VERTEX] as PackedVector3Array)
+	baked[Mesh.ARRAY_NORMAL] = nxf * (src[Mesh.ARRAY_NORMAL] as PackedVector3Array)
+	baked[Mesh.ARRAY_COLOR] = colors
+	baked[Mesh.ARRAY_TEX_UV] = src[Mesh.ARRAY_TEX_UV]
+	for c in get_children():
+		c.queue_free()
+	_skeleton = null
+	_mesh = null
+	_hand_grenade = null
+	muzzle = null
+
+
+## V10c: the soldier mesh as it is posed now, worked out in the script: every corner is moved
+## by the bones it hangs on (up to 4, weighted) from where it is in the rest pose. Same result
+## as `bake_mesh_from_current_skeleton_pose`, just slower (once per body, a few ms).
+func _pose_on_cpu() -> ArrayMesh:
+	var src: Array = _mesh.mesh.surface_get_arrays(0)
+	var bone_xf: Array[Transform3D] = []
+	for b in _skeleton.get_bone_count():
+		bone_xf.append(_skeleton.get_bone_global_pose(b) * _skeleton.get_bone_global_rest(b).affine_inverse())
+	var verts: PackedVector3Array = src[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = src[Mesh.ARRAY_NORMAL]
+	var bones: PackedInt32Array = src[Mesh.ARRAY_BONES]
+	var weights: PackedFloat32Array = src[Mesh.ARRAY_WEIGHTS]
+	var per: int = bones.size() / maxi(verts.size(), 1) # 4 bones per corner
+	for i in verts.size():
+		var p := Vector3.ZERO
+		var n := Vector3.ZERO
+		for k in per:
+			var w: float = weights[i * per + k]
+			if w > 0.0:
+				var t: Transform3D = bone_xf[bones[i * per + k]]
+				p += (t * verts[i]) * w
+				n += (t.basis * normals[i]) * w
+		verts[i] = p
+		normals[i] = n.normalized()
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_COLOR] = src[Mesh.ARRAY_COLOR]
+	arrays[Mesh.ARRAY_TEX_UV] = src[Mesh.ARRAY_TEX_UV]
+	arrays[Mesh.ARRAY_INDEX] = src[Mesh.ARRAY_INDEX]
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
 
 
 func _is_near_camera() -> bool:
+	return _camera_distance() < effects_distance
+
+
+## How far the camera of this computer is (very far without a camera).
+func _camera_distance() -> float:
 	var cam := get_viewport().get_camera_3d()
-	return cam != null and cam.global_position.distance_to(global_position) < effects_distance
+	return cam.global_position.distance_to(global_position) if cam else INF
 
 
 func _play_step() -> void:

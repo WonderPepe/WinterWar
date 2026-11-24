@@ -20,7 +20,7 @@ func _ready() -> void:
 		await get_tree().create_timer(1.0).timeout
 		enemies = maxi(enemies, get_tree().get_nodes_in_group("enemies").size())
 	var bench: Node = get_tree().current_scene
-	print(("PASS" if enemies >= 16 else "FAIL") + "  %d soldiers spawned (most at once)" % enemies)
+	print(("PASS" if enemies >= 24 else "FAIL") + "  %d soldiers spawned (most at once; V10c: 24)" % enemies)
 	print(("PASS" if bench._results_text != "" else "FAIL") + "  results screen shown")
 	print(("PASS" if get_tree().root.get_node_or_null("LoadingScreen") == null else "FAIL") + "  loading screen gone")
 	print("RESULT: done")
