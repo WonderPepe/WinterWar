@@ -58,6 +58,12 @@ enum Kind { RIFLEMAN, OFFICER, MG_GUNNER }
 @export var assault_hold_max: float = 14.0 ## ...before rushing the trench and jumping in.
 @export var trench_fire_interval_min: float = 1.4 ## Faster shooting at close range inside the trench.
 @export var trench_fire_interval_max: float = 2.4
+## EC1: in the trench, moving towards a Finn who is down low (trench / bunker), he goes crouched...
+@export var trench_crouch_speed: float = 2.2
+## ...this share of the time (1 = always; the rest are short upright dashes at hurry speed)...
+@export_range(0.05, 1.0) var trench_crouch_share: float = 0.8
+@export var trench_crouch_time_min: float = 4.0 ## ...in crouch stretches this long (seconds).
+@export var trench_crouch_time_max: float = 8.0
 
 @export_group("Suppression (G2)")
 ## Player bullets passing this close (metres) make him duck: the closer, the more.

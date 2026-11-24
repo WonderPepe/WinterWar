@@ -93,6 +93,9 @@ you work on. Update this file and the right note at the end of every milestone.
   skeleton) and glued into batches of ≤ 6 (`BodyBatch…`, one draw call each: 24 bodies ≈ +5 draw
   calls instead of +23); max 24 soldiers alive on every difficulty (was 16); far soldiers posed every
   2nd / 3rd frame (60 / 120 m).
+  EC1: Soviets in the trench go mostly crouched towards a Finn down low (80 % of the time, 2.2 m/s,
+  short upright dashes) and fire from the crouch; hitbox 1.3 m, head below the trench edge
+  (synced `Enemy.is_crouching`); upright towards a Finn on open ground and to throw.
   Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /

@@ -21,6 +21,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   drop into the trench → `_trench_fight()`: nearest living player, shoot when in sight (no spotting
   delay, `trench_fire_interval_*`), else follow the navmesh. Stuck > 1 s → step aside (landed on
   someone). `hear_noise` / `take_damage` don't pull an assaulting soldier out of ASSAULT.
+- EC1: in the trench he goes **mostly crouched** towards a Finn down low (80 %, 2.2 m/s, short upright
+  dashes) and fires from the crouch; upright towards a Finn on open ground and to throw. See milestones EC1.
 - Navmesh vertices sit ~0.4 m above the surface: the trench floor shows up at y ≈ -1.0, not -1.4.
 - Ammo crates: `scenes/props/ammo_crate.tscn` (group `ammo_crates`): one in a CSG niche
   (`AmmoNiche`, `_ammo_niche()` in the builder) next to the first spawn, one in the bunker.

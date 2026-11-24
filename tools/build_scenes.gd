@@ -1703,6 +1703,7 @@ func _build_enemy(mats: Dictionary, data_name := "soviet_rifleman", node_name :=
 		[".:is_kneeling", true, ON_CHANGE],
 		[".:is_prone", true, ON_CHANGE],
 		[".:is_throwing", true, ON_CHANGE], # GR1: arm swing of a grenade throw
+		[".:is_crouching", true, ON_CHANGE], # EC1: crouch-walk in the trench
 		[".:health", true, ON_CHANGE],
 		["Smoother:net_stamp", true, ALWAYS], # NET3: must stay last
 	])

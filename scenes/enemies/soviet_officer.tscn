@@ -30,12 +30,15 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath(".:is_throwing")
 properties/5/spawn = true
 properties/5/replication_mode = 2
-properties/6/path = NodePath(".:health")
+properties/6/path = NodePath(".:is_crouching")
 properties/6/spawn = true
 properties/6/replication_mode = 2
-properties/7/path = NodePath("Smoother:net_stamp")
+properties/7/path = NodePath(".:health")
 properties/7/spawn = true
-properties/7/replication_mode = 1
+properties/7/replication_mode = 2
+properties/8/path = NodePath("Smoother:net_stamp")
+properties/8/spawn = true
+properties/8/replication_mode = 1
 
 [node name="SovietOfficer" type="CharacterBody3D" unique_id=1790359595]
 collision_layer = 4

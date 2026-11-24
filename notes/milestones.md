@@ -631,3 +631,24 @@ because more come at once; difficulty will be tuned later in other ways (e.g. ho
   for 16 → 24 in the benchmark, noisy).
 - Tests: `test_v10b.gd` extended (caps 24/24/36, keep 24, baked + batches, snow in the batches). Tool:
   `tools/bench_v10c.gd bodies|alive|pose N`. Pictures: `shots_v10b.gd` – baked bodies look the same.
+
+
+## EC1 – Soviets crouch in the trench (2026-11-24)
+**Owner decisions (2026-11-24):** in the trench the Soviets should **mostly crouch** when moving towards a
+Finn – more realistic, and harder for the players. Same on every difficulty. Chose option **a**: a Soviet
+who sees a Finn down low **fires from the crouch** (not standing up to fire).
+- `Enemy.is_crouching` (synced, ON_CHANGE, before `Smoother:net_stamp`; added to `build_scenes.gd` AND by
+  hand to the three Soviet .tscn files – no builder run). Host: `_physics_process` clears `_want_crouch`,
+  `_think()` (the old body) asks for it, the end applies it – so every path that doesn't ask stands him up
+  (grenade throw, panic, open ground...).
+- `_trench_move_speed(goal)`: goal down low (`y < LOW_TARGET_BELOW` -0.5: trench, communication trench,
+  bunker) → crouch stretches of `trench_crouch_time_min..max` (4–8 s) at `trench_crouch_speed` 2.2 m/s, then
+  an upright dash at hurry speed so that `trench_crouch_share` (0.8) of the time is crouched; goal up on open
+  ground → upright, hurry speed (to see over the edge). Used by `_trench_fight` (ASSAULT in the trench) and
+  `_hold` (battle 6: chase + back to his spot, ≤ walk speed). Firing in `_trench_fight`: crouched if the
+  target is down low. HOLD firing unchanged (stands, kneels when suppressed).
+- Hitbox 1.3 m (`CROUCH_HEIGHT`), eyes 1.15 m; D9 zones: head = top 0.3 m, legs below 0.55 m
+  (`LEGS_CROUCHING`). A crouching Soviet's head stays below the trench edge.
+- `SoldierVisual`: crouch pose (hips 0.6, thighs 1.1, shins -1.8, upper body 0.55 forward, head up),
+  short-step crouch walk, rifle tipped back up against the lean; footsteps -14 dB instead of -8.
+- Tests: new `tools/test_ec1.gd` (in tests.cfg). Pictures: `tools/shots_ec1.gd`.

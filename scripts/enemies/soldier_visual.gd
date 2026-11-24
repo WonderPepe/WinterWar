@@ -312,7 +312,7 @@ func _play_step() -> void:
 		return
 	_footsteps.stream = _step_sounds[_rng.randi() % _step_sounds.size()]
 	_footsteps.pitch_scale = _rng.randf_range(0.9, 1.1)
-	_footsteps.volume_db = -8.0
+	_footsteps.volume_db = -14.0 if _enemy.is_crouching else -8.0 # EC1: quieter when crouching
 	_footsteps.play()
 
 
@@ -323,6 +323,7 @@ func _pose(delta: float) -> void:
 	var prone: bool = _enemy.is_prone # lying flat (also stays flat when killed lying down)
 	var moving: bool = _speed > 0.4 and not dead and not prone
 	var kneel: bool = _enemy.is_kneeling and not moving and not dead and not prone
+	var crouch: bool = _enemy.is_crouching and not kneel and not dead and not prone # EC1
 	var attacking: bool = state == Enemy.State.ATTACK or state == Enemy.State.ALERT or state == Enemy.State.ASSAULT
 	# GR1: a grenade throw – he stands, rifle down in his left hand, and swings his right arm.
 	var throwing: bool = _enemy.is_throwing and not dead and not prone
@@ -331,6 +332,7 @@ func _pose(delta: float) -> void:
 	if throwing:
 		moving = false
 		kneel = false
+		crouch = false
 
 	# Targets for this frame.
 	var t := {}
@@ -357,6 +359,25 @@ func _pose(delta: float) -> void:
 		t[B.THIGH_R] = _x(-0.15)
 		t[B.SHIN_R] = _x(-1.45)
 		lean = 0.12
+	elif crouch:
+		# EC1: bent low – knees well bent, upper body forward, head up to look ahead. Moving: short
+		# steps from that bent stance (the hips bob a little).
+		lean = CROUCH_LEAN
+		head_extra = 0.3
+		if moving:
+			var c_amp: float = clampf(_speed * 0.12, 0.18, 0.34)
+			var c_s: float = sin(_phase)
+			t[B.THIGH_L] = _x(CROUCH_THIGH + c_s * c_amp)
+			t[B.THIGH_R] = _x(CROUCH_THIGH - c_s * c_amp)
+			t[B.SHIN_L] = _x(CROUCH_SHIN - maxf(0.0, cos(_phase)) * c_amp)
+			t[B.SHIN_R] = _x(CROUCH_SHIN - maxf(0.0, -cos(_phase)) * c_amp)
+			hips_y = CROUCH_HIPS_Y + 0.03 + absf(cos(_phase)) * 0.02
+		else:
+			t[B.THIGH_L] = _x(CROUCH_THIGH + 0.2) # left foot a little forward
+			t[B.SHIN_L] = _x(CROUCH_SHIN - 0.15)
+			t[B.THIGH_R] = _x(CROUCH_THIGH - 0.1)
+			t[B.SHIN_R] = _x(CROUCH_SHIN - 0.25)
+			hips_y = CROUCH_HIPS_Y
 	elif moving:
 		var amp: float = clampf(_speed * 0.15, 0.22, 0.52)
 		var s: float = sin(_phase)
@@ -422,6 +443,10 @@ func _pose(delta: float) -> void:
 		# Carried across the chest ("port arms"): muzzle up and to the left.
 		rifle_pos = Vector3(0.02, 0.2, -0.22)
 		rifle_rot = Quaternion(Basis.looking_at(Vector3(-0.55, 0.78, -0.3).normalized(), Vector3.FORWARD))
+	if crouch and not officer:
+		# EC1: the chest leans forward, so tip the rifle back up – level when aiming, a little
+		# down while moving (bayonet first, held low).
+		rifle_rot = _x(lean * (1.0 if attacking and not moving else 0.75)) * rifle_rot
 	if throwing:
 		rifle_pos = Vector3(-0.3, -0.12, -0.18) # hanging in his left hand, muzzle forward and down
 		rifle_rot = _x(-0.55)
@@ -509,6 +534,10 @@ func _reach(upper: int, fore: int, target: Vector3, pole: Vector3) -> void:
 
 
 const PRONE_HIPS_Y: float = 0.2
+const CROUCH_HIPS_Y: float = 0.6 ## EC1: hip height while crouching (standing 0.95, kneeling 0.53).
+const CROUCH_THIGH: float = 1.1 ## EC1: thighs forward (radians)...
+const CROUCH_SHIN: float = -1.8 ## ...shins folded back.
+const CROUCH_LEAN: float = 0.55 ## EC1: upper body forward (radians).
 const PRONE_HIPS_PITCH: float = -1.45 ## Whole body tipped forward (radians).
 const PRONE_CHEST_UP: float = 0.3 ## Chest lifted off the snow (radians).
 

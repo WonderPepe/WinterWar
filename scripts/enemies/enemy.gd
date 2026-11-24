@@ -61,6 +61,10 @@ var is_kneeling: bool = false:
 var is_prone: bool = false: ## Lying flat (suppressed, or a machine-gun team in position).
 	set = _set_prone
 var is_throwing: bool = false ## GR1: in the middle of a grenade throw (the SoldierVisual swings his arm).
+## EC1: bent low (knees bent, head down) – moving or firing in the trench at a Finn who is down
+## low too. Smaller target; his head stays below the trench edge.
+var is_crouching: bool = false:
+	set = _set_crouching
 var health: float = 100.0
 
 ## Set by the WaveSpawner: the place in front of the trench this soldier advances to.
@@ -143,6 +147,9 @@ var _heard_at: float = -100.0       # when he last heard a Finn's gun...
 var _heard_pos: Vector3             # ...and where
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng := RandomNumberGenerator.new()
+var _want_crouch: bool = false   # EC1: set by this frame's thinking, applied at the end of it
+var _crouch_stretch_end: float = 0.0 # EC1: crouching until then...
+var _upright_dash_end: float = 0.0   # ...then a short upright dash until then
 
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var visual: SoldierVisual = $Visual
@@ -203,6 +210,14 @@ func _physics_process(delta: float) -> void:
 	_clock += delta
 	if not multiplayer.is_server() or state == State.DEAD:
 		return
+	_want_crouch = false # EC1: the trench code below asks for it again every frame it wants it
+	_think(delta)
+	if state != State.DEAD:
+		is_crouching = _want_crouch
+
+
+## Host: one frame of his decisions (moving, firing, throwing...).
+func _think(delta: float) -> void:
 	_state_time += delta
 	_sense_timer -= delta
 	if _sense_timer <= 0.0:
@@ -522,6 +537,8 @@ enum HitZone { BODY, HEAD, LEGS }
 const HEAD_LENGTH: float = 0.3 ## The top 0.3 m of the soldier is his head.
 const LEGS_STANDING: float = 0.85 ## Standing: everything below this height is legs.
 const LEGS_KNEELING: float = 0.4 ## Kneeling: only the lowest part (the legs are folded under him).
+const LEGS_CROUCHING: float = 0.55 ## EC1: crouching: below his bent knees.
+const CROUCH_HEIGHT: float = 1.3 ## EC1: how tall he is while crouching (kneeling 1.2, standing 1.8).
 const LEGS_PRONE: float = 0.8 ## Lying flat: the rear 0.8 m of the body is legs.
 
 
@@ -536,10 +553,18 @@ func hit_zone_at(hit_position: Vector3) -> HitZone:
 			return HitZone.HEAD
 		return HitZone.LEGS if from_feet < LEGS_PRONE else HitZone.BODY
 	# Upright: measure the height above his feet.
-	var height: float = 1.2 if is_kneeling else 1.8
+	var height: float = _upright_height()
 	if local.y >= height - HEAD_LENGTH:
 		return HitZone.HEAD
-	return HitZone.LEGS if local.y < (LEGS_KNEELING if is_kneeling else LEGS_STANDING) else HitZone.BODY
+	var legs: float = LEGS_KNEELING if is_kneeling else (LEGS_CROUCHING if is_crouching else LEGS_STANDING)
+	return HitZone.LEGS if local.y < legs else HitZone.BODY
+
+
+## His height when not lying flat: kneeling 1.2 m, crouching 1.3 m (EC1), standing 1.8 m.
+func _upright_height() -> float:
+	if is_kneeling:
+		return 1.2
+	return CROUCH_HEIGHT if is_crouching else 1.8
 
 
 ## How much a bullet's damage is multiplied in that zone (numbers: his EnemyData, "Combat").
@@ -589,6 +614,7 @@ func _die() -> void:
 	health = 0.0
 	velocity = Vector3.ZERO
 	is_kneeling = false
+	is_crouching = false
 	state = State.DEAD
 	_on_death_g2()
 	died.emit(self)
@@ -709,6 +735,7 @@ func _trench_fight(delta: float) -> void:
 	if _can_see_target:
 		_stop()
 		is_kneeling = false
+		_want_crouch = _is_low(_target.global_position) # EC1: fires from the crouch at a Finn down low
 		_face_towards(_target.global_position, delta)
 		_aim_time += delta
 		var now: float = Time.get_ticks_msec() / 1000.0
@@ -717,8 +744,38 @@ func _trench_fight(delta: float) -> void:
 			_next_shot_time = now + _rng.randf_range(data.trench_fire_interval_min, data.trench_fire_interval_max)
 	else:
 		_aim_time = 0.0
-		_move_to(_target.global_position, data.hurry_speed)
+		_move_to(_target.global_position, _trench_move_speed(_target.global_position))
 		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+
+
+# ------------------------------------------------------------------ EC1: crouching in the trench
+## A Finn below this height (his feet) is down in a trench or the bunker – a crouching Soviet
+## can still see and reach him. Up on open ground: the Soviet stands, to see over the edge.
+const LOW_TARGET_BELOW: float = -0.5
+
+
+func _is_low(point: Vector3) -> bool:
+	return point.y < LOW_TARGET_BELOW
+
+
+## Host, EC1: his speed for this frame while moving in the trench towards `goal` – and whether he
+## crouches (`_want_crouch`). Towards a Finn down low he mostly crouches (crouch stretches of
+## `trench_crouch_time_min..max` s), with short upright dashes in between, so that he spends
+## `trench_crouch_share` of the time crouched. Towards a Finn up on open ground he runs upright.
+func _trench_move_speed(goal: Vector3) -> float:
+	if not _is_low(goal):
+		return data.hurry_speed
+	var now: float = _now()
+	if now >= _upright_dash_end:
+		# A new crouch stretch, and the upright dash that follows it.
+		var stretch: float = _rng.randf_range(data.trench_crouch_time_min, data.trench_crouch_time_max)
+		var share: float = clampf(data.trench_crouch_share, 0.05, 1.0)
+		_crouch_stretch_end = now + stretch
+		_upright_dash_end = _crouch_stretch_end + stretch * (1.0 - share) / share
+	if now < _crouch_stretch_end:
+		_want_crouch = true
+		return data.trench_crouch_speed
+	return data.hurry_speed
 
 
 # ------------------------------------------------------------------ L3: holding the captured trench
@@ -779,13 +836,14 @@ func _hold(delta: float) -> void:
 	if has_target and _target.global_position.y < TRENCH_FLOOR_BELOW \
 			and _target.global_position.distance_to(hold_point) < hold_leash_m \
 			and global_position.distance_to(_target.global_position) < hold_chase_m:
-		_move_to(_target.global_position, data.hurry_speed)
+		_move_to(_target.global_position, _trench_move_speed(_target.global_position)) # EC1: mostly crouched
 		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
 		return
 	var to_post: Vector3 = hold_point - global_position
 	to_post.y = 0.0
 	if to_post.length() > 1.0:
-		_move_to(hold_point, data.walk_speed)
+		var speed: float = minf(_trench_move_speed(hold_point), data.walk_speed) # EC1: back to his spot, mostly crouched
+		_move_to(hold_point, speed)
 		_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
 		return
 	_stop()
@@ -868,7 +926,7 @@ func freeze() -> void:
 func bullet_near(from: Vector3, to: Vector3, strength: float) -> void:
 	if not multiplayer.is_server() or state == State.DEAD or strength <= 0.0:
 		return
-	var centre: Vector3 = global_position + Vector3.UP * (0.35 if is_prone else (0.8 if is_kneeling else 1.1))
+	var centre: Vector3 = global_position + Vector3.UP * (0.35 if is_prone else (0.8 if is_kneeling or is_crouching else 1.1))
 	var closest: Vector3 = Geometry3D.get_closest_point_to_segment(centre, from, to)
 	if closest.distance_to(from) < 4.0:
 		return # right next to the shooter: that's a fight, not suppressing fire
@@ -1417,6 +1475,14 @@ func _set_prone(value: bool) -> void:
 		_update_visuals()
 
 
+func _set_crouching(value: bool) -> void:
+	if value == is_crouching:
+		return
+	is_crouching = value
+	if is_node_ready():
+		_update_visuals()
+
+
 func _set_kneeling(value: bool) -> void:
 	if value == is_kneeling:
 		return
@@ -1456,9 +1522,9 @@ func _update_visuals() -> void:
 	collision.rotation.x = 0.0
 	collision.position.z = 0.0
 	eyes.position.z = -0.1
-	# Kneeling makes the soldier smaller (harder to hit) and lowers his eyes.
-	var height: float = 1.2 if is_kneeling else 1.8
+	# Kneeling / crouching (EC1) makes the soldier smaller (harder to hit) and lowers his eyes.
+	var height: float = _upright_height()
 	capsule.height = height
 	collision.position.y = height / 2.0
-	eyes.position.y = 1.05 if is_kneeling else 1.6
+	eyes.position.y = 1.05 if is_kneeling else (1.15 if is_crouching else 1.6)
 	# The pose itself (kneeling, aiming, walking) is done by the SoldierVisual.
