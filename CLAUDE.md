@@ -96,6 +96,9 @@ you work on. Update this file and the right note at the end of every milestone.
   EC1: Soviets in the trench go mostly crouched towards a Finn down low (80 % of the time, 2.2 m/s,
   short upright dashes) and fire from the crouch; hitbox 1.3 m, head below the trench edge
   (synced `Enemy.is_crouching`); upright towards a Finn on open ground and to throw.
+  EC1b: in the trench soldiers keep ~1 m apart (soft push, `_keep_apart`), follow the path tightly so
+  they don't stick on the zigzag corners, move up on a Finn in sight > 10 m (shoot 1–2, advance 2–3 s),
+  see from a fixed crouch/stand eye height, keep a pose ≥ 0.5 s.
   Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /

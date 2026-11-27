@@ -128,3 +128,5 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   no physics step in between, the ray flies through it. Headless tests run many frames per physics
   step, so `await frames(2)` is not enough: create targets early or `await get_tree().physics_frame`.
   (test_m2's 100 m shot failed ~1 in 10 this way until 19 Nov 2026.)
+- EC1b: NavigationAgent3D `path_desired_distance` 1.0 cuts the corners of the zigzag trench (soldiers stick
+  on the inner corner). Path points sit ~0.4 m above the floor, so a distance below ~0.45 m is never reached.

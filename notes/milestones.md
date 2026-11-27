@@ -652,3 +652,22 @@ who sees a Finn down low **fires from the crouch** (not standing up to fire).
 - `SoldierVisual`: crouch pose (hips 0.6, thighs 1.1, shins -1.8, upper body 0.55 forward, head up),
   short-step crouch walk, rifle tipped back up against the lean; footsteps -14 dB instead of -8.
 - Tests: new `tools/test_ec1.gd` (in tests.cfg). Pictures: `tools/shots_ec1.gd`.
+
+
+## EC1b – trench crouching fixed (2026-11-27)
+**Owner's test of EC1:** Soviets in the trench (1) stood inside each other, (2) didn't come towards the
+player (stayed crouched, sometimes peeked), (3) one bobbed crouch–stand–crouch–stand.
+- (2) main cause: **stuck on the inner corners of the zigzag trench** – `path_desired_distance` 1.0 made
+  them turn to the next path point early, cut the corner and press into the wall. In the trench it is now
+  `TRENCH_PATH_DISTANCE` 0.6 (the path points sit ~0.4 m above the floor, so ~0.45 m sideways; 0.35 never
+  reached them), out on the field still 1.0 (set every `_move_to`).
+- (2) also: a Finn in sight further than `trench_close_m` (10 m): 1–2 shots from where he is, then 2–3 s
+  moving closer (`_bound_until`, `_bound_shots_left`), again. Within 10 m he stays and fights.
+- (3) cause: sight was checked from his eyes of the moment – crouching hid the Finn, so he stood, saw him,
+  crouched... Now the ASSAULT trench sight is checked from `CROUCH_EYES` 1.15 m (Finn down low) or
+  `STAND_EYES` 1.6 m (Finn on open ground), whatever his pose; and a pose is kept at least
+  `crouch_min_pose_time` 0.5 s (not when he starts a throw).
+- (1): soldiers still pass through each other on the field (no jams), but in the trench (ASSAULT/HOLD)
+  `_keep_apart()` (in `_fall_and_slide`): a comrade nearer than `trench_spacing_m` 1.0 m – he stops pressing
+  into him and slides apart (`KEEP_APART_SPEED` 2 m/s at full overlap). Soft, so nobody blocks the trench.
+- Tests: `test_ec1.gd` extended (two on one spot ≥ 0.8 m apart; 25 m → closer with shots; pose ≥ 0.5 s).

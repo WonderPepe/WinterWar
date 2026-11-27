@@ -150,6 +150,12 @@ var _rng := RandomNumberGenerator.new()
 var _want_crouch: bool = false   # EC1: set by this frame's thinking, applied at the end of it
 var _crouch_stretch_end: float = 0.0 # EC1: crouching until then...
 var _upright_dash_end: float = 0.0   # ...then a short upright dash until then
+var _pose_changed_at: float = -100.0 # EC1b: when he last crouched or stood up
+var _bound_until: float = -100.0     # EC1b: moving up towards a Finn in sight until then...
+var _bound_shots_left: int = 0       # ...after this many more shots from where he is
+var _trench_blocked: float = 0.0     # EC1b: how long he has been walking into something in the trench
+var _trench_last_pos: Vector3
+var _repath_flip: float = 1.0
 
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var visual: SoldierVisual = $Visual
@@ -164,6 +170,7 @@ func _ready() -> void:
 	add_to_group("enemies")
 	_rng.randomize()
 	collision.shape = collision.shape.duplicate() # each soldier resizes its own capsule
+	nav_agent.path_height_offset = NAV_HEIGHT_OFFSET # EC1b: path points on the floor, not 0.4 m above it
 	health = data.max_health
 	_idle_time = _rng.randf_range(1.0, 3.0)
 	_assault_after = _rng.randf_range(data.assault_hold_min, data.assault_hold_max)
@@ -212,8 +219,11 @@ func _physics_process(delta: float) -> void:
 		return
 	_want_crouch = false # EC1: the trench code below asks for it again every frame it wants it
 	_think(delta)
-	if state != State.DEAD:
-		is_crouching = _want_crouch
+	if state != State.DEAD and _want_crouch != is_crouching:
+		# EC1b: once down or up, he stays so for a moment (no bobbing) – but stands at once to throw.
+		if is_throwing or _clock - _pose_changed_at >= data.crouch_min_pose_time:
+			is_crouching = _want_crouch
+			_pose_changed_at = _clock
 
 
 ## Host: one frame of his decisions (moving, firing, throwing...).
@@ -281,6 +291,8 @@ func _think(delta: float) -> void:
 
 
 func _fall_and_slide(delta: float) -> void:
+	if (state == State.ASSAULT or state == State.HOLD) and is_in_trench():
+		_keep_apart() # EC1b
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
 	move_and_slide()
@@ -296,9 +308,14 @@ func _update_senses(dt: float) -> void:
 		return
 	if state == State.ASSAULT:
 		# In the final rush there is no careful spotting: in the trench, anyone in sight is shot at.
+		# EC1b: looked at from the height he has when he fires at that Finn (crouched at one down low),
+		# not from his eyes of the moment – else crouching hides the Finn, he stands, sees him, crouches...
 		_can_see_target = is_in_trench() and _target != null and is_instance_valid(_target) \
-				and not _target.is_dead and global_position.distance_to(_target.global_position) < 60.0 \
-				and (_has_line_of_sight(_target.head.global_position) or _has_line_of_sight(_chest_of(_target)))
+				and not _target.is_dead and global_position.distance_to(_target.global_position) < 60.0
+		if _can_see_target:
+			var eye: Vector3 = global_position + Vector3.UP * (CROUCH_EYES if _is_low(_target.global_position) else STAND_EYES)
+			_can_see_target = _has_line_of_sight(_target.head.global_position, eye) \
+					or _has_line_of_sight(_chest_of(_target), eye)
 		return
 	var seen: Player = _find_visible_player()
 	if seen != null:
@@ -349,8 +366,10 @@ func _find_visible_player() -> Player:
 	return best
 
 
-func _has_line_of_sight(point: Vector3) -> bool:
-	var query := PhysicsRayQueryParameters3D.create(eyes.global_position, point, Tank.SIGHT_MASK) # world + armour (T5: no seeing through a tank or wreck)
+## `from`: his eyes (default) or another point (EC1b: the height he will fire from).
+func _has_line_of_sight(point: Vector3, from: Variant = null) -> bool:
+	var start: Vector3 = eyes.global_position if from == null else from
+	var query := PhysicsRayQueryParameters3D.create(start, point, Tank.SIGHT_MASK) # world + armour (T5: no seeing through a tank or wreck)
 	query.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
@@ -733,6 +752,18 @@ func _trench_fight(delta: float) -> void:
 		_stop()
 		return
 	if _can_see_target:
+		# EC1b: further than `trench_close_m`: a shot or two from where he is, then 2–3 s closer
+		# (crouched, not firing), then again. Close: he stays and fights.
+		var now_b: float = _now()
+		var to_target: Vector3 = _target.global_position - global_position
+		var far: bool = Vector2(to_target.x, to_target.z).length() > data.trench_close_m
+		if far and (now_b < _bound_until or not _in_fire_range()):
+			_aim_time = 0.0
+			_move_to(_target.global_position, _trench_move_speed(_target.global_position))
+			_face_towards(global_position + Vector3(velocity.x, 0.0, velocity.z), delta)
+			return
+		if far and _bound_shots_left <= 0:
+			_bound_shots_left = _rng.randi_range(BOUND_SHOTS_MIN, BOUND_SHOTS_MAX)
 		_stop()
 		is_kneeling = false
 		_want_crouch = _is_low(_target.global_position) # EC1: fires from the crouch at a Finn down low
@@ -742,6 +773,10 @@ func _trench_fight(delta: float) -> void:
 		if _aim_time >= _reaction_delay and now >= _next_shot_time and _in_fire_range():
 			_shoot()
 			_next_shot_time = now + _rng.randf_range(data.trench_fire_interval_min, data.trench_fire_interval_max)
+			if far:
+				_bound_shots_left -= 1
+				if _bound_shots_left <= 0:
+					_bound_until = now_b + _rng.randf_range(BOUND_TIME_MIN, BOUND_TIME_MAX)
 	else:
 		_aim_time = 0.0
 		_move_to(_target.global_position, _trench_move_speed(_target.global_position))
@@ -752,6 +787,47 @@ func _trench_fight(delta: float) -> void:
 ## A Finn below this height (his feet) is down in a trench or the bunker – a crouching Soviet
 ## can still see and reach him. Up on open ground: the Soviet stands, to see over the edge.
 const LOW_TARGET_BELOW: float = -0.5
+const CROUCH_EYES: float = 1.15 ## Eye height while crouching (standing: STAND_EYES).
+const STAND_EYES: float = 1.6
+const BOUND_SHOTS_MIN: int = 1 ## EC1b: shots from one spot at a Finn in sight further than trench_close_m...
+const BOUND_SHOTS_MAX: int = 2
+const BOUND_TIME_MIN: float = 2.0 ## ...then this long moving closer.
+const BOUND_TIME_MAX: float = 3.0
+const NAV_HEIGHT_OFFSET: float = 0.4 ## EC1b: the navmesh lies ~0.4 m above the ground: path points are lowered by this.
+const TRENCH_PATH_DISTANCE: float = 0.3 ## EC1b: next path corner when this close to the last one (trench)...
+const FIELD_PATH_DISTANCE: float = 1.0   ## ...and out on the field (the NavigationAgent3D's own value).
+const TRENCH_BLOCKED_REPATH: float = 0.6 ## EC1b: blocked this long in the trench → a new path.
+const KEEP_APART_SPEED: float = 2.0 ## EC1b: how fast two soldiers too close slide apart (m/s, at full overlap).
+
+
+## Host, EC1b: in the trench the soldiers don't pass through each other (out on the field they do, so
+## the waves don't jam): a comrade nearer than `trench_spacing_m` pushes him gently away – a soft
+## push, not a wall, so one stuck soldier never blocks the trench for the others.
+func _keep_apart() -> void:
+	var spacing: float = data.trench_spacing_m
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var e := node as Enemy
+		if e == null or e == self or e.state == State.DEAD:
+			continue
+		var away := Vector3(global_position.x - e.global_position.x, 0.0, global_position.z - e.global_position.z)
+		var d: float = away.length()
+		if d >= spacing or absf(global_position.y - e.global_position.y) > 1.5:
+			continue
+		if d < 0.01:
+			# Exactly on top of each other: each goes his own way (the same on every run).
+			var a: float = float(absi(hash(str(name))) % 628) / 100.0
+			away = Vector3(cos(a), 0.0, sin(a))
+		else:
+			away /= d
+		# Don't press on into him (a dash behind a crouching comrade)...
+		var into: float = -(velocity.x * away.x + velocity.z * away.z)
+		if into > 0.0:
+			velocity.x += away.x * into
+			velocity.z += away.z * into
+		# ...and slide apart.
+		var push: float = KEEP_APART_SPEED * (spacing - d) / spacing
+		velocity.x += away.x * push
+		velocity.z += away.z * push
 
 
 func _is_low(point: Vector3) -> bool:
@@ -1285,6 +1361,9 @@ func _move_to(destination: Vector3, speed: float) -> bool:
 		speed = maxf(speed, data.hurry_speed)
 	if _mg_hurry and not _deployed and data.kind == EnemyData.Kind.MG_GUNNER and not mg_released:
 		speed = maxf(speed, data.hurry_speed) # catching up with his riflemen
+	# EC1b: in the zigzag trench he must reach each corner before turning, or he cuts the
+	# corner and walks into the wall (out on the field 1 m is fine and smoother).
+	nav_agent.path_desired_distance = TRENCH_PATH_DISTANCE if is_in_trench() else FIELD_PATH_DISTANCE
 	if nav_agent.target_position.distance_to(destination) > 0.5:
 		nav_agent.target_position = destination
 	if nav_agent.is_navigation_finished():
@@ -1299,6 +1378,16 @@ func _move_to(destination: Vector3, speed: float) -> bool:
 	velocity.x = direction.x * speed
 	velocity.z = direction.z * speed
 	is_kneeling = false
+	if is_in_trench():
+		# EC1b: safety net – walking but not getting anywhere (a corner, a comrade) for a moment: work the
+		# path out again from where he stands (its first point is then the corner right next to him).
+		var step: float = Vector2(global_position.x - _trench_last_pos.x, global_position.z - _trench_last_pos.z).length()
+		_trench_last_pos = global_position
+		_trench_blocked = _trench_blocked + get_physics_process_delta_time() if step < speed * get_physics_process_delta_time() * 0.25 else 0.0
+		if _trench_blocked > TRENCH_BLOCKED_REPATH:
+			_trench_blocked = 0.0
+			_repath_flip = -_repath_flip
+			nav_agent.target_position = destination + Vector3(0.01 * _repath_flip, 0.0, 0.0) # a new target = a new path
 	return false
 
 
@@ -1526,5 +1615,5 @@ func _update_visuals() -> void:
 	var height: float = _upright_height()
 	capsule.height = height
 	collision.position.y = height / 2.0
-	eyes.position.y = 1.05 if is_kneeling else (1.15 if is_crouching else 1.6)
+	eyes.position.y = 1.05 if is_kneeling else (CROUCH_EYES if is_crouching else STAND_EYES)
 	# The pose itself (kneeling, aiming, walking) is done by the SoldierVisual.

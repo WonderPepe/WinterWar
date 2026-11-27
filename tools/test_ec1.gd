@@ -39,6 +39,68 @@ func spawn(at: Vector3, frozen: bool) -> Enemy:
 	return e
 
 
+## EC1b: keep apart in the trench, move up on a Finn in sight, no bobbing up and down.
+func ec1b() -> void:
+	for node in get_tree().get_nodes_in_group("enemies"):
+		node.queue_free()
+	await physics(2)
+	# Two soldiers dropped on the very same spot of the trench floor.
+	p.global_position = Vector3(-30.0, -1.4, 61.0)
+	var a := spawn(Vector3(-60.0, -1.3, 60.2), false)
+	var b := spawn(Vector3(-60.0, -1.3, 60.2), false)
+	a.state = Enemy.State.ASSAULT
+	b.state = Enemy.State.ASSAULT
+	var min_after := INF
+	for i in 300: # 5 s
+		await get_tree().physics_frame
+		if i > 60:
+			var d: float = Vector2(a.global_position.x - b.global_position.x, a.global_position.z - b.global_position.z).length()
+			min_after = minf(min_after, d)
+	check(min_after > 0.8, "two Soviets dropped on one spot: apart after 1 s, never closer than 0.8 m afterwards (%.2f m)" % min_after)
+	b.queue_free()
+
+	# A Finn in sight 25 m along the trench: the Soviet gets closer, firing on the way, and
+	# does not bob up and down.
+	a.global_position = Vector3(-60.0, -1.3, 60.2)
+	a.velocity = Vector3.ZERO
+	a._bound_until = -100.0
+	a._bound_shots_left = 0
+	await physics(3)
+	var start_d: float = a.global_position.distance_to(p.global_position)
+	var shots_before: int = a._shots_at_target
+	var switches: Array[float] = []
+	var log_lines: Array[String] = []
+	var was: bool = a.is_crouching
+	var t0: float = a._clock
+	var seen_frames := 0
+	var upright_frames := 0
+	for i in 900: # 15 s
+		await get_tree().physics_frame
+		if a._can_see_target:
+			seen_frames += 1
+		if not a.is_crouching:
+			upright_frames += 1
+		if i % 60 == 0:
+			log_lines.append("t=%d pos %s vel %s see %s fin %s next %s blocked %.2f" % [i / 60, a.global_position.snapped(Vector3.ONE * 0.1), a.velocity.snapped(Vector3.ONE * 0.1), a._can_see_target, a.nav_agent.is_navigation_finished(), a.nav_agent.get_next_path_position().snapped(Vector3.ONE * 0.1), a._trench_blocked])
+		if a.is_crouching != was:
+			was = a.is_crouching
+			switches.append(a._clock - t0)
+	var end_d: float = a.global_position.distance_to(p.global_position)
+	print("      (seen %d / 900 frames, upright %d frames, %d pose changes, %d shots, %.1f -> %.1f m)" % [
+			seen_frames, upright_frames, switches.size(), a._shots_at_target - shots_before, start_d, end_d])
+	if end_d >= start_d - 8.0:
+		for l in log_lines:
+			print("      " + l)
+	check(end_d < start_d - 8.0, "a Finn %.0f m along the trench: the Soviet comes closer (now %.1f m)" % [start_d, end_d])
+	check(a._shots_at_target - shots_before >= 2, "...and fires on the way (%d shots)" % (a._shots_at_target - shots_before))
+	var shortest := INF
+	for i in range(1, switches.size()):
+		shortest = minf(shortest, switches[i] - switches[i - 1])
+	check(shortest >= a.data.crouch_min_pose_time - 0.02, "crouched / upright at least %.1f s at a time (shortest %.2f s)" % [a.data.crouch_min_pose_time, shortest])
+	a.queue_free()
+	await physics(2)
+
+
 func run() -> void:
 	Settings.difficulty = 1
 	game = load("res://scenes/game.tscn").instantiate()
@@ -153,6 +215,10 @@ func run() -> void:
 	e.is_crouching = true
 	e.take_damage(10000.0, 1, e.global_position + Vector3.UP, Vector3.UP)
 	check(e.state == Enemy.State.DEAD and not e.is_crouching, "killed: not crouching any more")
+
+	await physics(2)
+	e.queue_free()
+	await ec1b()
 
 	print("RESULT: %s (%d failed)" % ["PASS" if fails == 0 else "FAIL", fails])
 	get_tree().quit(1 if fails > 0 else 0)

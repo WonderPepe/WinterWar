@@ -23,6 +23,7 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
   someone). `hear_noise` / `take_damage` don't pull an assaulting soldier out of ASSAULT.
 - EC1: in the trench he goes **mostly crouched** towards a Finn down low (80 %, 2.2 m/s, short upright
   dashes) and fires from the crouch; upright towards a Finn on open ground and to throw. See milestones EC1.
+- EC1b: in the trench: keep ~1 m apart, tight path following (corners), move up on a Finn in sight > 10 m.
 - Navmesh vertices sit ~0.4 m above the surface: the trench floor shows up at y ≈ -1.0, not -1.4.
 - Ammo crates: `scenes/props/ammo_crate.tscn` (group `ammo_crates`): one in a CSG niche
   (`AmmoNiche`, `_ammo_niche()` in the builder) next to the first spawn, one in the bunker.
