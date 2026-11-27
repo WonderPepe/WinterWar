@@ -54,7 +54,7 @@ func run() -> void:
 		var idx: Variant = a[Mesh.ARRAY_INDEX]
 		var tris: int = ((idx as PackedInt32Array).size() if idx != null else verts.size()) / 3
 		check(m.get_surface_count() == 1, "kind %d: one surface (one draw call)" % k)
-		check(tris > 800 and tris <= 1150, "kind %d: %d triangles (budget ≤ 1 150)" % [k, tris])
+		check(tris > 800 and tris <= 1450, "kind %d: %d triangles (budget ≤ 1 450, SV1b)" % [k, tris])
 		var face_front := 0
 		var face_back_ok := true
 		var on_bone := {}

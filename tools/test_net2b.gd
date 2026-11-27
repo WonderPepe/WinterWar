@@ -7,13 +7,13 @@ var p: Player   # this computer's own player
 var f: Player   # "another player" (peer 2) – his body is shown here
 var fails := 0
 
-## Soviet meshes since SV1 (face, hands, feet; was: before NET2b) – size:hash of vertex, normal,
+## Soviet meshes since SV1b (rounder; SV1: face, hands, feet; was: before NET2b) – size:hash of vertex, normal,
 ## colour, uv, bones, weights arrays –
 ## the shared building / IK changes must not change them.
 const SOVIET_SUMS: Array[String] = [
-	"37340:758458690 37340:4089141141 49784:1737282994 24896:2427581663 49784:3579069488 49784:4136879783 ",
-	"36800:3965116961 36800:2483468167 49064:3555122023 24536:4055232797 49064:925592836 49064:1474376202 ",
-	"41228:942174889 41228:2951092215 54968:1676514419 27488:1077694273 54968:1459856078 54968:1677021567 ",
+	"47204:4062298630 47204:3762747518 62936:2225234374 31472:369500550 62936:2128925608 62936:1214980104 ",
+	"45368:3848763157 45368:3053904110 60488:1822288026 30248:1292021007 60488:2200699664 60488:3819266323 ",
+	"51092:2939650529 51092:84626003 68120:127535595 34064:1488581079 68120:108892076 68120:1797771136 ",
 ]
 
 
@@ -69,7 +69,7 @@ func run() -> void:
 		var m: ArrayMesh = FinnMesh.get_mesh(g)
 		var tris: int = (m.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
 		check(m.get_surface_count() == 1, "Finn mesh %d is one surface (one draw call)" % g)
-		check(tris > 400 and tris < 1100, "Finn mesh %d is low-poly (%d triangles)" % [g, tris])
+		check(tris > 400 and tris < 1450, "Finn mesh %d is low-poly (%d triangles, SV1b: ≤ 1 450)" % [g, tris])
 	check(FinnMesh.get_mesh(0) != FinnMesh.get_mesh(1), "Mosin and Suomi versions are different meshes")
 	var cols: PackedColorArray = FinnMesh.get_mesh(0).surface_get_arrays(0)[Mesh.ARRAY_COLOR]
 	var verts: PackedVector3Array = FinnMesh.get_mesh(0).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]

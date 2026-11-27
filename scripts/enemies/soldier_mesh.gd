@@ -109,14 +109,15 @@ static func _build(kind: int = 0) -> ArrayMesh:
 
 	# --- Spine: chest, belt, pouches, collar, snow on the shoulders ---
 	_use_bone(Bone.SPINE)
-	_frustum(Vector3(0, 1.0, 0), Vector3(0, 1.4, 0), 0.175, 0.2, 8, COAT, 0.72)
-	_frustum(Vector3(0, 1.4, 0), Vector3(0, 1.46, 0), 0.2, 0.09, 8, COAT, 0.72)
-	_frustum(Vector3(0, 0.975, 0), Vector3(0, 1.04, 0), 0.186, 0.186, 8, BELT, 0.74)
-	_frustum(Vector3(0, 1.43, 0), Vector3(0, 1.5, 0), 0.075, 0.07, 6, COAT_DARK)
+	# SV1b: an oval chest that rounds over into the shoulders (no more tent-shaped top).
+	_lathe(CHEST, 10, COAT)
+	_frustum(Vector3(0, 0.975, 0), Vector3(0, 1.04, 0), 0.188, 0.188, 10, BELT, 0.74)
+	_frustum(Vector3(0, 1.43, 0), Vector3(0, 1.5, 0), 0.075, 0.07, 8, COAT_DARK)
 	_box(Vector3(-0.1, 1.02, -0.13), Vector3(0.08, 0.07, 0.05), BELT)
 	_box(Vector3(0.1, 1.02, -0.13), Vector3(0.08, 0.07, 0.05), BELT)
-	_box(Vector3(-0.13, 1.445, 0.0), Vector3(0.11, 0.02, 0.13), SNOW)
-	_box(Vector3(0.13, 1.445, 0.0), Vector3(0.11, 0.02, 0.13), SNOW)
+	# Snow lying on the shoulders: thin rounded pads.
+	_sphere(Vector3(-0.125, 1.447, 0.0), Vector3(0.065, 0.011, 0.07), 5, 2, SNOW)
+	_sphere(Vector3(0.125, 1.447, 0.0), Vector3(0.065, 0.011, 0.07), 5, 2, SNOW)
 	if officer:
 		# Shoulder strap across the chest, and the map case on the left hip.
 		_box(Vector3(0.0, 1.24, -0.155), Vector3(0.035, 0.46, 0.012), LEATHER, Vector3(0, 0, -0.62))
@@ -124,8 +125,8 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		_box(Vector3(0.12, 1.02, -0.13), Vector3(0.07, 0.08, 0.05), LEATHER) # pistol holster
 	else:
 		# Rolled blanket over the left shoulder (Soviet "skatka").
-		_frustum(Vector3(-0.17, 1.47, -0.1), Vector3(0.12, 1.08, -0.14), 0.045, 0.045, 6, COAT_DARK)
-		_frustum(Vector3(-0.17, 1.47, 0.1), Vector3(0.12, 1.08, 0.14), 0.045, 0.045, 6, COAT_DARK)
+		_frustum(Vector3(-0.17, 1.47, -0.1), Vector3(0.12, 1.08, -0.14), 0.045, 0.045, 8, COAT_DARK)
+		_frustum(Vector3(-0.17, 1.47, 0.1), Vector3(0.12, 1.08, 0.14), 0.045, 0.045, 8, COAT_DARK)
 
 	# --- Greatcoat skirt: moves with the hips, the lower part follows the legs a little ---
 	_bone_fn = func(p: Vector3) -> Array:
@@ -151,19 +152,22 @@ static func _build(kind: int = 0) -> ArrayMesh:
 	_build_head()
 	if officer:
 		# Peaked cap: band, wide flat crown, black peak, star – easy to pick out.
-		_frustum(Vector3(0, 1.655, 0), Vector3(0, 1.705, 0), 0.108, 0.11, 10, CAP_BAND)
-		_frustum(Vector3(0, 1.705, 0.005), Vector3(0, 1.765, 0.0), 0.11, 0.142, 10, CAP)
-		_frustum(Vector3(0, 1.765, 0.0), Vector3(0, 1.775, 0.0), 0.142, 0.13, 10, CAP)
-		_box(Vector3(0, 1.665, -0.13), Vector3(0.16, 0.012, 0.07), BOOT, Vector3(0.25, 0, 0))
+		# SV1b: 12-sided, a crown that bulges a little over the band, a curved peak.
+		_frustum(Vector3(0, 1.655, 0), Vector3(0, 1.705, 0), 0.108, 0.11, 12, CAP_BAND)
+		_lathe([Vector4(1.703, 0.109, 0.109, 0.0), Vector4(1.74, 0.135, 0.132, 0.002), Vector4(1.765, 0.143, 0.14, 0.0),
+				Vector4(1.776, 0.13, 0.127, 0.0), Vector4(1.779, 0.0, 0.0, 0.0)], 12, CAP)
+		_brim(Vector3(0, 1.664, 0), -0.95, 0.95, 0.105, 0.158, 0.0, -0.022, 0.009, 6, BOOT)
 		_box(Vector3(0, 1.685, -0.111), Vector3(0.03, 0.03, 0.01), STAR)
-		_box(Vector3(0, 1.778, 0.01), Vector3(0.16, 0.012, 0.14), SNOW)
+		_sphere(Vector3(0, 1.776, 0.004), Vector3(0.1, 0.008, 0.095), 8, 2, SNOW)
 	else:
-		_frustum(Vector3(0, 1.66, 0), Vector3(0, 1.86, 0.01), 0.118, 0.014, 8, HAT)
-		_frustum(Vector3(0, 1.645, 0), Vector3(0, 1.665, 0), 0.115, 0.118, 8, HAT)
-		_box(Vector3(0, 1.66, -0.115), Vector3(0.15, 0.014, 0.07), HAT)
-		_box(Vector3(0, 1.595, 0.095), Vector3(0.2, 0.12, 0.02), HAT)
-		_box(Vector3(0, 1.735, -0.105), Vector3(0.035, 0.035, 0.012), STAR)
-		_frustum(Vector3(0, 1.82, 0.006), Vector3(0, 1.865, 0.01), 0.03, 0.012, 6, SNOW)
+		# SV1b: the budenovka – rounded cloth sides that bulge out a little, a soft rounded tip, a
+		# curved peak in front and the flap wrapped round the back and sides of the head.
+		_lathe(BUDENOVKA, 10, HAT)
+		_brim(Vector3(0, 1.655, 0), -0.85, 0.85, 0.11, 0.165, 0.0, -0.014, 0.011, 5, HAT)
+		_band(Vector3(0, 0, 0.004), 1.75, 4.53, 0.117, 0.124, 1.655, 1.56, 0.01, 5, HAT)
+		var star_r: float = _lathe_radius(BUDENOVKA, 1.728)
+		_box(Vector3(0, 1.728, -star_r - 0.003), Vector3(0.035, 0.035, 0.008), STAR, Vector3(0.42, 0, 0))
+		_lathe([Vector4(1.83, 0.031, 0.031, 0.006), Vector4(1.852, 0.02, 0.02, 0.008), Vector4(1.866, 0.0, 0.0, 0.009)], 6, SNOW)
 
 	# --- Arms: sleeve (upper), sleeve + cuff + hand (lower) ---
 	for side in [-1.0, 1.0]:
@@ -172,6 +176,8 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		var shoulder := rest_global(upper)
 		_use_bone(upper)
 		_frustum(shoulder + Vector3(0, 0.02, 0), shoulder - Vector3(0, ARM_UPPER, 0), 0.062, 0.052, 6, COAT)
+		# SV1b: a round shoulder cap on the joint – it turns in place when he lifts the arm.
+		_sphere(shoulder + Vector3(-side * 0.004, 0.0, 0.0), Vector3(0.07, 0.068, 0.072), 6, 3, COAT)
 		var elbow := rest_global(fore)
 		_use_bone(fore)
 		_frustum(elbow + Vector3(0, 0.02, 0), elbow - Vector3(0, 0.25, 0), 0.052, 0.047, 6, COAT)
@@ -188,7 +194,7 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		_use_bone(thigh)
 		_frustum(hip + Vector3(0, 0.03, 0), knee, 0.078, 0.062, 6, TROUSERS)
 		_use_bone(shin)
-		_frustum(knee + Vector3(0, 0.02, 0), Vector3(knee.x, 0.17, 0), 0.063, 0.055, 6, BOOT)
+		_frustum(knee + Vector3(0, 0.02, 0), Vector3(knee.x, 0.17, 0), 0.063, 0.055, 8, BOOT)
 		_build_boot_foot(knee.x, shin, Bone.FOOT_L if side < 0 else Bone.FOOT_R, BOOT)
 
 	_use_bone(Bone.RIFLE)
@@ -221,13 +227,11 @@ static func _build_head() -> void:
 		for s in segs + 1:
 			row.append(c + _head_offset(lat, TAU * s / segs))
 		grid.append(row)
-	for r in rings:
-		for s in segs:
-			var q: Array[Vector3] = [grid[r][s], grid[r + 1][s], grid[r + 1][s + 1], grid[r][s + 1]]
-			var n: Array[Vector3] = [_head_normal(grid, r, s), _head_normal(grid, r + 1, s),
-					_head_normal(grid, r + 1, s + 1), _head_normal(grid, r, s + 1)]
-			_tri(q[0], q[1], q[2], n[0], n[1], n[2], FACE)
-			_tri(q[0], q[2], q[3], n[0], n[2], n[3], FACE)
+	# SV1b: the top quarter of the skull is always inside the hat – not built.
+	var centers: Array[Vector3] = []
+	for r in grid.size():
+		centers.append(c)
+	_grid(grid, centers, FACE, rings - 2)
 	# Nose: a little wedge from between the eyes down to the tip.
 	var z0: float = c.z - HEAD_RADIUS.z
 	var top := Vector3(0, 1.627, z0 + 0.006)
@@ -246,6 +250,14 @@ static func _build_head() -> void:
 
 
 const HEAD_CENTER := Vector3(0, 1.6, -0.005)
+## SV1b: the chest, rings from the belt up into the shoulders: (height, half width, half depth, back).
+const CHEST: Array = [Vector4(0.99, 0.176, 0.127, 0.0), Vector4(1.31, 0.2, 0.144, 0.0),
+		Vector4(1.39, 0.203, 0.145, 0.0), Vector4(1.435, 0.188, 0.135, 0.0), Vector4(1.47, 0.145, 0.105, 0.0),
+		Vector4(1.49, 0.085, 0.075, 0.0)]
+## SV1b: the budenovka's rings, from the band up to the rounded tip.
+const BUDENOVKA: Array = [Vector4(1.643, 0.113, 0.113, 0.0), Vector4(1.665, 0.119, 0.119, 0.0), Vector4(1.7, 0.113, 0.113, 0.001),
+		Vector4(1.75, 0.09, 0.09, 0.003), Vector4(1.8, 0.057, 0.057, 0.005), Vector4(1.84, 0.026, 0.026, 0.007),
+		Vector4(1.866, 0.0, 0.0, 0.008)]
 const HEAD_RADIUS := Vector3(0.091, 0.106, 0.1)
 
 
@@ -285,22 +297,151 @@ static func _bell(x: float, mid: float, width: float) -> float:
 	return exp(-pow((x - mid) / width, 2.0))
 
 
-## Smooth normal of head grid point (r, s) from its neighbours (the seam wraps round).
-static func _head_normal(grid: Array, r: int, s: int) -> Vector3:
+## SV1b: turns rows of points (each row a closed ring, first point repeated at the end) into a
+## smooth surface – every corner's normal comes from its neighbours, so the light rolls over it.
+## `centers[r]` is a point inside row r (to know which way is out). Only rows 0…`last_row`.
+static func _grid(grid: Array, centers: Array[Vector3], col: Color, last_row: int = -1) -> void:
+	var top: int = grid.size() - 1 if last_row < 0 else mini(last_row, grid.size() - 1)
+	var normals: Array = []
+	for r in grid.size():
+		var row: Array[Vector3] = []
+		for s in (grid[r] as Array).size():
+			row.append(_grid_normal(grid, centers, r, s))
+		normals.append(row)
+	for r in top:
+		for s in (grid[r] as Array).size() - 1:
+			var q: Array[Vector3] = [grid[r][s], grid[r + 1][s], grid[r + 1][s + 1], grid[r][s + 1]]
+			var n: Array[Vector3] = [normals[r][s], normals[r + 1][s], normals[r + 1][s + 1], normals[r][s + 1]]
+			if q[0].distance_squared_to(q[3]) > 1e-12 or q[1].distance_squared_to(q[2]) > 1e-12:
+				if q[1].distance_squared_to(q[2]) > 1e-12:
+					_tri(q[0], q[1], q[2], n[0], n[1], n[2], col)
+				if q[0].distance_squared_to(q[3]) > 1e-12:
+					_tri(q[0], q[2], q[3], n[0], n[2], n[3], col)
+
+
+static func _grid_normal(grid: Array, centers: Array[Vector3], r: int, s: int) -> Vector3:
 	var row: Array = grid[r]
 	var n_s: int = row.size() - 1
-	var sl: int = (s - 1 + n_s) % n_s
-	var sr: int = (s + 1) % n_s
+	var si: int = s % n_s
 	var up: int = mini(r + 1, grid.size() - 1)
 	var dn: int = maxi(r - 1, 0)
-	var across: Vector3 = (grid[r][sr] as Vector3) - (grid[r][sl] as Vector3)
-	var along: Vector3 = (grid[up][s % n_s] as Vector3) - (grid[dn][s % n_s] as Vector3)
+	var across: Vector3 = (row[(si + 1) % n_s] as Vector3) - (row[(si - 1 + n_s) % n_s] as Vector3)
+	var along: Vector3 = (grid[up][si] as Vector3) - (grid[dn][si] as Vector3)
+	var outward: Vector3 = (row[si] as Vector3) - centers[r]
+	if outward.length() < 1e-6: # a pole (a single point): straight on from the next row
+		var other: int = r - 1 if r > 0 else r + 1
+		outward = (row[si] as Vector3) - centers[other]
 	var n: Vector3 = across.cross(along)
-	var outward: Vector3 = (row[s] as Vector3) - HEAD_CENTER
-	if n.length() < 0.000001:
+	if n.length() < 1e-9 or across.length() < 1e-6:
 		return outward.normalized()
 	n = n.normalized()
 	return n if n.dot(outward) > 0.0 else -n
+
+
+## SV1b: a round shape built from horizontal rings, bottom to top. Each Vector4 is one ring:
+## (height, radius across, radius front-to-back, how far its centre moves back). A ring of
+## radius 0 closes the shape (a rounded tip). Normals are smooth.
+static func _lathe(profile: Array, sides: int, col: Color) -> void:
+	var grid: Array = []
+	var centers: Array[Vector3] = []
+	for ring in profile:
+		var v: Vector4 = ring
+		var row: Array[Vector3] = []
+		for s in sides + 1:
+			var a: float = TAU * s / sides
+			row.append(Vector3(sin(a) * v.y, v.x, -cos(a) * v.z + v.w))
+		grid.append(row)
+		centers.append(Vector3(0, v.x, v.w))
+	_grid(grid, centers, col)
+
+
+## The radius (across) of a lathe profile at height y.
+static func _lathe_radius(profile: Array, y: float) -> float:
+	for i in profile.size() - 1:
+		var a: Vector4 = profile[i]
+		var b: Vector4 = profile[i + 1]
+		if y >= a.x and y <= b.x:
+			return lerpf(a.z, b.z, (y - a.x) / maxf(b.x - a.x, 0.0001))
+	return 0.0
+
+
+## SV1b: a curved peak (visor) round the front: from angle a0 to a1 (0 = straight ahead),
+## from radius r_in to r_out, dropping `drop` metres at its edge, `thick` thick.
+static func _brim(c: Vector3, a0: float, a1: float, r_in: float, r_out: float, rise: float, drop: float,
+		thick: float, segs: int, col: Color) -> void:
+	for i in segs:
+		var pts: Array = []
+		for k in [i, i + 1]:
+			var a: float = lerpf(a0, a1, float(k) / segs)
+			var d := Vector3(sin(a), 0, -cos(a))
+			var edge: float = cos(lerpf(-PI / 2.0, PI / 2.0, float(k) / segs)) # narrower at the ends
+			var r_o: float = lerpf(r_in + 0.01, r_out, 0.35 + 0.65 * edge)
+			pts.append([c + d * r_in + Vector3(0, rise, 0), c + d * r_o + Vector3(0, drop * (0.5 + 0.5 * edge), 0), d])
+		var i0: Vector3 = pts[0][0]
+		var o0: Vector3 = pts[0][1]
+		var i1: Vector3 = pts[1][0]
+		var o1: Vector3 = pts[1][1]
+		var t := Vector3(0, thick, 0)
+		var up0: Vector3 = (pts[0][2] as Vector3).cross(Vector3.UP).cross(o0 - i0).normalized()
+		var up1: Vector3 = (pts[1][2] as Vector3).cross(Vector3.UP).cross(o1 - i1).normalized()
+		if up0.y < 0.0:
+			up0 = -up0
+		if up1.y < 0.0:
+			up1 = -up1
+		_tri(i0 + t, o0 + t, o1 + t, up0, up0, up1, col)  # top
+		_tri(i0 + t, o1 + t, i1 + t, up0, up1, up1, col)
+		_tri(i0, o1, o0, -up0, -up1, -up0, col)           # underside
+		_tri(i0, i1, o1, -up0, -up1, -up1, col)
+		var e0: Vector3 = pts[0][2]
+		var e1: Vector3 = pts[1][2]
+		_tri(o0, o0 + t, o1 + t, e0, e0, e1, col)          # front edge
+		_tri(o0, o1 + t, o1, e0, e1, e1, col)
+
+
+## SV1b: a band of cloth round the head from angle a0 to a1 (0 = front; PI = the back), from
+## height y_top (radius r_top) down to y_bot (radius r_bot), `thick` thick – the budenovka's flap.
+static func _band(c: Vector3, a0: float, a1: float, r_top: float, r_bot: float, y_top: float, y_bot: float,
+		thick: float, segs: int, col: Color) -> void:
+	for i in segs:
+		var a: float = lerpf(a0, a1, float(i) / segs)
+		var b: float = lerpf(a0, a1, float(i + 1) / segs)
+		var da := Vector3(sin(a), 0, -cos(a))
+		var db := Vector3(sin(b), 0, -cos(b))
+		var ta: Vector3 = c + da * r_top + Vector3(0, y_top, 0)
+		var tb: Vector3 = c + db * r_top + Vector3(0, y_top, 0)
+		var ba: Vector3 = c + da * r_bot + Vector3(0, y_bot, 0)
+		var bb: Vector3 = c + db * r_bot + Vector3(0, y_bot, 0)
+		_tri(ta, ba, bb, da, da, db, col) # outside
+		_tri(ta, bb, tb, da, db, db, col)
+		var ia: Vector3 = ba - da * thick
+		var ib: Vector3 = bb - db * thick
+		_tri(ba, ia, ib, Vector3.DOWN, Vector3.DOWN, Vector3.DOWN, col) # bottom edge
+		_tri(ba, ib, bb, Vector3.DOWN, Vector3.DOWN, Vector3.DOWN, col)
+		_tri(ta - da * thick, ib, ia, -da, -db, -da, col) # inside
+		_tri(ta - da * thick, tb - db * thick, ib, -da, -db, -db, col)
+
+
+## SV1b: a rounded boot foot: a squashed egg, flat underneath, narrower and lower at the toe.
+static func _rounded_foot(c: Vector3, r: Vector3, col: Color) -> void:
+	var segs: int = 8
+	var rings: int = 4
+	var grid: Array = []
+	var centers: Array[Vector3] = []
+	for k in rings + 1:
+		var lat: float = PI * k / rings - PI / 2.0
+		var row: Array[Vector3] = []
+		for s in segs + 1:
+			var a: float = TAU * s / segs
+			var d := Vector3(cos(lat) * sin(a), sin(lat), -cos(lat) * cos(a))
+			var toe: float = maxf(-d.z, 0.0) # 0 at the heel … 1 at the tip of the toe
+			var p := Vector3(d.x * r.x * (1.0 - 0.22 * toe), d.y * r.y, d.z * r.z)
+			if p.y > 0.0:
+				p.y *= 1.0 - 0.38 * toe # the toe is lower than the instep
+			p.y = maxf(p.y, -r.y + 0.002) # flat sole
+			row.append(c + p)
+		grid.append(row)
+		centers.append(c + Vector3(0, sin(lat) * r.y * 0.5, 0))
+	_grid(grid, centers, col)
 
 
 ## SV1: a fist hanging from the wrist (rest pose: arm straight down). The palm faces the body,
@@ -318,11 +459,10 @@ static func _build_boot_foot(x: float, shin: int, foot: int, col: Color) -> void
 	_bone_fn = func(p: Vector3) -> Array:
 		var k: float = clampf((0.17 - p.y) / 0.08, 0.0, 1.0)
 		return [PackedInt32Array([shin, foot, 0, 0]), PackedFloat32Array([1.0 - k, k, 0.0, 0.0])]
-	_frustum(Vector3(x, 0.175, 0), Vector3(x, 0.07, 0.0), 0.055, 0.052, 6, col)
+	_frustum(Vector3(x, 0.175, 0), Vector3(x, 0.07, 0.0), 0.055, 0.052, 8, col)
 	_bone_fn = Callable()
 	_use_bone(foot)
-	_box(Vector3(x, 0.045, -0.015), Vector3(0.092, 0.09, 0.19), col)
-	_frustum(Vector3(x, 0.036, -0.105), Vector3(x, 0.036, -0.17), 0.045, 0.032, 5, col, 0.8) # rounded toe
+	_rounded_foot(Vector3(x, 0.046, -0.045), Vector3(0.048, 0.046, 0.128), col)
 
 
 ## Mosin rifle with the long spike bayonet.
@@ -424,6 +564,15 @@ static func box(center: Vector3, size: Vector3, col: Color, rot := Vector3.ZERO)
 
 static func sphere(center: Vector3, radius: Vector3, segments: int, rings: int, col: Color) -> void:
 	_sphere(center, radius, segments, rings, col)
+
+
+## SV1b: round shapes for other code-built soldiers (FinnMesh): see _lathe() / _rounded_foot().
+static func lathe(profile: Array, sides: int, col: Color) -> void:
+	_lathe(profile, sides, col)
+
+
+static func rounded_foot(center: Vector3, radius: Vector3, col: Color) -> void:
+	_rounded_foot(center, radius, col)
 
 
 ## One triangle (AR1: the arms' folded sleeves are built from their own rings of points).

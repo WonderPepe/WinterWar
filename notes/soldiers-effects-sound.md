@@ -5,7 +5,8 @@ Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to
 ## Effects, sound, soldiers (P2) – how it is built
 - Soldier = `SoldierVisual` (Enemy's `Visual`): builds a Skeleton3D (16 bones, `SoldierMesh.Bone`;
   SV1 added hands + feet at the end) and one shared skinned ArrayMesh (`SoldierMesh.get_mesh()`,
-  ~1 040 tris (MG gunner 1 145), vertex colours; alpha = cloth type for `soldier.gdshader`, 0.15 = face).
+  ~1 310 tris (MG gunner 1 420; SV1b rounder shapes: `_lathe`, `_grid`, `_brim`, `_band`,
+  `_rounded_foot`), vertex colours; alpha = cloth type for `soldier.gdshader`, 0.15 = face).
   SV1 face: shaped head + `soldier_face.png` (made by `tools/make_soldier_face.gd`) painted on the face
   corners (UV = `SoldierMesh.face_uv`); feet bend at the ankle (`SoldierMesh.foot_pose`) – see
   milestones.md "SV1". Poses are set in code every frame from synced state

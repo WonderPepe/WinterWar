@@ -99,9 +99,10 @@ static func _build(gun: int) -> ArrayMesh:
 
 	# --- Upper body (spine): loose smock, gathered at the waist, grey collar, bunched hood ---
 	SoldierMesh.use_bone(B.SPINE)
-	SoldierMesh.frustum(Vector3(0, 0.99, 0), Vector3(0, 1.08, 0), 0.19, 0.2, 9, SMOCK, 0.76)   # gathered waist
-	SoldierMesh.frustum(Vector3(0, 1.08, 0), Vector3(0, 1.4, 0), 0.215, 0.218, 9, SMOCK, 0.76) # loose chest
-	SoldierMesh.frustum(Vector3(0, 1.4, 0), Vector3(0, 1.465, 0), 0.218, 0.1, 9, SMOCK, 0.76)  # shoulders
+	# SV1b: gathered waist → loose chest → rounded shoulders, one smooth shape.
+	SoldierMesh.lathe([Vector4(0.99, 0.19, 0.144, 0.0), Vector4(1.08, 0.205, 0.156, 0.0), Vector4(1.32, 0.218, 0.166, 0.0),
+			Vector4(1.4, 0.219, 0.166, 0.0), Vector4(1.44, 0.2, 0.152, 0.0), Vector4(1.465, 0.155, 0.118, 0.0),
+			Vector4(1.48, 0.1, 0.08, 0.0)], 10, SMOCK)
 	SoldierMesh.frustum(Vector3(0, 1.025, 0), Vector3(0, 1.04, 0), 0.198, 0.198, 9, SMOCK_CORD, 0.77) # drawcord
 	SoldierMesh.box(Vector3(-0.03, 0.98, -0.155), Vector3(0.012, 0.07, 0.01), SMOCK_CORD)     # cord ends
 	SoldierMesh.box(Vector3(0.025, 0.975, -0.155), Vector3(0.012, 0.08, 0.01), SMOCK_CORD)
@@ -114,7 +115,7 @@ static func _build(gun: int) -> ArrayMesh:
 	# The empty hood hanging down between the shoulder blades, with a fold across it.
 	SoldierMesh.sphere(Vector3(0, 1.37, 0.205), Vector3(0.12, 0.12, 0.05), 6, 3, SMOCK)
 	SoldierMesh.box(Vector3(0, 1.41, 0.245), Vector3(0.16, 0.022, 0.018), SMOCK_FOLD, Vector3(-0.3, 0, 0))
-	SoldierMesh.box(Vector3(0.0, 1.465, 0.13), Vector3(0.09, 0.02, 0.06), SNOW) # a little snow in the fold
+	SoldierMesh.sphere(Vector3(0.0, 1.468, 0.13), Vector3(0.05, 0.01, 0.035), 5, 2, SNOW) # a little snow in the fold
 
 	# --- Smock skirt to mid-thigh: moves with the hips, the lower part follows the legs ---
 	SoldierMesh.use_bone_fn(func(p: Vector3) -> Array:
@@ -148,6 +149,7 @@ static func _build(gun: int) -> ArrayMesh:
 		var shoulder := SoldierMesh.rest_global(upper)
 		SoldierMesh.use_bone(upper)
 		SoldierMesh.frustum(shoulder + Vector3(0, 0.03, 0), shoulder - Vector3(0, SoldierMesh.ARM_UPPER, 0), 0.075, 0.066, 6, SMOCK)
+		SoldierMesh.sphere(shoulder + Vector3(-side * 0.004, 0.0, 0.0), Vector3(0.08, 0.075, 0.08), 6, 3, SMOCK) # SV1b: round shoulder
 		var elbow := SoldierMesh.rest_global(fore)
 		SoldierMesh.use_bone(fore)
 		SoldierMesh.frustum(elbow + Vector3(0, 0.03, 0), elbow - Vector3(0, 0.22, 0), 0.067, 0.062, 6, SMOCK)
@@ -166,8 +168,8 @@ static func _build(gun: int) -> ArrayMesh:
 		SoldierMesh.use_bone(shin)
 		SoldierMesh.frustum(knee + Vector3(0, 0.03, 0), Vector3(knee.x, 0.07, 0.01), 0.072, 0.072, 6, TROUSERS)
 		SoldierMesh.use_bone(B.FOOT_L if side < 0 else B.FOOT_R) # SV1: the foot bends at the ankle
-		SoldierMesh.frustum(Vector3(knee.x, 0.085, 0.01), Vector3(knee.x, 0.035, 0.0), 0.073, 0.068, 6, TROUSERS) # bunched over the boot
-		SoldierMesh.box(Vector3(knee.x, 0.035, -0.04), Vector3(0.085, 0.07, 0.2), BOOT)
+		SoldierMesh.frustum(Vector3(knee.x, 0.085, 0.01), Vector3(knee.x, 0.035, 0.0), 0.073, 0.068, 8, TROUSERS) # bunched over the boot
+		SoldierMesh.rounded_foot(Vector3(knee.x, 0.036, -0.045), Vector3(0.043, 0.036, 0.11), BOOT) # SV1b
 		# Pieksu toe: turned up a little, not like an elf's.
 		SoldierMesh.frustum(Vector3(knee.x, 0.04, -0.12), Vector3(knee.x, 0.07, -0.175), 0.036, 0.012, 5, BOOT)
 

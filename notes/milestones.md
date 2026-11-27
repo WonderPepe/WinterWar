@@ -695,3 +695,22 @@ effect** (down / slower for a moment), **blood yes**, order HR1 → HR4 (for lat
 - Triangles 780 → 1 037 rifleman / 1 022 officer / 1 145 MG gunner, still one draw call.
 - Tests: new `test_sv1.gd` (in tests.cfg); `test_p2` / `test_net2b` 16 bones, new Soviet mesh sums.
   Pictures: `tools/shots_sv1.gd [prefix]` (needs xvfb; before/after).
+
+
+## SV1b – rounder soldiers (2026-11-27)
+Owner after SV1: "foot, shoulder, hat seems way too boxy"; the co-op Finns get the same rounding.
+Picture only.
+- New `SoldierMesh` builders: `_lathe(profile, sides, col)` (rings `Vector4(height, half width, half
+  depth, back shift)`, radius 0 = rounded tip), `_grid()` (rows of points → surface with smooth
+  normals from the neighbours; the head uses it too), `_brim()` (curved peak), `_band()` (cloth flap
+  round the head), `_rounded_foot()` (squashed egg, flat sole, lower/narrower toe). Public
+  `lathe()` / `rounded_foot()` for FinnMesh.
+- Soviets: oval chest `CHEST` rounding into the shoulders, a sphere shoulder cap on each upper-arm
+  joint, snow on the shoulders as thin pads; budenovka `BUDENOVKA` (10 sides, bulging sides, rounded
+  tip, star sits on its surface via `_lathe_radius`), curved peak, flap round the back and sides;
+  officer's cap 12 sides, bulging crown, curved peak, snow pad; boots with rounded feet, 8-sided shafts.
+  The top quarter of the skull (always inside the hat) is no longer built.
+- Finns: smooth smock chest (`lathe`), round shoulder caps, rounded feet, 8-sided bunched trousers,
+  snow in the hood fold as a pad. Fur hat unchanged.
+- Triangles: rifleman 1 311, officer 1 260, MG gunner 1 419 (test_sv1 budget ≤ 1 450), Finn ~1 250–1 280
+  (test_net2b < 1 450). Still one draw call each. Soviet mesh sums in test_net2b updated.
