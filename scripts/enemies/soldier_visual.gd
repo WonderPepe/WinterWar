@@ -3,7 +3,7 @@ extends Node3D
 ## What a Soviet soldier looks like and how he moves (the "Visual" child of Enemy).
 ##
 ## The body is the SoldierMesh on a Skeleton3D. This script poses the bones in code every
-## frame: walking/running legs, kneeling to fire, rifle carried / held forward / shouldered,
+## frame: walking/running legs (SV1: with the feet bending at the ankle), kneeling to fire, rifle carried / held forward / shouldered,
 ## recoil, and the arms always reaching for the rifle (simple "IK": we place the hands and
 ## work out the elbows). It also plays his breath vapour when you are near, and his
 ## footsteps if there are recordings (see FootstepSounds).
@@ -397,6 +397,24 @@ func _pose(delta: float) -> void:
 	if not prone:
 		t[B.HIPS] = Quaternion.IDENTITY
 	t[B.HEAD] = _x(lean * 0.6 + (0.08 if kneel else 0.0) + head_extra) # keep looking ahead
+	# SV1: the feet bend at the ankle – soles flat when the knees bend, toes push off when walking,
+	# pointed when lying down; the knee he kneels on rests on his toes.
+	if prone:
+		t[B.FOOT_L] = _x(-0.45)
+		t[B.FOOT_R] = _x(-0.5)
+	elif dead:
+		t[B.FOOT_L] = _x(-0.3)
+		t[B.FOOT_R] = _x(-0.3)
+	elif kneel:
+		t[B.FOOT_L] = SoldierMesh.foot_pose(t[B.THIGH_L], t[B.SHIN_L], 1.0)
+		t[B.FOOT_R] = _x(-0.35)
+	else:
+		var flat: float = 0.9 if crouch else (0.6 if moving else 1.0)
+		var push: float = 0.35 if moving else 0.0
+		t[B.FOOT_L] = SoldierMesh.foot_pose(t.get(B.THIGH_L, Quaternion.IDENTITY), t.get(B.SHIN_L, Quaternion.IDENTITY),
+				flat, -push * maxf(0.0, -sin(_phase)))
+		t[B.FOOT_R] = SoldierMesh.foot_pose(t.get(B.THIGH_R, Quaternion.IDENTITY), t.get(B.SHIN_R, Quaternion.IDENTITY),
+				flat, -push * maxf(0.0, sin(_phase)))
 
 	# Where the rifle is (relative to the chest).
 	var rifle_pos: Vector3
@@ -455,7 +473,7 @@ func _pose(delta: float) -> void:
 	rifle_rot = rifle_rot * _x(0.18 * _kick)
 
 	var w: float = clampf(delta * pose_speed, 0.0, 1.0)
-	for bone in [B.HIPS, B.SPINE, B.HEAD, B.THIGH_L, B.SHIN_L, B.THIGH_R, B.SHIN_R]:
+	for bone in [B.HIPS, B.SPINE, B.HEAD, B.THIGH_L, B.SHIN_L, B.THIGH_R, B.SHIN_R, B.FOOT_L, B.FOOT_R]:
 		var target: Quaternion = t.get(bone, Quaternion.IDENTITY)
 		_rot[bone] = (_rot[bone] as Quaternion).slerp(target, w)
 		_skeleton.set_bone_pose_rotation(bone, _rot[bone])

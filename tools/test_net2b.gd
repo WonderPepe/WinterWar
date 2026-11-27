@@ -7,12 +7,13 @@ var p: Player   # this computer's own player
 var f: Player   # "another player" (peer 2) – his body is shown here
 var fails := 0
 
-## Soviet meshes before NET2b (size:hash of vertex, normal, colour, uv, bones, weights arrays) –
+## Soviet meshes since SV1 (face, hands, feet; was: before NET2b) – size:hash of vertex, normal,
+## colour, uv, bones, weights arrays –
 ## the shared building / IK changes must not change them.
 const SOVIET_SUMS: Array[String] = [
-	"28052:1056219663 28052:3768608681 37400:1461294839 18704:4005124921 37400:1816217646 37400:441394019 ",
-	"27512:1987690048 27512:148821539 36680:3476684387 18344:3286057613 36680:3630520621 36680:4085856957 ",
-	"31940:1975751297 31940:1438001564 42584:3905599784 21296:458938006 42584:2866079304 42584:3787351316 ",
+	"37340:758458690 37340:4089141141 49784:1737282994 24896:2427581663 49784:3579069488 49784:4136879783 ",
+	"36800:3965116961 36800:2483468167 49064:3555122023 24536:4055232797 49064:925592836 49064:1474376202 ",
+	"41228:942174889 41228:2951092215 54968:1676514419 27488:1077694273 54968:1459856078 54968:1677021567 ",
 ]
 
 
@@ -97,7 +98,7 @@ func run() -> void:
 	var b: PlayerBody = f.body
 	check(b.visible, "another player's body is shown")
 	check(b.get_node("Skeleton/Mesh").mesh == FinnMesh.get_mesh(0), "he starts with the Mosin")
-	check(b.get_node("Skeleton").get_bone_count() == 12, "same 12-bone skeleton as the Soviets")
+	check(b.get_node("Skeleton").get_bone_count() == 16, "same 16-bone skeleton as the Soviets (SV1: + hands, feet)")
 	var cfg: SceneReplicationConfig = (f.get_node("StateSync") as MultiplayerSynchronizer).replication_config
 	check(cfg.get_properties().size() == 16, "only NET3's time stamp added to the synced state (StateSync has %d properties)" % cfg.get_properties().size())
 

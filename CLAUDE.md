@@ -99,7 +99,12 @@ you work on. Update this file and the right note at the end of every milestone.
   EC1b: in the trench soldiers keep ~1 m apart (soft push, `_keep_apart`), follow the path tightly so
   they don't stick on the zigzag corners, move up on a Finn in sight > 10 m (shoot 1–2, advance 2–3 s),
   see from a fixed crouch/stand eye height, keep a pose ≥ 0.5 s.
-  Next: owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
+  SV1: the Soviet soldier has a face (shaped head, nose, ears, neutral painted face texture,
+  `soldier_face.png`) and 4 new bones at the end – hands (fists) and feet that bend at the ankle (flat
+  when crouching, on the toes when kneeling); 16 bones, ≤ 1 150 triangles, one draw call. Plan for
+  SV2 (greatcoat) and HR1–HR4 (hit reactions; owner: brief slow-down / going down, blood) in project
+  doc `claude/plan-soldier-polish.md`.
+  Next: SV2, then HR1–HR4; or owner's choice – online co-op ON0–ON5 (plan in Claude Docs, project doc
   `claude/plan-online-coop.md`), AR4 (reloads: Mosin stripper clip, grey cuff reveal), the v0.6.0
   review's list (project doc `claude/review-2026-11-12.md`: U3, U4, D6, P2, V5, …) or wreck cover /
   field cover (idea 0). See `notes/milestones.md`.

@@ -120,7 +120,7 @@ func _make_materials() -> Dictionary:
 			"snow_band": false, "log_top_snow": 0.0, "top_snow": 0.0, "tile_size_m": Vector2(1.6, 0.8)}),
 		"trunk": _shader_mat("tree_trunk.tres", "spruce", {"trunk": true, "bark_texture": load(TEX_DIR + "bark.png")}),
 		"foliage": _shader_mat("tree_foliage.tres", "spruce", {}),
-		"soldier": _shader_mat("soldier.tres", "soldier", {}),
+		"soldier": _shader_mat("soldier.tres", "soldier", {"face_texture": load(TEX_DIR + "soldier_face.png")}), # SV1 face
 		"tree_line": _shader_mat("tree_line.tres", "tree_line", {"silhouette": load(TEX_DIR + "treeline.png")}),
 		"player_body": _mat("player_body.tres", Color(0.82, 0.83, 0.8)),
 		"flake": load(MAT_DIR + "snowflake.tres"),

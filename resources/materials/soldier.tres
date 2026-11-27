@@ -2,9 +2,11 @@
 
 [ext_resource type="Shader" path="res://resources/shaders/soldier.gdshader" id="1_2tsqr"]
 [ext_resource type="Texture2D" path="res://assets/textures/snow_mask.png" id="2_t8vdi"]
+[ext_resource type="Texture2D" uid="uid://c1up4sqbaayds" path="res://assets/textures/soldier_face.png" id="3_face"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_2tsqr")
 shader_parameter/noise_texture = ExtResource("2_t8vdi")
+shader_parameter/face_texture = ExtResource("3_face")
 shader_parameter/coat_tint = null

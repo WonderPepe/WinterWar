@@ -265,6 +265,21 @@ func _pose(delta: float) -> void:
 	t[B.HIPS] = Quaternion.IDENTITY
 	t[B.SPINE] = _x(-lean + pitch * 0.4) # negative = top of the body forward
 	t[B.HEAD] = _x(lean * 0.7 + pitch * 0.6) # keep looking where the player looks
+	# SV1: feet bend at the ankle (as the Soviets' – SoldierVisual): flat when the knees bend,
+	# toes push off when walking; the knee he kneels on rests on his toes.
+	if dead:
+		t[B.FOOT_L] = _x(-0.3)
+		t[B.FOOT_R] = _x(-0.3)
+	elif crouch and not moving:
+		t[B.FOOT_L] = SoldierMesh.foot_pose(t[B.THIGH_L], t[B.SHIN_L], 1.0)
+		t[B.FOOT_R] = _x(-0.35)
+	else:
+		var flat: float = 0.9 if crouch else (0.5 if hands == Hands.CLIMB else (0.6 if moving else 1.0))
+		var push: float = 0.35 if moving else 0.0
+		t[B.FOOT_L] = SoldierMesh.foot_pose(t.get(B.THIGH_L, Quaternion.IDENTITY), t.get(B.SHIN_L, Quaternion.IDENTITY),
+				flat, -push * maxf(0.0, -sin(_phase)))
+		t[B.FOOT_R] = SoldierMesh.foot_pose(t.get(B.THIGH_R, Quaternion.IDENTITY), t.get(B.SHIN_R, Quaternion.IDENTITY),
+				flat, -push * maxf(0.0, sin(_phase)))
 
 	# Where the gun is (chest space), and where each hand goes.
 	var gun_pos: Vector3
@@ -305,7 +320,7 @@ func _pose(delta: float) -> void:
 	gun_rot = gun_rot * _x(0.15 * _kick)
 
 	var w: float = clampf(delta * pose_speed, 0.0, 1.0)
-	for bone in [B.HIPS, B.SPINE, B.HEAD, B.THIGH_L, B.SHIN_L, B.THIGH_R, B.SHIN_R]:
+	for bone in [B.HIPS, B.SPINE, B.HEAD, B.THIGH_L, B.SHIN_L, B.THIGH_R, B.SHIN_R, B.FOOT_L, B.FOOT_R]:
 		var target: Quaternion = t.get(bone, Quaternion.IDENTITY)
 		_rot[bone] = (_rot[bone] as Quaternion).slerp(target, w)
 		_skeleton.set_bone_pose_rotation(bone, _rot[bone])

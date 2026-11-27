@@ -671,3 +671,27 @@ player (stayed crouched, sometimes peeked), (3) one bobbed crouch–stand–crou
   `_keep_apart()` (in `_fall_and_slide`): a comrade nearer than `trench_spacing_m` 1.0 m – he stops pressing
   into him and slides apart (`KEEP_APART_SPEED` 2 m/s at full overlap). Soft, so nobody blocks the trench.
 - Tests: `test_ec1.gd` extended (two on one spot ≥ 0.8 m apart; 25 m → closer with shots; pose ≥ 0.5 s).
+
+
+## SV1 – a face, hands and feet for the Soviet soldier (2026-11-27)
+Plan: project doc `claude/plan-soldier-polish.md` (SV1 → SV2 greatcoat → HR1–HR4 hit reactions,
+`claude/plan-hit-reactions.md`). **Owner decisions:** face **neutral**; hits get a **brief gameplay
+effect** (down / slower for a moment), **blood yes**, order HR1 → HR4 (for later).
+- `SoldierMesh`: 4 new bones at the END of `Bone` (12 `HandL`, 13 `HandR`, 14 `FootL`, 15 `FootR`;
+  wrists 0.25 m below the elbows, ankles 0.1 m above the ground) – no old number changed. The planned
+  neck bone was dropped: the neck is weighted from the chest (bottom) to the head (top) instead.
+- Head `_build_head()`: a 12 × 8 sphere pushed in/out (`_head_offset`: narrower jaw, chin, brow,
+  eye sockets, cheekbones), wedge nose, small ears. Face corners use `FACE` (alpha 0.15) and UV
+  `face_uv()` (front view, 0.2 m wide, 1.66 → 1.49 m; back of the head (−1, −1)).
+- `soldier.gdshader`: alpha 0.1–0.25 = face → `face_texture` painted over the skin by its alpha
+  (no clinging snow on the face). Texture `assets/textures/soldier_face.png` (128 px, transparent
+  edges) from `tools/make_soldier_face.gd`; in `soldier.tres` and in `build_scenes.gd`.
+- Fist (`_build_fist`, on the hand bone): thumb in front, so with the arm forward it is on top of the
+  grip. Boots (`_build_boot_foot`): lower shaft blends shin → foot, foot + rounded toe on the foot bone.
+- `SoldierMesh.foot_pose(thigh, shin, flat, toes)`: ankle within `ANKLE_UP` 0.6 / `ANKLE_DOWN` −0.9.
+  `SoldierVisual` + `PlayerBody`: soles flat standing / crouching (0.9) / walking (0.6, toes push off
+  behind), kneeling back foot on its toes (−0.35), prone −0.45/−0.5, dead −0.3. Hands: identity for now
+  (bones ready for HR). `FinnMesh`: boot + bunched trousers on the foot bones (his look unchanged).
+- Triangles 780 → 1 037 rifleman / 1 022 officer / 1 145 MG gunner, still one draw call.
+- Tests: new `test_sv1.gd` (in tests.cfg); `test_p2` / `test_net2b` 16 bones, new Soviet mesh sums.
+  Pictures: `tools/shots_sv1.gd [prefix]` (needs xvfb; before/after).

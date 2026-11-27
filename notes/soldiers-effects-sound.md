@@ -3,9 +3,12 @@
 Moved from CLAUDE.md (2026-11-01). Read when working on this area; keep it up to date.
 
 ## Effects, sound, soldiers (P2) – how it is built
-- Soldier = `SoldierVisual` (Enemy's `Visual`): builds a Skeleton3D (12 bones, `SoldierMesh.Bone`)
-  and one shared skinned ArrayMesh (`SoldierMesh.get_mesh()`, ~780 tris, vertex colours; alpha =
-  cloth type for `soldier.gdshader`). Poses are set in code every frame from synced state
+- Soldier = `SoldierVisual` (Enemy's `Visual`): builds a Skeleton3D (16 bones, `SoldierMesh.Bone`;
+  SV1 added hands + feet at the end) and one shared skinned ArrayMesh (`SoldierMesh.get_mesh()`,
+  ~1 040 tris (MG gunner 1 145), vertex colours; alpha = cloth type for `soldier.gdshader`, 0.15 = face).
+  SV1 face: shaped head + `soldier_face.png` (made by `tools/make_soldier_face.gd`) painted on the face
+  corners (UV = `SoldierMesh.face_uv`); feet bend at the ankle (`SoldierMesh.foot_pose`) – see
+  milestones.md "SV1". Poses are set in code every frame from synced state
   (position delta → walk speed, `state`, `is_kneeling`); arms use 2-bone IK to grip the rifle.
   Muzzle = BoneAttachment3D on the rifle bone (`visual.muzzle`; it lags the bone by one frame).
   Per-soldier material copy (coat tint) and size. Death fall direction comes from `hash(name)`

@@ -13,18 +13,25 @@ extends RefCounted
 ## (1 = greatcoat: gets the per-soldier tint and cloth grain, 0.5 = other cloth, 0 = skin/metal/wood).
 ## UV = the vertex position (x+z, y) at rest, so the cloth grain doesn't slide when he moves.
 
-enum Bone { HIPS, SPINE, HEAD, UPPER_ARM_L, FOREARM_L, UPPER_ARM_R, FOREARM_R, THIGH_L, SHIN_L, THIGH_R, SHIN_R, RIFLE }
+## SV1: the hands and feet got their own bones – added at the END so no old number changes.
+enum Bone { HIPS, SPINE, HEAD, UPPER_ARM_L, FOREARM_L, UPPER_ARM_R, FOREARM_R, THIGH_L, SHIN_L, THIGH_R, SHIN_R, RIFLE,
+		HAND_L, HAND_R, FOOT_L, FOOT_R }
 
 const BONE_NAMES: Array[String] = ["Hips", "Spine", "Head", "UpperArmL", "ForearmL", "UpperArmR", "ForearmR",
-		"ThighL", "ShinL", "ThighR", "ShinR", "Rifle"]
-const BONE_PARENTS: Array[int] = [-1, 0, 1, 1, 3, 1, 5, 0, 7, 0, 9, 1]
+		"ThighL", "ShinL", "ThighR", "ShinR", "Rifle", "HandL", "HandR", "FootL", "FootR"]
+const BONE_PARENTS: Array[int] = [-1, 0, 1, 1, 3, 1, 5, 0, 7, 0, 9, 1, 4, 6, 8, 10]
 ## Bone positions relative to their parent bone, standing straight ("rest pose").
 const BONE_REST: Array[Vector3] = [
 	Vector3(0, 0.95, 0), Vector3(0, 0.05, 0), Vector3(0, 0.48, 0),
 	Vector3(-0.21, 0.42, 0), Vector3(0, -0.29, 0), Vector3(0.21, 0.42, 0), Vector3(0, -0.29, 0),
 	Vector3(-0.1, -0.03, 0), Vector3(0, -0.43, 0), Vector3(0.1, -0.03, 0), Vector3(0, -0.43, 0),
 	Vector3(0.1, 0.15, -0.28),
+	Vector3(0, -0.25, 0), Vector3(0, -0.25, 0), # wrists (SV1)
+	Vector3(0, -0.39, 0), Vector3(0, -0.39, 0), # ankles, 0.1 m above the ground (SV1)
 ]
+## SV1: how far a foot may bend at the ankle (radians): toes up / toes down.
+const ANKLE_UP: float = 0.6
+const ANKLE_DOWN: float = -0.9
 const ARM_UPPER: float = 0.29
 const ARM_LOWER: float = 0.31 # forearm + hand
 const MUZZLE: Vector3 = Vector3(0, 0.02, -0.78) ## In rifle-bone space.
@@ -38,6 +45,8 @@ const HAT := Color(0.35, 0.34, 0.28, 0.5)
 const STAR := Color(0.7, 0.1, 0.08, 0.0)
 const BELT := Color(0.22, 0.15, 0.09, 0.0)
 const SKIN := Color(0.8, 0.62, 0.52, 0.0)
+## SV1: the face. Alpha 0.15 tells soldier.gdshader to paint the face texture on it.
+const FACE := Color(0.8, 0.62, 0.52, 0.15)
 const BOOT := Color(0.1, 0.09, 0.08, 0.0)
 const WOOD := Color(0.36, 0.22, 0.12, 0.0)
 const METAL := Color(0.12, 0.12, 0.13, 0.0)
@@ -131,9 +140,15 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		_box(Vector3(-0.2, 0.8, -0.02), Vector3(0.04, 0.2, 0.23), LEATHER) # map case
 
 	# --- Head: neck, face, budenovka (pointed cloth helmet) with star, peak and neck flap ---
+	# SV1: the neck bends smoothly – its bottom stays with the chest, its top turns with the head.
+	_bone_fn = func(p: Vector3) -> Array:
+		var k: float = clampf((p.y - 1.47) / 0.07, 0.0, 1.0)
+		return [PackedInt32Array([Bone.SPINE, Bone.HEAD, 0, 0]), PackedFloat32Array([1.0 - k, k, 0.0, 0.0])]
+	_frustum(Vector3(0, 1.44, 0.005), Vector3(0, 1.505, 0.003), 0.05, 0.048, 6, SKIN)
+	_frustum(Vector3(0, 1.505, 0.003), Vector3(0, 1.56, 0.0), 0.048, 0.046, 6, SKIN)
+	_bone_fn = Callable()
 	_use_bone(Bone.HEAD)
-	_frustum(Vector3(0, 1.46, 0), Vector3(0, 1.55, 0), 0.05, 0.05, 6, SKIN)
-	_sphere(Vector3(0, 1.62, -0.01), Vector3(0.1, 0.11, 0.105), 8, 5, SKIN)
+	_build_head()
 	if officer:
 		# Peaked cap: band, wide flat crown, black peak, star – easy to pick out.
 		_frustum(Vector3(0, 1.655, 0), Vector3(0, 1.705, 0), 0.108, 0.11, 10, CAP_BAND)
@@ -161,7 +176,8 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		_use_bone(fore)
 		_frustum(elbow + Vector3(0, 0.02, 0), elbow - Vector3(0, 0.25, 0), 0.052, 0.047, 6, COAT)
 		_frustum(elbow - Vector3(0, 0.2, 0), elbow - Vector3(0, 0.26, 0), 0.05, 0.05, 6, COAT_DARK)
-		_sphere(elbow - Vector3(0, 0.3, 0), Vector3(0.038, 0.045, 0.038), 6, 4, SKIN)
+		_use_bone(Bone.HAND_L if side < 0 else Bone.HAND_R)
+		_build_fist(elbow - Vector3(0, 0.25, 0), side)
 
 	# --- Legs: trousers, knee-high boots, feet ---
 	for side in [-1.0, 1.0]:
@@ -172,8 +188,8 @@ static func _build(kind: int = 0) -> ArrayMesh:
 		_use_bone(thigh)
 		_frustum(hip + Vector3(0, 0.03, 0), knee, 0.078, 0.062, 6, TROUSERS)
 		_use_bone(shin)
-		_frustum(knee + Vector3(0, 0.02, 0), Vector3(knee.x, 0.06, 0), 0.063, 0.052, 6, BOOT)
-		_box(Vector3(knee.x, 0.04, -0.05), Vector3(0.09, 0.08, 0.25), BOOT)
+		_frustum(knee + Vector3(0, 0.02, 0), Vector3(knee.x, 0.17, 0), 0.063, 0.055, 6, BOOT)
+		_build_boot_foot(knee.x, shin, Bone.FOOT_L if side < 0 else Bone.FOOT_R, BOOT)
 
 	_use_bone(Bone.RIFLE)
 	var r := rest_global(Bone.RIFLE)
@@ -189,6 +205,124 @@ static func _build(kind: int = 0) -> ArrayMesh:
 	var mesh := _st.commit()
 	_st = null
 	return mesh
+
+
+## SV1: the head – a skull with a jaw and chin, cheekbones, a brow, eye sockets, a nose and ears.
+## Built like a sphere whose radius is pushed in and out in places. The front faces −Z.
+## Its skin uses FACE (soldier.gdshader paints the eyes, brows and mouth from the face texture).
+static func _build_head() -> void:
+	var c := HEAD_CENTER
+	var segs: int = 12
+	var rings: int = 8
+	var grid: Array = [] # rows of points, bottom → top
+	for r in rings + 1:
+		var lat: float = PI * r / rings - PI / 2.0
+		var row: Array[Vector3] = []
+		for s in segs + 1:
+			row.append(c + _head_offset(lat, TAU * s / segs))
+		grid.append(row)
+	for r in rings:
+		for s in segs:
+			var q: Array[Vector3] = [grid[r][s], grid[r + 1][s], grid[r + 1][s + 1], grid[r][s + 1]]
+			var n: Array[Vector3] = [_head_normal(grid, r, s), _head_normal(grid, r + 1, s),
+					_head_normal(grid, r + 1, s + 1), _head_normal(grid, r, s + 1)]
+			_tri(q[0], q[1], q[2], n[0], n[1], n[2], FACE)
+			_tri(q[0], q[2], q[3], n[0], n[2], n[3], FACE)
+	# Nose: a little wedge from between the eyes down to the tip.
+	var z0: float = c.z - HEAD_RADIUS.z
+	var top := Vector3(0, 1.627, z0 + 0.006)
+	var tip := Vector3(0, 1.584, z0 - 0.017)
+	var left := Vector3(-0.017, 1.577, z0 + 0.002)
+	var right := Vector3(0.017, 1.577, z0 + 0.002)
+	var under := Vector3(0, 1.575, z0 - 0.007)
+	for f in [[top, left, tip], [top, tip, right], [left, under, tip], [tip, under, right]]:
+		var fn: Vector3 = ((f[1] - f[0]).cross(f[2] - f[0])).normalized()
+		if fn.z > 0.0 or (fn.z == 0.0 and fn.y > 0.0):
+			fn = -fn
+		_tri(f[0], f[1], f[2], fn, fn, fn, FACE)
+	# Ears.
+	for side in [-1.0, 1.0]:
+		_sphere(Vector3(side * (HEAD_RADIUS.x - 0.002), 1.603, c.z + 0.012), Vector3(0.012, 0.027, 0.019), 4, 2, SKIN)
+
+
+const HEAD_CENTER := Vector3(0, 1.6, -0.005)
+const HEAD_RADIUS := Vector3(0.091, 0.106, 0.1)
+
+
+## Where a point of the head is, from the centre: `lat` −PI/2 (chin) … PI/2 (crown), `a` 0 = front.
+static func _head_offset(lat: float, a: float) -> Vector3:
+	var h: float = sin(lat)
+	var d := Vector3(cos(lat) * sin(a), h, -cos(lat) * cos(a))
+	var front: float = maxf(cos(a), 0.0)
+	var below: float = smoothstep(0.0, 0.9, -h)
+	# Jaw: narrower towards the chin, the back of the jaw narrower still.
+	var wx: float = 1.0 - 0.3 * below
+	var wz: float = 1.0 - (0.2 * below if cos(a) < 0.0 else 0.0)
+	var p := Vector3(d.x * HEAD_RADIUS.x * wx, d.y * HEAD_RADIUS.y, d.z * HEAD_RADIUS.z * wz)
+	var out: float = 0.0 # pushed out (+) or in (−) along the surface
+	out += 0.008 * pow(front, 4.0) * _bell(h, 0.27, 0.09) # brow
+	out -= 0.011 * front * _bell(h, 0.13, 0.08) * _bell(absf(sin(a)), 0.37, 0.13) # eye sockets
+	out += 0.006 * _bell(h, -0.08, 0.13) * _bell(absf(sin(a)), 0.62, 0.17) # cheekbones
+	out += 0.01 * pow(front, 3.0) * _bell(h, -0.78, 0.17) # chin
+	return p + d.normalized() * out
+
+
+## SV1: where a point of the face is on the face texture (front view: 0.2 m wide, from the hat
+## brim at 1.66 m down to 1.49 m). The back of the head gets a corner of the texture, which is
+## left empty there (so nothing is painted on it).
+static func face_uv(p: Vector3) -> Vector2:
+	if p.z > 0.0:
+		return Vector2(-1.0, -1.0)
+	return Vector2(0.5 + p.x / FACE_UV_WIDTH, (FACE_UV_TOP - p.y) / FACE_UV_HEIGHT)
+
+
+const FACE_UV_WIDTH: float = 0.2
+const FACE_UV_TOP: float = 1.66
+const FACE_UV_HEIGHT: float = 0.17
+
+
+static func _bell(x: float, mid: float, width: float) -> float:
+	return exp(-pow((x - mid) / width, 2.0))
+
+
+## Smooth normal of head grid point (r, s) from its neighbours (the seam wraps round).
+static func _head_normal(grid: Array, r: int, s: int) -> Vector3:
+	var row: Array = grid[r]
+	var n_s: int = row.size() - 1
+	var sl: int = (s - 1 + n_s) % n_s
+	var sr: int = (s + 1) % n_s
+	var up: int = mini(r + 1, grid.size() - 1)
+	var dn: int = maxi(r - 1, 0)
+	var across: Vector3 = (grid[r][sr] as Vector3) - (grid[r][sl] as Vector3)
+	var along: Vector3 = (grid[up][s % n_s] as Vector3) - (grid[dn][s % n_s] as Vector3)
+	var n: Vector3 = across.cross(along)
+	var outward: Vector3 = (row[s] as Vector3) - HEAD_CENTER
+	if n.length() < 0.000001:
+		return outward.normalized()
+	n = n.normalized()
+	return n if n.dot(outward) > 0.0 else -n
+
+
+## SV1: a fist hanging from the wrist (rest pose: arm straight down). The palm faces the body,
+## the thumb is in front (−Z) – so when the arm reaches forward, the thumb is on top of the grip.
+static func _build_fist(wrist: Vector3, side: float, col: Color = SKIN) -> void:
+	_sphere(wrist - Vector3(0, 0.048, 0.0), Vector3(0.026, 0.045, 0.043), 5, 3, col) # back of the hand
+	_frustum(wrist + Vector3(-side * 0.012, -0.085, 0.034), wrist + Vector3(-side * 0.012, -0.085, -0.036),
+			0.019, 0.019, 5, col) # curled fingers
+	_sphere(wrist + Vector3(-side * 0.014, -0.035, -0.04), Vector3(0.013, 0.025, 0.013), 4, 2, col) # thumb
+
+
+## SV1: the lower boot (the top half blends from the shin to the ankle) and the foot, which
+## bends at the ankle.
+static func _build_boot_foot(x: float, shin: int, foot: int, col: Color) -> void:
+	_bone_fn = func(p: Vector3) -> Array:
+		var k: float = clampf((0.17 - p.y) / 0.08, 0.0, 1.0)
+		return [PackedInt32Array([shin, foot, 0, 0]), PackedFloat32Array([1.0 - k, k, 0.0, 0.0])]
+	_frustum(Vector3(x, 0.175, 0), Vector3(x, 0.07, 0.0), 0.055, 0.052, 6, col)
+	_bone_fn = Callable()
+	_use_bone(foot)
+	_box(Vector3(x, 0.045, -0.015), Vector3(0.092, 0.09, 0.19), col)
+	_frustum(Vector3(x, 0.036, -0.105), Vector3(x, 0.036, -0.17), 0.045, 0.032, 5, col, 0.8) # rounded toe
 
 
 ## Mosin rifle with the long spike bayonet.
@@ -214,6 +348,14 @@ static func _build_dp27(r: Vector3) -> void:
 	_frustum(r + Vector3(0, 0.055, 0.0), r + Vector3(0, 0.068, 0.0), 0.05, 0.05, 8, METAL)     # pan centre
 	for side in [-1.0, 1.0]:
 		_frustum(r + Vector3(0.0, 0.0, -0.52), r + Vector3(side * 0.12, -0.3, -0.64), 0.008, 0.008, 4, METAL)
+
+
+## SV1: how a foot bends at the ankle for a leg posed `thigh` then `shin` (both turns about X, as
+## SoldierVisual and PlayerBody pose them). `flat` 1 = sole flat on the ground, 0 = foot keeps the
+## shin's angle; `toes` adds a bend of its own (+ = toes up). Kept within the ankle's range.
+static func foot_pose(thigh: Quaternion, shin: Quaternion, flat: float, toes: float = 0.0) -> Quaternion:
+	var leg: float = (thigh * shin).get_euler().x
+	return Quaternion(Vector3.RIGHT, clampf(-leg * flat + toes, ANKLE_DOWN, ANKLE_UP))
 
 
 ## Two-bone arm: shoulder → elbow → hand. Puts the hand at `target` (chest = spine-bone space)
@@ -303,7 +445,10 @@ static func _vertex(p: Vector3, n: Vector3, c: Color) -> void:
 		c = _color_fn.call(p, c)
 	_st.set_color(c)
 	_st.set_normal(n)
-	_st.set_uv(Vector2(p.x + p.z, p.y))
+	if absf(c.a - FACE.a) < 0.01:
+		_st.set_uv(face_uv(p))
+	else:
+		_st.set_uv(Vector2(p.x + p.z, p.y))
 	if _bone_fn.is_valid():
 		var bw: Array = _bone_fn.call(p)
 		_st.set_bones(bw[0])

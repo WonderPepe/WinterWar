@@ -97,7 +97,7 @@ func run() -> void:
 	var vis: SoldierVisual = e.visual
 	var mesh: ArrayMesh = vis._mesh.mesh
 	var tris: int = mesh.surface_get_array_index_len(0) / 3 if mesh.surface_get_array_index_len(0) > 0 else mesh.surface_get_array_len(0) / 3
-	check(vis._skeleton.get_bone_count() == 12 and tris > 300 and tris < 1500, "soldier: one skinned mesh, 12 bones, %d triangles" % tris)
+	check(vis._skeleton.get_bone_count() == 16 and tris > 300 and tris < 1500, "soldier: one skinned mesh, 16 bones, %d triangles" % tris)
 	check(mesh.get_surface_count() == 1, "soldier is one draw call")
 	check(e.muzzle != null and e.muzzle.is_inside_tree(), "muzzle follows the rifle")
 	# Walking moves the legs.

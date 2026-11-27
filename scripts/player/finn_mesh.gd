@@ -165,6 +165,7 @@ static func _build(gun: int) -> ArrayMesh:
 		SoldierMesh.frustum(hip + Vector3(0, 0.04, 0), knee, 0.09, 0.072, 6, TROUSERS)
 		SoldierMesh.use_bone(shin)
 		SoldierMesh.frustum(knee + Vector3(0, 0.03, 0), Vector3(knee.x, 0.07, 0.01), 0.072, 0.072, 6, TROUSERS)
+		SoldierMesh.use_bone(B.FOOT_L if side < 0 else B.FOOT_R) # SV1: the foot bends at the ankle
 		SoldierMesh.frustum(Vector3(knee.x, 0.085, 0.01), Vector3(knee.x, 0.035, 0.0), 0.073, 0.068, 6, TROUSERS) # bunched over the boot
 		SoldierMesh.box(Vector3(knee.x, 0.035, -0.04), Vector3(0.085, 0.07, 0.2), BOOT)
 		# Pieksu toe: turned up a little, not like an elf's.
